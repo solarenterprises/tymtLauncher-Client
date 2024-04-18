@@ -1,0 +1,33 @@
+body {
+  overflow: hidden;
+}
+
+.splash-logo {
+  position: absolute;
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  justify-content: center;
+  align-items: center;
+  background-color: black;
+}
+
+.red-blur {
+  position: absolute;
+  bottom: -8vw;
+  left: -8vw;
+  width: 37.5vw;
+  height: 37.5vw;
+  filter: blur(5vw);
+  background: radial-gradient(circle at 50% 50%, var(--tymt-red), #00000000);
+}
+
+.blue-blur {
+  position: absolute;
+  top: -8vw;
+  right: -8vw;
+  width: 37.5vw;
+  height: 37.5vw;
+  filter: blur(5vw);
+  background: radial-gradient(circle at 50% 50%, var(--tymt-blue), #00000000);
+}

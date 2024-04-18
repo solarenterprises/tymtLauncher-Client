@@ -1,0 +1,205 @@
+// fs: meaning is font size
+// if you want to add more font I hope you will follow that rule
+
+.fs-144-bold {
+  font-family: "Cobe-Italic";
+  font-size: 144px;
+  font-weight: 400;
+  line-height: 105px;
+  letter-spacing: -7.92px;
+}
+
+.fs-60-bold {
+  font-family: "Cobe-Bold";
+  font-size: 60px;
+  font-weight: 400;
+  line-height: 100%;
+}
+.fs-40-bold {
+  font-family: "Cobe-Bold";
+  font-size: 40px;
+  font-weight: 400;
+  line-height: 40px;
+}
+
+.fs-38-bold {
+  font-family: "Cobe-Bold";
+  font-size: 38px;
+  font-weight: 400;
+  line-height: 44px;
+}
+
+.fs-34-bold {
+  font-family: "Cobe-Bold";
+  font-size: 34px;
+  font-weight: 400;
+  line-height: 40px;
+}
+
+.fs-20-regular {
+  font-family: "Cobe";
+  font-size: 20px;
+  font-weight: 400;
+  line-height: 24px;
+}
+
+.fs-24-bold {
+  font-family: "Cobe-Bold";
+  font-size: 24px;
+  font-weight: 400;
+  line-height: 24px;
+}
+
+.fs-24-regular {
+  font-family: "Cobe";
+  font-size: 24px;
+  font-weight: 400;
+  line-height: 24px;
+}
+
+.fs-18-regular {
+  font-family: "Cobe";
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 24px;
+  text-align: left;
+}
+
+.fs-18-light {
+  font-family: "Cobe";
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 18px;
+  letter-spacing: -0.36px;
+  font-feature-settings: "calt" off;
+}
+
+.fs-18-bold {
+  font-family: "Cobe-Bold";
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 18px;
+}
+
+.fs-16 {
+  font-family: "Cobe";
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 20px;
+  letter-spacing: -0.02em;
+}
+
+.fs-16-light {
+  font-family: "Cobe";
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 18px;
+  letter-spacing: -0.02em;
+}
+
+.fs-16-regular {
+  font-family: "Cobe";
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 20px;
+}
+
+.fs-14-regular {
+  font-family: "Cobe";
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 18px;
+}
+
+.fs-14-bold {
+  font-family: "Cobe-Bold";
+  font-size: 14px;
+  font-weight: 400;
+  line-height: normal;
+}
+
+.fs-14-light {
+  font-family: "Cobe";
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 18px;
+  letter-spacing: -0.02em;
+}
+
+.fs-12-regular {
+  font-family: "Cobe";
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 18px; /* 150% */
+}
+
+.fs-12-light {
+  font-family: "Cobe";
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 12px;
+  letter-spacing: 0em;
+}
+
+.fs-12-up {
+  font-family: "Cobe";
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 19px;
+  letter-spacing: 0em;
+}
+
+.fs-button {
+  font-family: "Cobe";
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 26px;
+  letter-spacing: 0em;
+}
+
+.fs-h5 {
+  font-family: "Cobe";
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 24px;
+  letter-spacing: -0.02em;
+}
+
+.fs-h4 {
+  font-family: "Cobe";
+  font-size: 20px;
+  font-weight: 400;
+  line-height: 24px;
+  letter-spacing: -0.02em;
+}
+
+.fs-h3 {
+  font-family: "Cobe";
+  font-size: 24px;
+  font-weight: 400;
+  line-height: 24px;
+  letter-spacing: 0em;
+}
+
+.fs-h2 {
+  font-family: "Cobe-Bold";
+  font-size: 40px;
+  font-weight: 400;
+  line-height: 40px;
+  letter-spacing: 0em;
+}
+
+.fs-h1 {
+  font-family: "Cobe-Bold";
+  font-size: 60px;
+  font-weight: 400;
+  line-height: 60px;
+  letter-spacing: 0em;
+}
+
+.emoji-mart-category-label {
+  color: #333; /* Set the color of the title text */
+  font-size: 16px; /* Adjust the font size of the title text */
+  background: "#2B2B2B";
+  font-weight: bold; /* Set the font weight of the title text */
+}

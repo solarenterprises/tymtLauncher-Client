@@ -1,0 +1,224 @@
+import { IWallet } from "./IWallet";
+import { mnemonicToSeed } from "bip39";
+import { BIP32Factory } from "bip32";
+import { payments, networks, Psbt } from "bitcoinjs-lib";
+import axios from "axios";
+import { btc_api_url, net_name } from "../../configs";
+import { validate } from "bitcoin-address-validation";
+import * as ecc from "tiny-secp256k1";
+import { INotification } from "../../features/wallet/CryptoSlice";
+import { IRecipient } from "../../features/wallet/CryptoApi";
+
+class Bitcoin implements IWallet {
+  address: string;
+  ticker: "BTC" = "BTC";
+
+  constructor() {
+    this.address = "";
+  }
+
+  static async getKeyPair(mnemonic: string): Promise<any> {
+    const seed = await mnemonicToSeed(mnemonic);
+    const bip32 = BIP32Factory(ecc);
+    const root = bip32.fromSeed(seed);
+    let child;
+    if (net_name === "testnet") {
+      child = root.derivePath("m/44'/1'/0'/0/0");
+      const privateKey = child.privateKey;
+      if (!privateKey) {
+        throw new Error("Failed to obtain private key");
+      }
+      const keyPair = bip32.fromPrivateKey(
+        privateKey,
+        child.chainCode,
+        networks.testnet
+      );
+      return keyPair;
+    } else {
+      child = root.derivePath("m/84'/0'/0'/0/0");
+      const privateKey = child.privateKey;
+      if (!privateKey) {
+        throw new Error("Failed to obtain private key");
+      }
+      const keyPair = bip32.fromPrivateKey(
+        privateKey,
+        child.chainCode,
+        networks.bitcoin
+      );
+      return keyPair;
+    }
+  }
+
+  static async getAddress(mnemonic: string): Promise<string> {
+    const keyPair = await Bitcoin.getKeyPair(mnemonic.normalize("NFD"));
+    if (net_name === "testnet") {
+      const { address } = payments.p2wpkh({
+        pubkey: keyPair.publicKey,
+        network: networks.testnet,
+      });
+      return address ?? "";
+    } else {
+      const { address } = payments.p2wpkh({
+        pubkey: keyPair.publicKey,
+        network: networks.bitcoin,
+      });
+      return address ?? "";
+    }
+  }
+
+  static async getBalance(addr: string): Promise<number> {
+    try {
+      if (net_name === "mainnet") {
+        const result = await axios.get(
+          `${btc_api_url}/q/addressbalance/${addr}`
+        );
+        if (result.status === 200) {
+          const balance = parseFloat(result.data);
+          const bitcoins = balance / 1e8;
+          return bitcoins;
+        } else {
+          return 0;
+        }
+      } else {
+        const result = await axios.get(`${btc_api_url}/address/${addr}`);
+        if (result.status === 200) {
+          const balance = result.data.chain_stats.funded_txo_sum;
+          const bitcoins = balance / 1e8;
+          return bitcoins;
+        } else {
+          return 0;
+        }
+      }
+    } catch {
+      return 0;
+    }
+  }
+
+  static async getTransactions(addr: string): Promise<any> {
+    try {
+      if (net_name === "mainnet") {
+        const txs = (
+          await (await fetch(`${btc_api_url}/rawaddr/${addr}?limit=10`)).json()
+        ).txs;
+        return txs;
+      } else {
+        const txs = await (
+          await fetch(`${btc_api_url}/address/${addr}/txs?limit=10`)
+        ).json();
+        return txs;
+      }
+    } catch {
+      return [];
+    }
+  }
+
+  static validateAddress(address: string) {
+    if (!address) return false;
+    return validate(address);
+  }
+
+  static async sendTransaction(
+    passphrase: string,
+    tx: { recipients: IRecipient[]; fee: string; vendorField?: string }
+  ) {
+    if (tx.recipients.length) {
+      try {
+        const seed = await mnemonicToSeed(passphrase);
+        const bip32 = BIP32Factory(ecc);
+        const network =
+          net_name === "mainnet" ? networks.bitcoin : networks.testnet;
+        const root = bip32.fromSeed(seed, network);
+        const account = root.derivePath(
+          net_name === "mainnet" ? "m/84'/0'/0'/0/0" : "m/44'/1'/0'/0/0"
+        );
+        const psbt = new Psbt({ network });
+
+        const myAddress = payments.p2wpkh({
+          pubkey: account.publicKey,
+          network,
+        }).address;
+        const utxos = await Bitcoin.getUTXOs(myAddress ?? "");
+
+        utxos.forEach((utxo) => {
+          psbt.addInput({
+            hash: utxo.txid,
+            index: utxo.vout,
+            nonWitnessUtxo: Buffer.from(utxo.hex, "hex"),
+          });
+        });
+
+        tx.recipients.forEach((recipient) => {
+          psbt.addOutput({
+            address: recipient.address,
+            value: Number(recipient.amount) * Number(recipient.tokenDecimals),
+          });
+        });
+
+        for (let i = 0; i < utxos.length; i++) {
+          psbt.signInput(i, account);
+        }
+
+        psbt.finalizeAllInputs();
+
+        const rawHexTransaction = psbt.extractTransaction().toHex();
+
+        const response = await Bitcoin.broadcastTransaction(rawHexTransaction);
+        console.log("response", response);
+
+        const noti: INotification = {
+          status: "success",
+          title: "Success",
+          message: "Successfully Transferred!",
+        };
+        return noti;
+      } catch (err) {
+        console.error("Failed to send BTC transaction", err);
+        const noti: INotification = {
+          status: "failed",
+          title: "Failed",
+          message: err.toString(),
+        };
+        return noti;
+      }
+    }
+  }
+
+  static async broadcastTransaction(txHex: string): Promise<any> {
+    try {
+      const networkUrl =
+        net_name === "mainnet"
+          ? "https://blockstream.info/api/tx"
+          : "https://blockstream.info/testnet/api/tx";
+      const { data } = await axios.post(networkUrl, txHex, {
+        headers: { "Content-Type": "text/plain" },
+      });
+      return data;
+    } catch (error) {
+      console.error("Failed to broadcast BTC transaction:", error);
+      return null;
+    }
+  }
+
+  static async getUTXOs(address: string): Promise<any[]> {
+    try {
+      const networkUrl = "https://unisat.io/wallet-api-v4/address/btc-utxo?";
+      const res = await axios.get(`${networkUrl}address=${address}`, {
+        headers: {
+          withCredentials: true,
+        },
+      });
+      const data = res.data.result;
+      return data.map((utxo: any) => ({
+        txid: utxo.txId,
+        vout: utxo.outputIndex,
+        amount: utxo.satoshis,
+        hex: utxo.scriptPk,
+      }));
+    } catch (error) {
+      console.error("Failed to fetch BTC UTXOs:", error);
+      return [];
+    }
+  }
+}
+
+export default Bitcoin;

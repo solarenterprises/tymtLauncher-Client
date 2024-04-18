@@ -1,0 +1,32 @@
+.logo.vite:hover {
+  filter: drop-shadow(0 0 2em #747bff);
+}
+
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafb);
+}
+
+@font-face {
+  font-family: "Cobe";
+  src: url("./fonts/Cobe/Cobe-Regular.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "Cobe-Bold";
+  src: url("./fonts/Cobe/Cobe-Bold.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "Cobe-Extra-Bold-Italic";
+  src: url("./fonts/Cobe/Cobe-Extra-Bold-Italic.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "Cobe-Italic";
+  src: url("./fonts/Cobe/Cobe-Italic.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "Cobe-Heavy-Italic";
+  src: url("./fonts/Cobe/Cobe-Heavy-Italic.ttf") format("truetype");
+}

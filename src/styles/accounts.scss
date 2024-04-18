@@ -1,0 +1,257 @@
+.css-1a6yvdy-MuiButtonBase-root-MuiCheckbox-root.Mui-checked {
+  color: #52e1f2 !important;
+}
+
+.center-align {
+  justify-content: center;
+  align-items: center;
+}
+
+.account-button {
+  &.MuiButtonBase-root {
+    height: 58px;
+    border-radius: 29px;
+    border: 1px solid #52e1f233;
+    text-transform: "none";
+    &:hover {
+      border: 3px solid #ffffff33;
+      background-color: #52e1f216;
+    }
+  }
+}
+.close-icon {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  cursor: pointer;
+}
+.red-button {
+  &.MuiButtonBase-root {
+    height: 46px;
+    color: white;
+    font-family: Cobe-Bold;
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+    border-radius: 16px;
+    background-color: #ef4444;
+    text-transform: none;
+    &:hover {
+      background-color: #992727;
+    }
+    &.Mui-disabled {
+      background-color: #2a2525;
+      color: #7c7c7c;
+    }
+  }
+}
+.oauth-modal {
+  padding: 40px;
+  gap: 40px;
+}
+.benefit-modal {
+  padding: 24px;
+}
+.oauth-container {
+  padding: 16px 24px 16px 24px;
+  gap: 32px;
+  border-radius: 32px;
+  border: 1px solid gray;
+  justify-content: space-around;
+  text-align: center;
+  align-items: center;
+}
+
+.back-button {
+  &.MuiButtonBase-root {
+    height: 32px;
+    width: 32px;
+    min-width: 32px;
+    border-radius: 16px;
+    background-color: #192729;
+    &:hover {
+      background-color: #808080;
+    }
+  }
+}
+
+.mnemonic-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.mnemonic-dropdown-box {
+  top: 42px;
+  padding-top: 4px;
+  display: none;
+  position: absolute;
+  z-index: 5;
+}
+
+.mnemonic-dropdown-button {
+  &.MuiButtonBase-root {
+    height: 42px;
+    border-radius: 21px;
+    border: 1px solid #52e1f233;
+    text-transform: none;
+    &:hover {
+      border: 3px solid #ffffff33;
+      background-color: #52e1f216;
+    }
+  }
+}
+
+.mnemonic-dropdown:hover .mnemonic-dropdown-box {
+  display: block;
+}
+
+.mnemonic-dropdown-top-index-button {
+  &.MuiButtonBase-root {
+    height: 36px;
+    width: 100%;
+    background-color: rgba(20, 38, 41);
+    text-transform: none;
+    border: 1px solid rgba(44, 62, 64);
+    border-bottom: 0px;
+    border-radius: 0px;
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+    &:hover {
+      background-color: rgba(36, 40, 41);
+      border: 1px solid rgba(44, 62, 64);
+      border-bottom: 0px;
+    }
+  }
+}
+
+.mnemonic-dropdown-bottom-index-button {
+  &.MuiButtonBase-root {
+    height: 36px;
+    width: 100%;
+    background-color: rgba(20, 38, 41);
+    text-transform: none;
+    border: 1px solid rgba(44, 62, 64);
+    border-radius: 0px;
+    border-bottom-left-radius: 16px;
+    border-bottom-right-radius: 16px;
+    &:hover {
+      background-color: rgba(36, 40, 41);
+      border: 1px solid rgba(44, 62, 64);
+    }
+  }
+}
+
+.mnemonic-word-box {
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 42px;
+  width: 100%;
+  background-color: rgb(24, 33, 34);
+  border: 1px solid rgb(38, 46, 47);
+  border-radius: 8px;
+  &:hover {
+    background-color: rgb(20, 41, 44);
+    border: 3px solid rgb(71, 78, 79);
+  }
+}
+
+.mnemonic-word-box-focus {
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 42px;
+  width: 100%;
+  border-radius: 8px;
+  background-color: rgb(20, 41, 44);
+  border: 3px solid rgb(71, 78, 79);
+}
+
+.icon-button {
+  color: #afafaf;
+  &:hover {
+    color: white;
+  }
+}
+
+.switch-button-group {
+  height: 44px;
+  border: 1px solid rgba(58, 58, 58, 0.5);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0px 2px;
+}
+
+.switch-button {
+  &.MuiButtonBase-root {
+    border-radius: 14px;
+    text-transform: none;
+    padding: 0px;
+    &:hover {
+      background-color: rgba(82, 225, 242, 0.1);
+    }
+  }
+}
+
+.switch-button-checked {
+  &.MuiButtonBase-root {
+    background-color: rgba(82, 225, 242, 0.1);
+    border-radius: 14px;
+    text-transform: none;
+    padding: 0px;
+    &:hover {
+      background-color: rgba(82, 225, 242, 0.1);
+    }
+  }
+}
+
+.wallet-bar {
+  display: flex;
+  align-items: "center";
+  width: 488px;
+  height: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 8px 16px;
+}
+
+.clear_filter {
+  margin-right: 10px;
+  &.MuiButtonBase-root {
+    height: 38px;
+    width: 38px;
+    min-width: 32px;
+    border-radius: 32px;
+    background-color: none;
+    &:hover {
+      background-color: rgba(128, 128, 128, 0.1);
+    }
+  }
+}
+
+.red-button-Gameoverview {
+  &.MuiButtonBase-root {
+    height: 46px;
+    color: white;
+    font-family: Cobe-Bold;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+    border-radius: 16px;
+    background-color: #ef4444;
+    text-transform: none;
+    &:hover {
+      background-color: #992727;
+    }
+    &.Mui-disabled {
+      background-color: #2a2525;
+      color: #7c7c7c;
+    }
+  }
+}

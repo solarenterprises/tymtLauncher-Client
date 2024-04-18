@@ -1,0 +1,71 @@
+.wallet-form-card {
+  border: 1px solid
+    var(--bg-stroke-white-10-stroke-default, rgba(255, 255, 255, 0.1));
+  backdrop-filter: blur(50px);
+}
+
+.wallet-form-card-hover {
+  border: 1px solid
+    var(--bg-stroke-white-10-stroke-default, rgba(255, 255, 255, 0.1));
+  backdrop-filter: blur(50px);
+  &:hover {
+    border: 3px solid rgba(255, 255, 255, 0.2);
+    background: var(
+      --bg-stroke-icon-button-bg-active-30,
+      rgba(128, 128, 128, 0.3)
+    );
+    cursor: pointer;
+  }
+}
+
+.wallet-icon-button {
+  width: 46px;
+  height: 46px;
+}
+.qr-btn > img {
+  cursor: pointer;
+  padding: 5px;
+  &:hover {
+    border: solid 1px
+      var(--bg-stroke-white-10-stroke-default, rgba(255, 255, 255, 0.1));
+    border-radius: 10px;
+  }
+}
+.qr-modal {
+  padding: 24px;
+  gap: 24px;
+}
+
+.qr-container {
+  border: 1px solid #ffffff1a;
+  padding: 16px;
+  gap: 24px;
+  border-radius: 16px;
+}
+.qr-address {
+  color: #52e1f2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 245px;
+}
+.wallet-icon-button-icon {
+  padding: 10px;
+  border: 1px solid #ef4444;
+  border-radius: 16px;
+  cursor: pointer;
+  &:hover {
+    background-color: #ef4444;
+    transition: background-color 0.3s, transform 0.3s;
+  }
+  &:active {
+    background-color: #ef4444;
+    transition: box-shadow 0.3s;
+    box-shadow: 0 0 10px #ef444466;
+  }
+}
+
+.blur {
+  background: var(--bg-stroke-icon-button-bg-10, rgba(128, 128, 128, 0.1));
+  backdrop-filter: blur(50px);
+}

@@ -1,0 +1,509 @@
+// Navbar styles
+
+.navbar {
+  position: fixed;
+  height: 60px;
+  margin-top: 0;
+  padding-right: 10px;
+  padding-left: 10px;
+  align-items: center;
+  border-radius: 16px;
+  justify-content: space-between;
+  backdrop-filter: blur(30px);
+  background: transparent;
+  z-index: 10;
+  &.MuiButtonBase-root {
+    backdrop-filter: blur(30px);
+  }
+}
+
+// Searchbar styles
+.searchbar {
+  width: 320px;
+  position: relative;
+  .MuiInputBase-root {
+    height: 44px;
+    border-radius: var(--Angle-Number, 32px);
+    border: 1px solid
+      var(--bg-stroke-white-20-modal-stroke, rgba(255, 255, 255, 0.2));
+    background: var(--bg-stroke-icon-button-bg-10, rgba(128, 128, 128, 0.1));
+    background-blend-mode: luminosity;
+    font-family: "Cobe";
+    color: var(--Basic-Light, #afafaf);
+    backdrop-filter: blur(70px);
+    &:hover .MuiOutlinedInput-notchedOutline {
+      border-color: gray; // Change the border color on hover
+    }
+  }
+  &:hover {
+    background-color: var(--Windows-Glass, rgba(128, 128, 128, 0.3));
+    border-radius: var(
+      --Angle-Number,
+      32px
+    ); // This will make it turn gray on hover
+  }
+
+  &:covered {
+    background-color: var(--Windows-Glass, rgba(128, 128, 128, 0.3));
+  }
+
+  input {
+    color: #ffffff;
+  }
+}
+
+.back-button-home {
+  position: absolute;
+  right: 20px;
+  &.MuiButtonBase-root {
+    height: 38px;
+    width: 38px;
+    min-width: 32px;
+    border-radius: 32px;
+    background-color: none;
+    &:hover {
+      background-color: rgba(128, 128, 128, 0.1);
+    }
+  }
+}
+
+// Button group styles
+.button_group {
+  margin-right: 0%;
+  width: 360px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+}
+
+// Button Navbar Profile styles
+.button_navbar_profile {
+  &.MuiButtonBase-root {
+    width: 165px;
+    height: 44px;
+    border-radius: var(--Angle-Small, 16px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--bg-stroke-icon-button-bg-10, rgba(128, 128, 128, 0.1));
+    background-blend-mode: luminosity;
+    backdrop-filter: blur(70px);
+    position: relative;
+    justify-content: center;
+    align-items: center;
+    text-transform: none;
+    box-shadow: none;
+    z-index: 11;
+    color: #52e1f21a;
+    &:hover {
+      background-color: var(
+        --bg-stroke-icon-button-bg-10,
+        rgba(128, 128, 128, 0.1)
+      );
+      border: 2px solid var(--Stroke-linear-Hover, rgba(255, 255, 255, 0.1));
+    }
+
+    &:active {
+      background: var(
+        --bg-stroke-icon-button-bg-active-30,
+        rgba(128, 128, 128, 0.3)
+      );
+    }
+  }
+}
+
+// Button Navbar Common styles
+
+.button_navbar_common {
+  &.MuiButtonBase-root {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: none;
+    min-width: 44px;
+    width: 44px;
+    height: 44px;
+    text-transform: none;
+    border-radius: var(--Angle-Small, 16px);
+    border: 1px solid var(--Stroke-linear-Hover, rgba(255, 255, 255, 0.1));
+    color: #52e1f21a;
+    z-index: 11;
+    background: var(--bg-stroke-icon-button-bg-10, rgba(128, 128, 128, 0.1));
+    background-blend-mode: luminosity;
+    backdrop-filter: blur(50px);
+    &:hover {
+      background-color: var(
+        --bg-stroke-icon-button-bg-10,
+        rgba(128, 128, 128, 0.1)
+      );
+    }
+    &:active {
+      background: var(
+        --bg-stroke-icon-button-bg-active-30,
+        rgba(128, 128, 128, 0.3)
+      );
+    }
+    position: relative;
+  }
+}
+
+// Notification Dot styles
+.notification_dot {
+  position: absolute;
+  bottom: 4px;
+  right: -2.5px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  //   background: $primary-color;
+  border: 1px solid var(--bg-stroke-icon-button-bg-10, rgba(128, 128, 128, 0.1));
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+// Homepage menubar components
+.menu_bar {
+  position: fixed;
+  margin-left: 0%;
+  height: 600px;
+  white-space: nowrap;
+  transition: width 0.1s ease-in-out;
+  border-radius: var(--Angle-Number, 32px);
+  background: var(--bg-stroke-side-menu-bg, rgba(29, 29, 29, 0.3));
+  background-blend-mode: luminosity;
+  backdrop-filter: blur(50px);
+  z-index: 10;
+}
+
+.menu_listitem {
+  margin-bottom: 25px;
+  display: block;
+  border-top-right-radius: 20px;
+  border-bottom-right-radius: 20px;
+}
+
+.menu_listbutton {
+  margin-bottom: 25px;
+  justify-content: initial;
+  height: 40px;
+  padding-left: 2.5;
+
+  &:hover {
+    border-top-right-radius: 20px;
+    border-bottom-right-radius: 20px;
+  }
+}
+
+.menu_chevron_button {
+  &.MuiButtonBase-root {
+    margin-left: 10px;
+    min-width: 40px;
+    width: 40px;
+    height: 40px;
+    border-radius: var(--Angle-Small, 16px);
+    border: transparent;
+    background-blend-mode: luminosity;
+    backdrop-filter: blur(50px);
+    &:hover {
+      background-color: var(
+        --bg-stroke-icon-button-bg-10,
+        rgba(128, 128, 128, 0.1)
+      );
+      border: 2px solid var(--Stroke-linear-Hover, rgba(255, 255, 255, 0.1));
+    }
+    &:active {
+      background: var(
+        --bg-stroke-icon-button-bg-active-30,
+        rgba(128, 128, 128, 0.3)
+      );
+    }
+  }
+  // Add more translated styles as needed
+}
+
+.tooltip {
+  padding: 6px 8px;
+  border-radius: 30px;
+  border: 1px solid #ffffff1a;
+  background-color: #8080804d;
+}
+
+// District53 intro components
+
+.district_content {
+  border-radius: var(--Angle-Number, 16px);
+  flex-shrink: initial;
+  background-color: var(--bg-stroke-side-menu-bg, rgba(29, 29, 29, 0.3));
+  padding: 20px;
+  -webkit-flex-shrink: initial;
+  position: relative;
+  overflow: hidden;
+}
+
+.red-button-D53 {
+  &.MuiButtonBase-root {
+    width: 100%;
+    height: 46px;
+    padding: 8px;
+    color: white;
+    font-family: "Cobe-Bold";
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+    border-radius: 16px;
+    background-color: #ef4444;
+    text-transform: none;
+    &:hover {
+      background-color: #992727;
+    }
+    &.Mui-disabled {
+      background-color: #2a2525;
+      color: #7c7c7c;
+    }
+  }
+}
+
+// Trending game panel
+.trending_card {
+  width: 94%;
+  border-radius: 16px;
+  padding: 32px;
+  border: 1px solid #f6e27a;
+  background: rgba(31, 31, 31, 0.3);
+  background-blend-mode: luminosity;
+  backdrop-filter: blur(50px);
+  height: 472px;
+  flex-shrink: 0;
+  z-index: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+.golden_effect {
+  top: -170px;
+  left: 15%;
+  width: 70%;
+  height: 259px;
+  flex-shrink: 0;
+  border-radius: 46px;
+  background: linear-gradient(
+    180deg,
+    rgba(246, 242, 192, 0.6) 0%,
+    rgba(246, 226, 122, 0) 100%
+  );
+  filter: blur(100px);
+  position: absolute;
+  z-index: -1;
+}
+
+.trending_chevron_button {
+  margin-right: 20px;
+  min-width: 40px;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--Angle-Small, 30px);
+  border: 1px solid var(--Stroke-linear-Hover, rgba(255, 255, 255, 0.1));
+  background: var(--bg-stroke-icon-button-bg-10, rgba(128, 128, 128, 0.1));
+  background-blend-mode: luminosity;
+  backdrop-filter: blur(50px);
+
+  &:hover {
+    background-color: var(
+      --bg-stroke-icon-button-bg-10,
+      rgba(128, 128, 128, 0.1)
+    );
+    border: 2px solid var(--Stroke-linear-Hover, rgba(255, 255, 255, 0.1));
+  }
+
+  &:active {
+    background: var(
+      --bg-stroke-icon-button-bg-active-30,
+      rgba(128, 128, 128, 0.3)
+    );
+  }
+}
+
+.trending_game_card {
+  width: 200px;
+  height: 336px;
+  flex-shrink: 0;
+  border-radius: var(--Angle-Number, 16px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  background: rgba(31, 31, 31, 0.3);
+  background-blend-mode: luminosity;
+  backdrop-filter: blur(50px);
+}
+
+// tymtshow components
+
+.button_gamecontent {
+  &.MuiButtonBase-root {
+    height: 60px;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background-color: rgba(128, 128, 128, 0.1);
+    backdrop-filter: blur(50px);
+    color: gray;
+    padding: 0px;
+
+    &:hover {
+      background-color: var(
+        --bg-stroke-icon-button-bg-10,
+        rgba(128, 128, 128, 0.1)
+      );
+      border: 1px solid var(--Stroke-linear-Hover, rgba(255, 255, 255, 0.1));
+    }
+  }
+}
+
+// Coming soon card container
+.card_coming_container {
+  width: 94%;
+  height: 361px;
+  padding: 32px;
+  flex-shrink: 0;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  background: rgba(31, 31, 31, 0.3);
+  background-blend-mode: luminosity;
+  backdrop-filter: blur(50px);
+  z-index: 1;
+  overflow: hidden;
+  position: relative;
+}
+
+.card_coming_slide {
+  width: 276px;
+  height: 225px;
+  flex-shrink: 0;
+  border-radius: var(--Angle-Number, 16px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.02);
+  background-blend-mode: luminosity;
+  backdrop-filter: blur(50px);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+// Freegame list card container
+.card_freegame_container {
+  width: 276px;
+  height: 300px;
+  padding-bottom: 16px;
+  flex-shrink: 0;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.02);
+  background-blend-mode: luminosity;
+  backdrop-filter: blur(50px);
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+
+  &:hover {
+    background-color: var(
+      --bg-stroke-icon-button-bg-10,
+      rgba(128, 128, 128, 0.1)
+    );
+    border: 1px solid var(--Stroke-linear-Hover, rgba(255, 255, 255, 0.1));
+  }
+
+  &:active {
+    background: var(
+      --bg-stroke-icon-button-bg-active-30,
+      rgba(128, 128, 128, 0.3)
+    );
+  }
+}
+
+// Genre label styles
+.card_genre_label {
+  width: auto;
+  padding: 4px 8px 4px 8px;
+  justify-content: left;
+  color: white;
+  border-radius: 30px;
+  border: 1px solid rgba(82, 225, 242, 0.2);
+  background: rgba(27, 53, 56, 0.2);
+  background-blend-mode: luminosity;
+  backdrop-filter: blur(50px);
+}
+
+.card_genre_label_GO {
+  width: auto;
+  padding: 8px 12px 8px 12px;
+  justify-content: left;
+  color: white;
+  border-radius: 30px;
+  border: 1px solid rgba(82, 225, 242, 0.2);
+  background: rgba(27, 53, 56, 0.2);
+  background-blend-mode: luminosity;
+  backdrop-filter: blur(50px);
+}
+
+.chip_free {
+  font-family: Cobe;
+  padding: 0;
+  justify-content: left;
+  border-radius: 18px;
+  background: rgba(0, 128, 0, 0.4);
+  backdrop-filter: blur(10px);
+  color: white;
+}
+
+.button_download {
+  width: 180px;
+  height: 52px;
+  margin-left: 10px;
+  margin-bottom: 20px;
+  border-top-right-radius: var(--Angle-Small, 32px);
+  border-bottom-right-radius: var(--Angle-Small, 32px);
+  border-top-left-radius: var(--Angle-Small, 20px);
+  border-bottom-left-radius: var(--Angle-Small, 20px);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background-color: rgba(128, 128, 128, 0.1);
+  backdrop-filter: blur(50px);
+  color: gray;
+  align-items: center;
+  display: flex;
+  justify-content: left;
+  position: relative;
+
+  &:hover {
+    background-color: var(
+      --bg-stroke-icon-button-bg-10,
+      rgba(128, 128, 128, 0.1)
+    );
+    border: 1px solid var(--Stroke-linear-Hover, rgba(255, 255, 255, 0.1));
+  }
+}
+
+.button_download_small {
+  width: 74px;
+  height: 21px;
+  margin-left: 10px;
+  margin-bottom: 20px;
+  border-top-right-radius: var(--Angle-Small, 32px);
+  border-bottom-right-radius: var(--Angle-Small, 32px);
+  border-top-left-radius: var(--Angle-Small, 20px);
+  border-bottom-left-radius: var(--Angle-Small, 20px);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background-color: rgba(128, 128, 128, 0.1);
+  backdrop-filter: blur(50px);
+  color: gray;
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  position: relative;
+
+  &:hover {
+    background-color: var(
+      --bg-stroke-icon-button-bg-10,
+      rgba(128, 128, 128, 0.1)
+    );
+    border: 1px solid var(--Stroke-linear-Hover, rgba(255, 255, 255, 0.1));
+  }
+}

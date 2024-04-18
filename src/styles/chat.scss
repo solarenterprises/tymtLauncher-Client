@@ -1,0 +1,182 @@
+$Angle-Small: 16px;
+$bg-stroke-white-20-modal-stroke: rgba(255, 255, 255, 0.2);
+$Main-Red-Red: #ef4444;
+$Main-Red: #ef4444;
+
+// Chatmain modal components
+
+.modal_content {
+  width: 250px;
+  height: 158px;
+  position: fixed;
+  top: 50%;
+  right: -30px;
+  transform: translate(-50%, -50%);
+  border-radius: var(--Angle-Small, #{$Angle-Small});
+  backdrop-filter: blur(20px);
+  border: 1px solid
+    var(--bg-stroke-white-20-modal-stroke, #{$bg-stroke-white-20-modal-stroke});
+  background: rgba(11, 11, 11, 0.4);
+  padding: 20px;
+  justify-content: center;
+  align-items: center;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal_content_chatroom {
+  width: 250px;
+  height: 158px;
+  position: fixed;
+  top: 50%;
+  left: 230px;
+  transform: translate(-50%, -50%);
+  border-radius: var(--Angle-Small, #{$Angle-Small});
+  backdrop-filter: blur(20px);
+  border: 1px solid
+    var(--bg-stroke-white-20-modal-stroke, #{$bg-stroke-white-20-modal-stroke});
+  background: rgba(11, 11, 11, 0.4);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 1;
+}
+
+.modal_btn_left {
+  &.MuiButtonBase-root {
+    border: 1px solid var(--Main-Red-Red, #{$Main-Red-Red});
+    border-radius: var(--Angle-Small, #{$Angle-Small});
+    text-transform: none;
+    padding: 10px 18px;
+    height: 46px;
+    border-radius: 16px;
+    background-color: transparent;
+    border-color: #ef4444;
+    box-shadow: none;
+    border: 1px solid;
+    &:hover {
+      border-color: #ef4444;
+      background-color: #ef4444;
+    }
+
+    &:active {
+      background-color: #ef4444;
+      box-shadow: 1px 1px #ef44445f;
+    }
+  }
+}
+
+.modal_btn_right {
+  &.MuiButtonBase-root {
+    background: var(--Main-Red, #{$Main-Red});
+    border-radius: var(--Angle-Small, #{$Angle-Small});
+    text-transform: none;
+    padding: 10px 18px;
+    &:hover {
+      background-color: #992727;
+    }
+    &.Mui-disabled {
+      background-color: #2a2525;
+      color: #7c7c7c;
+    }
+  }
+}
+
+.context_menu_block {
+  border-top-right-radius: 16px;
+  border-top-left-radius: 16px;
+  border: 1px solid rgba(58, 58, 58, 0.5);
+  padding: 7px 16px 4px 16px;
+  width: 100%;
+  backdrop-filter: blur(20px);
+  background: rgba(11, 11, 11, 0.4);
+  filter: grayscale(90%);
+  // &:hover {
+  //   background: var(
+  //     --bg-stroke-blue-stroke-default-10,
+  //     rgba(82, 225, 242, 0.1)
+  //   );
+  // }
+  // &:active {
+  //   background: var(
+  //     --bg-stroke-white-10-stroke-default,
+  //     rgba(255, 255, 255, 0.1)
+  //   );
+  // }
+}
+
+.context_menu_delete {
+  border-bottom-right-radius: 16px;
+  border-bottom-left-radius: 16px;
+  border: 1px solid rgba(58, 58, 58, 0.5);
+  border-top: none;
+  padding: 4px 16px 7px 16px;
+  width: 100%;
+  background: rgba(11, 11, 11, 0.4);
+  backdrop-filter: blur(20px);
+  &:hover {
+    background: var(
+      --bg-stroke-blue-stroke-default-10,
+      rgba(82, 225, 242, 0.1)
+    );
+  }
+  &:active {
+    background: var(
+      --bg-stroke-white-10-stroke-default,
+      rgba(255, 255, 255, 0.1)
+    );
+  }
+}
+
+.context_menu_friendrequest {
+  border-radius: 16px;
+  border: 1px solid rgba(58, 58, 58, 0.5);
+  padding: 9px 10px 9px 10px;
+  width: 100%;
+  backdrop-filter: blur(20px);
+  background: rgba(11, 11, 11, 0.4);
+  &:hover {
+    background: var(
+      --bg-stroke-blue-stroke-default-10,
+      rgba(82, 225, 242, 0.1)
+    );
+  }
+  &:active {
+    background: var(
+      --bg-stroke-white-10-stroke-default,
+      rgba(255, 255, 255, 0.1)
+    );
+  }
+}
+
+//Chatting inputfield components
+
+.send_button {
+  &.MuiButtonBase-root {
+    margin-left: 10px;
+    min-width: 40px;
+    width: 40px;
+    height: 40px;
+    border-radius: 52px;
+    background: #ef4444;
+    &:hover {
+      background: #992727;
+    }
+    transition: opacity 0.5s ease, transform 0.1s ease;
+    transform: scale(1);
+    &:active {
+      transform: scale(0.9);
+    }
+  }
+}
+
+.context_menu {
+  position: fixed;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  cursor: pointer;
+}

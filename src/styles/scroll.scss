@@ -1,0 +1,15 @@
+/* Initially hide the scrollbar */
+.basic-container::-webkit-scrollbar {
+  display: none;
+}
+
+/* When scrolling, show the scrollbar */
+.basic-container.scrolling::-webkit-scrollbar {
+  display: block;
+  width: 4px; /* Adjust as necessary */
+}
+
+/* Style for the visible scrollbar */
+.basic-container.scrolling::-webkit-scrollbar-thumb {
+  background: #888; /* Scrollbar thumb color */
+}
