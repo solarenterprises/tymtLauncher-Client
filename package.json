@@ -1,6 +1,17 @@
 {
   "name": "tymtlauncher",
+  "description": "tymtlauncher client",
+  "homepage": "https://github.com/solarenterprises/tymtLauncher-Client#readme",
+  "author": "Solar Enterprises <hello@solarenterprises.com>",
+  "bugs": {
+    "url": "https://github.com/solarenterprises/tymtLauncher-Client/issues"
+  },
+  "license": "CC-BY-ND-4.0",
   "private": true,
+  "contributors": [
+    "Solar Enterprises Team <hello@solarenterprises.com>",
+    "Dokdo UAB Team <hello@dokdo.sh>"
+  ],
   "version": "2.0.1",
   "type": "commonjs",
   "scripts": {
