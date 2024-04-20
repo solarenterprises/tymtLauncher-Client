@@ -93,19 +93,18 @@ $Main-Red: #ef4444;
   width: 100%;
   backdrop-filter: blur(20px);
   background: rgba(11, 11, 11, 0.4);
-  filter: grayscale(90%);
-  // &:hover {
-  //   background: var(
-  //     --bg-stroke-blue-stroke-default-10,
-  //     rgba(82, 225, 242, 0.1)
-  //   );
-  // }
-  // &:active {
-  //   background: var(
-  //     --bg-stroke-white-10-stroke-default,
-  //     rgba(255, 255, 255, 0.1)
-  //   );
-  // }
+  &:hover {
+    background: var(
+      --bg-stroke-blue-stroke-default-10,
+      rgba(82, 225, 242, 0.1)
+    );
+  }
+  &:active {
+    background: var(
+      --bg-stroke-white-10-stroke-default,
+      rgba(255, 255, 255, 0.1)
+    );
+  }
 }
 
 .context_menu_delete {

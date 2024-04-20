@@ -1,4 +1,4 @@
-import { Snackbar, Stack, Box } from "@mui/material";
+import { Snackbar, Stack, Box, Button } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -9,7 +9,7 @@ import CommonStyles from "../styles/commonStyles";
 import failedIcon from "../assets/alert/failed-icon.svg";
 import successIcon from "../assets/alert/success-icon.svg";
 import warnnigIcon from "../assets/alert/warnning-icon.svg";
-import alertIcon from "../assets/alert/alert-icon.svg";
+import alertIcon from "../assets/alert/alert-icon.png";
 import messageIcon from "../assets/alert/message-icon.svg";
 import closeIcon from "../assets/settings/x-icon.svg";
 
@@ -25,6 +25,7 @@ import {
   getdownState,
   setdownState,
 } from "../features/chat/Chat-scrollDownSlice";
+import Avatar from "./home/Avatar";
 
 function SlideTransition(props) {
   return <Slide {...props} direction="left" />;
@@ -80,20 +81,21 @@ const AlertComp = ({
   }, [status]);
 
   useEffect(() => {
-    let timer: NodeJS.Timeout;
-    if (open) {
-      timer = setTimeout(() => {
-        setOpen(false);
-      }, notification_duration as number);
-    }
-
-    return () => {
-      if (timer) {
-        clearTimeout(timer);
+    if (title !== "Friend Request") {
+      let timer: NodeJS.Timeout;
+      if (open) {
+        timer = setTimeout(() => {
+          setOpen(false);
+        }, notification_duration as number);
       }
-    };
-  }, [open, status, title, detail]);
 
+      return () => {
+        if (timer) {
+          clearTimeout(timer);
+        }
+      };
+    }
+  }, [open, status, title, detail]);
   return (
     <>
       <Snackbar
@@ -130,6 +132,7 @@ const AlertComp = ({
       >
         <Stack
           className={classname.alert_container}
+          direction={"column"}
           sx={{
             border: `2px solid ${border}`,
             backdropFilter: "blur(4px)",
@@ -137,10 +140,11 @@ const AlertComp = ({
           }}
         >
           <Stack direction={"row"} justifyContent={"space-between"}>
-            <Stack direction={"row"} gap={"12px"}>
+            <Stack direction={"row"} gap={"12px"} alignItems={"center"}>
               <Box className={classname.center_align}>
                 <img src={logo} />
               </Box>
+
               <Stack direction={"column"} gap={"8px"}>
                 <Box className={"fs-h4 white"}>{title}</Box>
                 <Box className={"fs-16-regular white"}>
@@ -148,13 +152,55 @@ const AlertComp = ({
                     ? detail.substring(0, 100) + "..."
                     : detail}
                 </Box>
-                {title === "Friend Request" && <></>}
               </Stack>
             </Stack>
             <Box onClick={() => setOpen(false)}>
               <img src={closeIcon} />
             </Box>
           </Stack>
+          {title === "Friend Request" && (
+            <>
+              <Stack
+                display={"flex"}
+                direction={"row"}
+                justifyContent={"space-between"}
+              >
+                <Stack
+                  direction={"row"}
+                  alignItems={"center"}
+                  gap={"7px"}
+                  marginLeft={"35px"}
+                >
+                  <Avatar
+                    onlineStatus={senderUser.onlineStatus}
+                    userid={senderUser._id}
+                    size={40}
+                  />
+                  <Box className={"fs-18-regular white"}>
+                    {senderUser.nickName}
+                  </Box>
+                </Stack>
+                <Stack direction={"row"} alignItems={"center"} gap={"16px"}>
+                  <Button
+                    className="modal_btn_right"
+                    sx={{ height: "38px" }}
+                    onClick={() => {
+                      // setOpenRequestModal(false);
+                    }}
+                  >
+                    <Box className={"fs-18-bold white"}>Add</Box>
+                  </Button>
+                  <Button
+                    className="modal_btn_left"
+                    onClick={() => {}}
+                    sx={{ height: "38px" }}
+                  >
+                    <Box className={"fs-18-bold white"}>Decline</Box>
+                  </Button>
+                </Stack>
+              </Stack>
+            </>
+          )}
         </Stack>
       </Snackbar>
     </>

@@ -135,7 +135,6 @@ const ChatSetting = ({ view, setView }: propsType) => {
               onClick={() => {
                 setView("message");
               }}
-              disabled
             >
               <Stack direction={"column"} gap={"10px"}>
                 <Stack
@@ -176,7 +175,6 @@ const ChatSetting = ({ view, setView }: propsType) => {
               onClick={() => {
                 setView("friend");
               }}
-              disabled
             >
               <Stack direction={"column"} gap={"10px"}>
                 <Stack

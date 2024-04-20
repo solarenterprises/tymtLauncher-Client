@@ -8,6 +8,26 @@ export interface propsChatType {
   setViewChat: (param: boolean) => void;
 }
 
+export interface propsBlockModalType {
+  openBlockModal: boolean;
+  setOpenBlockModal: (param: boolean) => void;
+  roommode: boolean;
+}
+
+export interface propsDeleteModalType {
+  openDeleteModal: boolean;
+  setOpenDeleteModal: (param: boolean) => void;
+  deleteSelectedUser: () => Promise<void>;
+  roommode: boolean;
+}
+
+export interface propsRequestModalType {
+  openRequestModal: boolean;
+  setOpenRequestModal: (param: boolean) => void;
+  sendFriendRequest: () => Promise<void>;
+  roommode: boolean;
+}
+
 export interface chatwindowType {
   mode: string;
 }
@@ -60,4 +80,18 @@ export interface selecteduserType {
 
 export interface scrollDownType {
   down: boolean;
+}
+
+export interface friendrequestType {
+  mode: string;
+}
+
+export interface receivingMsgType {
+  mode: string;
+}
+
+export interface alertType {
+  alertType: string;
+  note: string;
+  receivers: string[];
 }

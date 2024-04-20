@@ -7,6 +7,7 @@ import { multiWalletType } from "../../types/walletTypes";
 import {
   ChatHistoryType,
   ChatMessageType,
+  alertType,
   userType,
 } from "../../types/chatTypes";
 import { accountType } from "../../types/accountTypes";
@@ -108,12 +109,24 @@ const ChatProvider = () => {
       };
       handleIncomingMessages();
     });
+    socket.on("alert-posted", (alert: alertType) => {
+      if (alert.alertType === "Friend Request") {
+        !data.disturb && data.friend === "anyone" && setNotificationOpen(true);
+        setNotificationStatus("alert");
+        setNotificationTitle("Friend Request");
+        setNotificationDetail(
+          "Don't miss out on the fun - add to your friends now!"
+        );
+        setNotificationLink(null);
+      }
+    });
 
     return () => {
       socket.off("connect");
       socket.off("message-posted");
+      socket.off("alert-posted");
     };
-  }, [socket, data.disturb, chatHistoryStore]);
+  }, [socket, data, chatHistoryStore]);
 
   return (
     <>

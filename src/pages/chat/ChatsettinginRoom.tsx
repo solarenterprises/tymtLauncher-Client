@@ -136,7 +136,6 @@ const ChatSettinginRoom = ({ view, setView }: propsType) => {
               onClick={() => {
                 setView("chatroom-message");
               }}
-              disabled
             >
               <Stack direction={"column"} gap={"10px"}>
                 <Stack
@@ -177,7 +176,6 @@ const ChatSettinginRoom = ({ view, setView }: propsType) => {
               onClick={() => {
                 setView("chatroom-friend");
               }}
-              disabled
             >
               <Stack direction={"column"} gap={"10px"}>
                 <Stack
