@@ -23,7 +23,7 @@ import DeleteModal from "../../components/chat/DeleteModal";
 import RequestModal from "../../components/chat/RequestModal";
 
 import { propsType, selecteduserType, userType } from "../../types/chatTypes";
-import { nonCustodialType } from "../../types/accountTypes";
+import { accountType, nonCustodialType } from "../../types/accountTypes";
 import {
   selectPartner,
   setCurrentChatPartner,
@@ -48,6 +48,7 @@ import {
 } from "../../features/chat/Chat-selecteduserSlice";
 import { setChatHistory } from "../../features/chat/Chat-historySlice";
 import { sendFriendRequest } from "../../features/chat/Chat-friendRequestAPI";
+import { getAccount } from "../../features/account/AccountSlice";
 
 const theme = createTheme({
   palette: {
@@ -66,6 +67,7 @@ const socket: Socket = io(socket_backend_url as string);
 import { socket_backend_url } from "../../configs";
 import { io, Socket } from "socket.io-client";
 
+
 const Chatmain = ({ view, setView }: propsType) => {
   const classes = ChatStyle();
   const dispatch = useDispatch();
@@ -76,6 +78,7 @@ const Chatmain = ({ view, setView }: propsType) => {
   const nonCustodial: nonCustodialType = useSelector(getNonCustodial);
   const multiwallet: multiWalletType = useSelector(getMultiWallet);
   const selectedusertoDelete: selecteduserType = useSelector(getSelectedUser);
+  const account: accountType = useSelector(getAccount);
   const [searchedresult, setSearchedresult] = useState<userType[]>([]);
   const [isClickedBlock, setIsClickedBlock] = useState(false);
   const [isClickedDelete, setIsClickedDelete] = useState(false);
@@ -109,7 +112,7 @@ const Chatmain = ({ view, setView }: propsType) => {
     await sendFriendRequest([selectedusertoDelete.id], accessToken);
     const data = {
       alertType: "Friend Request",
-      note:"Don't miss out on the fun - add to your friends now!",
+      note:`${account.uid}`,
       receivers: [selectedusertoDelete.id]
     };
     socket.emit("post-alert", JSON.stringify(data));
@@ -329,6 +332,7 @@ const Chatmain = ({ view, setView }: propsType) => {
                             onlineStatus={user.onlineStatus}
                             userid={user._id}
                             size={40}
+                            status={user.notificationStatus}
                           />
                           <Stack
                             flexDirection={"row"}

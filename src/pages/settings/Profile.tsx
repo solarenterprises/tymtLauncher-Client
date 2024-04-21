@@ -10,7 +10,7 @@ import editIcon from "../../assets/settings/edit-icon.svg";
 
 import InputText from "../../components/account/InputText";
 import { getAccount, setAccount } from "../../features/account/AccountSlice";
-import { propsType } from "../../types/settingTypes";
+import { chatType, propsType } from "../../types/settingTypes";
 import {
   accountType,
   custodialType,
@@ -30,6 +30,7 @@ import {
   fileUpload,
   updateUserNickname,
 } from "../../features/account/AccountApi";
+import { selectChat } from "../../features/settings/ChatSlice";
 import { AppDispatch } from "../../store";
 import Avatar from "../../components/home/Avatar";
 
@@ -42,6 +43,7 @@ const Profile = ({ view, setView }: propsType) => {
   const account: accountType = useSelector(getAccount);
   const nonCustodial: nonCustodialType = useSelector(getNonCustodial);
   const custodial: custodialType = useSelector(getCustodial);
+  const data: chatType = useSelector(selectChat);
   const userStore =
     account.wallet === walletEnum.noncustodial ? nonCustodial : custodial;
   const [nickname, setNickname] = useState(userStore.nickname);
@@ -165,7 +167,12 @@ const Profile = ({ view, setView }: propsType) => {
               >
                 <Box className="center-align">
                   {/* <img src={avatar} /> */}
-                  <Avatar onlineStatus={true} userid={account.uid} size={92} />
+                  <Avatar
+                    onlineStatus={true}
+                    userid={account.uid}
+                    size={92}
+                    status={data.disturb ? "donotdisturb" : "online"}
+                  />
                 </Box>
                 <Box className="fs-h5 white">{t("set-68_change-avatar")}</Box>
               </Stack>

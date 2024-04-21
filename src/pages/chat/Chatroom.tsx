@@ -29,6 +29,8 @@ import {
   ChatHistoryType,
   scrollDownType,
 } from "../../types/chatTypes";
+import { chatType } from "../../types/settingTypes";
+
 import { accountType, walletEnum } from "../../types/accountTypes";
 import { getAccount } from "../../features/account/AccountSlice";
 import { selectPartner } from "../../features/chat/Chat-currentPartnerSlice";
@@ -43,6 +45,7 @@ import {
   getdownState,
   setdownState,
 } from "../../features/chat/Chat-scrollDownSlice";
+import { selectChat } from "../../features/settings/ChatSlice";
 
 import Chatindex from "../../pages/chat";
 import ChatSettinginRoom from "./ChatsettinginRoom";
@@ -100,6 +103,7 @@ const Chatroom = () => {
   const chatHistoryStore: ChatHistoryType = useSelector(getChatHistory);
   const chatuserlist: userType[] = useSelector(getUserlist);
   const scrollstate: scrollDownType = useSelector(getdownState);
+  const data: chatType = useSelector(selectChat);
   const shouldScrollDown = scrollstate.down;
   const userStore =
     account.wallet === walletEnum.noncustodial
@@ -307,6 +311,7 @@ const Chatroom = () => {
                           onlineStatus={currentpartner.onlineStatus}
                           userid={currentpartner._id}
                           size={50}
+                          status={currentpartner.notificationStatus}
                         />
                         <Stack
                           marginLeft={"16px"}
@@ -434,6 +439,7 @@ const Chatroom = () => {
                                     onlineStatus={true}
                                     userid={account.uid}
                                     size={40}
+                                    status={data.disturb ? "donotdisturb" : "online"}
                                   />
                                   <Box
                                     className={"fs-16 white"}
@@ -449,6 +455,7 @@ const Chatroom = () => {
                                     onlineStatus={currentpartner.onlineStatus}
                                     userid={currentpartner._id}
                                     size={40}
+                                    status={currentpartner.notificationStatus}
                                   />
                                   <Stack>
                                     <Box

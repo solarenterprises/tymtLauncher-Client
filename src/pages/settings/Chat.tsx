@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import backIcon from "../../assets/settings/back-icon.svg";
 import arrowImg from "../../assets/settings/arrow-right.svg";
 
-import { selectChat } from "../../features/settings/ChatSlice";
+import { selectChat, setChat } from "../../features/settings/ChatSlice";
 import SwitchComp from "../../components/SwitchComp";
 import {
   propsType,
@@ -21,6 +21,7 @@ import {
   selectNotification,
   setNotification,
 } from "../../features/settings/NotificationSlice";
+import { useCallback } from "react";
 
 const Chat = ({ view, setView }: propsType) => {
   const { t } = useTranslation();
@@ -54,6 +55,11 @@ const Chat = ({ view, setView }: propsType) => {
       console.log(err);
     }
   };
+
+  const setFriend = useCallback(() => {
+    let updateData = { ...data, disturb: !data.disturb };
+    dispatch(setChat(updateData));
+  }, [data]);
   return (
     <>
       {view === "chat" && (
@@ -103,6 +109,7 @@ const Chat = ({ view, setView }: propsType) => {
                   checked={!notificationStore.alert}
                   onClick={() => {
                     putUserStatus();
+                    setFriend();
                     setNotificationStatus("success");
                     setNotificationTitle(
                       !notificationStore.alert

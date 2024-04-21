@@ -44,7 +44,8 @@ const AlertComp = ({
   const chatuserlist: userType[] = useSelector(getUserlist);
   const scrollstate: scrollDownType = useSelector(getdownState);
   const shouldScrollDown = scrollstate.down;
-  const senderId = searchParams.get("senderId");
+  const senderId =
+    title === "Friend Request" ? detail : searchParams.get("senderId");
   const senderUser = chatuserlist.find((user) => user._id === senderId);
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -113,7 +114,7 @@ const AlertComp = ({
         }}
         onClick={() => {
           navigate(link);
-          if (senderUser) {
+          if (senderUser && title !== "friend request") {
             dispatch(
               setCurrentChatPartner({
                 ...userdata,

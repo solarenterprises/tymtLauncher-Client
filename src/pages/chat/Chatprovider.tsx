@@ -88,7 +88,7 @@ const ChatProvider = () => {
             const senderName = await getsenderName(message.sender_id);
             await updateContact(message.sender_id);
             {
-              !data.disturb && setNotificationOpen(true);
+              data.disturb && setNotificationOpen(true);
               setNotificationStatus("message");
               setNotificationTitle(senderName);
               setNotificationDetail(message.message);
@@ -97,7 +97,7 @@ const ChatProvider = () => {
           } else {
             const senderName = senderInChatUserlist.nickName;
             {
-              !data.disturb && setNotificationOpen(true);
+              data.disturb && setNotificationOpen(true);
               setNotificationStatus("message");
               setNotificationTitle(senderName);
               setNotificationDetail(message.message);
@@ -110,12 +110,13 @@ const ChatProvider = () => {
       handleIncomingMessages();
     });
     socket.on("alert-posted", (alert: alertType) => {
+      console.log("friend request", alert);
       if (alert.alertType === "Friend Request") {
-        !data.disturb && data.friend === "anyone" && setNotificationOpen(true);
+        data.disturb && data.friend === "anyone" && setNotificationOpen(true);
         setNotificationStatus("alert");
         setNotificationTitle("Friend Request");
         setNotificationDetail(
-          "Don't miss out on the fun - add to your friends now!"
+          alert.note
         );
         setNotificationLink(null);
       }

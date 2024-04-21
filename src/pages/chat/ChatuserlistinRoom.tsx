@@ -299,6 +299,7 @@ const ChatuserlistinRoom = ({ view, setView }: propsType) => {
                           onlineStatus={user.onlineStatus}
                           userid={user._id}
                           size={40}
+                          status={user.notificationStatus}
                         />
                         <Stack
                           flexDirection={"row"}
