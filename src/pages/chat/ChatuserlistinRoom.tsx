@@ -48,6 +48,7 @@ import { sendFriendRequest } from "../../features/chat/Chat-friendRequestAPI";
 const socket: Socket = io(socket_backend_url as string);
 import { socket_backend_url } from "../../configs";
 import { io, Socket } from "socket.io-client";
+import { debounce } from "lodash";
 
 const ChatuserlistinRoom = ({ view, setView }: propsType) => {
   const dispatch = useDispatch();
@@ -74,8 +75,12 @@ const ChatuserlistinRoom = ({ view, setView }: propsType) => {
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
   const [openRequestModal, setOpenRequestModal] = useState(false);
 
-  const filterUsers = async (value) => {
+  const debouncedFilterUsers = debounce(async (value) => {
     setSearchedresult(await searchUsers(value));
+  }, 1000);
+  
+  const filterUsers = (value) => {
+    debouncedFilterUsers(value);
   };
 
   const deleteSelectedUser = async () => {

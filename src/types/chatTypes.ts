@@ -40,6 +40,7 @@ export interface userType {
   sxpAddress: string;
   avatar: string;
   notificationStatus: string;
+  friend: boolean;
 }
 
 export interface ChatMessageType {

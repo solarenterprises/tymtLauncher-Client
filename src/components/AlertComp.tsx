@@ -12,20 +12,30 @@ import warnnigIcon from "../assets/alert/warnning-icon.svg";
 import alertIcon from "../assets/alert/alert-icon.png";
 import messageIcon from "../assets/alert/message-icon.svg";
 import closeIcon from "../assets/settings/x-icon.svg";
+import Avatar from "./home/Avatar";
 
 import { propsAlertTypes } from "../types/commonTypes";
+import { multiWalletType } from "../types/walletTypes";
+import { getUserlist, setUserList } from "../features/chat/Chat-userlistSlice";
 import { notification_duration } from "../configs";
 import {
   selectPartner,
   setCurrentChatPartner,
 } from "../features/chat/Chat-currentPartnerSlice";
 import { scrollDownType, userType } from "../types/chatTypes";
-import { getUserlist } from "../features/chat/Chat-userlistSlice";
+
 import {
   getdownState,
   setdownState,
 } from "../features/chat/Chat-scrollDownSlice";
-import Avatar from "./home/Avatar";
+import { getMultiWallet } from "../features/wallet/MultiWalletSlice";
+import {
+  createContact,
+  getaccessToken,
+  receiveContactlist,
+} from "../features/chat/Chat-contactApi";
+import { nonCustodialType } from "../types/accountTypes";
+import { getNonCustodial } from "../features/account/NonCustodialSlice";
 
 function SlideTransition(props) {
   return <Slide {...props} direction="left" />;
@@ -43,6 +53,8 @@ const AlertComp = ({
   const userdata: userType[] = useSelector(selectPartner);
   const chatuserlist: userType[] = useSelector(getUserlist);
   const scrollstate: scrollDownType = useSelector(getdownState);
+  const multiwallet: multiWalletType = useSelector(getMultiWallet);
+  const nonCustodial: nonCustodialType = useSelector(getNonCustodial);
   const shouldScrollDown = scrollstate.down;
   const senderId =
     title === "Friend Request" ? detail : searchParams.get("senderId");
@@ -53,6 +65,36 @@ const AlertComp = ({
   const [border, setBorder] = useState("");
   const [bg, setBg] = useState("");
   const [logo, setLogo] = useState<any>();
+
+  const updateContact = async (_id) => {
+    const accessToken: string = await getaccessToken(
+      multiwallet.Solar.chain.wallet,
+      nonCustodial.password
+    );
+    console.log("accessToken", accessToken);
+    await createContact(_id, accessToken);
+    const contacts: userType[] = await receiveContactlist(accessToken);
+    dispatch(setUserList(contacts));
+  };
+
+  const addFriend = async () => {
+    const senderId = detail;
+    const senderInChatUserlist = chatuserlist.find(
+      (user) => user._id === senderId
+    );
+    if (senderInChatUserlist) {
+      const updatedChatuserlist = chatuserlist.map((user) =>
+        user._id === senderId ? { ...user, friend: true } : user
+      );
+      dispatch(setUserList(updatedChatuserlist));
+    } else {
+      await updateContact(senderId);
+      const updatedChatuserlist = chatuserlist.map((user) =>
+        user._id === senderId ? { ...user, friend: true } : user
+      );
+      dispatch(setUserList(updatedChatuserlist));
+    }
+  };
   useEffect(() => {
     if (status == "failed") {
       setLogo(failedIcon);
@@ -97,6 +139,10 @@ const AlertComp = ({
       };
     }
   }, [open, status, title, detail]);
+
+  useEffect(() => {
+    console.log("title", title);
+  }, []);
   return (
     <>
       <Snackbar
@@ -149,9 +195,11 @@ const AlertComp = ({
               <Stack direction={"column"} gap={"8px"}>
                 <Box className={"fs-h4 white"}>{title}</Box>
                 <Box className={"fs-16-regular white"}>
-                  {detail.length > 100
+                  {title !== "Friend Request" || detail.length > 100
                     ? detail.substring(0, 100) + "..."
                     : detail}
+                  {title === "Friend Request" &&
+                    "Don't miss out on the fun - add to your friends now!"}
                 </Box>
               </Stack>
             </Stack>
@@ -170,7 +218,7 @@ const AlertComp = ({
                   direction={"row"}
                   alignItems={"center"}
                   gap={"7px"}
-                  marginLeft={"35px"}
+                  marginLeft={"43px"}
                 >
                   <Avatar
                     onlineStatus={senderUser.onlineStatus}
@@ -185,9 +233,7 @@ const AlertComp = ({
                   <Button
                     className="modal_btn_right"
                     sx={{ height: "38px" }}
-                    onClick={() => {
-                      // setOpenRequestModal(false);
-                    }}
+                    onClick={addFriend}
                   >
                     <Box className={"fs-18-bold white"}>Add</Box>
                   </Button>

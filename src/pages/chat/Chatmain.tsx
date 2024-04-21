@@ -11,6 +11,7 @@ import {
   Grid,
   Button,
 } from "@mui/material";
+import { debounce } from "lodash";
 
 import ChatStyle from "../../styles/ChatStyles";
 
@@ -140,8 +141,12 @@ const Chatmain = ({ view, setView }: propsType) => {
     document.addEventListener("click", handleClickOutsideContextMenu);
   };
 
-  const filterUsers = async (value: string) => {
+  const debouncedFilterUsers = debounce(async (value:string) => {
     setSearchedresult(await searchUsers(value));
+  }, 1000); // Adjust the delay time (in milliseconds) as needed
+  
+  const filterUsers = (value:string) => {
+    debouncedFilterUsers(value);
   };
 
   const updateContact = async (_id) => {
