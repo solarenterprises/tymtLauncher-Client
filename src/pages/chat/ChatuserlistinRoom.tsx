@@ -104,7 +104,7 @@ const ChatuserlistinRoom = ({ view, setView }: propsType) => {
     );
     await sendFriendRequest([selectedusertoDelete.id], accessToken);
     const data = {
-      alertType: "Friend Request",
+      alertType: "friend-request",
       note:"Don't miss out on the fun - add to your friends now!",
       receivers: [selectedusertoDelete.id]
     };

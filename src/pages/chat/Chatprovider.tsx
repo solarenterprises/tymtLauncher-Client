@@ -32,6 +32,7 @@ import {
   setChatHistory,
 } from "../../features/chat/Chat-historySlice";
 import { selectPartner } from "../../features/chat/Chat-currentPartnerSlice";
+import { getFriendlist } from "../../features/chat/Chat-friendlistSlice";
 
 const socket: Socket = io(socket_backend_url as string);
 import { socket_backend_url } from "../../configs";
@@ -47,6 +48,7 @@ const ChatProvider = () => {
   const chatHistoryStore: ChatHistoryType = useSelector(getChatHistory);
   const currentpartner: userType = useSelector(selectPartner);
   const chatuserlist: userType[] = useSelector(getUserlist);
+  const chatfriendlist: userType[] = useSelector(getFriendlist);
   const data: chatType = useSelector(selectChat);
   const {
     setNotificationStatus,
@@ -71,34 +73,53 @@ const ChatProvider = () => {
       socket.emit("user-joined", `${account.uid}`);
     });
     socket.on("message-posted", (message: ChatMessageType) => {
+      const senderId = message.sender_id;
+      const senderInChatUserlist = chatuserlist.find(
+        (user) => user._id === senderId
+      );
+      const senderInChatFriendlist = chatfriendlist.find(
+        (user) => user._id === senderId
+      );
       if (
         message.sender_id === currentpartner._id &&
-        message.recipient_id === account.uid &&
-        data.message === "anyone"
+        message.recipient_id === account.uid
       ) {
-        const updatedHistory = [message, ...chatHistoryStore.messages];
-        dispatch(setChatHistory({ messages: updatedHistory }));
+        if (data.message === "anyone") {
+          const updatedHistory = [message, ...chatHistoryStore.messages];
+          dispatch(setChatHistory({ messages: updatedHistory }));
+        }
+        if (data.message === "friend" && senderInChatFriendlist) {
+          const updatedHistory = [message, ...chatHistoryStore.messages];
+          dispatch(setChatHistory({ messages: updatedHistory }));
+        }
       }
       const handleIncomingMessages = async () => {
         if (message.recipient_id === account.uid) {
-          const senderId = message.sender_id;
-          const senderInChatUserlist = chatuserlist.find(
-            (user) => user._id === senderId
-          );
-          if (!senderInChatUserlist) {
-            const senderName = await getsenderName(message.sender_id);
-            await updateContact(message.sender_id);
-            {
-              !data.disturb && setNotificationOpen(true);
-              setNotificationStatus("message");
-              setNotificationTitle(senderName);
-              setNotificationDetail(message.message);
-              setNotificationLink(`/chat?senderId=${message.sender_id}`);
+          if (data.message === "anyone") {
+            if (!senderInChatUserlist) {
+              const senderName = await getsenderName(message.sender_id);
+              await updateContact(message.sender_id);
+              {
+                !data.disturb && setNotificationOpen(true);
+                setNotificationStatus("message");
+                setNotificationTitle(senderName);
+                setNotificationDetail(message.message);
+                setNotificationLink(`/chat?senderId=${message.sender_id}`);
+              }
+            } else {
+              const senderName = senderInChatUserlist.nickName;
+              {
+                !data.disturb && setNotificationOpen(true);
+                setNotificationStatus("message");
+                setNotificationTitle(senderName);
+                setNotificationDetail(message.message);
+                setNotificationLink(`/chat?senderId=${message.sender_id}`);
+              }
             }
-          } else {
-            const senderName = senderInChatUserlist.nickName;
-            {
-              !data.disturb && setNotificationOpen(true);
+          }
+          if (data.message === "friend") {
+            if (senderInChatFriendlist) {
+              const senderName = senderInChatFriendlist.nickName;
               setNotificationStatus("message");
               setNotificationTitle(senderName);
               setNotificationDetail(message.message);
@@ -108,25 +129,46 @@ const ChatProvider = () => {
         } else {
         }
       };
+
       handleIncomingMessages();
     });
     socket.on("alert-posted", (alert: alertType) => {
-      console.log("friend request", alert);
+      console.log("friend-request", alert);
       console.log("receiver", alert.receivers[0]);
       console.log("my id", account.uid);
-      if (alert.alertType === "Friend Request") {
-        if (
-          !data.disturb &&
-          data.friend === "anyone" &&
-          alert.receivers[0] === account.uid
-        ) {
-          setNotificationOpen(true);
-          setNotificationStatus("alert");
-          setNotificationTitle("Friend Request");
-          setNotificationDetail(alert.note);
-          setNotificationLink(null);
+      const handleIncomingRequest = async () => {
+        if (alert.alertType === "friend-request") {
+          if (
+            !data.disturb &&
+            data.friend === "anyone" &&
+            alert.receivers[0] === account.uid
+          ) {
+            const senderId = alert.note;
+            const senderInChatUserlist = chatuserlist.find(
+              (user) => user._id === senderId
+            );
+            console.log("senderInChatuserlist", senderInChatUserlist);
+            console.log("senderId", alert.note);
+            if (senderInChatUserlist) {
+              setNotificationOpen(true);
+              setNotificationStatus("alert");
+              setNotificationTitle("Friend Request");
+              setNotificationDetail(alert.note);
+              setNotificationLink(null);
+            } else {
+              await updateContact(senderId);
+              setNotificationOpen(true);
+              setNotificationStatus("alert");
+              setNotificationTitle("Friend Request");
+              setNotificationDetail(alert.note);
+              setNotificationLink(null);
+            }
+          } else {
+          }
+        } else {
         }
-      }
+      };
+      handleIncomingRequest();
     });
 
     return () => {

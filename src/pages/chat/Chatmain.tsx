@@ -112,7 +112,7 @@ const Chatmain = ({ view, setView }: propsType) => {
     );
     await sendFriendRequest([selectedusertoDelete.id], accessToken);
     const data = {
-      alertType: "Friend Request",
+      alertType: "friend-request",
       note:`${account.uid}`,
       receivers: [selectedusertoDelete.id]
     };

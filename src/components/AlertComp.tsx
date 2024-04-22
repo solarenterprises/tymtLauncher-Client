@@ -15,8 +15,10 @@ import closeIcon from "../assets/settings/x-icon.svg";
 import Avatar from "./home/Avatar";
 
 import { propsAlertTypes } from "../types/commonTypes";
-import { multiWalletType } from "../types/walletTypes";
-import { getUserlist, setUserList } from "../features/chat/Chat-userlistSlice";
+// import { multiWalletType } from "../types/walletTypes";
+import { getUserlist, 
+  // setUserList 
+} from "../features/chat/Chat-userlistSlice";
 import { notification_duration } from "../configs";
 import {
   selectPartner,
@@ -28,16 +30,17 @@ import {
   getdownState,
   setdownState,
 } from "../features/chat/Chat-scrollDownSlice";
-import { getMultiWallet } from "../features/wallet/MultiWalletSlice";
+// import { getMultiWallet } from "../features/wallet/MultiWalletSlice";
+// import {
+//   createContact,
+//   getaccessToken,
+//   receiveContactlist,
+// } from "../features/chat/Chat-contactApi";
+// import { nonCustodialType } from "../types/accountTypes";
+// import { getNonCustodial } from "../features/account/NonCustodialSlice";
 import {
-  createContact,
-  getaccessToken,
-  receiveContactlist,
-} from "../features/chat/Chat-contactApi";
-import { nonCustodialType } from "../types/accountTypes";
-import { getNonCustodial } from "../features/account/NonCustodialSlice";
-import {
-  getFriendlist, setFriendlist,
+  getFriendlist,
+  setFriendlist,
 } from "../features/chat/Chat-friendlistSlice";
 
 function SlideTransition(props) {
@@ -56,8 +59,8 @@ const AlertComp = ({
   const userdata: userType[] = useSelector(selectPartner);
   const chatuserlist: userType[] = useSelector(getUserlist);
   const scrollstate: scrollDownType = useSelector(getdownState);
-  const multiwallet: multiWalletType = useSelector(getMultiWallet);
-  const nonCustodial: nonCustodialType = useSelector(getNonCustodial);
+  // const multiwallet: multiWalletType = useSelector(getMultiWallet);
+  // const nonCustodial: nonCustodialType = useSelector(getNonCustodial);
   const friendlist: userType[] = useSelector(getFriendlist);
   const shouldScrollDown = scrollstate.down;
   const senderId =
@@ -70,30 +73,26 @@ const AlertComp = ({
   const [bg, setBg] = useState("");
   const [logo, setLogo] = useState<any>();
 
-  const updateContact = async (_id) => {
-    const accessToken: string = await getaccessToken(
-      multiwallet.Solar.chain.wallet,
-      nonCustodial.password
-    );
-    console.log("accessToken", accessToken);
-    await createContact(_id, accessToken);
-    const contacts: userType[] = await receiveContactlist(accessToken);
-    dispatch(setUserList(contacts));
-  };
+  // const updateContact = async (_id) => {
+  //   const accessToken: string = await getaccessToken(
+  //     multiwallet.Solar.chain.wallet,
+  //     nonCustodial.password
+  //   );
+  //   await createContact(_id, accessToken);
+  //   const contacts: userType[] = await receiveContactlist(accessToken);
+  //   dispatch(setUserList(contacts));
+  // };
 
   const addFriend = async () => {
     const senderId = detail;
     const senderInChatUserlist = chatuserlist.find(
       (user) => user._id === senderId
     );
-    if (senderInChatUserlist) {
-      dispatch(setFriendlist([...friendlist,senderInChatUserlist]));
-    } else {
-      await updateContact(senderId);
-      dispatch(setFriendlist([...friendlist,senderInChatUserlist]));
-    }
     console.log("friendlist", friendlist);
     console.log("request sender", senderInChatUserlist);
+    console.log("chatuserlist", chatuserlist);
+    const updatedFriendlist: userType[] = [...friendlist, senderInChatUserlist];
+    dispatch(setFriendlist(updatedFriendlist));
   };
   useEffect(() => {
     if (status == "failed") {
@@ -143,6 +142,7 @@ const AlertComp = ({
   useEffect(() => {
     console.log("title", title);
   }, []);
+
   return (
     <>
       <Snackbar
@@ -160,17 +160,17 @@ const AlertComp = ({
         }}
         onClick={() => {
           navigate(link);
-          if (senderUser && title !== "Friend Request") {
+          if (title !== "Friend Request") {
             dispatch(
               setCurrentChatPartner({
                 ...userdata,
-                _id: senderUser._id,
-                nickName: senderUser.nickName,
-                avatar: senderUser.avatar,
-                lang: senderUser.lang,
-                sxpAddress: senderUser.sxpAddress,
-                onlineStatus: senderUser.onlineStatus,
-                notificationStatus: senderUser.notificationStatus,
+                _id: senderUser?._id,
+                nickName: senderUser?.nickName,
+                avatar: senderUser?.avatar,
+                lang: senderUser?.lang,
+                sxpAddress: senderUser?.sxpAddress,
+                onlineStatus: senderUser?.onlineStatus,
+                notificationStatus: senderUser?.notificationStatus,
               })
             );
             dispatch(setdownState({ down: !shouldScrollDown }));

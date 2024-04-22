@@ -15,7 +15,7 @@ export const sendFriendRequest = async (
 ) => {
   try {
     const alertrequest: alertrequestinterface = {
-      alertType: "Friend Request",
+      alertType: "friend-request",
       note: "Don't miss out on the fun - add to your friends now!",
       receivers: receivers,
       reads: [],
