@@ -27,8 +27,6 @@ const Avatar = ({ size, userid, onlineStatus, ischain, status }: any) => {
 
   useEffect(() => {
     getNotificationStatus();
-    console.log("notificationstatus", notificationstatus);
-    console.log("my status", data.disturb);
   }, [userid, notificationStore.alert, data.disturb]);
 
   return (

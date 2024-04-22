@@ -36,6 +36,9 @@ import {
 } from "../features/chat/Chat-contactApi";
 import { nonCustodialType } from "../types/accountTypes";
 import { getNonCustodial } from "../features/account/NonCustodialSlice";
+import {
+  getFriendlist, setFriendlist,
+} from "../features/chat/Chat-friendlistSlice";
 
 function SlideTransition(props) {
   return <Slide {...props} direction="left" />;
@@ -55,6 +58,7 @@ const AlertComp = ({
   const scrollstate: scrollDownType = useSelector(getdownState);
   const multiwallet: multiWalletType = useSelector(getMultiWallet);
   const nonCustodial: nonCustodialType = useSelector(getNonCustodial);
+  const friendlist: userType[] = useSelector(getFriendlist);
   const shouldScrollDown = scrollstate.down;
   const senderId =
     title === "Friend Request" ? detail : searchParams.get("senderId");
@@ -83,17 +87,13 @@ const AlertComp = ({
       (user) => user._id === senderId
     );
     if (senderInChatUserlist) {
-      const updatedChatuserlist = chatuserlist.map((user) =>
-        user._id === senderId ? { ...user, friend: true } : user
-      );
-      dispatch(setUserList(updatedChatuserlist));
+      dispatch(setFriendlist([...friendlist,senderInChatUserlist]));
     } else {
       await updateContact(senderId);
-      const updatedChatuserlist = chatuserlist.map((user) =>
-        user._id === senderId ? { ...user, friend: true } : user
-      );
-      dispatch(setUserList(updatedChatuserlist));
+      dispatch(setFriendlist([...friendlist,senderInChatUserlist]));
     }
+    console.log("friendlist", friendlist);
+    console.log("request sender", senderInChatUserlist);
   };
   useEffect(() => {
     if (status == "failed") {
@@ -160,7 +160,7 @@ const AlertComp = ({
         }}
         onClick={() => {
           navigate(link);
-          if (senderUser && title !== "friend request") {
+          if (senderUser && title !== "Friend Request") {
             dispatch(
               setCurrentChatPartner({
                 ...userdata,
@@ -195,9 +195,10 @@ const AlertComp = ({
               <Stack direction={"column"} gap={"8px"}>
                 <Box className={"fs-h4 white"}>{title}</Box>
                 <Box className={"fs-16-regular white"}>
-                  {title !== "Friend Request" || detail.length > 100
-                    ? detail.substring(0, 100) + "..."
-                    : detail}
+                  {title !== "Friend Request" &&
+                    (detail.length > 100
+                      ? detail.substring(0, 100) + "..."
+                      : detail)}
                   {title === "Friend Request" &&
                     "Don't miss out on the fun - add to your friends now!"}
                 </Box>
@@ -232,15 +233,16 @@ const AlertComp = ({
                 <Stack direction={"row"} alignItems={"center"} gap={"16px"}>
                   <Button
                     className="modal_btn_right"
-                    sx={{ height: "38px" }}
-                    onClick={addFriend}
+                    onClick={() => {
+                      addFriend();
+                      setOpen(false);
+                    }}
                   >
                     <Box className={"fs-18-bold white"}>Add</Box>
                   </Button>
                   <Button
-                    className="modal_btn_left"
-                    onClick={() => {}}
-                    sx={{ height: "38px" }}
+                    className="modal_btn_left_fr"
+                    onClick={() => setOpen(false)}
                   >
                     <Box className={"fs-18-bold white"}>Decline</Box>
                   </Button>

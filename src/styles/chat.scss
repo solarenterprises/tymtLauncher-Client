@@ -179,3 +179,27 @@ $Main-Red: #ef4444;
   align-items: flex-start;
   cursor: pointer;
 }
+
+.modal_btn_left_fr {
+  &.MuiButtonBase-root {
+    border: 1px solid var(--Main-Red-Red, #{$Main-Red-Red});
+    border-radius: var(--Angle-Small, #{$Angle-Small});
+    text-transform: none;
+    padding: 10px 18px;
+    height: 38px;
+    border-radius: 16px;
+    background-color: transparent;
+    border-color: #ef4444;
+    box-shadow: none;
+    border: 1px solid;
+    &:hover {
+      border-color: #ef4444;
+      background-color: #ef4444;
+    }
+
+    &:active {
+      background-color: #ef4444;
+      box-shadow: 1px 1px #ef44445f;
+    }
+  }
+}
