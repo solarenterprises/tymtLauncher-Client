@@ -29,7 +29,7 @@ import { AppDispatch } from "../../store";
 import { getNonCustodial } from "../../features/account/NonCustodialSlice";
 import { getAccount } from "../../features/account/AccountSlice";
 import { getChain, setChainAsync } from "../../features/wallet/ChainSlice";
-import { selectWallet } from "../../features/settings/WalletSlice";
+import { selectWallet, setWallet } from "../../features/settings/WalletSlice";
 import {
   INotification,
   selectPending,
@@ -154,6 +154,10 @@ const WalletSendSXP = () => {
       );
     } else if (chainStore.chain.name === tymtCore.Blockchains.btc.name) {
       recipientAddrIsValid = tymtCore.Blockchains.btc.wallet.validateAddress(
+        newItem.address
+      );
+    } else if (chainStore.chain.name === tymtCore.Blockchains.solana.name) {
+      recipientAddrIsValid = tymtCore.Blockchains.solana.wallet.validateAddress(
         newItem.address
       );
     } else {
@@ -304,6 +308,26 @@ const WalletSendSXP = () => {
     },
     [chainStore]
   );
+
+  useEffect(() => {
+    if (chainStore.chain.symbol === "SXP") {
+      dispatch(
+        setWallet({
+          ...data,
+          status: "minimum",
+          fee: "0.0183",
+        })
+      );
+    } else if (chainStore.chain.symbol === "BTC") {
+      dispatch(
+        setWallet({
+          ...data,
+          status: "minimum",
+          fee: "7.5",
+        })
+      );
+    }
+  }, [chainStore]);
 
   return (
     <div>
@@ -490,7 +514,8 @@ const WalletSendSXP = () => {
                 />
                 {Number(amount) > 0 &&
                   address !== "" &&
-                  Number(data.fee) > 0 && (
+                  (Number(data.fee) > 0 ||
+                    chainStore.chain.symbol !== "SXP") && (
                     <Button
                       fullWidth
                       className={classname.action_button}
@@ -502,7 +527,8 @@ const WalletSendSXP = () => {
                     </Button>
                   )}
               </Box>
-              {chainStore.chain.symbol === "SXP" && (
+              {(chainStore.chain.symbol === "SXP" ||
+                chainStore.chain.symbol === "BTC") && (
                 <Box className={"wallet-form-card p-16-16 br-16"} mb={"32px"}>
                   <Stack
                     direction={"row"}
@@ -544,7 +570,8 @@ const WalletSendSXP = () => {
                   pending ||
                   Number(amount) === 0 ||
                   address === "" ||
-                  Number(data.fee) === 0 ||
+                  (Number(data.fee) === 0 &&
+                    chainStore.chain.symbol === "SXP") ||
                   createKeccakHash("keccak256")
                     .update(password)
                     .digest("hex") !== nonCustodialStore.password

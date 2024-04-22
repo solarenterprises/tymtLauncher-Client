@@ -7,7 +7,7 @@ import ERC20 from "../../lib/wallet/ERC20";
 import Avalanche from "../../lib/wallet/Avalanche";
 import { tymt_version } from "../../configs";
 import tymtCore from "../../lib/core/tymtCore";
-import { INotification } from "./CryptoSlice";
+// import { INotification } from "./CryptoSlice";
 
 export interface IRecipient {
   address: string;
@@ -44,17 +44,17 @@ export const sendCoin = async ({ chain, data }: ISendCoin): Promise<any> => {
     );
     return res;
   } else if (chain.chain.symbol === "BTC") {
-    const noti: INotification = {
-      status: "failed",
-      title: "Coming Soon",
-      message: "BTC transfer coming soon!",
-    };
-    return noti;
-    // const res = await tymtCore.Blockchains.btc.wallet.sendTransaction(
-    //   passphrase,
-    //   tx
-    // );
-    // return res;
+    const res = await tymtCore.Blockchains.btc.wallet.sendTransaction(
+      passphrase,
+      tx
+    );
+    return res;
+  } else if (chain.chain.symbol === "SOL") {
+    const res = await tymtCore.Blockchains.solana.wallet.sendTransaction(
+      passphrase,
+      tx
+    );
+    return res;
   } else if (chain.currentToken === "chain" || chain.currentToken == "") {
     const chaintx = { recipients: data.recipients, fee: data.fee };
     const res = await ERC20.sendTransaction(passphrase, rpc_url, chaintx);
@@ -85,6 +85,10 @@ export async function walletTransaction(chain: IChain) {
     );
   } else if (chain.chain.symbol === "AVAX") {
     return await Avalanche.getTransactions(chain.chain.wallet);
+  } else if (chain.chain.symbol === "SOL") {
+    return await tymtCore.Blockchains.solana.wallet.getTransactions(
+      chain.chain.wallet
+    );
   } else {
     if (chain.currentToken == "chain" || chain.currentToken == "") {
       const url = getTransactionUrl(chain);

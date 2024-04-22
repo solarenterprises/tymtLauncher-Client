@@ -44,6 +44,7 @@ import { getCurrentPage, setCurrentPage } from "../../features/home/Navigation";
 import { getChain } from "../../features/wallet/ChainSlice";
 import ComingModal from "../ComingModal";
 import Avatar from "./Avatar";
+import CardModal from "../CardModal";
 
 const theme = createTheme({
   palette: {
@@ -81,6 +82,7 @@ const Navbar = () => {
   const [showChat, setShowChat] = useState(false);
   const [value, setValue] = useState<string>("");
   const [coming, setComing] = useState<boolean>(false);
+  const [cardModalOpen, setCardModalOpen] = useState<boolean>(false);
 
   const setView = useCallback(
     (view: boolean) => {
@@ -94,24 +96,28 @@ const Navbar = () => {
     },
     [showChat]
   );
+
+  const handleCardEnter = (event: any) => {
+    event.currentTarget.querySelector("path").setAttribute("stroke", "white");
+  };
+  const handleCardLeave = (event: any) => {
+    event.currentTarget.querySelector("path").setAttribute("stroke", "#AFAFAF");
+  };
   const handleWalletEnter = (event: any) => {
     event.currentTarget.querySelector("path").setAttribute("stroke", "white");
   };
-
   const handleWalletLeave = (event: any) => {
     event.currentTarget.querySelector("path").setAttribute("stroke", "#AFAFAF");
   };
   const handleAlarmEnter = (event: any) => {
     event.currentTarget.querySelector("path").setAttribute("stroke", "white");
   };
-
   const handleAlarmLeave = (event: any) => {
     event.currentTarget.querySelector("path").setAttribute("stroke", "#AFAFAF");
   };
   const handleMessageEnter = (event: any) => {
     event.currentTarget.querySelector("path").setAttribute("stroke", "white");
   };
-
   const handleMessageLeave = (event: any) => {
     event.currentTarget.querySelector("path").setAttribute("stroke", "#AFAFAF");
   };
@@ -216,14 +222,65 @@ const Navbar = () => {
                   border: "1px solid rgb(71, 76, 76)",
                 }}
               >
-                <Box className="fs-16-regular white"> {t("tol-1_wallet")}</Box>
+                <Box className="fs-16-regular white">
+                  {t("tol-8_solar-card")}
+                </Box>
               </Stack>
             }
             PopperProps={{
               sx: {
                 [`& .MuiTooltip-tooltip`]: {
-                  backgroundColor: "transparent", 
-                  boxShadow: "none", 
+                  backgroundColor: "transparent",
+                  boxShadow: "none",
+                },
+              },
+            }}
+          >
+            <Button
+              className="button_navbar_common"
+              onClick={() => {
+                setCardModalOpen(true);
+              }}
+            >
+              <svg
+                onMouseEnter={handleCardEnter}
+                onMouseLeave={handleCardLeave}
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M22 10H2M2 8.2L2 15.8C2 16.9201 2 17.4802 2.21799 17.908C2.40973 18.2843 2.71569 18.5903 3.09202 18.782C3.51984 19 4.07989 19 5.2 19L18.8 19C19.9201 19 20.4802 19 20.908 18.782C21.2843 18.5903 21.5903 18.2843 21.782 17.908C22 17.4802 22 16.9201 22 15.8V8.2C22 7.0799 22 6.51984 21.782 6.09202C21.5903 5.7157 21.2843 5.40974 20.908 5.21799C20.4802 5 19.9201 5 18.8 5L5.2 5C4.0799 5 3.51984 5 3.09202 5.21799C2.7157 5.40973 2.40973 5.71569 2.21799 6.09202C2 6.51984 2 7.07989 2 8.2Z"
+                  stroke="#AFAFAF"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </Button>
+          </Tooltip>
+          <Tooltip
+            placement="top"
+            title={
+              <Stack
+                spacing={"10px"}
+                sx={{
+                  marginBottom: "-20px",
+                  backgroundColor: "rgb(49, 53, 53)",
+                  padding: "6px 8px",
+                  borderRadius: "32px",
+                  border: "1px solid rgb(71, 76, 76)",
+                }}
+              >
+                <Box className="fs-16-regular white">{t("tol-1_wallet")}</Box>
+              </Stack>
+            }
+            PopperProps={{
+              sx: {
+                [`& .MuiTooltip-tooltip`]: {
+                  backgroundColor: "transparent",
+                  boxShadow: "none",
                 },
               },
             }}
@@ -333,8 +390,8 @@ const Navbar = () => {
             PopperProps={{
               sx: {
                 [`& .MuiTooltip-tooltip`]: {
-                  backgroundColor: "transparent", 
-                  boxShadow: "none", 
+                  backgroundColor: "transparent",
+                  boxShadow: "none",
                 },
               },
             }}
@@ -429,6 +486,7 @@ const Navbar = () => {
         <Chatindex viewChat={showChat} setViewChat={setChat} />
       </Grid>
       <ComingModal open={coming} setOpen={setComing} />
+      <CardModal open={cardModalOpen} setOpen={setCardModalOpen} />
     </>
   );
 };
