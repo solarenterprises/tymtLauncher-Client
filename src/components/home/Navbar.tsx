@@ -20,7 +20,7 @@ import searchlg from "../../assets/main/searchlg.svg";
 import Settings from "../../pages/settings";
 import Back from "./Back";
 import Avatar from "./Avatar";
-import ComingModal from "../ComingModal";
+// import ComingModal from "../ComingModal";
 
 import { chatType, notificationType } from "../../types/settingTypes";
 import { ChatnotificationType } from "../../types/chatTypes";
@@ -46,6 +46,7 @@ import { getCurrentPage, setCurrentPage } from "../../features/home/Navigation";
 import { getChain } from "../../features/wallet/ChainSlice";
 import { selectChat } from "../../features/settings/ChatSlice";
 import CardModal from "../CardModal";
+import Alertindex from "../../pages/alert";
 
 const theme = createTheme({
   palette: {
@@ -82,8 +83,9 @@ const Navbar = () => {
   const { t } = useTranslation();
   const [showSetting, setShowSetting] = useState(false);
   const [showChat, setShowChat] = useState(false);
+  const [showAlert, setShowAlert] = useState(false);
   const [value, setValue] = useState<string>("");
-  const [coming, setComing] = useState<boolean>(false);
+  // const [coming, setComing] = useState<boolean>(false);
   const [cardModalOpen, setCardModalOpen] = useState<boolean>(false);
 
   const setView = useCallback(
@@ -98,6 +100,13 @@ const Navbar = () => {
     },
     [showChat]
   );
+  const setAlert = useCallback(
+    (viewAlert: boolean) => {
+      setShowAlert(viewAlert);
+    },
+    [showAlert]
+  );
+
 
   const handleCardEnter = (event: any) => {
     event.currentTarget.querySelector("path").setAttribute("stroke", "white");
@@ -348,7 +357,7 @@ const Navbar = () => {
               sx={{ position: "relative" }}
               onClick={() => {
                 dispatch(setNotification({ ...notification, alert: true }));
-                setComing(true);
+                setShowAlert(!showAlert);
               }}
             >
               {/* {notification.alert == true && (
@@ -487,8 +496,9 @@ const Navbar = () => {
         </Grid>
         <Settings view={showSetting} setView={setView} />
         <Chatindex viewChat={showChat} setViewChat={setChat} />
+        <Alertindex viewAlert={showAlert} setViewAlert={setAlert}/>
       </Grid>
-      <ComingModal open={coming} setOpen={setComing} />
+      {/* <ComingModal open={coming} setOpen={setComing} /> */}
       <CardModal open={cardModalOpen} setOpen={setCardModalOpen} />
     </>
   );

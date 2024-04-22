@@ -68,7 +68,6 @@ const socket: Socket = io(socket_backend_url as string);
 import { socket_backend_url } from "../../configs";
 import { io, Socket } from "socket.io-client";
 
-
 const Chatmain = ({ view, setView }: propsType) => {
   const classes = ChatStyle();
   const dispatch = useDispatch();
@@ -110,11 +109,14 @@ const Chatmain = ({ view, setView }: propsType) => {
       multiwallet.Solar.chain.wallet,
       nonCustodial.password
     );
-    await sendFriendRequest([selectedusertoDelete.id], accessToken);
+    await sendFriendRequest([selectedusertoDelete.id], accessToken, account.uid);
     const data = {
       alertType: "friend-request",
-      note:`${account.uid}`,
-      receivers: [selectedusertoDelete.id]
+      note: {
+        sender: `${account.uid}`,
+        status: "pending",
+      },
+      receivers: [selectedusertoDelete.id],
     };
     socket.emit("post-alert", JSON.stringify(data));
     setOpenRequestModal(false);
@@ -141,11 +143,11 @@ const Chatmain = ({ view, setView }: propsType) => {
     document.addEventListener("click", handleClickOutsideContextMenu);
   };
 
-  const debouncedFilterUsers = debounce(async (value:string) => {
+  const debouncedFilterUsers = debounce(async (value: string) => {
     setSearchedresult(await searchUsers(value));
   }, 1000); // Adjust the delay time (in milliseconds) as needed
-  
-  const filterUsers = (value:string) => {
+
+  const filterUsers = (value: string) => {
     debouncedFilterUsers(value);
   };
 

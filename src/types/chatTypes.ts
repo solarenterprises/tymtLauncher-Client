@@ -83,16 +83,8 @@ export interface scrollDownType {
   down: boolean;
 }
 
-export interface friendrequestType {
-  mode: string;
-}
-
-export interface receivingMsgType {
-  mode: string;
-}
-
 export interface alertType {
   alertType: string;
-  note: string;
+  note: object;
   receivers: string[];
 }

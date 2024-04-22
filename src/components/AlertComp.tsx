@@ -16,8 +16,9 @@ import Avatar from "./home/Avatar";
 
 import { propsAlertTypes } from "../types/commonTypes";
 // import { multiWalletType } from "../types/walletTypes";
-import { getUserlist, 
-  // setUserList 
+import {
+  getUserlist,
+  // setUserList
 } from "../features/chat/Chat-userlistSlice";
 import { notification_duration } from "../configs";
 import {
@@ -244,7 +245,12 @@ const AlertComp = ({
                     className="modal_btn_left_fr"
                     onClick={() => setOpen(false)}
                   >
-                    <Box className={"fs-18-bold white"}>Decline</Box>
+                    <Box
+                      className={"fs-18-bold"}
+                      color={"var(--Main-Blue, #52E1F2)"}
+                    >
+                      Decline
+                    </Box>
                   </Button>
                 </Stack>
               </Stack>

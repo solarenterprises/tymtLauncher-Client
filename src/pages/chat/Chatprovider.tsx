@@ -7,7 +7,6 @@ import { multiWalletType } from "../../types/walletTypes";
 import {
   ChatHistoryType,
   ChatMessageType,
-  alertType,
   userType,
 } from "../../types/chatTypes";
 import { accountType } from "../../types/accountTypes";
@@ -132,7 +131,7 @@ const ChatProvider = () => {
 
       handleIncomingMessages();
     });
-    socket.on("alert-posted", (alert: alertType) => {
+    socket.on("alert-posted", (alert) => {
       console.log("friend-request", alert);
       console.log("receiver", alert.receivers[0]);
       console.log("my id", account.uid);
@@ -143,7 +142,7 @@ const ChatProvider = () => {
             data.friend === "anyone" &&
             alert.receivers[0] === account.uid
           ) {
-            const senderId = alert.note;
+            const senderId = alert.note.sender;
             const senderInChatUserlist = chatuserlist.find(
               (user) => user._id === senderId
             );

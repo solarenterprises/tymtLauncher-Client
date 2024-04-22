@@ -28,7 +28,7 @@ import { selectPartner } from "../../features/chat/Chat-currentPartnerSlice";
 import { getMultiWallet } from "../../features/wallet/MultiWalletSlice";
 import { getNonCustodial } from "../../features/account/NonCustodialSlice";
 import { multiWalletType } from "../../types/walletTypes";
-import { nonCustodialType } from "../../types/accountTypes";
+import { accountType, nonCustodialType } from "../../types/accountTypes";
 import {
   getaccessToken,
   deleteContact,
@@ -49,6 +49,7 @@ const socket: Socket = io(socket_backend_url as string);
 import { socket_backend_url } from "../../configs";
 import { io, Socket } from "socket.io-client";
 import { debounce } from "lodash";
+import { getAccount } from "../../features/account/AccountSlice";
 
 const ChatuserlistinRoom = ({ view, setView }: propsType) => {
   const dispatch = useDispatch();
@@ -57,6 +58,7 @@ const ChatuserlistinRoom = ({ view, setView }: propsType) => {
   const chatuserlist: userType[] = useSelector(getUserlist);
   const currentpartner: userType = useSelector(selectPartner);
   const [searchedresult, setSearchedresult] = useState<userType[]>([]);
+  const account: accountType = useSelector(getAccount);
   const multiwallet: multiWalletType = useSelector(getMultiWallet);
   const nonCustodial: nonCustodialType = useSelector(getNonCustodial);
   const selectedusertoDelete: selecteduserType = useSelector(getSelectedUser);
@@ -102,7 +104,7 @@ const ChatuserlistinRoom = ({ view, setView }: propsType) => {
       multiwallet.Solar.chain.wallet,
       nonCustodial.password
     );
-    await sendFriendRequest([selectedusertoDelete.id], accessToken);
+    await sendFriendRequest([selectedusertoDelete.id], accessToken, account.uid);
     const data = {
       alertType: "friend-request",
       note:"Don't miss out on the fun - add to your friends now!",
