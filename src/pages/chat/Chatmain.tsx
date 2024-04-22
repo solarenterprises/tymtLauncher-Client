@@ -10,8 +10,8 @@ import {
   InputAdornment,
   Grid,
   Button,
-  Modal,
 } from "@mui/material";
+import { debounce } from "lodash";
 
 import ChatStyle from "../../styles/ChatStyles";
 
@@ -19,9 +19,12 @@ import searchlg from "../../assets/searchlg.svg";
 import settingicon from "../../assets/chat/settings.svg";
 import nocontact from "../../assets/chat/nocontact.png";
 import Avatar from "../../components/home/Avatar";
+import BlockModal from "../../components/chat/BlockModal";
+import DeleteModal from "../../components/chat/DeleteModal";
+import RequestModal from "../../components/chat/RequestModal";
 
 import { propsType, selecteduserType, userType } from "../../types/chatTypes";
-import { nonCustodialType } from "../../types/accountTypes";
+import { accountType, nonCustodialType } from "../../types/accountTypes";
 import {
   selectPartner,
   setCurrentChatPartner,
@@ -45,6 +48,8 @@ import {
   setSelectedUsertoDelete,
 } from "../../features/chat/Chat-selecteduserSlice";
 import { setChatHistory } from "../../features/chat/Chat-historySlice";
+import { sendFriendRequest } from "../../features/chat/Chat-friendRequestAPI";
+import { getAccount } from "../../features/account/AccountSlice";
 
 const theme = createTheme({
   palette: {
@@ -59,6 +64,11 @@ const theme = createTheme({
   },
 });
 
+const socket: Socket = io(socket_backend_url as string);
+import { socket_backend_url } from "../../configs";
+import { io, Socket } from "socket.io-client";
+
+
 const Chatmain = ({ view, setView }: propsType) => {
   const classes = ChatStyle();
   const dispatch = useDispatch();
@@ -69,6 +79,7 @@ const Chatmain = ({ view, setView }: propsType) => {
   const nonCustodial: nonCustodialType = useSelector(getNonCustodial);
   const multiwallet: multiWalletType = useSelector(getMultiWallet);
   const selectedusertoDelete: selecteduserType = useSelector(getSelectedUser);
+  const account: accountType = useSelector(getAccount);
   const [searchedresult, setSearchedresult] = useState<userType[]>([]);
   const [isClickedBlock, setIsClickedBlock] = useState(false);
   const [isClickedDelete, setIsClickedDelete] = useState(false);
@@ -94,20 +105,48 @@ const Chatmain = ({ view, setView }: propsType) => {
     dispatch(setChatHistory({ messages: [] }));
   };
 
+  const sendRequest = async () => {
+    const accessToken: string = await getaccessToken(
+      multiwallet.Solar.chain.wallet,
+      nonCustodial.password
+    );
+    await sendFriendRequest([selectedusertoDelete.id], accessToken);
+    const data = {
+      alertType: "Friend Request",
+      note:`${account.uid}`,
+      receivers: [selectedusertoDelete.id]
+    };
+    socket.emit("post-alert", JSON.stringify(data));
+    setOpenRequestModal(false);
+  };
+
   const handleContextMenu = (e: any, id: string) => {
     e.preventDefault();
     const mouseX = e.clientX + window.scrollX;
     const mouseY = e.clientY + window.scrollY;
-    process.platform === "linux" || process.platform === "darwin"
-      ? setShowContextMenu(true)
-      : setShowContextMenu(false);
+    setShowContextMenu(true);
     setContextMenuPosition({ x: mouseX, y: mouseY });
     e.stopPropagation();
     dispatch(setSelectedUsertoDelete({ ...selectedusertoDelete, id: id }));
+    const handleClickOutsideContextMenu = (event) => {
+      if (
+        !event.target.closest(".context_menu_block") &&
+        !event.target.closest(".context_menu_delete")
+      ) {
+        setShowContextMenu(false);
+        document.removeEventListener("click", handleClickOutsideContextMenu);
+      }
+    };
+
+    document.addEventListener("click", handleClickOutsideContextMenu);
   };
 
-  const filterUsers = async (value: string) => {
+  const debouncedFilterUsers = debounce(async (value:string) => {
     setSearchedresult(await searchUsers(value));
+  }, 1000); // Adjust the delay time (in milliseconds) as needed
+  
+  const filterUsers = (value:string) => {
+    debouncedFilterUsers(value);
   };
 
   const updateContact = async (_id) => {
@@ -298,6 +337,7 @@ const Chatmain = ({ view, setView }: propsType) => {
                             onlineStatus={user.onlineStatus}
                             userid={user._id}
                             size={40}
+                            status={user.notificationStatus}
                           />
                           <Stack
                             flexDirection={"row"}
@@ -401,111 +441,23 @@ const Chatmain = ({ view, setView }: propsType) => {
                       </Box>
                     </>
                   )}
-                  <Modal open={openBlockModal}>
-                    <Box className="modal_content">
-                      <Box className={"fs-18-light white"} textAlign={"center"}>
-                        {t("cha-9_are-you-sure-block")}
-                      </Box>
-                      <Stack
-                        marginTop={"20px"}
-                        width={"100%"}
-                        flexDirection={"row"}
-                        alignSelf={"center"}
-                        justifyContent={"space-around"}
-                      >
-                        <Button
-                          className="modal_btn_left"
-                          onClick={() => setOpenBlockModal(false)}
-                        >
-                          <Box
-                            className={"fs-18-bold"}
-                            color={"var(--Main-Blue, #52E1F2)"}
-                          >
-                            {t("cha-7_cancel")}
-                          </Box>
-                        </Button>
-                        <Button
-                          className="modal_btn_right"
-                          onClick={() => setOpenBlockModal(false)}
-                        >
-                          <Box className={"fs-18-bold white"}>
-                            {t("cha-4_block")}
-                          </Box>
-                        </Button>
-                      </Stack>
-                    </Box>
-                  </Modal>
-                  <Modal open={openDeleteModal}>
-                    <Box className="modal_content">
-                      <Box className={"fs-18-bold white"} textAlign={"center"}>
-                        {t("cha-6_are-you-sure-delete")}
-                      </Box>
-                      <Stack
-                        marginTop={"20px"}
-                        width={"100%"}
-                        flexDirection={"row"}
-                        alignSelf={"center"}
-                        justifyContent={"space-around"}
-                      >
-                        <Button
-                          className="modal_btn_left"
-                          onClick={() => {
-                            setOpenDeleteModal(false);
-                          }}
-                        >
-                          <Box
-                            className={"fs-18-bold white"}
-                            color={"var(--Main-Blue, #52E1F2)"}
-                          >
-                            {t("cha-7_cancel")}
-                          </Box>
-                        </Button>
-                        <Button
-                          className="modal_btn_right"
-                          onClick={() => {
-                            deleteSelectedUser();
-                          }}
-                        >
-                          <Box className={"fs-18-bold white"}>
-                            {t("cha-8_delete")}
-                          </Box>
-                        </Button>
-                      </Stack>
-                    </Box>
-                  </Modal>
-                  <Modal open={openRequestModal}>
-                    <Box className="modal_content">
-                      <Box className={"fs-18-bold white"} textAlign={"center"}>
-                        {t("cha-20_send-request")}?
-                      </Box>
-                      <Stack
-                        marginTop={"20px"}
-                        width={"100%"}
-                        flexDirection={"row"}
-                        alignSelf={"center"}
-                        justifyContent={"space-around"}
-                      >
-                        <Button
-                          className="modal_btn_left"
-                          onClick={() => {
-                            setOpenRequestModal(false);
-                          }}
-                        >
-                          <Box
-                            className={"fs-18-bold white"}
-                            color={"var(--Main-Blue, #52E1F2)"}
-                          >
-                            {t("cha-7_cancel")}
-                          </Box>
-                        </Button>
-                        <Button className="modal_btn_right" onClick={() => {}}>
-                          <Box className={"fs-18-bold white"}>
-                            {t("cha-27_request")}
-                          </Box>
-                        </Button>
-                      </Stack>
-                    </Box>
-                  </Modal>
+                  <BlockModal
+                    openBlockModal={openBlockModal}
+                    setOpenBlockModal={setOpenBlockModal}
+                    roommode={false}
+                  />
+                  <DeleteModal
+                    openDeleteModal={openDeleteModal}
+                    setOpenDeleteModal={setOpenDeleteModal}
+                    deleteSelectedUser={deleteSelectedUser}
+                    roommode={false}
+                  />
+                  <RequestModal
+                    openRequestModal={openRequestModal}
+                    setOpenRequestModal={setOpenRequestModal}
+                    sendFriendRequest={sendRequest}
+                    roommode={false}
+                  />
                 </>
               )}
             </Box>

@@ -3,7 +3,6 @@ import { useTranslation } from "react-i18next";
 import { useEffect, useState } from "react";
 
 import { Tooltip, Stack, Box } from "@mui/material";
-import { getUsernotificationStatus } from "../../features/chat/Chat-contactApi";
 
 import onlineframe from "../../assets/chat/onlineframe.svg";
 import offlineframe from "../../assets/chat/offlineframe.svg";
@@ -11,23 +10,24 @@ import donotdisturbframe from "../../assets/chat/donotdisturbframe.svg";
 import mask from "../../assets/account/mask.png";
 
 import { IChain } from "../../types/walletTypes";
-import { notificationType } from "../../types/settingTypes";
+import { chatType, notificationType } from "../../types/settingTypes";
 import { getChain } from "../../features/wallet/ChainSlice";
 import { selectNotification } from "../../features/settings/NotificationSlice";
+import { selectChat } from "../../features/settings/ChatSlice";
 
-const Avatar = ({ size, userid, onlineStatus, ischain }: any) => {
+const Avatar = ({ size, userid, onlineStatus, ischain, status }: any) => {
   const { t } = useTranslation();
   const chain: IChain = useSelector(getChain);
-  const [status, setStatus] = useState("");
+  const [notificationstatus, setNotificationStatus] = useState("");
   const notificationStore: notificationType = useSelector(selectNotification);
-  const getNotificationStatus = async () => {
-    const retrievedstatus = await getUsernotificationStatus(userid);
-    setStatus(retrievedstatus);
+  const data: chatType = useSelector(selectChat);
+  const getNotificationStatus = () => {
+    setNotificationStatus(status);
   };
 
   useEffect(() => {
     getNotificationStatus();
-  }, [userid, notificationStore.alert]);
+  }, [userid, notificationStore.alert, data.disturb]);
 
   return (
     <>
@@ -60,14 +60,14 @@ const Avatar = ({ size, userid, onlineStatus, ischain }: any) => {
             {
               name: "offset",
               options: {
-                offset: [0, -10], 
+                offset: [0, -10],
               },
             },
           ],
           sx: {
             [`& .MuiTooltip-tooltip`]: {
-              backgroundColor: "transparent", 
-              boxShadow: "none", 
+              backgroundColor: "transparent",
+              boxShadow: "none",
             },
           },
         }}
@@ -98,7 +98,11 @@ const Avatar = ({ size, userid, onlineStatus, ischain }: any) => {
           )}
           {onlineStatus === true && (
             <img
-              src={status === "donotdisturb" ? donotdisturbframe : onlineframe}
+              src={
+                notificationstatus === "donotdisturb"
+                  ? donotdisturbframe
+                  : onlineframe
+              }
               style={{
                 position: "absolute",
                 width: "100%",
@@ -135,7 +139,7 @@ const Avatar = ({ size, userid, onlineStatus, ischain }: any) => {
               width: "100%",
               height: "100%",
               borderColor: "transparent",
-              maskImage: `url(${mask})`, 
+              maskImage: `url(${mask})`,
               maskPosition: "center",
               maskSize: "cover",
               zIndex: 1,

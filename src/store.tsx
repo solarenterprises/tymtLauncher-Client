@@ -31,6 +31,7 @@ import d53PasswordReducer from "./features/wallet/D53PasswordSlice";
 import tempD53PasswordReducer from "./features/wallet/TempD53PasswordSlice";
 import currencyReducer from "./features/wallet/CurrencySlice";
 import scrolldownReducer from "./features/chat/Chat-scrollDownSlice";
+import chatfriendlistReducer from "./features/chat/Chat-friendlistSlice";
 
 const store = configureStore({
   reducer: {
@@ -65,6 +66,7 @@ const store = configureStore({
     tempD53Password: tempD53PasswordReducer,
     currency: currencyReducer,
     scrolldown: scrolldownReducer,
+    chatfriendlist: chatfriendlistReducer,
   },
 });
 

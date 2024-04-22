@@ -22,6 +22,7 @@ import {
   userType,
 } from "../../types/chatTypes";
 import { accountType, walletEnum } from "../../types/accountTypes";
+import { chatType } from "../../types/settingTypes";
 
 import { selectPartner } from "../../features/chat/Chat-currentPartnerSlice";
 import { getAccount } from "../../features/account/AccountSlice";
@@ -36,6 +37,7 @@ import {
   getdownState,
   setdownState,
 } from "../../features/chat/Chat-scrollDownSlice";
+import { selectChat } from "../../features/settings/ChatSlice";
 
 import EmojiPicker, { SkinTones } from "emoji-picker-react";
 import maximize from "../../assets/chat/maximize.svg";
@@ -76,6 +78,7 @@ const Chatbox = ({ view, setView }: propsType) => {
   const currentpartner: userType = useSelector(selectPartner);
   const chatHistoryStore: ChatHistoryType = useSelector(getChatHistory);
   const scrollstate: scrollDownType = useSelector(getdownState);
+  const data: chatType = useSelector(selectChat);
   const shouldScrollDown = scrollstate.down;
   const userStore =
     account.wallet === walletEnum.noncustodial
@@ -256,6 +259,7 @@ const Chatbox = ({ view, setView }: propsType) => {
                   onlineStatus={currentpartner.onlineStatus}
                   userid={currentpartner._id}
                   size={50}
+                  status={currentpartner.notificationStatus}
                 />
                 <Stack
                   marginLeft={"16px"}
@@ -362,6 +366,7 @@ const Chatbox = ({ view, setView }: propsType) => {
                                 onlineStatus={true}
                                 userid={account.uid}
                                 size={40}
+                                status={data.disturb ? "donotdisturb" : "online"}
                               />
                               <Box
                                 className={"fs-16 white"}
@@ -377,6 +382,7 @@ const Chatbox = ({ view, setView }: propsType) => {
                                 onlineStatus={currentpartner.onlineStatus}
                                 userid={currentpartner._id}
                                 size={40}
+                                status={currentpartner.notificationStatus}
                               />
                               <Stack>
                                 <Box

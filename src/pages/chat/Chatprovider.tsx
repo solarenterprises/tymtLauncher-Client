@@ -7,6 +7,7 @@ import { multiWalletType } from "../../types/walletTypes";
 import {
   ChatHistoryType,
   ChatMessageType,
+  alertType,
   userType,
 } from "../../types/chatTypes";
 import { accountType } from "../../types/accountTypes";
@@ -72,7 +73,8 @@ const ChatProvider = () => {
     socket.on("message-posted", (message: ChatMessageType) => {
       if (
         message.sender_id === currentpartner._id &&
-        message.recipient_id === account.uid
+        message.recipient_id === account.uid &&
+        data.message === "anyone"
       ) {
         const updatedHistory = [message, ...chatHistoryStore.messages];
         dispatch(setChatHistory({ messages: updatedHistory }));
@@ -108,12 +110,31 @@ const ChatProvider = () => {
       };
       handleIncomingMessages();
     });
+    socket.on("alert-posted", (alert: alertType) => {
+      console.log("friend request", alert);
+      console.log("receiver", alert.receivers[0]);
+      console.log("my id", account.uid);
+      if (alert.alertType === "Friend Request") {
+        if (
+          !data.disturb &&
+          data.friend === "anyone" &&
+          alert.receivers[0] === account.uid
+        ) {
+          setNotificationOpen(true);
+          setNotificationStatus("alert");
+          setNotificationTitle("Friend Request");
+          setNotificationDetail(alert.note);
+          setNotificationLink(null);
+        }
+      }
+    });
 
     return () => {
       socket.off("connect");
       socket.off("message-posted");
+      socket.off("alert-posted");
     };
-  }, [socket, data.disturb, chatHistoryStore]);
+  }, [socket, data, chatHistoryStore]);
 
   return (
     <>

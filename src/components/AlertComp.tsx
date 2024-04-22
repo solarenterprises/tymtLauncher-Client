@@ -1,4 +1,4 @@
-import { Snackbar, Stack, Box } from "@mui/material";
+import { Snackbar, Stack, Box, Button } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -9,22 +9,36 @@ import CommonStyles from "../styles/commonStyles";
 import failedIcon from "../assets/alert/failed-icon.svg";
 import successIcon from "../assets/alert/success-icon.svg";
 import warnnigIcon from "../assets/alert/warnning-icon.svg";
-import alertIcon from "../assets/alert/alert-icon.svg";
+import alertIcon from "../assets/alert/alert-icon.png";
 import messageIcon from "../assets/alert/message-icon.svg";
 import closeIcon from "../assets/settings/x-icon.svg";
+import Avatar from "./home/Avatar";
 
 import { propsAlertTypes } from "../types/commonTypes";
+import { multiWalletType } from "../types/walletTypes";
+import { getUserlist, setUserList } from "../features/chat/Chat-userlistSlice";
 import { notification_duration } from "../configs";
 import {
   selectPartner,
   setCurrentChatPartner,
 } from "../features/chat/Chat-currentPartnerSlice";
 import { scrollDownType, userType } from "../types/chatTypes";
-import { getUserlist } from "../features/chat/Chat-userlistSlice";
+
 import {
   getdownState,
   setdownState,
 } from "../features/chat/Chat-scrollDownSlice";
+import { getMultiWallet } from "../features/wallet/MultiWalletSlice";
+import {
+  createContact,
+  getaccessToken,
+  receiveContactlist,
+} from "../features/chat/Chat-contactApi";
+import { nonCustodialType } from "../types/accountTypes";
+import { getNonCustodial } from "../features/account/NonCustodialSlice";
+import {
+  getFriendlist, setFriendlist,
+} from "../features/chat/Chat-friendlistSlice";
 
 function SlideTransition(props) {
   return <Slide {...props} direction="left" />;
@@ -42,8 +56,12 @@ const AlertComp = ({
   const userdata: userType[] = useSelector(selectPartner);
   const chatuserlist: userType[] = useSelector(getUserlist);
   const scrollstate: scrollDownType = useSelector(getdownState);
+  const multiwallet: multiWalletType = useSelector(getMultiWallet);
+  const nonCustodial: nonCustodialType = useSelector(getNonCustodial);
+  const friendlist: userType[] = useSelector(getFriendlist);
   const shouldScrollDown = scrollstate.down;
-  const senderId = searchParams.get("senderId");
+  const senderId =
+    title === "Friend Request" ? detail : searchParams.get("senderId");
   const senderUser = chatuserlist.find((user) => user._id === senderId);
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -51,6 +69,32 @@ const AlertComp = ({
   const [border, setBorder] = useState("");
   const [bg, setBg] = useState("");
   const [logo, setLogo] = useState<any>();
+
+  const updateContact = async (_id) => {
+    const accessToken: string = await getaccessToken(
+      multiwallet.Solar.chain.wallet,
+      nonCustodial.password
+    );
+    console.log("accessToken", accessToken);
+    await createContact(_id, accessToken);
+    const contacts: userType[] = await receiveContactlist(accessToken);
+    dispatch(setUserList(contacts));
+  };
+
+  const addFriend = async () => {
+    const senderId = detail;
+    const senderInChatUserlist = chatuserlist.find(
+      (user) => user._id === senderId
+    );
+    if (senderInChatUserlist) {
+      dispatch(setFriendlist([...friendlist,senderInChatUserlist]));
+    } else {
+      await updateContact(senderId);
+      dispatch(setFriendlist([...friendlist,senderInChatUserlist]));
+    }
+    console.log("friendlist", friendlist);
+    console.log("request sender", senderInChatUserlist);
+  };
   useEffect(() => {
     if (status == "failed") {
       setLogo(failedIcon);
@@ -80,20 +124,25 @@ const AlertComp = ({
   }, [status]);
 
   useEffect(() => {
-    let timer: NodeJS.Timeout;
-    if (open) {
-      timer = setTimeout(() => {
-        setOpen(false);
-      }, notification_duration as number);
-    }
-
-    return () => {
-      if (timer) {
-        clearTimeout(timer);
+    if (title !== "Friend Request") {
+      let timer: NodeJS.Timeout;
+      if (open) {
+        timer = setTimeout(() => {
+          setOpen(false);
+        }, notification_duration as number);
       }
-    };
+
+      return () => {
+        if (timer) {
+          clearTimeout(timer);
+        }
+      };
+    }
   }, [open, status, title, detail]);
 
+  useEffect(() => {
+    console.log("title", title);
+  }, []);
   return (
     <>
       <Snackbar
@@ -111,7 +160,7 @@ const AlertComp = ({
         }}
         onClick={() => {
           navigate(link);
-          if (senderUser) {
+          if (senderUser && title !== "Friend Request") {
             dispatch(
               setCurrentChatPartner({
                 ...userdata,
@@ -130,6 +179,7 @@ const AlertComp = ({
       >
         <Stack
           className={classname.alert_container}
+          direction={"column"}
           sx={{
             border: `2px solid ${border}`,
             backdropFilter: "blur(4px)",
@@ -137,24 +187,69 @@ const AlertComp = ({
           }}
         >
           <Stack direction={"row"} justifyContent={"space-between"}>
-            <Stack direction={"row"} gap={"12px"}>
+            <Stack direction={"row"} gap={"12px"} alignItems={"center"}>
               <Box className={classname.center_align}>
                 <img src={logo} />
               </Box>
+
               <Stack direction={"column"} gap={"8px"}>
                 <Box className={"fs-h4 white"}>{title}</Box>
                 <Box className={"fs-16-regular white"}>
-                  {detail.length > 100
-                    ? detail.substring(0, 100) + "..."
-                    : detail}
+                  {title !== "Friend Request" &&
+                    (detail.length > 100
+                      ? detail.substring(0, 100) + "..."
+                      : detail)}
+                  {title === "Friend Request" &&
+                    "Don't miss out on the fun - add to your friends now!"}
                 </Box>
-                {title === "Friend Request" && <></>}
               </Stack>
             </Stack>
             <Box onClick={() => setOpen(false)}>
               <img src={closeIcon} />
             </Box>
           </Stack>
+          {title === "Friend Request" && (
+            <>
+              <Stack
+                display={"flex"}
+                direction={"row"}
+                justifyContent={"space-between"}
+              >
+                <Stack
+                  direction={"row"}
+                  alignItems={"center"}
+                  gap={"7px"}
+                  marginLeft={"43px"}
+                >
+                  <Avatar
+                    onlineStatus={senderUser.onlineStatus}
+                    userid={senderUser._id}
+                    size={40}
+                  />
+                  <Box className={"fs-18-regular white"}>
+                    {senderUser.nickName}
+                  </Box>
+                </Stack>
+                <Stack direction={"row"} alignItems={"center"} gap={"16px"}>
+                  <Button
+                    className="modal_btn_right"
+                    onClick={() => {
+                      addFriend();
+                      setOpen(false);
+                    }}
+                  >
+                    <Box className={"fs-18-bold white"}>Add</Box>
+                  </Button>
+                  <Button
+                    className="modal_btn_left_fr"
+                    onClick={() => setOpen(false)}
+                  >
+                    <Box className={"fs-18-bold white"}>Decline</Box>
+                  </Button>
+                </Stack>
+              </Stack>
+            </>
+          )}
         </Stack>
       </Snackbar>
     </>

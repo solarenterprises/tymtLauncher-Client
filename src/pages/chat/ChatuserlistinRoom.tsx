@@ -5,7 +5,6 @@ import {
   Grid,
   Stack,
   Button,
-  Modal,
   Divider,
   InputAdornment,
   TextField,
@@ -16,6 +15,9 @@ import nocontact from "../../assets/chat/nocontact.png";
 import settingicon from "../../assets/chat/settings.svg";
 import searchlg from "../../assets/searchlg.svg";
 import Avatar from "../../components/home/Avatar";
+import BlockModal from "../../components/chat/BlockModal";
+import DeleteModal from "../../components/chat/DeleteModal";
+import RequestModal from "../../components/chat/RequestModal";
 
 import ChatStyle from "../../styles/ChatStyles";
 
@@ -41,6 +43,12 @@ import { createContact } from "../../features/chat/Chat-contactApi";
 import { selecteduserType } from "../../types/chatTypes";
 import { searchUsers } from "../../features/chat/Chat-contactApi";
 import { setChatHistory } from "../../features/chat/Chat-historySlice";
+import { sendFriendRequest } from "../../features/chat/Chat-friendRequestAPI";
+
+const socket: Socket = io(socket_backend_url as string);
+import { socket_backend_url } from "../../configs";
+import { io, Socket } from "socket.io-client";
+import { debounce } from "lodash";
 
 const ChatuserlistinRoom = ({ view, setView }: propsType) => {
   const dispatch = useDispatch();
@@ -67,8 +75,12 @@ const ChatuserlistinRoom = ({ view, setView }: propsType) => {
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
   const [openRequestModal, setOpenRequestModal] = useState(false);
 
-  const filterUsers = async (value) => {
+  const debouncedFilterUsers = debounce(async (value) => {
     setSearchedresult(await searchUsers(value));
+  }, 1000);
+  
+  const filterUsers = (value) => {
+    debouncedFilterUsers(value);
   };
 
   const deleteSelectedUser = async () => {
@@ -85,6 +97,21 @@ const ChatuserlistinRoom = ({ view, setView }: propsType) => {
     console.log("accessToken", accessToken);
   };
 
+  const sendRequest = async () => {
+    const accessToken: string = await getaccessToken(
+      multiwallet.Solar.chain.wallet,
+      nonCustodial.password
+    );
+    await sendFriendRequest([selectedusertoDelete.id], accessToken);
+    const data = {
+      alertType: "Friend Request",
+      note:"Don't miss out on the fun - add to your friends now!",
+      receivers: [selectedusertoDelete.id]
+    };
+    socket.emit("post-alert", JSON.stringify(data));
+    setOpenRequestModal(false);
+  };
+
   /***Modals of Userlist ***/
 
   const handleContextMenu = (e: any, id: string) => {
@@ -93,7 +120,7 @@ const ChatuserlistinRoom = ({ view, setView }: propsType) => {
     setContextMenuPosition({ x: e.clientX, y: e.clientY });
     e.stopPropagation();
     dispatch(setSelectedUsertoDelete({ ...selectedusertoDelete, id: id }));
-    
+
     const handleClickOutsideContextMenu = (event) => {
       if (
         !event.target.closest(".context_menu_block") &&
@@ -277,6 +304,7 @@ const ChatuserlistinRoom = ({ view, setView }: propsType) => {
                           onlineStatus={user.onlineStatus}
                           userid={user._id}
                           size={40}
+                          status={user.notificationStatus}
                         />
                         <Stack
                           flexDirection={"row"}
@@ -331,7 +359,7 @@ const ChatuserlistinRoom = ({ view, setView }: propsType) => {
                             }}
                             onClick={() => {
                               setIsClickedBlock(!isClickedBlock),
-                                setOpenBlockModal(false),
+                                setOpenBlockModal(true),
                                 setShowContextMenu(false);
                             }}
                           >
@@ -374,115 +402,23 @@ const ChatuserlistinRoom = ({ view, setView }: propsType) => {
                     </Box>
                   </>
                 )}
-                <Modal open={openBlockModal}>
-                  <Box className="modal_content_chatroom">
-                    <Box className={"fs-18-light white"} textAlign={"center"}>
-                      {t("cha-9_are-you-sure-block")}
-                    </Box>
-                    <Stack
-                      marginTop={"20px"}
-                      width={"100%"}
-                      flexDirection={"row"}
-                      alignSelf={"center"}
-                      justifyContent={"space-around"}
-                    >
-                      <Button
-                        className="modal_btn_left"
-                        onClick={() => {
-                          setOpenBlockModal(false);
-                        }}
-                      >
-                        <Box
-                          className={"fs-18-bold"}
-                          color={"var(--Main-Blue, #52E1F2)"}
-                        >
-                          {t("cha-7_cancel")}
-                        </Box>
-                      </Button>
-                      <Button
-                        className="modal_btn_right"
-                        onClick={() => {
-                          setOpenBlockModal(false);
-                        }}
-                      >
-                        <Box className={"fs-18-bold white"}>
-                          {t("cha-4_block")}
-                        </Box>
-                      </Button>
-                    </Stack>
-                  </Box>
-                </Modal>
-                <Modal open={openDeleteModal}>
-                  <Box className="modal_content_chatroom">
-                    <Box className={"fs-18-bold white"} textAlign={"center"}>
-                      {t("cha-6_are-you-sure-delete")}
-                    </Box>
-                    <Stack
-                      marginTop={"20px"}
-                      width={"100%"}
-                      flexDirection={"row"}
-                      alignSelf={"center"}
-                      justifyContent={"space-around"}
-                    >
-                      <Button
-                        className="modal_btn_left"
-                        onClick={() => {
-                          setOpenDeleteModal(false);
-                        }}
-                      >
-                        <Box
-                          className={"fs-18-bold white"}
-                          color={"var(--Main-Blue, #52E1F2)"}
-                        >
-                          {t("cha-7_cancel")}
-                        </Box>
-                      </Button>
-                      <Button
-                        className="modal_btn_right"
-                        onClick={() => {
-                          deleteSelectedUser();
-                        }}
-                      >
-                        <Box className={"fs-18-bold white"}>
-                          {t("cha-8_delete")}
-                        </Box>
-                      </Button>
-                    </Stack>
-                  </Box>
-                </Modal>
-                <Modal open={openRequestModal}>
-                  <Box className="modal_content_chatroom">
-                    <Box className={"fs-18-bold white"} textAlign={"center"}>
-                      {t("cha-20_send-request")}?
-                    </Box>
-                    <Stack
-                      marginTop={"20px"}
-                      width={"100%"}
-                      flexDirection={"row"}
-                      alignSelf={"center"}
-                      justifyContent={"space-around"}
-                    >
-                      <Button
-                        className="modal_btn_left"
-                        onClick={() => {
-                          setOpenRequestModal(false);
-                        }}
-                      >
-                        <Box
-                          className={"fs-18-bold white"}
-                          color={"var(--Main-Blue, #52E1F2)"}
-                        >
-                          {t("cha-7_cancel")}
-                        </Box>
-                      </Button>
-                      <Button className="modal_btn_right" onClick={() => {}}>
-                        <Box className={"fs-18-bold white"}>
-                          {t("cha-27_request")}
-                        </Box>
-                      </Button>
-                    </Stack>
-                  </Box>
-                </Modal>
+                <BlockModal
+                  openBlockModal={openBlockModal}
+                  setOpenBlockModal={setOpenBlockModal}
+                  roommode={true}
+                />
+                <DeleteModal
+                  openDeleteModal={openDeleteModal}
+                  setOpenDeleteModal={setOpenDeleteModal}
+                  deleteSelectedUser={deleteSelectedUser}
+                  roommode={true}
+                />
+                <RequestModal
+                  openRequestModal={openRequestModal}
+                  setOpenRequestModal={setOpenRequestModal}
+                  sendFriendRequest={sendRequest}
+                  roommode={true}
+                />
               </>
             )}
           </Box>
