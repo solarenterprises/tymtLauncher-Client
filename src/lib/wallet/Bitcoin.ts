@@ -3,11 +3,13 @@ import { mnemonicToSeed } from "bip39";
 import { BIP32Factory } from "bip32";
 import { payments, networks, Psbt } from "bitcoinjs-lib";
 import axios from "axios";
-import { btc_api_url, net_name } from "../../configs";
+import { btc_api_url, net_name, tymt_version } from "../../configs";
 import { validate } from "bitcoin-address-validation";
 import * as ecc from "tiny-secp256k1";
 import { INotification } from "../../features/wallet/CryptoSlice";
 import { IRecipient } from "../../features/wallet/CryptoApi";
+import tymtStorage from "../Storage";
+import { multiWalletType } from "../../types/walletTypes";
 
 class Bitcoin implements IWallet {
   address: string;
@@ -143,16 +145,45 @@ class Bitcoin implements IWallet {
           psbt.addInput({
             hash: utxo.txid,
             index: utxo.vout,
-            nonWitnessUtxo: Buffer.from(utxo.hex, "hex"),
+            witnessUtxo: {
+              script: Buffer.from(utxo.hex, "hex"),
+              value: utxo.amount,
+            },
           });
         });
 
         tx.recipients.forEach((recipient) => {
           psbt.addOutput({
             address: recipient.address,
-            value: Number(recipient.amount) * Number(recipient.tokenDecimals),
+            value: (Number(recipient.amount) *
+              10 ** Number(recipient.tokenDecimals)) as number,
           });
         });
+
+        // Transaction fee calculation
+        const multiWalletStore: multiWalletType = JSON.parse(
+          await tymtStorage.get(`multiWallet_${tymt_version}`)
+        );
+        const btcPriceUSD = multiWalletStore.Bitcoin.chain.price;
+        const feeSat = ((Number(tx.fee) / Number(btcPriceUSD)) * 1e8) as number;
+        const sumUTXOSat = utxos.reduce(
+          (total, utxo) => total + utxo.amount,
+          0
+        );
+        if (feeSat >= sumUTXOSat) {
+          const noti: INotification = {
+            status: "failed",
+            title: "Fail",
+            message: "Insufficient BTC balance for fee!",
+          };
+          return noti;
+        }
+        const changeSat = sumUTXOSat - feeSat;
+        psbt.addOutput({
+          address: multiWalletStore.Bitcoin.chain.wallet,
+          value: changeSat as number,
+        });
+        // ~Transaction fee calculation
 
         for (let i = 0; i < utxos.length; i++) {
           psbt.signInput(i, account);
@@ -201,12 +232,18 @@ class Bitcoin implements IWallet {
 
   static async getUTXOs(address: string): Promise<any[]> {
     try {
+      // const networkUrl = `${tymt_backend_url}/wallet-support/btc-utxo`;
+      // const res = await axios.get(`${networkUrl}/${address}`);
+      // return res.data.data;
+      // const data = res.data.result;
+      // return data.map((utxo: any) => ({
+      //   txid: utxo.txId,
+      //   vout: utxo.outputIndex,
+      //   amount: utxo.satoshis,
+      //   hex: utxo.scriptPk,
+      // }));
       const networkUrl = "https://unisat.io/wallet-api-v4/address/btc-utxo?";
-      const res = await axios.get(`${networkUrl}address=${address}`, {
-        headers: {
-          withCredentials: true,
-        },
-      });
+      const res = await axios.get(`${networkUrl}address=${address}`);
       const data = res.data.result;
       return data.map((utxo: any) => ({
         txid: utxo.txId,

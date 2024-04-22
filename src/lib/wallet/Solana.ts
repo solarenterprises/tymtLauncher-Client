@@ -9,10 +9,14 @@ import {
   Transaction,
   SystemProgram,
   LAMPORTS_PER_SOL,
-  sendAndConfirmTransaction,
+  // sendAndConfirmTransaction,
+  // VersionedTransaction,
 } from "@solana/web3.js";
 import * as multichainWallet from "multichain-crypto-wallet";
 import { net_name } from "../../configs";
+import { validate } from "multicoin-address-validator";
+import { INotification } from "../../features/wallet/CryptoSlice";
+import { IRecipient } from "../../features/wallet/CryptoApi";
 
 class Solana implements IWallet {
   address: string;
@@ -26,7 +30,7 @@ class Solana implements IWallet {
     try {
       const wallet = multichainWallet.generateWalletFromMnemonic({
         mnemonic: mnemonic,
-        derivationPath: "m/44'/501'/0'/0'", // Leave empty to use default derivation path
+        derivationPath: "m/44'/501'/0'/0'",
         network: "solana",
       });
       if (!wallet) return "";
@@ -35,6 +39,11 @@ class Solana implements IWallet {
       console.error("Failed to SOLANA getAddress: ", err);
       return "";
     }
+  }
+
+  static validateAddress(addr: string) {
+    if (!addr) return false;
+    return validate(addr, "sol");
   }
 
   static async getKeyPair(mnemonic: string): Promise<Keypair> {
@@ -56,11 +65,8 @@ class Solana implements IWallet {
       } else {
         network = clusterApiUrl("devnet");
       }
-      console.log("network", network);
       const connection = new Connection(network);
       const pbKey = new PublicKey(addr);
-      console.log("pbKey", pbKey);
-      console.log("address", addr);
       const balance = await connection.getBalance(pbKey);
       console.log("balance", balance);
       const sols = balance / 1e9;
@@ -84,7 +90,13 @@ class Solana implements IWallet {
       const signatures = await connection.getSignaturesForAddress(pbKey, {
         limit: 10,
       });
-      return signatures;
+      const signaturesStringList = signatures.map(
+        (signature) => signature.signature
+      );
+      const transactions = await connection.getParsedTransactions(
+        signaturesStringList
+      );
+      return transactions;
     } catch {
       return undefined;
     }
@@ -92,7 +104,7 @@ class Solana implements IWallet {
 
   static async sendTransaction(
     passphrase: string,
-    tx: { recipients: any[]; fee: string; vendorField?: string }
+    tx: { recipients: IRecipient[]; fee: string; vendorField?: string }
   ) {
     if (tx.recipients.length > 0) {
       try {
@@ -105,23 +117,39 @@ class Solana implements IWallet {
         }
         const connection = new Connection(network);
         let trx = new Transaction();
+        // let trx = new VersionedTransaction();
         tx.recipients.map((recipient) => {
           const toPbKey = new PublicKey(recipient.address);
           trx.add(
             SystemProgram.transfer({
               fromPubkey: keypair.publicKey,
               toPubkey: toPbKey,
-              lamports: (recipient.amount as number) * LAMPORTS_PER_SOL,
+              lamports: (Number(recipient.amount) * LAMPORTS_PER_SOL) as number,
             })
           );
         });
-        const trxSign = await sendAndConfirmTransaction(connection, trx, [
-          keypair,
-        ]);
-        console.log("trxSign", trxSign);
-        return true;
-      } catch {
-        return false;
+
+        const res = await connection.sendTransaction(trx, [keypair]);
+        console.log(res, "res");
+        // const trxSign = await sendAndConfirmTransaction(connection, trx, [
+        //   keypair,
+        // ]);
+        // console.log("trxSign", trxSign);
+
+        const noti: INotification = {
+          status: "success",
+          title: "Success",
+          message: "Successfully Transferred!",
+        };
+        return noti;
+      } catch (err) {
+        console.error("Failed to send SOL transaction", err);
+        const noti: INotification = {
+          status: "failed",
+          title: "Failed",
+          message: err.toString(),
+        };
+        return noti;
       }
     }
   }

@@ -43,7 +43,13 @@
       "http": {
         "all": true,
         "request": true,
-        "scope": ["https://*", "http://*"]
+        "scope": [
+          "https://*",
+          "http://*",
+          "https://api.mainnet-beta.solana.com/*",
+          "https://api.devnet.solana.com/*",
+          "https://unisat.io/*"
+        ]
       }
     },
     "windows": [
@@ -55,7 +61,8 @@
         "height": 1024,
         "minWidth": 1200,
         "minHeight": 800,
-        "center": true
+        "center": true,
+        "additionalBrowserArgs": "--disable-web-security"
       }
     ],
     "systemTray": {

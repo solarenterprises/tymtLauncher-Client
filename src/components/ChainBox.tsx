@@ -24,9 +24,7 @@ const ChainBox = ({ data, onClick }: propsChainBox) => {
       sx={{
         display: "block",
         textTransform: "none",
-        filter: data?.chain.name === "Solana" ? "grayscale(100%)" : "none",
       }}
-      disabled={data?.chain.name === "Solana"}
     >
       <Stack
         direction={"row"}
@@ -47,19 +45,8 @@ const ChainBox = ({ data, onClick }: propsChainBox) => {
             justifyContent={"space-between"}
             gap={"5px"}
           >
-            <Box className="fs-h5 white">
-              {data?.chain.name}
-              {data?.chain.name === "Solana" && " (Coming soon)"}
-            </Box>
-            <Box
-              className="fs-12-light blue"
-              sx={{
-                filter:
-                  data?.chain.name === "Solana" ? "grayscale(100%)" : "none",
-              }}
-            >
-              {data?.chain.wallet}
-            </Box>
+            <Box className="fs-h5 white">{data?.chain.name}</Box>
+            <Box className="fs-12-light blue">{data?.chain.wallet}</Box>
           </Stack>
         </Stack>
         <Stack
