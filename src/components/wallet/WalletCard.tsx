@@ -68,10 +68,10 @@ const WalletCard = ({ data, index, setLoading }: propsWalletCard) => {
     dispatch(setChainAsync(udpateData)).then(() => {
       setNotificationOpen(true);
       setNotificationTitle(
-        `${t("alt-11_switched-network")} ${data?.chain.name}`
+        `${t("alt-11_switched-network")} ${data?.chain?.name}`
       );
       setNotificationDetail(
-        `${t("alt-12_switched-network-intro")} ${data?.chain.name}`
+        `${t("alt-12_switched-network-intro")} ${data?.chain?.name}`
       );
       setNotificationStatus("success");
       setNotificationLink(null);
@@ -111,20 +111,20 @@ const WalletCard = ({ data, index, setLoading }: propsWalletCard) => {
           <Stack direction={"row"} justifyContent={"flex-start"} gap={"16px"}>
             <Box
               component={"img"}
-              src={data?.chain.logo}
+              src={data?.chain?.logo}
               width={"40px"}
               height={"40px"}
             />
             <Stack gap={1}>
-              <Box className={"fs-h3 white t-left"}>{data?.chain.name}</Box>
+              <Box className={"fs-h3 white t-left"}>{data?.chain?.name}</Box>
               <Box className={"fs-18-regular white"}>
-                {data?.chain.symbol}
-                {` ${formatBalance(data?.chain.balance, 4)}`}
+                {data?.chain?.symbol}
+                {` ${formatBalance(data?.chain?.balance, 4)}`}
               </Box>
               <Box className={"fs-16-regular light t-left"}>
                 {`${symbol} ${formatBalance(
-                  Number(data?.chain.price) *
-                    Number(data?.chain.balance) *
+                  Number(data?.chain?.price) *
+                    Number(data?.chain?.balance) *
                     reserve
                 )}`}
               </Box>
