@@ -32,7 +32,7 @@ const tymtCore = {
       txexplorer: "https://solarscan.com/transaction/",
     },
     bsc: {
-      name: "Binance Smart Chain",
+      name: "Binance",
       ticker: "BNB",
       wallet: BSC,
       explorer: "https://bscscan.com/address/",

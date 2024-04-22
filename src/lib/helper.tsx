@@ -123,20 +123,20 @@ export const formatTransaction = (chain: IChain, data: any) => {
       }
       time = formatDate(data?.timestamp?.unix);
       url = solar_scan_path + "transaction/" + data?.id;
-      amount = formatDecimal(data?.amount);
+      amount = formatDecimal(data?.amount ?? 0);
     } else if (chain.chain.symbol === "BTC") {
       if (data?.result >= 0) {
         direction = 0;
         address = data?.inputs[0]?.prev_out?.addr;
         time = formatDate(data?.time);
         url = btc_scan_path + "tx/" + data?.hash;
-        amount = formatDecimal(data?.result, 8);
+        amount = formatDecimal(data?.result ?? 0, 8);
       } else {
         direction = 1;
         address = data?.out[0]?.addr;
         time = formatDate(data?.time);
         url = btc_scan_path + "tx/" + data?.hash;
-        amount = formatDecimal(-data?.result, 8);
+        amount = formatDecimal(-data?.result ?? 0, 8);
       }
     } else if (chain.chain.symbol === "SOL") {
       const amountSOL =
@@ -155,7 +155,7 @@ export const formatTransaction = (chain: IChain, data: any) => {
         address =
           data?.result?.transaction.message.instructions[0].parsed.info.source;
       }
-      amount = formatDecimal(amountSOL, 9);
+      amount = formatDecimal(amountSOL ?? 0, 9);
       time = formatDate(data?.result?.blockTime);
       url = sol_scan_path + "tx/" + data?.result?.transaction.signatures[0];
     } else if (chain.chain.symbol == "ETH") {
@@ -168,7 +168,7 @@ export const formatTransaction = (chain: IChain, data: any) => {
       }
       time = formatDate(data?.timeStamp);
       url = eth_scan_path + "tx/" + data?.hash;
-      amount = formatDecimal(data?.value, 18);
+      amount = formatDecimal(data?.value ?? 0, 18);
     } else if (chain.chain.symbol == "ARBETH") {
       if (chain.chain.wallet?.toLowerCase() == data?.from?.toLowerCase()) {
         direction = 1;
@@ -179,7 +179,7 @@ export const formatTransaction = (chain: IChain, data: any) => {
       }
       time = formatDate(data?.timeStamp);
       url = arb_scan_path + "tx/" + data?.hash;
-      amount = formatDecimal(data?.value, 18);
+      amount = formatDecimal(data?.value ?? 0, 18);
     } else if (chain.chain.symbol == "AVAX") {
       if (chain.chain.wallet?.toLowerCase() == data?.from?.toLowerCase()) {
         direction = 1;
@@ -191,11 +191,11 @@ export const formatTransaction = (chain: IChain, data: any) => {
       if (net_name === "mainnet") {
         url = avax_scan_path + "tx/" + data?.txHash;
         time = data?.timeStamp;
-        amount = formatDecimal(data?.amount, 18);
+        amount = formatDecimal(data?.amount ?? 0, 18);
       } else {
         time = data?.timestamp;
         url = avax_scan_path + "tx/" + data?.id;
-        amount = formatDecimal(data?.value, 18);
+        amount = formatDecimal(data?.value ?? 0, 18);
       }
     } else if (chain.chain.symbol == "BNB") {
       if (chain.chain.wallet?.toLowerCase() == data?.from?.toLowerCase()) {
@@ -207,7 +207,7 @@ export const formatTransaction = (chain: IChain, data: any) => {
       }
       time = formatDate(data?.timeStamp);
       url = bsc_scan_path + "tx/" + data?.hash;
-      amount = formatDecimal(data?.value, 18);
+      amount = formatDecimal(data?.value ?? 0, 18);
     } else if (chain.chain.symbol == "OETH") {
       if (chain.chain.wallet?.toLowerCase() == data?.from?.toLowerCase()) {
         direction = 1;
@@ -218,7 +218,7 @@ export const formatTransaction = (chain: IChain, data: any) => {
       }
       time = formatDate(data?.timeStamp);
       url = opt_scan_path + "tx/" + data?.hash;
-      amount = formatDecimal(data?.value, 18);
+      amount = formatDecimal(data?.value ?? 0, 18);
     } else if (chain.chain.symbol == "MATIC") {
       if (chain.chain.wallet?.toLowerCase() == data?.from?.toLowerCase()) {
         direction = 1;
@@ -229,7 +229,7 @@ export const formatTransaction = (chain: IChain, data: any) => {
       }
       time = formatDate(data?.timeStamp);
       url = pol_scan_path + "tx/" + data?.hash;
-      amount = formatDecimal(data?.value, 18);
+      amount = formatDecimal(data?.value ?? 0, 18);
     }
   } else {
     chain.tokens.map((token) => {
@@ -245,7 +245,7 @@ export const formatTransaction = (chain: IChain, data: any) => {
         }
         time = formatDate(data?.timeStamp);
         url = bsc_scan_path + "tx/" + data?.hash;
-        amount = formatDecimal(data?.value, 18);
+        amount = formatDecimal(data?.value ?? 0, 18);
       }
     });
   }

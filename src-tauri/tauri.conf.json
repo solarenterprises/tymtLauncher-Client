@@ -61,7 +61,8 @@
         "height": 1024,
         "minWidth": 1200,
         "minHeight": 800,
-        "center": true
+        "center": true,
+        "additionalBrowserArgs": "--disable-web-security"
       }
     ],
     "systemTray": {

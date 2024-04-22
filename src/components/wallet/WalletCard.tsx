@@ -123,8 +123,8 @@ const WalletCard = ({ data, index, setLoading }: propsWalletCard) => {
               </Box>
               <Box className={"fs-16-regular light t-left"}>
                 {`${symbol} ${formatBalance(
-                  Number(data?.chain?.price) *
-                    Number(data?.chain?.balance) *
+                  Number(data?.chain?.price ?? 0) *
+                    Number(data?.chain?.balance ?? 0) *
                     reserve
                 )}`}
               </Box>

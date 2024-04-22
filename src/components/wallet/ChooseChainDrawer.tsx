@@ -182,12 +182,12 @@ const ChooseChainDrawer = ({ view, setView }: props) => {
                 </Stack>
                 <Stack>
                   <Box className="fs-18-regular white t-right">
-                    {formatBalance(wallets[rowKey].chain.balance, 4)}
+                    {formatBalance(wallets[rowKey].chain.balance ?? 0, 4)}
                   </Box>
                   <Box className="fs-12-regular light t-right">
                     {`${symbol} ${formatBalance(
-                      Number(wallets[rowKey].chain.balance) *
-                        Number(wallets[rowKey].chain.price) *
+                      Number(wallets[rowKey].chain.balance ?? 0) *
+                        Number(wallets[rowKey].chain.price ?? 0) *
                         reserve
                     )}`}
                   </Box>
