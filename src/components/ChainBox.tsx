@@ -56,11 +56,13 @@ const ChainBox = ({ data, onClick }: propsChainBox) => {
           justifyContent={"space-between"}
         >
           <Box className="fs-18-light white">
-            {formatBalance(data?.chain.balance, 4)}
+            {formatBalance(data?.chain.balance ?? 0, 4)}
           </Box>
           <Box className="fs-12-light gray">
             {`${symbol} ${formatBalance(
-              Number(data?.chain.price) * Number(data?.chain.balance) * reserve
+              Number(data?.chain.price ?? 0) *
+                Number(data?.chain.balance ?? 0) *
+                reserve
             )}`}
           </Box>
         </Stack>

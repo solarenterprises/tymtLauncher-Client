@@ -10,6 +10,7 @@ import { INotification } from "../../features/wallet/CryptoSlice";
 import { IRecipient } from "../../features/wallet/CryptoApi";
 import tymtStorage from "../Storage";
 import { multiWalletType } from "../../types/walletTypes";
+import { fetch as tauriFetch, ResponseType } from "@tauri-apps/api/http";
 
 class Bitcoin implements IWallet {
   address: string;
@@ -232,27 +233,22 @@ class Bitcoin implements IWallet {
 
   static async getUTXOs(address: string): Promise<any[]> {
     try {
-      // const networkUrl = `${tymt_backend_url}/wallet-support/btc-utxo`;
-      // const res = await axios.get(`${networkUrl}/${address}`);
-      // return res.data.data;
-      // const data = res.data.result;
-      // return data.map((utxo: any) => ({
-      //   txid: utxo.txId,
-      //   vout: utxo.outputIndex,
-      //   amount: utxo.satoshis,
-      //   hex: utxo.scriptPk,
-      // }));
-      const networkUrl = "https://unisat.io/wallet-api-v4/address/btc-utxo?";
-      const res = await axios.get(`${networkUrl}address=${address}`);
-      const data = res.data.result;
-      return data.map((utxo: any) => ({
+      const apiURL = `https://unisat.io/wallet-api-v4/address/btc-utxo?address=${address}`;
+      const response: any = await tauriFetch(apiURL, {
+        method: "GET",
+        timeout: 30,
+        responseType: ResponseType.JSON,
+      });
+      const data = response?.data?.result;
+      console.log(data);
+      return data?.map((utxo: any) => ({
         txid: utxo.txId,
         vout: utxo.outputIndex,
         amount: utxo.satoshis,
         hex: utxo.scriptPk,
       }));
     } catch (error) {
-      console.error("Failed to fetch BTC UTXOs:", error);
+      console.error("Failed to fetch BTC UTXOs: ", error);
       return [];
     }
   }

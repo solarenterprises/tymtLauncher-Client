@@ -120,7 +120,7 @@ export const getAddressesFromMnemonic = async (payload: MnemonicPayload) => {
       chain: {
         address: "",
         symbol: "BNB",
-        name: "Binance Smart Chain",
+        name: "Binance",
         key: "smartchain",
         decimals: 18,
         logo: "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/smartchain/info/logo.png",
@@ -663,7 +663,7 @@ export const refreshBalances = async ({ _multiWalletStore, _accountStore }) => {
       chain: {
         address: "",
         symbol: "BNB",
-        name: "Binance Smart Chain",
+        name: "Binance",
         key: "smartchain",
         decimals: 18,
         logo: "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/smartchain/info/logo.png",
