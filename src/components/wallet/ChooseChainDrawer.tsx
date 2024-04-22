@@ -157,7 +157,6 @@ const ChooseChainDrawer = ({ view, setView }: props) => {
               onClick={() => selectChain(wallets[rowKey])}
               fullWidth
               key={index}
-              disabled={wallets[rowKey].chain.name === "Solana"}
             >
               <Stack
                 direction={"row"}
@@ -171,28 +170,12 @@ const ChooseChainDrawer = ({ view, setView }: props) => {
                     src={wallets[rowKey].chain.logo}
                     width="32px"
                     height="32px"
-                    sx={{
-                      filter:
-                        wallets[rowKey].chain.name === "Solana"
-                          ? "grayscale(100%)"
-                          : "none",
-                    }}
                   />
                   <Stack>
                     <Box className="fs-18-regular white">
                       {wallets[rowKey].chain.name}
-                      {wallets[rowKey].chain.name === "Solana" &&
-                        " (Coming soon)"}
                     </Box>
-                    <Box
-                      className="fs-12-regular blue"
-                      sx={{
-                        filter:
-                          wallets[rowKey].chain.name === "Solana"
-                            ? "grayscale(100%)"
-                            : "none",
-                      }}
-                    >
+                    <Box className="fs-12-regular blue">
                       {wallets[rowKey]?.chain.wallet}
                     </Box>
                   </Stack>

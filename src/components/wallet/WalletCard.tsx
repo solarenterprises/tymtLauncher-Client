@@ -90,7 +90,6 @@ const WalletCard = ({ data, index, setLoading }: propsWalletCard) => {
           backgroundSize: "cover",
           backgroundRepeat: "no-repeat",
           backgroundImage: `url(${background})`,
-          filter: data?.chain.name === "Solana" ? "grayscale(100%)" : "none",
           transition: "transform 0.3s",
           "&:hover": {
             transform: "scale(1.05)",
@@ -99,7 +98,6 @@ const WalletCard = ({ data, index, setLoading }: propsWalletCard) => {
             transform: "scale(0.95)",
           },
         }}
-        disabled={data?.chain.name === "Solana"}
         onClick={() => {
           selectChain(data);
         }}
@@ -121,18 +119,14 @@ const WalletCard = ({ data, index, setLoading }: propsWalletCard) => {
               <Box className={"fs-h3 white t-left"}>{data?.chain.name}</Box>
               <Box className={"fs-18-regular white"}>
                 {data?.chain.symbol}
-                {data?.chain.name === "Solana" && "  Coming soon"}
-                {data?.chain.name !== "Solana" &&
-                  ` ${formatBalance(data?.chain.balance, 4)}`}
+                {` ${formatBalance(data?.chain.balance, 4)}`}
               </Box>
               <Box className={"fs-16-regular light t-left"}>
-                {data?.chain.name === "Solana" && "Coming soon"}
-                {data?.chain.name !== "Solana" &&
-                  `${symbol} ${formatBalance(
-                    Number(data?.chain.price) *
-                      Number(data?.chain.balance) *
-                      reserve
-                  )}`}
+                {`${symbol} ${formatBalance(
+                  Number(data?.chain.price) *
+                    Number(data?.chain.balance) *
+                    reserve
+                )}`}
               </Box>
             </Stack>
           </Stack>

@@ -391,7 +391,7 @@
     "ga-4_games-for-living": "生活のためのゲーム",
     "ga-5_follow-game-on": "でゲームをフォロー",
     "ga-6_permissions": "パーミッション",
-    "ga-7_this-game-will": "このゲームはあなたの財布にアクセスすることができます",
+    "ga-7_this-game-will": "このゲームはあなたのパブリックウォレットアドレスにアクセスします。",
     "ga-8_report-game": "ゲームを報告する",
     "ga-9_report": "レポート",
     "ga-10_overview": "概要",
@@ -455,6 +455,7 @@
     "tol-4_online": "オンライン",
     "tol-5_offline": "オフライン",
     "tol-6_donotdisturb": "邪魔しないでください",
-    "tol-7_ingame": "インゲーム"
+    "tol-7_ingame": "インゲーム",
+    "tol-8_solar-card": "ソーラーカード"
   }
 }

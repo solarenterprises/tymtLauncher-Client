@@ -391,7 +391,7 @@
     "ga-4_games-for-living": "Games for a Living",
     "ga-5_follow-game-on": "Follow game on",
     "ga-6_permissions": "Permissions",
-    "ga-7_this-game-will": "This game will have access to your wallet",
+    "ga-7_this-game-will": "This game will have access to your public wallet address.",
     "ga-8_report-game": "Report game",
     "ga-9_report": "Report",
     "ga-10_overview": "Overview",
@@ -455,6 +455,7 @@
     "tol-4_online": "Online",
     "tol-5_offline": "Offline",
     "tol-6_donotdisturb": "Do Not Disturb",
-    "tol-7_ingame": "Ingame"
+    "tol-7_ingame": "Ingame",
+    "tol-8_solar-card": "Solar Card"
   }
 }

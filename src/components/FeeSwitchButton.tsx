@@ -6,12 +6,15 @@ import { walletType } from "../types/settingTypes";
 import { useDispatch, useSelector } from "react-redux";
 import { selectWallet, setWallet } from "../features/settings/WalletSlice";
 import { AppDispatch } from "../store";
+import { getChain } from "../features/wallet/ChainSlice";
+import { IChain } from "../types/walletTypes";
 
 const FeeSwitchButton = () => {
   const { t } = useTranslation();
   const classname = SettingStyle();
   const dispatch = useDispatch<AppDispatch>();
   const walletStore: walletType = useSelector(selectWallet);
+  const chainStore: IChain = useSelector(getChain);
 
   return (
     <Stack
@@ -23,13 +26,23 @@ const FeeSwitchButton = () => {
       <Button
         className={classname.fee_switch_button}
         onClick={() => {
-          dispatch(
-            setWallet({
-              ...walletStore,
-              status: "minimum",
-              fee: "0.0183",
-            })
-          );
+          if (chainStore.chain.symbol === "BTC") {
+            dispatch(
+              setWallet({
+                ...walletStore,
+                status: "minimum",
+                fee: "7.5",
+              })
+            );
+          } else {
+            dispatch(
+              setWallet({
+                ...walletStore,
+                status: "minimum",
+                fee: "0.0183",
+              })
+            );
+          }
         }}
         sx={{
           backgroundColor:
@@ -54,13 +67,23 @@ const FeeSwitchButton = () => {
       <Button
         className={classname.fee_switch_button}
         onClick={() => {
-          dispatch(
-            setWallet({
-              ...walletStore,
-              status: "average",
-              fee: "0.0223",
-            })
-          );
+          if (chainStore.chain.symbol === "BTC") {
+            dispatch(
+              setWallet({
+                ...walletStore,
+                status: "average",
+                fee: "10",
+              })
+            );
+          } else {
+            dispatch(
+              setWallet({
+                ...walletStore,
+                status: "average",
+                fee: "0.0223",
+              })
+            );
+          }
         }}
         sx={{
           backgroundColor:
@@ -85,13 +108,23 @@ const FeeSwitchButton = () => {
       <Button
         className={classname.fee_switch_button}
         onClick={() => {
-          dispatch(
-            setWallet({
-              ...walletStore,
-              status: "maximum",
-              fee: "0.5",
-            })
-          );
+          if (chainStore.chain.symbol === "BTC") {
+            dispatch(
+              setWallet({
+                ...walletStore,
+                status: "maximum",
+                fee: "20",
+              })
+            );
+          } else {
+            dispatch(
+              setWallet({
+                ...walletStore,
+                status: "maximum",
+                fee: "0.5",
+              })
+            );
+          }
         }}
         sx={{
           backgroundColor:

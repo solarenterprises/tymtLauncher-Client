@@ -121,7 +121,7 @@ export const formatTransaction = (chain: IChain, data: any) => {
         direction = 0;
         address = data.sender;
       }
-      time = formatDate(data.timestamp.unix);
+      time = formatDate(data?.timestamp?.unix);
       url = solar_scan_path + "transaction/" + data.id;
       amount = formatDecimal(data.amount);
     } else if (chain.chain.symbol === "BTC") {
@@ -138,6 +138,23 @@ export const formatTransaction = (chain: IChain, data: any) => {
         url = btc_scan_path + "tx/" + data?.hash;
         amount = formatDecimal(-data?.result, 8);
       }
+    } else if (chain.chain.symbol === "SOL") {
+      const amountSOL =
+        data?.meta?.postBalances[1] - data?.meta?.preBalances[1];
+      if (
+        chain.chain.wallet ===
+        data?.transaction.message.instructions[0].parsed.info.source
+      ) {
+        direction = 1;
+        address =
+          data?.transaction.message.instructions[0].parsed.info.destination;
+      } else {
+        direction = 0;
+        address = data?.transaction.message.instructions[0].parsed.info.source;
+      }
+      amount = formatDecimal(amountSOL, 9);
+      time = formatDate(data?.blockTime);
+      url = sol_scan_path + "tx/" + data?.transaction.signatures[0];
     } else if (chain.chain.symbol == "ETH") {
       if (chain.chain.wallet?.toLowerCase() == data.from?.toLowerCase()) {
         direction = 1;
