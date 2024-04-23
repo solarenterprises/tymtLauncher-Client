@@ -2,6 +2,7 @@ import { Box, Stack, Modal } from "@mui/material";
 
 import closeIcon from "../assets/settings/x-icon.svg";
 import cardImg from "../assets/main/card.png";
+import { useTranslation } from "react-i18next";
 
 interface props {
   open: boolean;
@@ -9,6 +10,7 @@ interface props {
 }
 
 const CardModal = ({ open, setOpen }: props) => {
+  const { t } = useTranslation();
   const modalStyle = {
     display: "flex",
     alignItems: "center",
@@ -49,7 +51,7 @@ const CardModal = ({ open, setOpen }: props) => {
             gap={"10px"}
           >
             <Box className="fs-h2 white">{`Solar Card`}</Box>
-            <Box className="fs-h3 white">{`(Coming Soon)`}</Box>
+            <Box className="fs-h3 white">{t("hom-16_coming-soon")}</Box>
           </Stack>
         </Stack>
       </Box>

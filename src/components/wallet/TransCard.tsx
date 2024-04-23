@@ -19,7 +19,7 @@ import { currencySymbols } from "../../consts/currency";
 
 const TransCard = () => {
   const chain: IChain = useSelector(getChain);
-  const transactions = useSelector(selectTrasaction);
+  const transactions: any[] = useSelector(selectTrasaction);
   const dispatch = useDispatch<AppDispatch>();
   const currencyStore: ICurrency = useSelector(getCurrency);
   const reserve: number = currencyStore.data[currencyStore.current] as number;
@@ -40,7 +40,7 @@ const TransCard = () => {
   return (
     <Box>
       {transactions &&
-        transactions.map((data, index) => {
+        transactions?.map((data, index) => {
           const { direction, address, time, url, amount, logo, symbol } =
             formatTransaction(chain, data);
           return (
@@ -104,7 +104,7 @@ const TransCard = () => {
                   </Stack>
                   <Box className={"fs-12-light light t-right"}>
                     {`${currencySymbol} ${formatBalance(
-                      Number(chain.chain.price) * Number(amount) * reserve
+                      Number(chain.chain.price ?? 0) * Number(amount) * reserve
                     )}`}
                   </Box>
                 </Stack>

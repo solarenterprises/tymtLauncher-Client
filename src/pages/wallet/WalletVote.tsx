@@ -215,7 +215,7 @@ const WalletVote = () => {
                           >
                             <Stack>
                               <Box className="fs-18-regular white t-left">
-                                {formatDecimal(item.forged.rewards)}
+                                {formatDecimal(item.forged.rewards ?? 0)}
                               </Box>
                               {/* <Box className="fs-12-regular light t-left">
                               $7,985.987
@@ -231,7 +231,8 @@ const WalletVote = () => {
                           >
                             <Stack>
                               <Box className="fs-18-regular white t-left">
-                                {formatDecimal(item.votesReceived.votes)} SXP
+                                {formatDecimal(item.votesReceived.votes ?? 0)}{" "}
+                                SXP
                               </Box>
                               <Box className="fs-12-regular light t-left">
                                 {item.votesReceived.percent}%
