@@ -121,7 +121,7 @@ export const getTempAddressesFromMnemonic = async (
       chain: {
         address: "",
         symbol: "BNB",
-        name: "Binance Smart Chain",
+        name: "Binance",
         key: "smartchain",
         decimals: 18,
         logo: "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/smartchain/info/logo.png",
