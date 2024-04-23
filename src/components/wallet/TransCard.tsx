@@ -19,7 +19,7 @@ import { currencySymbols } from "../../consts/currency";
 
 const TransCard = () => {
   const chain: IChain = useSelector(getChain);
-  const transactions = useSelector(selectTrasaction);
+  const transactions: any[] = useSelector(selectTrasaction);
   const dispatch = useDispatch<AppDispatch>();
   const currencyStore: ICurrency = useSelector(getCurrency);
   const reserve: number = currencyStore.data[currencyStore.current] as number;

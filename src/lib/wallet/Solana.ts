@@ -120,8 +120,7 @@ class Solana implements IWallet {
         body: body2,
         responseType: ResponseType.JSON,
       });
-      console.log(response2);
-      return response2?.data;
+      return Array.isArray(response2?.data) ? response2?.data : [];
     } catch (err) {
       console.error("Failed to SOLANA getTransactions: ", err);
       return [];

@@ -100,10 +100,20 @@ class Bitcoin implements IWallet {
   static async getTransactions(addr: string): Promise<any> {
     try {
       if (net_name === "mainnet") {
-        const txs = (
-          await (await fetch(`${btc_api_url}/rawaddr/${addr}?limit=10`)).json()
-        ).txs;
-        return txs;
+        const apiURL = `${btc_api_url}/rawaddr/${addr}?limit=10`;
+        const response: any = await tauriFetch(apiURL, {
+          method: "GET",
+          timeout: 30,
+          responseType: ResponseType.JSON,
+        });
+        if (!response) return [];
+        if (response.status === 429) {
+          console.error("Failed to get BTC transactions: 429 error");
+          return [];
+        }
+        if (response?.data?.txs) return response?.data?.txs;
+        console.error("Failed to get BTC transactions: unknown error");
+        return [];
       } else {
         const txs = await (
           await fetch(`${btc_api_url}/address/${addr}/txs?limit=10`)

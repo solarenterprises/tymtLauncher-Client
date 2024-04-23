@@ -50,7 +50,7 @@ const CardModal = ({ open, setOpen }: props) => {
             textAlign={"center"}
             gap={"10px"}
           >
-            <Box className="fs-h2 white">{t("tol-8_solar-card")}</Box>
+            <Box className="fs-h2 white">{`Solar Card`}</Box>
             <Box className="fs-h3 white">{t("hom-16_coming-soon")}</Box>
           </Stack>
         </Stack>
