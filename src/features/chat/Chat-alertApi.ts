@@ -39,9 +39,9 @@ export const updateAlertReadstatus = async (
 ) => {
   try {
     const res = await axios.put(
-      `${tymt_backend_url}/alerts/${userid}`,
+      `${tymt_backend_url}/alerts/add-reader/${userid}`,
       {
-        reads: [`${userid}`],
+        reader: `${userid}`,
       },
       {
         headers: {
@@ -58,30 +58,4 @@ export const updateAlertReadstatus = async (
   } catch (err) {
     console.log("update alert status failed");
   }
-};
-
-export const updateUsernotificationStatus = async (
-  userid: string,
-  notificationStatus: boolean,
-  accessToken: string
-) => {
-  try {
-    const res = await axios.put(
-      `${tymt_backend_url}/users/${userid}`,
-      {
-        notificationStatus: notificationStatus ? "donotdisturb" : "online",
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
-    if (res.status === 200) {
-      console.log("update success", res.data.result.data.notificationStatus);
-      return res.data.notificationStatus;
-    } else {
-    }
-  } catch (err) {}
 };

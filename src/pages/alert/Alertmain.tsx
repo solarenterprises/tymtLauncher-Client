@@ -1,23 +1,32 @@
 import { Box, Button, Stack } from "@mui/material";
 import { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 import unreaddot from "../../assets/alert/unreaddot.svg";
 import AlertList from "../../components/alert/Alertlist";
 
-import { accountType } from "../../types/accountTypes";
+import { accountType, nonCustodialType } from "../../types/accountTypes";
 
 // import { featchCountUnreadAlert } from "../../features/chat/Chat-alertApi";
 import { getAccount } from "../../features/account/AccountSlice";
 import {
   fetchCountUnreadAlerts,
   fetchUnreadAlerts,
+  updateAlertReadstatus,
 } from "../../features/chat/Chat-alertApi";
 import { alertType } from "../../types/chatTypes";
 import { notificationType } from "../../types/settingTypes";
-import { selectNotification } from "../../features/settings/NotificationSlice";
+import {
+  selectNotification,
+  setNotification,
+} from "../../features/settings/NotificationSlice";
+import { getaccessToken } from "../../features/chat/Chat-contactApi";
+import { multiWalletType } from "../../types/walletTypes";
+import { getMultiWallet } from "../../features/wallet/MultiWalletSlice";
+import { getNonCustodial } from "../../features/account/NonCustodialSlice";
 
 const Alertmain = () => {
+  const dispatch = useDispatch();
   const account: accountType = useSelector(getAccount);
   const [unreadcount, setUnreadCount] = useState<number>(0);
   const [unreadalerts, setUnreadAlerts] = useState<alertType[]>([]);
@@ -28,6 +37,19 @@ const Alertmain = () => {
     setUnreadCount(unreadcount);
     setUnreadAlerts(unreadalerts);
   };
+  const multiwallet: multiWalletType = useSelector(getMultiWallet);
+  const nonCustodial: nonCustodialType = useSelector(getNonCustodial);
+
+  const updateAlert = async () => {
+    const accessToken: string = await getaccessToken(
+      multiwallet.Solar.chain.wallet,
+      nonCustodial.password
+    );
+    await updateAlertReadstatus(account.uid, accessToken);
+    console.log("accesstoken", accessToken);
+    console.log("userid", account.uid);
+  };
+
   useEffect(() => {
     getUnreadAlerts();
   }, [notification.update]);
@@ -60,7 +82,18 @@ const Alertmain = () => {
             <Box className={"fs-18-regular gray"}>Unread</Box>
             <img src={unreaddot} width={"8px"} height={"8px"} />
           </Stack>
-          <Button className="modal_btn_left_fr" onClick={() => {}}>
+          <Button
+            className="modal_btn_left_fr"
+            onClick={() => {
+              updateAlert();
+              dispatch(
+                setNotification({
+                  ...notification,
+                  update: !notification.update,
+                })
+              );
+            }}
+          >
             <Box className={"fs-18-bold"} color={"var(--Main-Blue, #52E1F2)"}>
               Mark all as read
             </Box>

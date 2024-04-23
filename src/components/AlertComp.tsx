@@ -15,10 +15,8 @@ import closeIcon from "../assets/settings/x-icon.svg";
 import Avatar from "./home/Avatar";
 
 import { propsAlertTypes } from "../types/commonTypes";
-// import { multiWalletType } from "../types/walletTypes";
 import {
   getUserlist,
-  // setUserList
 } from "../features/chat/Chat-userlistSlice";
 import { notification_duration } from "../configs";
 import {
@@ -31,14 +29,6 @@ import {
   getdownState,
   setdownState,
 } from "../features/chat/Chat-scrollDownSlice";
-// import { getMultiWallet } from "../features/wallet/MultiWalletSlice";
-// import {
-//   createContact,
-//   getaccessToken,
-//   receiveContactlist,
-// } from "../features/chat/Chat-contactApi";
-// import { nonCustodialType } from "../types/accountTypes";
-// import { getNonCustodial } from "../features/account/NonCustodialSlice";
 import {
   getFriendlist,
   setFriendlist,
@@ -60,8 +50,6 @@ const AlertComp = ({
   const userdata: userType[] = useSelector(selectPartner);
   const chatuserlist: userType[] = useSelector(getUserlist);
   const scrollstate: scrollDownType = useSelector(getdownState);
-  // const multiwallet: multiWalletType = useSelector(getMultiWallet);
-  // const nonCustodial: nonCustodialType = useSelector(getNonCustodial);
   const friendlist: userType[] = useSelector(getFriendlist);
   const shouldScrollDown = scrollstate.down;
   const senderId =
@@ -73,17 +61,6 @@ const AlertComp = ({
   const [border, setBorder] = useState("");
   const [bg, setBg] = useState("");
   const [logo, setLogo] = useState<any>();
-
-  // const updateContact = async (_id) => {
-  //   const accessToken: string = await getaccessToken(
-  //     multiwallet.Solar.chain.wallet,
-  //     nonCustodial.password
-  //   );
-  //   await createContact(_id, accessToken);
-  //   const contacts: userType[] = await receiveContactlist(accessToken);
-  //   dispatch(setUserList(contacts));
-  // };
-
   const addFriend = async () => {
     const senderId = detail;
     const senderInChatUserlist = chatuserlist.find(
@@ -124,25 +101,19 @@ const AlertComp = ({
   }, [status]);
 
   useEffect(() => {
-    if (title !== "Friend Request") {
-      let timer: NodeJS.Timeout;
-      if (open) {
-        timer = setTimeout(() => {
-          setOpen(false);
-        }, notification_duration as number);
-      }
-
-      return () => {
-        if (timer) {
-          clearTimeout(timer);
-        }
-      };
+    let timer: NodeJS.Timeout;
+    if (open) {
+      timer = setTimeout(() => {
+        setOpen(false);
+      }, notification_duration as number);
     }
-  }, [open, status, title, detail]);
 
-  useEffect(() => {
-    console.log("title", title);
-  }, []);
+    return () => {
+      if (timer) {
+        clearTimeout(timer);
+      }
+    };
+  }, [open, status, title, detail]);
 
   return (
     <>
