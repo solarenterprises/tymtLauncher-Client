@@ -107,7 +107,6 @@ const Navbar = () => {
     [showAlert]
   );
 
-
   const handleCardEnter = (event: any) => {
     event.currentTarget.querySelector("path").setAttribute("stroke", "white");
   };
@@ -356,13 +355,13 @@ const Navbar = () => {
               className="button_navbar_common"
               sx={{ position: "relative" }}
               onClick={() => {
-                dispatch(setNotification({ ...notification, alert: true }));
+                dispatch(setNotification({ ...notification, alert: false }));
                 setShowAlert(!showAlert);
               }}
             >
-              {/* {notification.alert == true && (
-                <span className={homeclasses.notification_dot}></span>
-              )} */}
+              {notification.alert == true && (
+                <span className={"notification_dot"}></span>
+              )}
 
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -496,7 +495,7 @@ const Navbar = () => {
         </Grid>
         <Settings view={showSetting} setView={setView} />
         <Chatindex viewChat={showChat} setViewChat={setChat} />
-        <Alertindex viewAlert={showAlert} setViewAlert={setAlert}/>
+        <Alertindex viewAlert={showAlert} setViewAlert={setAlert} />
       </Grid>
       {/* <ComingModal open={coming} setOpen={setComing} /> */}
       <CardModal open={cardModalOpen} setOpen={setCardModalOpen} />

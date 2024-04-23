@@ -80,7 +80,7 @@ const ChatuserlistinRoom = ({ view, setView }: propsType) => {
   const debouncedFilterUsers = debounce(async (value) => {
     setSearchedresult(await searchUsers(value));
   }, 1000);
-  
+
   const filterUsers = (value) => {
     debouncedFilterUsers(value);
   };
@@ -104,11 +104,18 @@ const ChatuserlistinRoom = ({ view, setView }: propsType) => {
       multiwallet.Solar.chain.wallet,
       nonCustodial.password
     );
-    await sendFriendRequest([selectedusertoDelete.id], accessToken, account.uid);
+    await sendFriendRequest(
+      [selectedusertoDelete.id],
+      accessToken,
+      account.uid
+    );
     const data = {
       alertType: "friend-request",
-      note:"Don't miss out on the fun - add to your friends now!",
-      receivers: [selectedusertoDelete.id]
+      note: {
+        sender: `${account.uid}`,
+        status: "pending",
+      },
+      receivers: [selectedusertoDelete.id],
     };
     socket.emit("post-alert", JSON.stringify(data));
     setOpenRequestModal(false);

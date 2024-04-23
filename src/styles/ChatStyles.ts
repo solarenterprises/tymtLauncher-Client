@@ -203,10 +203,12 @@ const ChatStyle = makeStyles({
     },
   },
   scroll_bar_chatbox: {
+    width: "101%",
     flexGrow: 1,
     overflowY: "auto",
     marginBottom: "0px",
     height: "calc(100vh - 200px)",
+    paddingRight: "10px",
     "&::-webkit-scrollbar": {
       borderRadius: "100px",
       width: "5px",

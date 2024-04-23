@@ -93,29 +93,15 @@ const AlertList = ({ status, title, detail }: propsAlertListType) => {
 
   return (
     <>
-      <Box sx={{ width: "100%" }}>
+      <Box sx={{ width: "100%" }} marginTop={"16px"}>
         <Stack direction={"column"}>
           <Stack
             direction={"row"}
             justifyContent={"space-between"}
             alignItems={"center"}
           >
-            <Stack
-              display={"flex"}
-              direction={"row"}
-              gap={"8px"}
-              alignItems={"center"}
-            >
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "center",
-                  textAlign: "center",
-                  alignItems: "center",
-                }}
-              >
-                <img src={logo} />
-              </Box>
+            <Stack direction={"row"} gap={"8px"} alignItems={"center"}>
+              <img src={logo} />
               <Box className={"fs-h4 white"}>{title}</Box>
             </Stack>
             <img src={unreaddot} width={"12px"} height={"12px"} />
@@ -132,6 +118,7 @@ const AlertList = ({ status, title, detail }: propsAlertListType) => {
                 display={"flex"}
                 direction={"row"}
                 justifyContent={"space-between"}
+                marginTop={"12px"}
               >
                 <Stack
                   direction={"row"}
@@ -158,7 +145,12 @@ const AlertList = ({ status, title, detail }: propsAlertListType) => {
                     <Box className={"fs-18-bold white"}>Add</Box>
                   </Button>
                   <Button className="modal_btn_left_fr" onClick={() => {}}>
-                    <Box className={"fs-18-bold white"}>Decline</Box>
+                    <Box
+                      className={"fs-18-bold"}
+                      color={"var(--Main-Blue, #52E1F2)"}
+                    >
+                      Decline
+                    </Box>
                   </Button>
                 </Stack>
               </Stack>

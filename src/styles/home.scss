@@ -155,7 +155,7 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  //   background: $primary-color;
+  background-color: var(--Main-Blue, #52e1f2);
   border: 1px solid var(--bg-stroke-icon-button-bg-10, rgba(128, 128, 128, 0.1));
   box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1);
 }
