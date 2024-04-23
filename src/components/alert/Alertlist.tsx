@@ -131,8 +131,8 @@ const AlertList = ({ status, title, detail }: propsAlertListType) => {
                   marginLeft={"43px"}
                 >
                   <Avatar
-                    onlineStatus={senderUser.onlineStatus}
-                    userid={senderUser._id}
+                    onlineStatus={senderUser?.onlineStatus}
+                    userid={senderUser?._id}
                     size={40}
                   />
                   <Box className={"fs-18-regular white"}>

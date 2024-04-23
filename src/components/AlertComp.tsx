@@ -15,9 +15,7 @@ import closeIcon from "../assets/settings/x-icon.svg";
 import Avatar from "./home/Avatar";
 
 import { propsAlertTypes } from "../types/commonTypes";
-import {
-  getUserlist,
-} from "../features/chat/Chat-userlistSlice";
+import { getUserlist } from "../features/chat/Chat-userlistSlice";
 import { notification_duration } from "../configs";
 import {
   selectPartner,

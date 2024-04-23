@@ -14,6 +14,7 @@ export interface notificationType {
   sound: boolean;
   hour: number;
   trigger: boolean;
+  alertbadge: boolean;
 }
 
 export interface chatType {

@@ -88,7 +88,6 @@ const Navbar = () => {
   // const [coming, setComing] = useState<boolean>(false);
   const [cardModalOpen, setCardModalOpen] = useState<boolean>(false);
 
- 
   const setView = useCallback(
     (view: boolean) => {
       setShowSetting(view);
@@ -356,11 +355,13 @@ const Navbar = () => {
               className="button_navbar_common"
               sx={{ position: "relative" }}
               onClick={() => {
-                dispatch(setNotification({ ...notification, alert: false }));
+                dispatch(
+                  setNotification({ ...notification, alertbadge: false })
+                );
                 setShowAlert(!showAlert);
               }}
             >
-              {notification.alert == true && (
+              {notification.alertbadge == true && (
                 <span className={"notification_dot"}></span>
               )}
 

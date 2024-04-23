@@ -160,7 +160,7 @@ const ChatProvider = () => {
               setNotificationTitle("Friend Request");
               setNotificationDetail(senderId);
               setNotificationLink(null);
-              dispatch(setNotification({ ...notification, alert: true }));
+              dispatch(setNotification({ ...notification, alertbadge: true }));
               dispatch(setNotification({ ...notification, trigger: !notification.trigger }));
             } else {
               await updateContact(senderId);
@@ -169,13 +169,13 @@ const ChatProvider = () => {
               setNotificationTitle("Friend Request");
               setNotificationDetail(senderId);
               setNotificationLink(null);
-              dispatch(setNotification({ ...notification, alert: true }));
+              dispatch(setNotification({ ...notification, alertbadge: true }));
               dispatch(setNotification({ ...notification, trigger: !notification.trigger }));
             }
           } else {
           }
         } else {
-          dispatch(setNotification({ ...notification, alert: true }));
+          dispatch(setNotification({ ...notification, alertbadge: true }));
           dispatch(setNotification({ ...notification, trigger: !notification.trigger }));
           if (
             !data.disturb &&

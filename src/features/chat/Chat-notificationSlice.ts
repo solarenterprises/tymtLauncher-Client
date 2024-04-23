@@ -6,11 +6,12 @@ const loadNotification = () => {
   const data = tymtStorage.get(`chatnotification_${tymt_version}`);
   if (data === null || data === "") {
     return {
-      alert: false,
+      alert: true,
       update: false,
       sound: false,
       unreadmessage: 0,
-      trigger: false
+      trigger: false,
+      alertbadge: false
     };
   } else {
     return JSON.parse(data);
