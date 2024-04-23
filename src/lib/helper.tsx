@@ -127,16 +127,17 @@ export const formatTransaction = (chain: IChain, data: any) => {
     } else if (chain.chain.symbol === "BTC") {
       if (data?.result >= 0) {
         direction = 0;
-        address = data?.inputs[0]?.prev_out?.addr;
+        if (Array.isArray(data?.inputs))
+          address = data?.inputs[0]?.prev_out?.addr ?? "";
         time = formatDate(data?.time);
         url = btc_scan_path + "tx/" + data?.hash;
-        amount = formatDecimal(data?.result ?? 0, 8);
-      } else {
+        amount = formatDecimal(data?.result, 8);
+      } else if (data?.result < 0) {
         direction = 1;
-        address = data?.out[0]?.addr;
+        if (Array.isArray(data?.out)) address = data?.out[0]?.addr ?? "";
         time = formatDate(data?.time);
         url = btc_scan_path + "tx/" + data?.hash;
-        amount = formatDecimal(-data?.result ?? 0, 8);
+        amount = formatDecimal(-data?.result, 8);
       }
     } else if (chain.chain.symbol === "SOL") {
       const amountSOL =
