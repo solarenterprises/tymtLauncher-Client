@@ -161,7 +161,7 @@ const ChatProvider = () => {
               setNotificationDetail(senderId);
               setNotificationLink(null);
               dispatch(setNotification({ ...notification, alert: true }));
-              dispatch(setNotification({ ...notification, update: !notification.update }));
+              dispatch(setNotification({ ...notification, trigger: !notification.trigger }));
             } else {
               await updateContact(senderId);
               setNotificationOpen(true);
@@ -170,13 +170,13 @@ const ChatProvider = () => {
               setNotificationDetail(senderId);
               setNotificationLink(null);
               dispatch(setNotification({ ...notification, alert: true }));
-              dispatch(setNotification({ ...notification, update: !notification.update }));
+              dispatch(setNotification({ ...notification, trigger: !notification.trigger }));
             }
           } else {
           }
         } else {
           dispatch(setNotification({ ...notification, alert: true }));
-          dispatch(setNotification({ ...notification, update: !notification.update }));
+          dispatch(setNotification({ ...notification, trigger: !notification.trigger }));
           if (
             !data.disturb &&
             alert.receivers.find((userid) => userid === account.uid)

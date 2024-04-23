@@ -34,12 +34,13 @@ export const fetchCountUnreadAlerts = async (userid: string) => {
 };
 
 export const updateAlertReadstatus = async (
+  alert_id: string,
   userid: string,
   accessToken: string
 ) => {
   try {
     const res = await axios.put(
-      `${tymt_backend_url}/alerts/add-reader/${userid}`,
+      `${tymt_backend_url}/alerts/add-reader/${alert_id}`,
       {
         reader: `${userid}`,
       },

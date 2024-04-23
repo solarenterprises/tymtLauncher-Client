@@ -43,7 +43,6 @@ import { createContact } from "../../features/chat/Chat-contactApi";
 import { selecteduserType } from "../../types/chatTypes";
 import { searchUsers } from "../../features/chat/Chat-contactApi";
 import { setChatHistory } from "../../features/chat/Chat-historySlice";
-import { sendFriendRequest } from "../../features/chat/Chat-friendRequestAPI";
 
 const socket: Socket = io(socket_backend_url as string);
 import { socket_backend_url } from "../../configs";
@@ -100,10 +99,6 @@ const ChatuserlistinRoom = ({ view, setView }: propsType) => {
   };
 
   const sendRequest = async () => {
-    const accessToken: string = await getaccessToken(
-      multiwallet.Solar.chain.wallet,
-      nonCustodial.password
-    );
     const data = {
       alertType: "friend-request",
       note: {
@@ -114,11 +109,6 @@ const ChatuserlistinRoom = ({ view, setView }: propsType) => {
     };
     socket.emit("post-alert", JSON.stringify(data));
     setOpenRequestModal(false);
-    await sendFriendRequest(
-      [selectedusertoDelete.id],
-      accessToken,
-      account.uid
-    );
   };
 
   /***Modals of Userlist ***/

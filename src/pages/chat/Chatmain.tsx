@@ -48,7 +48,6 @@ import {
   setSelectedUsertoDelete,
 } from "../../features/chat/Chat-selecteduserSlice";
 import { setChatHistory } from "../../features/chat/Chat-historySlice";
-import { sendFriendRequest } from "../../features/chat/Chat-friendRequestAPI";
 import { getAccount } from "../../features/account/AccountSlice";
 
 const theme = createTheme({
@@ -105,10 +104,6 @@ const Chatmain = ({ view, setView }: propsType) => {
   };
 
   const sendRequest = async () => {
-    const accessToken: string = await getaccessToken(
-      multiwallet.Solar.chain.wallet,
-      nonCustodial.password
-    );
     const data = {
       alertType: "friend-request",
       note: {
@@ -119,7 +114,6 @@ const Chatmain = ({ view, setView }: propsType) => {
     };
     socket.emit("post-alert", JSON.stringify(data));
     setOpenRequestModal(false);
-    await sendFriendRequest([selectedusertoDelete.id], accessToken, account.uid);
     console.log("myid", account.uid);
     console.log("receiver",selectedusertoDelete.id)
   };

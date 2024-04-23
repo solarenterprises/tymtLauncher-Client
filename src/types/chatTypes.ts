@@ -84,6 +84,7 @@ export interface scrollDownType {
 }
 
 export interface alertType {
+  _id: string;
   alertType: string;
   note: any;
   receivers: string[];

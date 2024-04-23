@@ -13,6 +13,7 @@ export interface notificationType {
   update: boolean;
   sound: boolean;
   hour: number;
+  trigger: boolean;
 }
 
 export interface chatType {

@@ -45,14 +45,18 @@ const Alertmain = () => {
       multiwallet.Solar.chain.wallet,
       nonCustodial.password
     );
-    await updateAlertReadstatus(account.uid, accessToken);
+
+    for (const alert of unreadalerts) {
+      await updateAlertReadstatus(alert._id, account.uid, accessToken);
+    }
+
     console.log("accesstoken", accessToken);
     console.log("userid", account.uid);
   };
 
   useEffect(() => {
     getUnreadAlerts();
-  }, [notification.update]);
+  }, [notification.trigger]);
 
   return (
     <Box className={"alertmain-container"}>
@@ -89,7 +93,7 @@ const Alertmain = () => {
               dispatch(
                 setNotification({
                   ...notification,
-                  update: !notification.update,
+                  trigger: !notification.trigger,
                 })
               );
             }}
@@ -113,8 +117,8 @@ const Alertmain = () => {
               }
               detail={
                 alert.alertType === "friend-request"
-                  ? "Don't miss out on the fun - add to your friends now!"
-                  : `${alert.note.detail}`
+                  ? `${alert.note?.sender}`
+                  : `${alert.note?.detail}`
               }
             />
           ))}

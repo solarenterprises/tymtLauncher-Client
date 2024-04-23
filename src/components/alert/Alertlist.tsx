@@ -1,8 +1,6 @@
 import { Stack, Box, Button, Divider } from "@mui/material";
 import { useEffect, useState } from "react";
-// import { useDispatch,
-//     // useSelector
-// } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 
 import { propsAlertListType } from "../../types/alertTypes";
 import failedIcon from "../../assets/alert/failed-icon.svg";
@@ -12,19 +10,20 @@ import alertIcon from "../../assets/alert/alert-icon.png";
 import messageIcon from "../../assets/alert/message-icon.svg";
 import unreaddot from "../../assets/alert/unreaddot.svg";
 
-// import Avatar from "./home/Avatar";
+import Avatar from "../home/Avatar";
 
 // import { propsAlertTypes } from "../types/commonTypes";
 // // import { multiWalletType } from "../types/walletTypes";
-// import { getUserlist,
-//   // setUserList
-// } from "../features/chat/Chat-userlistSlice";
+import {
+  getUserlist,
+  // setUserList
+} from "../../features/chat/Chat-userlistSlice";
 // import { notification_duration } from "../configs";
 // import {
 //   selectPartner,
 //   setCurrentChatPartner,
 // } from "../features/chat/Chat-currentPartnerSlice";
-// import { scrollDownType, userType } from "../types/chatTypes";
+import { userType } from "../../types/chatTypes";
 
 // import {
 //   getdownState,
@@ -38,15 +37,17 @@ import unreaddot from "../../assets/alert/unreaddot.svg";
 // // } from "../features/chat/Chat-contactApi";
 // // import { nonCustodialType } from "../types/accountTypes";
 // // import { getNonCustodial } from "../features/account/NonCustodialSlice";
-// import {
-//   getFriendlist,
-//   setFriendlist,
-// } from "../features/chat/Chat-friendlistSlice";
+import {
+  getFriendlist,
+  setFriendlist,
+} from "../../features/chat/Chat-friendlistSlice";
 
 const AlertList = ({ status, title, detail }: propsAlertListType) => {
-  //   const dispatch = useDispatch();
+    const dispatch = useDispatch();
   const [logo, setLogo] = useState<any>();
-
+  const chatuserlist: userType[] = useSelector(getUserlist);
+  const friendlist: userType[] = useSelector(getFriendlist);
+  const senderUser = chatuserlist.find((user) => user._id === detail);
   // const updateContact = async (_id) => {
   //   const accessToken: string = await getaccessToken(
   //     multiwallet.Solar.chain.wallet,
@@ -57,17 +58,20 @@ const AlertList = ({ status, title, detail }: propsAlertListType) => {
   //   dispatch(setUserList(contacts));
   // };
 
-  //   const addFriend = async () => {
-  //     const senderId = detail;
-  //     const senderInChatUserlist = chatuserlist.find(
-  //       (user) => user._id === senderId
-  //     );
-  //     console.log("friendlist", friendlist);
-  //     console.log("request sender", senderInChatUserlist);
-  //     console.log("chatuserlist", chatuserlist);
-  //     const updatedFriendlist: userType[] = [...friendlist, senderInChatUserlist];
-  //     dispatch(setFriendlist(updatedFriendlist));
-  //   };
+  const addFriend = async () => {
+    const senderId = title === "Friend Request" ? detail : null;
+    const senderInChatUserlist = chatuserlist.find(
+      (user) => user._id === senderId
+    );
+    const senderInChatFriendlist = friendlist.find(
+      (user) => user._id === senderId
+    );
+    console.log("friendlist", friendlist);
+    console.log("request sender", senderInChatUserlist);
+    console.log("chatuserlist", chatuserlist);
+    const updatedFriendlist: userType[] = [...friendlist, senderInChatUserlist];
+    if (!senderInChatFriendlist) dispatch(setFriendlist(updatedFriendlist));
+  };
 
   useEffect(() => {
     if (status == "failed") {
@@ -126,11 +130,11 @@ const AlertList = ({ status, title, detail }: propsAlertListType) => {
                   gap={"7px"}
                   marginLeft={"43px"}
                 >
-                  {/* <Avatar
+                  <Avatar
                     onlineStatus={senderUser.onlineStatus}
                     userid={senderUser._id}
                     size={40}
-                  /> */}
+                  />
                   <Box className={"fs-18-regular white"}>
                     {/* {senderUser.nickName} */}
                   </Box>
@@ -139,7 +143,7 @@ const AlertList = ({ status, title, detail }: propsAlertListType) => {
                   <Button
                     className="modal_btn_right"
                     onClick={() => {
-                      //   addFriend();
+                        addFriend();
                     }}
                   >
                     <Box className={"fs-18-bold white"}>Add</Box>
