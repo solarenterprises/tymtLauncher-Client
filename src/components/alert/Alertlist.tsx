@@ -43,7 +43,7 @@ import {
 } from "../../features/chat/Chat-friendlistSlice";
 
 const AlertList = ({ status, title, detail }: propsAlertListType) => {
-    const dispatch = useDispatch();
+  const dispatch = useDispatch();
   const [logo, setLogo] = useState<any>();
   const chatuserlist: userType[] = useSelector(getUserlist);
   const friendlist: userType[] = useSelector(getFriendlist);
@@ -128,7 +128,6 @@ const AlertList = ({ status, title, detail }: propsAlertListType) => {
                   direction={"row"}
                   alignItems={"center"}
                   gap={"7px"}
-                  marginLeft={"43px"}
                 >
                   <Avatar
                     onlineStatus={senderUser?.onlineStatus}
@@ -136,14 +135,14 @@ const AlertList = ({ status, title, detail }: propsAlertListType) => {
                     size={40}
                   />
                   <Box className={"fs-18-regular white"}>
-                    {/* {senderUser.nickName} */}
+                    {senderUser?.nickName}
                   </Box>
                 </Stack>
                 <Stack direction={"row"} alignItems={"center"} gap={"16px"}>
                   <Button
                     className="modal_btn_right"
                     onClick={() => {
-                        addFriend();
+                      addFriend();
                     }}
                   >
                     <Box className={"fs-18-bold white"}>Add</Box>

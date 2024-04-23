@@ -1,12 +1,11 @@
 import { Box, Button, Divider, Stack } from "@mui/material";
-import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 
 import backIcon from "../../assets/settings/back-icon.svg";
 import arrowImg from "../../assets/settings/arrow-right.svg";
 
-import { selectChat, setChat } from "../../features/settings/ChatSlice";
+import { selectChat } from "../../features/settings/ChatSlice";
 import SwitchComp from "../../components/SwitchComp";
 import {
   propsType,
@@ -55,11 +54,6 @@ const ChatSetting = ({ view, setView }: propsType) => {
       console.log(err);
     }
   };
-
-  const setFriend = useCallback(() => {
-    let updateData = { ...data, disturb: !data.disturb };
-    dispatch(setChat(updateData));
-  }, [data]);
 
   return (
     <>
@@ -114,7 +108,6 @@ const ChatSetting = ({ view, setView }: propsType) => {
                   checked={!notificationStore.alert}
                   onClick={() => {
                     putUserStatus();
-                    setFriend();
                     setNotificationStatus("success");
                     setNotificationTitle(
                       !notificationStore.alert

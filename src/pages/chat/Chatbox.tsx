@@ -22,7 +22,7 @@ import {
   userType,
 } from "../../types/chatTypes";
 import { accountType, walletEnum } from "../../types/accountTypes";
-import { chatType } from "../../types/settingTypes";
+import { chatType, notificationType } from "../../types/settingTypes";
 
 import { selectPartner } from "../../features/chat/Chat-currentPartnerSlice";
 import { getAccount } from "../../features/account/AccountSlice";
@@ -38,6 +38,7 @@ import {
   setdownState,
 } from "../../features/chat/Chat-scrollDownSlice";
 import { selectChat } from "../../features/settings/ChatSlice";
+import { selectNotification } from "../../features/settings/NotificationSlice";
 
 import EmojiPicker, { SkinTones } from "emoji-picker-react";
 import maximize from "../../assets/chat/maximize.svg";
@@ -78,6 +79,7 @@ const Chatbox = ({ view, setView }: propsType) => {
   const currentpartner: userType = useSelector(selectPartner);
   const chatHistoryStore: ChatHistoryType = useSelector(getChatHistory);
   const scrollstate: scrollDownType = useSelector(getdownState);
+  const notificationStore: notificationType = useSelector(selectNotification);
   const data: chatType = useSelector(selectChat);
   const shouldScrollDown = scrollstate.down;
   const userStore =
@@ -165,11 +167,12 @@ const Chatbox = ({ view, setView }: propsType) => {
     socket.emit("get-messages-by-room", JSON.stringify(query));
     socket.on("messages-by-room", async (result) => {
       if (result && result.data.length > 0) {
-        dispatch(
-          setChatHistory({
-            messages: [...chatHistoryStore.messages, ...result.data],
-          })
-        );
+        (data.message === "anyone" || data.message === "friend") &&
+          dispatch(
+            setChatHistory({
+              messages: [...chatHistoryStore.messages, ...result.data],
+            })
+          );
         setPage(page + 1);
       } else {
         setHasMore(false);
@@ -366,7 +369,11 @@ const Chatbox = ({ view, setView }: propsType) => {
                                 onlineStatus={true}
                                 userid={account.uid}
                                 size={40}
-                                status={data.disturb ? "donotdisturb" : "online"}
+                                status={
+                                  !notificationStore.alert
+                                    ? "donotdisturb"
+                                    : "online"
+                                }
                               />
                               <Box
                                 className={"fs-16 white"}

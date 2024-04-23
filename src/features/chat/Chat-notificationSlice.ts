@@ -10,8 +10,6 @@ const loadNotification = () => {
       update: false,
       sound: false,
       unreadmessage: 0,
-      trigger: false,
-      alertbadge: false
     };
   } else {
     return JSON.parse(data);

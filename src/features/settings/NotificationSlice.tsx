@@ -11,6 +11,8 @@ const loadNotification: () => notificationType = () => {
       update: false,
       sound: false,
       hour: 1,
+      trigger: false,
+      alertbadge: false
     };
   } else {
     return JSON.parse(data);

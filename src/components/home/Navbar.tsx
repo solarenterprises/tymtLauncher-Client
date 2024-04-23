@@ -22,8 +22,8 @@ import Back from "./Back";
 import Avatar from "./Avatar";
 // import ComingModal from "../ComingModal";
 
-import { chatType, notificationType } from "../../types/settingTypes";
-import { ChatnotificationType } from "../../types/chatTypes";
+import { notificationType } from "../../types/settingTypes";
+// import { ChatnotificationType } from "../../types/chatTypes";
 import { PaginationType } from "../../types/homeTypes";
 import { TymtlogoType } from "../../types/homeTypes";
 import {
@@ -41,10 +41,9 @@ import { getAccount } from "../../features/account/AccountSlice";
 import { getNonCustodial } from "../../features/account/NonCustodialSlice";
 import { getCustodial } from "../../features/account/CustodialSlice";
 import { getCurrentLogo } from "../../features/home/Tymtlogo";
-import { getchatNotification } from "../../features/chat/Chat-notificationSlice";
+// import { getchatNotification } from "../../features/chat/Chat-notificationSlice";
 import { getCurrentPage, setCurrentPage } from "../../features/home/Navigation";
 import { getChain } from "../../features/wallet/ChainSlice";
-import { selectChat } from "../../features/settings/ChatSlice";
 import CardModal from "../CardModal";
 import Alertindex from "../../pages/alert";
 
@@ -72,10 +71,9 @@ const Navbar = () => {
   const account: accountType = useSelector(getAccount);
   const nonCustodialStore: nonCustodialType = useSelector(getNonCustodial);
   const custodialStore: custodialType = useSelector(getCustodial);
-  const data: chatType = useSelector(selectChat);
   const chain: IChain = useSelector(getChain);
-  const chatnotification: ChatnotificationType =
-    useSelector(getchatNotification);
+  // const chatnotification: ChatnotificationType =
+  //   useSelector(getchatNotification);
   const userStore =
     account.wallet === walletEnum.noncustodial
       ? nonCustodialStore
@@ -413,7 +411,7 @@ const Navbar = () => {
               onClick={() => setShowChat(!showChat)}
               sx={{ position: "relative" }}
             >
-              {chatnotification.alert === true && (
+              {/* {chatnotification.alert === true && (
                 <>
                   <Box
                     className={"fs-12-light"}
@@ -434,7 +432,7 @@ const Navbar = () => {
                     124
                   </Box>
                 </>
-              )}
+              )} */}
 
               <svg
                 width="24"
@@ -471,7 +469,7 @@ const Navbar = () => {
                 size={32}
                 ischain={true}
                 onlineStatus={true}
-                status={data.disturb ? "donotdisturb" : "online"}
+                status={!notification.alert ? "donotdisturb" : "online"}
               />
               <Stack
                 direction={"column"}

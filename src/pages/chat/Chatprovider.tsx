@@ -55,6 +55,7 @@ const ChatProvider = () => {
   const chatfriendlist: userType[] = useSelector(getFriendlist);
   const notification: notificationType = useSelector(selectNotification);
   const data: chatType = useSelector(selectChat);
+
   const {
     setNotificationStatus,
     setNotificationTitle,
@@ -105,7 +106,7 @@ const ChatProvider = () => {
               const senderName = await getsenderName(message.sender_id);
               await updateContact(message.sender_id);
               {
-                !data.disturb && setNotificationOpen(true);
+                notification.alert && setNotificationOpen(true);
                 setNotificationStatus("message");
                 setNotificationTitle(senderName);
                 setNotificationDetail(message.message);
@@ -114,7 +115,7 @@ const ChatProvider = () => {
             } else {
               const senderName = senderInChatUserlist.nickName;
               {
-                !data.disturb && setNotificationOpen(true);
+                notification.alert && setNotificationOpen(true);
                 setNotificationStatus("message");
                 setNotificationTitle(senderName);
                 setNotificationDetail(message.message);
@@ -143,11 +144,7 @@ const ChatProvider = () => {
       console.log("my id", account.uid);
       const handleIncomingRequest = async () => {
         if (alert.alertType === "friend-request") {
-          if (
-            !data.disturb &&
-            data.friend === "anyone" &&
-            alert.receivers[0] === account.uid
-          ) {
+          if (data.friend === "anyone" && alert.receivers[0] === account.uid) {
             const senderId = alert.note?.sender;
             const senderInChatUserlist = chatuserlist.find(
               (user) => user._id === senderId
@@ -155,30 +152,47 @@ const ChatProvider = () => {
             console.log("senderInChatuserlist", senderInChatUserlist);
             console.log("senderId", alert.note.sender);
             if (senderInChatUserlist) {
-              setNotificationOpen(true);
-              setNotificationStatus("alert");
-              setNotificationTitle("Friend Request");
-              setNotificationDetail(senderId);
-              setNotificationLink(null);
+              {
+                notification.alert && setNotificationOpen(true);
+                setNotificationStatus("alert");
+                setNotificationTitle("Friend Request");
+                setNotificationDetail(senderId);
+                setNotificationLink(null);
+              }
+
               dispatch(setNotification({ ...notification, alertbadge: true }));
-              dispatch(setNotification({ ...notification, trigger: !notification.trigger }));
+              dispatch(
+                setNotification({
+                  ...notification,
+                  trigger: !notification.trigger,
+                })
+              );
             } else {
               await updateContact(senderId);
-              setNotificationOpen(true);
-              setNotificationStatus("alert");
-              setNotificationTitle("Friend Request");
-              setNotificationDetail(senderId);
-              setNotificationLink(null);
+              {
+                notification.alert && setNotificationOpen(true);
+                setNotificationStatus("alert");
+                setNotificationTitle("Friend Request");
+                setNotificationDetail(senderId);
+                setNotificationLink(null);
+              }
               dispatch(setNotification({ ...notification, alertbadge: true }));
-              dispatch(setNotification({ ...notification, trigger: !notification.trigger }));
+              dispatch(
+                setNotification({
+                  ...notification,
+                  trigger: !notification.trigger,
+                })
+              );
             }
           } else {
           }
         } else {
           dispatch(setNotification({ ...notification, alertbadge: true }));
-          dispatch(setNotification({ ...notification, trigger: !notification.trigger }));
+          dispatch(
+            setNotification({ ...notification, trigger: !notification.trigger })
+          );
           if (
-            !data.disturb &&
+            notification.alert &&
             alert.receivers.find((userid) => userid === account.uid)
           ) {
             setNotificationOpen(true);

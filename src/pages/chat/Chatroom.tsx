@@ -29,7 +29,7 @@ import {
   ChatHistoryType,
   scrollDownType,
 } from "../../types/chatTypes";
-import { chatType } from "../../types/settingTypes";
+import { chatType, notificationType } from "../../types/settingTypes";
 
 import { accountType, walletEnum } from "../../types/accountTypes";
 import { getAccount } from "../../features/account/AccountSlice";
@@ -45,7 +45,6 @@ import {
   getdownState,
   setdownState,
 } from "../../features/chat/Chat-scrollDownSlice";
-import { selectChat } from "../../features/settings/ChatSlice";
 
 import Chatindex from "../../pages/chat";
 import ChatSettinginRoom from "./ChatsettinginRoom";
@@ -78,6 +77,8 @@ import { AppDispatch } from "../../store";
 import React from "react";
 import _ from "lodash";
 import InfiniteScroll from "react-infinite-scroller";
+import { selectNotification } from "../../features/settings/NotificationSlice";
+import { selectChat } from "../../features/settings/ChatSlice";
 
 const socket: Socket = io(socket_backend_url as string);
 
@@ -98,12 +99,13 @@ const Chatroom = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
   const classes = ChatStyle();
+  const data: chatType = useSelector(selectChat);
   const currentpartner: userType = useSelector(selectPartner);
   const account: accountType = useSelector(getAccount);
   const chatHistoryStore: ChatHistoryType = useSelector(getChatHistory);
   const chatuserlist: userType[] = useSelector(getUserlist);
   const scrollstate: scrollDownType = useSelector(getdownState);
-  const data: chatType = useSelector(selectChat);
+  const notificationStore: notificationType = useSelector(selectNotification);
   const shouldScrollDown = scrollstate.down;
   const userStore =
     account.wallet === walletEnum.noncustodial
@@ -202,11 +204,12 @@ const Chatroom = () => {
     // Listen for the new messages from the server
     socket.on("messages-by-room", async (result) => {
       if (result && result.data.length > 0) {
-        dispatch(
-          setChatHistory({
-            messages: [...chatHistoryStore.messages, ...result.data],
-          })
-        );
+        (data.message === "anyone" || data.message === "friend") &&
+          dispatch(
+            setChatHistory({
+              messages: [...chatHistoryStore.messages, ...result.data],
+            })
+          );
         setPage(page + 1);
       } else {
         setHasMore(false); // No more messages to load
@@ -439,7 +442,11 @@ const Chatroom = () => {
                                     onlineStatus={true}
                                     userid={account.uid}
                                     size={40}
-                                    status={data.disturb ? "donotdisturb" : "online"}
+                                    status={
+                                      !notificationStore.alert
+                                        ? "donotdisturb"
+                                        : "online"
+                                    }
                                   />
                                   <Box
                                     className={"fs-16 white"}
