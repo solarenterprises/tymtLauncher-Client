@@ -32,7 +32,7 @@ import {
   nonCustodialType,
   walletEnum,
 } from "../../types/accountTypes";
-import { IChain } from "../../types/walletTypes";
+import { IChain, multiWalletType } from "../../types/walletTypes";
 import {
   selectNotification,
   setNotification,
@@ -47,6 +47,9 @@ import { getChain } from "../../features/wallet/ChainSlice";
 import { selectChat } from "../../features/settings/ChatSlice";
 import CardModal from "../CardModal";
 import Alertindex from "../../pages/alert";
+import { updateAlertReadstatus } from "../../features/chat/Chat-alertApi";
+import { getaccessToken } from "../../features/chat/Chat-contactApi";
+import { getMultiWallet } from "../../features/wallet/MultiWalletSlice";
 
 const theme = createTheme({
   palette: {
@@ -72,6 +75,8 @@ const Navbar = () => {
   const account: accountType = useSelector(getAccount);
   const nonCustodialStore: nonCustodialType = useSelector(getNonCustodial);
   const custodialStore: custodialType = useSelector(getCustodial);
+  const nonCustodial: nonCustodialType = useSelector(getNonCustodial);
+  const multiwallet: multiWalletType = useSelector(getMultiWallet);
   const data: chatType = useSelector(selectChat);
   const chain: IChain = useSelector(getChain);
   const chatnotification: ChatnotificationType =
@@ -87,7 +92,16 @@ const Navbar = () => {
   const [value, setValue] = useState<string>("");
   // const [coming, setComing] = useState<boolean>(false);
   const [cardModalOpen, setCardModalOpen] = useState<boolean>(false);
+  const updateAlert = async () => {
+    const accessToken: string = await getaccessToken(
+      multiwallet.Solar.chain.wallet,
+      nonCustodial.password
+    );
+    await updateAlertReadstatus(account.uid, accessToken);
+    dispatch(setNotification({ ...notification, update: !notification.update }));
+  };
 
+ 
   const setView = useCallback(
     (view: boolean) => {
       setShowSetting(view);
@@ -356,6 +370,7 @@ const Navbar = () => {
               sx={{ position: "relative" }}
               onClick={() => {
                 dispatch(setNotification({ ...notification, alert: false }));
+                updateAlert();
                 setShowAlert(!showAlert);
               }}
             >

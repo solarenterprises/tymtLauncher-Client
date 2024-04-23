@@ -104,11 +104,6 @@ const ChatuserlistinRoom = ({ view, setView }: propsType) => {
       multiwallet.Solar.chain.wallet,
       nonCustodial.password
     );
-    await sendFriendRequest(
-      [selectedusertoDelete.id],
-      accessToken,
-      account.uid
-    );
     const data = {
       alertType: "friend-request",
       note: {
@@ -119,6 +114,11 @@ const ChatuserlistinRoom = ({ view, setView }: propsType) => {
     };
     socket.emit("post-alert", JSON.stringify(data));
     setOpenRequestModal(false);
+    await sendFriendRequest(
+      [selectedusertoDelete.id],
+      accessToken,
+      account.uid
+    );
   };
 
   /***Modals of Userlist ***/

@@ -31,6 +31,7 @@ const Alertmain = () => {
   useEffect(() => {
     getUnreadAlerts();
   }, [notification.update]);
+
   return (
     <Box className={"alertmain-container"}>
       <Box

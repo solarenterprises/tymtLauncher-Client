@@ -109,7 +109,6 @@ const Chatmain = ({ view, setView }: propsType) => {
       multiwallet.Solar.chain.wallet,
       nonCustodial.password
     );
-    await sendFriendRequest([selectedusertoDelete.id], accessToken, account.uid);
     const data = {
       alertType: "friend-request",
       note: {
@@ -120,6 +119,9 @@ const Chatmain = ({ view, setView }: propsType) => {
     };
     socket.emit("post-alert", JSON.stringify(data));
     setOpenRequestModal(false);
+    await sendFriendRequest([selectedusertoDelete.id], accessToken, account.uid);
+    console.log("myid", account.uid);
+    console.log("receiver",selectedusertoDelete.id)
   };
 
   const handleContextMenu = (e: any, id: string) => {
