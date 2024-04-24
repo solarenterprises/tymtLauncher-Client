@@ -58,14 +58,17 @@ const Alertmain = () => {
       await updateAlertReadstatus(alert._id, account.uid, accessToken);
     }
 
+    getUnreadAlerts();
+    getReadAlerts();
+
     console.log("accesstoken", accessToken);
     console.log("userid", account.uid);
   };
 
   useEffect(() => {
-      getUnreadAlerts();
-      getReadAlerts();
-  }, [notification.trigger, read, updateAlert()]);
+    getUnreadAlerts();
+    getReadAlerts();
+  }, [notification.trigger, read]);
 
   return (
     <Box className={"alertmain-container"}>
