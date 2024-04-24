@@ -51,7 +51,7 @@ const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
     const data = {
       id: detail._id,
       updateFields: {
-        status: "accepted",
+        note: { sender: detail.note.sender, status: "accepted" },
         receivers: detail.receivers,
       },
     };
@@ -62,7 +62,7 @@ const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
     const data = {
       id: detail._id,
       updateFields: {
-        status: "rejected",
+        note: { sender: detail.note.sender, status: "rejected" },
         receivers: detail.receivers,
       },
     };
@@ -114,7 +114,9 @@ const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
           </Stack>
           <Box className={"fs-16-regular white"} marginTop={"12px"}>
             {title !== "Friend Request" &&
-              (detail.length > 100 ? detail.substring(0, 100) + "..." : detail)}
+              (detail.note.message.length > 100
+                ? detail.note.message.substring(0, 100) + "..."
+                : detail.note.message)}
             {title === "Friend Request" &&
               "Don't miss out on the fun - add to your friends now!"}
           </Box>

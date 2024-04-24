@@ -154,8 +154,16 @@ const Chatroom = () => {
           message: value,
           createdAt: Date.now(),
         };
-
         socket.emit("post-message", JSON.stringify(message));
+        const data = {
+          alertType: "chat",
+          note: {
+            sender: `${account.uid}`,
+            message: value,
+          },
+          receivers: [currentpartner._id],
+        };
+        socket.emit("post-alert", JSON.stringify(data));
         const updatedHistory = [message, ...chatHistoryStore.messages];
         dispatch(
           setChatHistory({
@@ -204,13 +212,14 @@ const Chatroom = () => {
     // Listen for the new messages from the server
     socket.on("messages-by-room", async (result) => {
       if (result && result.data.length > 0) {
-        (data.message === "anyone" || data.message === "friend") &&
+        if (data.message === "anyone" || data.message === "friend") {
           dispatch(
             setChatHistory({
               messages: [...chatHistoryStore.messages, ...result.data],
             })
           );
-        setPage(page + 1);
+          setPage(page + 1);
+        }
       } else {
         setHasMore(false); // No more messages to load
       }

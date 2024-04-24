@@ -179,6 +179,7 @@ const ChatProvider = () => {
           }
         } else if (
           notification.alert &&
+          alert.alertType !== "chat" &&
           alert.receivers.find((userid) => userid === account.uid)
         ) {
           setNotificationOpen(true);
@@ -204,8 +205,8 @@ const ChatProvider = () => {
           {
             notification.alert && setNotificationOpen(true);
             setNotificationStatus("alert");
-            setNotificationTitle(`Friend Request ${alert.note.status}`);
-            setNotificationDetail(`Friend Request Accepted`);
+            setNotificationTitle(`Friend request ${alert.note.status}`);
+            setNotificationDetail(`Friend request accepted`);
             setNotificationLink(null);
             triggerBadge();
           }

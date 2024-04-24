@@ -119,8 +119,16 @@ const Chatbox = ({ view, setView }: propsType) => {
           message: value,
           createdAt: Date.now(),
         };
-
         socket.emit("post-message", JSON.stringify(message));
+        const data = {
+          alertType: "chat",
+          note: {
+            sender: `${account.uid}`,
+            message: value,
+          },
+          receivers: [currentpartner._id],
+        };
+        socket.emit("post-alert", JSON.stringify(data));
         const updatedHistory = [message, ...chatHistoryStore.messages];
         dispatch(
           setChatHistory({
