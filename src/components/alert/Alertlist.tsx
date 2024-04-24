@@ -13,20 +13,34 @@ import readdot from "../../assets/alert/readdot.svg";
 
 import Avatar from "../home/Avatar";
 
-import { getUserlist } from "../../features/chat/Chat-userlistSlice";
+import {
+  getUserlist,
+  setUserList,
+} from "../../features/chat/Chat-userlistSlice";
 import { userType } from "../../types/chatTypes";
 import {
   getFriendlist,
   setFriendlist,
 } from "../../features/chat/Chat-friendlistSlice";
+import { getNonCustodial } from "../../features/account/NonCustodialSlice";
+import { getMultiWallet } from "../../features/wallet/MultiWalletSlice";
 
 const socket: Socket = io(socket_backend_url as string);
 import { socket_backend_url } from "../../configs";
 import { io, Socket } from "socket.io-client";
+import {
+  createContact,
+  getaccessToken,
+  receiveContactlist,
+} from "../../features/chat/Chat-contactApi";
+import { nonCustodialType } from "../../types/accountTypes";
+import { multiWalletType } from "../../types/walletTypes";
 
 const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
   const dispatch = useDispatch();
   const [logo, setLogo] = useState<any>();
+  const nonCustodial: nonCustodialType = useSelector(getNonCustodial);
+  const multiwallet: multiWalletType = useSelector(getMultiWallet);
   const chatuserlist: userType[] = useSelector(getUserlist);
   const friendlist: userType[] = useSelector(getFriendlist);
   const senderUser = chatuserlist.find(
@@ -50,25 +64,54 @@ const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
   const approveFR = () => {
     const data = {
       id: detail._id,
-      updateFields: {
-        note: { sender: detail.note.sender, status: "accepted" },
-        receivers: detail.receivers,
-      },
+      note: { sender: `${detail.note.sender}`, status: "accepted" },
+      receivers: detail.receivers,
     };
     console.log("approving data", data);
     socket.emit("update-alert", JSON.stringify(data));
+    const updatealert = {
+      id: detail._id,
+      alertType: "friend-request-accepted",
+      note: { sender: `${detail.note.sender}`, status: "accepted" },
+      receivers: detail.receivers,
+      reader: `${detail.note.sender}`,
+    };
+    socket.emit("add-reader-alert", JSON.stringify(updatealert));
   };
   const declineFR = () => {
     const data = {
       id: detail._id,
-      updateFields: {
-        note: { sender: detail.note.sender, status: "rejected" },
-        receivers: detail.receivers,
-      },
+      alertType: "friend-request-accepted",
+      note: { sender: `${detail.note.sender}`, status: "rejected" },
+      receivers: detail.receivers,
     };
     console.log("rejecting data", data);
+    const updatealert = {
+      id: detail._id,
+      alertType: "friend-request-rejected",
+      note: { sender: `${detail.note.sender}`, status: "rejected" },
+      receivers: detail.receivers,
+      reader: `${detail.note.sender}`,
+    };
+    socket.emit("add-reader-alert", JSON.stringify(updatealert));
     socket.emit("update-alert", JSON.stringify(data));
   };
+
+  const updateContact = async (_id) => {
+    const accessToken: string = await getaccessToken(
+      multiwallet.Solar.chain.wallet,
+      nonCustodial.password
+    );
+    await createContact(_id, accessToken);
+    const contacts: userType[] = await receiveContactlist(accessToken);
+    dispatch(setUserList(contacts));
+  };
+
+  useEffect(() => {
+    if (!senderUser) {
+      updateContact(detail.note?.sender);
+    }
+  }, [senderUser]);
 
   useEffect(() => {
     if (status == "failed") {
@@ -103,7 +146,9 @@ const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
           >
             <Stack direction={"row"} gap={"8px"} alignItems={"center"}>
               <img src={logo} />
-              <Box className={"fs-h4 white"}>{title}</Box>
+              <Box className={"fs-h4 white"}>
+                {title === "chat" ? senderUser?.nickName : title}
+              </Box>
             </Stack>
             {read === "unread" && (
               <img src={unreaddot} width={"12px"} height={"12px"} />
@@ -113,12 +158,14 @@ const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
             )}
           </Stack>
           <Box className={"fs-16-regular white"} marginTop={"12px"}>
-            {title !== "Friend Request" &&
-              (detail.note.message.length > 100
-                ? detail.note.message.substring(0, 100) + "..."
-                : detail.note.message)}
+            {(title === "chat" || title === "update") &&
+              (detail.note?.message.length > 100
+                ? detail.note?.message.substring(0, 100) + "..."
+                : detail.note?.message)}
             {title === "Friend Request" &&
               "Don't miss out on the fun - add to your friends now!"}
+            {title === "Friend request accepted" && "Friend request accepted"}
+            {title === "Friend request rejected" && "Friend request rejected"}
           </Box>
           {title === "Friend Request" && (
             <>
@@ -133,6 +180,7 @@ const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
                     onlineStatus={senderUser?.onlineStatus}
                     userid={senderUser?._id}
                     size={40}
+                    status={senderUser?.notificationStatus}
                   />
                   <Box className={"fs-18-regular white"}>
                     {senderUser?.nickName}

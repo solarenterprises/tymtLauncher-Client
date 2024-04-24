@@ -70,6 +70,11 @@ const Alertmain = () => {
     getReadAlerts();
   }, [notification.trigger, read]);
 
+  useEffect(() => {
+    if (unreadcount > 0)
+      dispatch(setNotification({ ...notification, alertbadge: true }));
+  }, [notification.trigger, read]);
+
   return (
     <Box className={"alertmain-container"}>
       <Box
@@ -153,14 +158,14 @@ const Alertmain = () => {
                     alert.alertType === "friend-request"
                       ? "Friend Request"
                       : alert.alertType === "chat"
-                      ? `${alert.note?.sender}`
+                      ? `chat`
+                      : alert.alertType === "friend-request-accepted"
+                      ? "friend-request-accepted"
+                      : alert.alertType === "friend-request-rejected"
+                      ? "friend-request-rejected"
                       : "Update"
                   }
-                  detail={
-                    alert.alertType === "friend-request"
-                      ? alert
-                      : `${alert.note?.detail}`
-                  }
+                  detail={alert}
                   read={"unread"}
                 />
               ))}
@@ -175,14 +180,14 @@ const Alertmain = () => {
                     alert.alertType === "friend-request"
                       ? "Friend Request"
                       : alert.alertType === "chat"
-                      ? `${alert.note?.sender}`
+                      ? `chat`
+                      : alert.alertType === "friend-request-accepted"
+                      ? "Friend request accepted"
+                      : alert.alertType === "friend-request-rejected"
+                      ? "Friend request rejected"
                       : "Update"
                   }
-                  detail={
-                    alert.alertType === "friend-request"
-                      ? alert
-                      : `${alert.note?.detail}`
-                  }
+                  detail={alert}
                   read={"read"}
                 />
               ))}

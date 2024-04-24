@@ -56,7 +56,6 @@ const ChatProvider = () => {
   const notification: notificationType = useSelector(selectNotification);
   const data: chatType = useSelector(selectChat);
   const triggerBadge = () => {
-    dispatch(setNotification({ ...notification, alertbadge: true }));
     dispatch(
       setNotification({ ...notification, trigger: !notification.trigger })
     );
