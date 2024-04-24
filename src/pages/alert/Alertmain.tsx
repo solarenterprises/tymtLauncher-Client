@@ -11,7 +11,6 @@ import { accountType, nonCustodialType } from "../../types/accountTypes";
 // import { featchCountUnreadAlert } from "../../features/chat/Chat-alertApi";
 import { getAccount } from "../../features/account/AccountSlice";
 import {
-  fetchCountUnreadAlerts,
   fetchReadAlerts,
   fetchUnreadAlerts,
   updateAlertReadstatus,
@@ -37,9 +36,8 @@ const Alertmain = () => {
   const [read, setRead] = useState<string>("unread");
   const notification: notificationType = useSelector(selectNotification);
   const getUnreadAlerts = async () => {
-    const unreadcount: number = await fetchCountUnreadAlerts(account.uid);
     const unreadalerts: alertType[] = await fetchUnreadAlerts(account.uid);
-    setUnreadCount(unreadcount);
+    setUnreadCount(unreadalerts.length);
     setUnreadAlerts(unreadalerts);
   };
   const getReadAlerts = async () => {
@@ -67,7 +65,7 @@ const Alertmain = () => {
   useEffect(() => {
       getUnreadAlerts();
       getReadAlerts();
-  }, [notification.trigger, read]);
+  }, [notification.trigger, read, updateAlert()]);
 
   return (
     <Box className={"alertmain-container"}>

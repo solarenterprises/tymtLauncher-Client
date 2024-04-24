@@ -23,13 +23,13 @@ export const fetchReadAlerts = async (userid: string) => {
       `${tymt_backend_url}/alerts/alerts-read-for-user/${userid}`
     );
     if (res.status === 200) {
-      console.log("fetch unread alerts successfully");
+      console.log("fetch read alerts successfully");
       return res.data.result;
     } else {
-      console.log("fetch unread alerts failed");
+      console.log("fetch read alerts failed");
     }
   } catch (err) {
-    console.log("fetch unread alerts failed");
+    console.log("fetch read alerts failed");
   }
 };
 
@@ -39,13 +39,13 @@ export const fetchCountUnreadAlerts = async (userid: string) => {
       `${tymt_backend_url}/alerts/alerts-count-unread-for-user/${userid}`
     );
     if (res.status === 200) {
-      console.log("fetch unread alerts successfully");
+      console.log("fetch unread Counts successfully");
       return res.data.count;
     } else {
-      console.log("fetch unread alerts failed");
+      console.log("fetch unread Counts failed");
     }
   } catch (err) {
-    console.log("fetch unread alerts failed");
+    console.log("fetch unread Counts failed");
   }
 };
 

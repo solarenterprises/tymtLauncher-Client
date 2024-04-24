@@ -32,16 +32,6 @@ const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
   const senderUser = chatuserlist.find(
     (user) => user._id === detail.note?.sender
   );
-  // const updateContact = async (_id) => {
-  //   const accessToken: string = await getaccessToken(
-  //     multiwallet.Solar.chain.wallet,
-  //     nonCustodial.password
-  //   );
-  //   await createContact(_id, accessToken);
-  //   const contacts: userType[] = await receiveContactlist(accessToken);
-  //   dispatch(setUserList(contacts));
-  // };
-
   const addFriend = async () => {
     const senderId = title === "Friend Request" ? detail.note?.sender : null;
     const senderInChatUserlist = chatuserlist.find(
@@ -57,7 +47,7 @@ const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
     if (!senderInChatFriendlist) dispatch(setFriendlist(updatedFriendlist));
   };
 
-  const approveFR = async () => {
+  const approveFR = () => {
     const data = {
       id: detail._id,
       updateFields: {
@@ -65,9 +55,10 @@ const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
         receivers: detail.receivers,
       },
     };
+    console.log("approving data", data);
     socket.emit("update-alert", JSON.stringify(data));
   };
-  const declineFR = async () => {
+  const declineFR = () => {
     const data = {
       id: detail._id,
       updateFields: {
@@ -75,6 +66,7 @@ const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
         receivers: detail.receivers,
       },
     };
+    console.log("rejecting data", data);
     socket.emit("update-alert", JSON.stringify(data));
   };
 

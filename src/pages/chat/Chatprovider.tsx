@@ -172,14 +172,8 @@ const ChatProvider = () => {
                 setNotificationTitle("Friend Request");
                 setNotificationDetail(alert);
                 setNotificationLink(null);
+                triggerBadge();
               }
-              dispatch(setNotification({ ...notification, alertbadge: true }));
-              dispatch(
-                setNotification({
-                  ...notification,
-                  trigger: !notification.trigger,
-                })
-              );
             }
           } else {
           }
@@ -200,8 +194,13 @@ const ChatProvider = () => {
     });
 
     socket.on("alert-updated", (alert: alertType) => {
+      console.log("alert-updated", alert);
       const handleIncomingUpdatedAlert = () => {
-        if (alert.alertType === "friend-request") {
+        if (
+          alert.alertType === "friend-request" &&
+          (alert.note.sender === account.uid ||
+            alert.receivers[0] === account.uid)
+        ) {
           {
             notification.alert && setNotificationOpen(true);
             setNotificationStatus("alert");
@@ -211,7 +210,6 @@ const ChatProvider = () => {
             triggerBadge();
           }
         } else {
-          notification.alert && setNotificationOpen(true);
           if (
             notification.alert &&
             alert.receivers.find((userid) => userid === account.uid)
@@ -225,14 +223,15 @@ const ChatProvider = () => {
           } else {
           }
         }
-        handleIncomingUpdatedAlert();
       };
+      handleIncomingUpdatedAlert();
     });
 
     return () => {
       socket.off("connect");
       socket.off("message-posted");
       socket.off("alert-posted");
+      socket.off("alert-updated");
     };
   }, [socket, data, chatHistoryStore]);
 
