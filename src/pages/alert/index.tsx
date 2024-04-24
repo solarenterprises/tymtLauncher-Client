@@ -10,7 +10,6 @@ type Anchor = "right";
 
 const Alertindex = ({ viewAlert, setViewAlert }: propsAlertType) => {
   const [state, setState] = useState({ right: false });
-  //   const [panel, setPanel] = useState("chatmain");
   const classes = ChatStyle();
   const toggleDrawer =
     (anchor: Anchor, open: boolean) =>
@@ -49,11 +48,6 @@ const Alertindex = ({ viewAlert, setViewAlert }: propsAlertType) => {
       </Box>
       <Box className={classes.main_pan}>
         <Alertmain />
-        {/* <Chatmain view={panel} setView={setPanel} />
-        <ChatSetting view={panel} setView={setPanel} />
-        <ChatMsg view={panel} setView={setPanel} />
-        <Chatfriend view={panel} setView={setPanel} />
-        <Chatbox view={panel} setView={setPanel} /> */}
       </Box>
     </SwipeableDrawer>
   );

@@ -1,6 +1,7 @@
 import { Box, Button, Stack } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useTranslation } from "react-i18next";
 
 import unreaddot from "../../assets/alert/unreaddot.svg";
 import readdot from "../../assets/alert/readdot.svg";
@@ -28,13 +29,17 @@ import { getNonCustodial } from "../../features/account/NonCustodialSlice";
 
 const Alertmain = () => {
   const dispatch = useDispatch();
+  const { t } = useTranslation();
   const account: accountType = useSelector(getAccount);
+  const multiwallet: multiWalletType = useSelector(getMultiWallet);
+  const nonCustodial: nonCustodialType = useSelector(getNonCustodial);
+  const notification: notificationType = useSelector(selectNotification);
   const [unreadcount, setUnreadCount] = useState<number>(0);
   const [readcount, setReadCount] = useState<number>(0);
   const [unreadalerts, setUnreadAlerts] = useState<alertType[]>([]);
   const [readalerts, setReadAlerts] = useState<alertType[]>([]);
   const [read, setRead] = useState<string>("unread");
-  const notification: notificationType = useSelector(selectNotification);
+
   const getUnreadAlerts = async () => {
     const unreadalerts: alertType[] = await fetchUnreadAlerts(account.uid);
     setUnreadCount(unreadalerts.length);
@@ -45,8 +50,6 @@ const Alertmain = () => {
     setReadCount(readalerts.length);
     setReadAlerts(readalerts);
   };
-  const multiwallet: multiWalletType = useSelector(getMultiWallet);
-  const nonCustodial: nonCustodialType = useSelector(getNonCustodial);
 
   const updateAlert = async () => {
     const accessToken: string = await getaccessToken(
@@ -86,7 +89,7 @@ const Alertmain = () => {
         }}
       >
         <Box className={"fs-24-bold white"} marginTop={"0px"}>
-          Notifications
+          {t("not-1_notifications")}
         </Box>
         <Stack
           marginTop={"24px"}
@@ -108,7 +111,7 @@ const Alertmain = () => {
                 gap={"8px"}
               >
                 <Box className={"fs-18-regular gray"}>{unreadcount}</Box>
-                <Box className={"fs-18-regular gray"}>Unread</Box>
+                <Box className={"fs-18-regular gray"}>{t("not-2_unread")}</Box>
                 <img src={unreaddot} width={"8px"} height={"8px"} />
               </Stack>
             </Button>
@@ -125,7 +128,7 @@ const Alertmain = () => {
                 gap={"8px"}
               >
                 <Box className={"fs-18-regular gray"}>{readcount}</Box>
-                <Box className={"fs-18-regular gray"}>Read</Box>
+                <Box className={"fs-18-regular gray"}> {t("not-3_read")}</Box>
                 <img src={readdot} width={"8px"} height={"8px"} />
               </Stack>
             </Button>
@@ -143,7 +146,7 @@ const Alertmain = () => {
             }}
           >
             <Box className={"fs-18-bold"} color={"var(--Main-Blue, #52E1F2)"}>
-              Mark all as read
+              {t("not-4_mark-all-as-read")}
             </Box>
           </Button>
         </Stack>
@@ -158,11 +161,7 @@ const Alertmain = () => {
                     ? "Friend Request"
                     : alert.alertType === "chat"
                     ? `chat`
-                    : alert.alertType === "friend-request-accepted"
-                    ? "friend-request-accepted"
-                    : alert.alertType === "friend-request-rejected"
-                    ? "friend-request-rejected"
-                    : "Update"
+                    : t("not-8_update-notification")
                 }
                 detail={alert}
                 read={"unread"}
@@ -180,11 +179,7 @@ const Alertmain = () => {
                       ? "Friend Request"
                       : alert.alertType === "chat"
                       ? `chat`
-                      : alert.alertType === "friend-request-accepted"
-                      ? "Friend request accepted"
-                      : alert.alertType === "friend-request-rejected"
-                      ? "Friend request rejected"
-                      : "Update"
+                      : t("not-8_update-notification")
                   }
                   detail={alert}
                   read={"read"}

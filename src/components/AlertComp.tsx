@@ -2,6 +2,7 @@ import { Snackbar, Stack, Box, Button } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
+import { useTranslation } from "react-i18next";
 
 import Slide from "@mui/material/Slide";
 
@@ -54,6 +55,7 @@ const AlertComp = ({
   setOpen,
   link,
 }: propsAlertTypes) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const classname = CommonStyles();
@@ -70,7 +72,9 @@ const AlertComp = ({
   const [bg, setBg] = useState("");
   const [logo, setLogo] = useState<any>();
   const senderId =
-    title === "Friend Request" ? detail.note?.sender : searchParams.get("senderId");
+    title === "Friend Request"
+      ? detail.note?.sender
+      : searchParams.get("senderId");
   const senderUser = chatuserlist.find((user) => user._id === senderId);
 
   const addFriend = async () => {
@@ -197,8 +201,7 @@ const AlertComp = ({
                     (detail.length > 100
                       ? detail.substring(0, 100) + "..."
                       : detail)}
-                  {title === "Friend Request" &&
-                    "Don't miss out on the fun - add to your friends now!"}
+                  {title === "Friend Request" && t("not-10_fr-intro")}
                 </Box>
               </Stack>
             </Stack>
@@ -223,9 +226,12 @@ const AlertComp = ({
                     onlineStatus={senderUser?.onlineStatus}
                     userid={senderUser?._id}
                     size={40}
+                    status={senderUser?.notificationStatus}
                   />
                   <Box className={"fs-18-regular white"}>
-                    {senderUser?.nickName}
+                    {senderUser?.nickName.length > 14
+                      ? `${senderUser?.nickName.substring(0, 13)}...`
+                      : senderUser?.nickName}
                   </Box>
                 </Stack>
                 <Stack direction={"row"} alignItems={"center"} gap={"16px"}>
@@ -237,7 +243,7 @@ const AlertComp = ({
                       setOpen(false);
                     }}
                   >
-                    <Box className={"fs-18-bold white"}>Add</Box>
+                    <Box className={"fs-18-bold white"}>{t("not-5_add")}</Box>
                   </Button>
                   <Button
                     className="modal_btn_left_fr"
@@ -250,7 +256,7 @@ const AlertComp = ({
                       className={"fs-18-bold"}
                       color={"var(--Main-Blue, #52E1F2)"}
                     >
-                      Decline
+                      {t("not-6_decline")}
                     </Box>
                   </Button>
                 </Stack>

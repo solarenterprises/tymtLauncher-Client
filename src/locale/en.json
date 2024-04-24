@@ -456,6 +456,18 @@
     "tol-5_offline": "Offline",
     "tol-6_donotdisturb": "Do Not Disturb",
     "tol-7_ingame": "Ingame",
-    "tol-8_solar-card": "Solar Card"
+    "tol-8_solar-card": "Solar Card",
+    "not-1_notifications": "Notifications",
+    "not-2_unread": "Unread",
+    "not-3_read": "Read",
+    "not-4_mark-all-as-read": "Mark all as read",
+    "not-5_add": "Add",
+    "not-6_decline": "Decline",
+    "not-7_intro": "There are no notifications",
+    "not-8_update-notification": "Update Notifications",
+    "not-9_friend-request": "Friend Request",
+    "not-10_fr-intro": "Don't miss out on the fun - add to your friends now!",
+    "not-11_fr-accept": "Friend Request Accepted",
+    "not-12_fr-reject": "Friend Request Rejected"
   }
 }

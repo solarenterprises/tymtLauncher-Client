@@ -1,6 +1,7 @@
 import { Stack, Box, Button, Divider } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
+import { useTranslation } from "react-i18next";
 
 import { propsAlertListType } from "../../types/alertTypes";
 import failedIcon from "../../assets/alert/failed-icon.svg";
@@ -37,6 +38,7 @@ import { nonCustodialType } from "../../types/accountTypes";
 import { multiWalletType } from "../../types/walletTypes";
 
 const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
+  const {t} = useTranslation();
   const dispatch = useDispatch();
   const [logo, setLogo] = useState<any>();
   const nonCustodial: nonCustodialType = useSelector(getNonCustodial);
@@ -64,34 +66,27 @@ const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
   const approveFR = () => {
     const data = {
       id: detail._id,
-      note: { sender: `${detail.note.sender}`, status: "accepted" },
+      note: { sender: detail.note.sender, status: "accepted" },
       receivers: detail.receivers,
     };
-    console.log("approving data", data);
     socket.emit("update-alert", JSON.stringify(data));
     const updatealert = {
       id: detail._id,
-      alertType: "friend-request-accepted",
-      note: { sender: `${detail.note.sender}`, status: "accepted" },
-      receivers: detail.receivers,
-      reader: `${detail.note.sender}`,
+      reader: detail.note.sender,
     };
+    console.log("update-FR-alert", updatealert);
     socket.emit("add-reader-alert", JSON.stringify(updatealert));
   };
   const declineFR = () => {
     const data = {
       id: detail._id,
-      alertType: "friend-request-accepted",
-      note: { sender: `${detail.note.sender}`, status: "rejected" },
+      note: { sender: detail.note.sender, status: "rejected" },
       receivers: detail.receivers,
     };
     console.log("rejecting data", data);
     const updatealert = {
       id: detail._id,
-      alertType: "friend-request-rejected",
-      note: { sender: `${detail.note.sender}`, status: "rejected" },
-      receivers: detail.receivers,
-      reader: `${detail.note.sender}`,
+      reader: detail.note.sender,
     };
     socket.emit("add-reader-alert", JSON.stringify(updatealert));
     socket.emit("update-alert", JSON.stringify(data));
@@ -163,9 +158,14 @@ const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
                 ? detail.note?.message.substring(0, 100) + "..."
                 : detail.note?.message)}
             {title === "Friend Request" &&
-              "Don't miss out on the fun - add to your friends now!"}
-            {title === "Friend request accepted" && "Friend request accepted"}
-            {title === "Friend request rejected" && "Friend request rejected"}
+              detail.note.status === "pending" &&
+              t("not-10_fr-intro")}             
+            {title === "Friend Request" &&
+              detail.note.status === "accepted" &&
+              t("not-11_fr-accept")}
+            {title === "Friend Request" &&
+              detail.note.status === "rejected" &&
+              t("not-12_fr-reject")}
           </Box>
           {title === "Friend Request" && (
             <>
@@ -196,7 +196,7 @@ const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
                       approveFR();
                     }}
                   >
-                    <Box className={"fs-18-bold white"}>Add</Box>
+                    <Box className={"fs-18-bold white"}>{t("not-5_add")}</Box>
                   </Button>
                   <Button
                     className="modal_btn_left_fr"
@@ -208,7 +208,7 @@ const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
                       className={"fs-18-bold"}
                       color={"var(--Main-Blue, #52E1F2)"}
                     >
-                      Decline
+                    {t("not-6_decline")}
                     </Box>
                   </Button>
                 </Stack>
