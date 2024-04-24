@@ -78,11 +78,11 @@ const AlertComp = ({
     const senderInChatUserlist = chatuserlist.find(
       (user) => user._id === senderId
     );
-    console.log("friendlist", friendlist);
     console.log("request sender", senderInChatUserlist);
     console.log("chatuserlist", chatuserlist);
     const updatedFriendlist: userType[] = [...friendlist, senderInChatUserlist];
     dispatch(setFriendlist(updatedFriendlist));
+    console.log("friendlist", friendlist);
   };
   const approveFR = async () => {
     const accessToken: string = await getaccessToken(

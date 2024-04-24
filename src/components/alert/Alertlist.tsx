@@ -13,43 +13,22 @@ import readdot from "../../assets/alert/readdot.svg";
 
 import Avatar from "../home/Avatar";
 
-import {
-  getUserlist,
-  // setUserList
-} from "../../features/chat/Chat-userlistSlice";
-// import { notification_duration } from "../configs";
-// import {
-//   selectPartner,
-//   setCurrentChatPartner,
-// } from "../features/chat/Chat-currentPartnerSlice";
+import { getUserlist } from "../../features/chat/Chat-userlistSlice";
 import { userType } from "../../types/chatTypes";
-import { accountType } from "../../types/accountTypes";
-import { multiWalletType } from "../../types/walletTypes";
-
-import { nonCustodialType } from "../../types/accountTypes";
-
-// // import { getNonCustodial } from "../features/account/NonCustodialSlice";
 import {
   getFriendlist,
   setFriendlist,
 } from "../../features/chat/Chat-friendlistSlice";
-import { getaccessToken } from "../../features/chat/Chat-contactApi";
-import {
-  approveFriendRequest,
-  declineFriendRequest,
-} from "../../features/chat/Chat-alertApi";
-import { getAccount } from "../../features/account/AccountSlice";
-import { getNonCustodial } from "../../features/account/NonCustodialSlice";
-import { getMultiWallet } from "../../features/wallet/MultiWalletSlice";
+
+const socket: Socket = io(socket_backend_url as string);
+import { socket_backend_url } from "../../configs";
+import { io, Socket } from "socket.io-client";
 
 const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
   const dispatch = useDispatch();
   const [logo, setLogo] = useState<any>();
   const chatuserlist: userType[] = useSelector(getUserlist);
   const friendlist: userType[] = useSelector(getFriendlist);
-  const account: accountType = useSelector(getAccount);
-  const nonCustodial: nonCustodialType = useSelector(getNonCustodial);
-  const multiwallet: multiWalletType = useSelector(getMultiWallet);
   const senderUser = chatuserlist.find(
     (user) => user._id === detail.note?.sender
   );
@@ -79,18 +58,24 @@ const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
   };
 
   const approveFR = async () => {
-    const accessToken: string = await getaccessToken(
-      multiwallet.Solar.chain.wallet,
-      nonCustodial.password
-    );
-    await approveFriendRequest(detail._id, account.uid, accessToken);
+    const data = {
+      id: detail._id,
+      updateFields: {
+        status: "accepted",
+        receivers: detail.receivers,
+      },
+    };
+    socket.emit("update-alert", JSON.stringify(data));
   };
   const declineFR = async () => {
-    const accessToken: string = await getaccessToken(
-      multiwallet.Solar.chain.wallet,
-      nonCustodial.password
-    );
-    await declineFriendRequest(detail._id, account.uid, accessToken);
+    const data = {
+      id: detail._id,
+      updateFields: {
+        status: "rejected",
+        receivers: detail.receivers,
+      },
+    };
+    socket.emit("update-alert", JSON.stringify(data));
   };
 
   useEffect(() => {

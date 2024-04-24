@@ -55,6 +55,12 @@ const ChatProvider = () => {
   const chatfriendlist: userType[] = useSelector(getFriendlist);
   const notification: notificationType = useSelector(selectNotification);
   const data: chatType = useSelector(selectChat);
+  const triggerBadge = () => {
+    dispatch(setNotification({ ...notification, alertbadge: true }));
+    dispatch(
+      setNotification({ ...notification, trigger: !notification.trigger })
+    );
+  };
 
   const {
     setNotificationStatus,
@@ -152,21 +158,12 @@ const ChatProvider = () => {
             console.log("senderInChatuserlist", senderInChatUserlist);
             console.log("senderId", alert.note.sender);
             if (senderInChatUserlist) {
-              {
-                notification.alert && setNotificationOpen(true);
-                setNotificationStatus("alert");
-                setNotificationTitle("Friend Request");
-                setNotificationDetail(alert);
-                setNotificationLink(null);
-              }
-
-              dispatch(setNotification({ ...notification, alertbadge: true }));
-              dispatch(
-                setNotification({
-                  ...notification,
-                  trigger: !notification.trigger,
-                })
-              );
+              notification.alert && setNotificationOpen(true);
+              setNotificationStatus("alert");
+              setNotificationTitle("Friend Request");
+              setNotificationDetail(alert);
+              setNotificationLink(null);
+              triggerBadge();
             } else {
               await updateContact(senderId);
               {
@@ -186,11 +183,35 @@ const ChatProvider = () => {
             }
           } else {
           }
+        } else if (
+          notification.alert &&
+          alert.receivers.find((userid) => userid === account.uid)
+        ) {
+          setNotificationOpen(true);
+          setNotificationStatus("alert");
+          setNotificationTitle(`${alert.alertType}`);
+          setNotificationDetail(`${alert.note.detail}`);
+          setNotificationLink(null);
+          triggerBadge();
         } else {
-          dispatch(setNotification({ ...notification, alertbadge: true }));
-          dispatch(
-            setNotification({ ...notification, trigger: !notification.trigger })
-          );
+        }
+      };
+      handleIncomingRequest();
+    });
+
+    socket.on("alert-updated", (alert: alertType) => {
+      const handleIncomingUpdatedAlert = () => {
+        if (alert.alertType === "friend-request") {
+          {
+            notification.alert && setNotificationOpen(true);
+            setNotificationStatus("alert");
+            setNotificationTitle(`Friend Request ${alert.note.status}`);
+            setNotificationDetail(`Friend Request Accepted`);
+            setNotificationLink(null);
+            triggerBadge();
+          }
+        } else {
+          notification.alert && setNotificationOpen(true);
           if (
             notification.alert &&
             alert.receivers.find((userid) => userid === account.uid)
@@ -200,11 +221,12 @@ const ChatProvider = () => {
             setNotificationTitle(`${alert.alertType}`);
             setNotificationDetail(`${alert.note.detail}`);
             setNotificationLink(null);
+            triggerBadge();
           } else {
           }
         }
+        handleIncomingUpdatedAlert();
       };
-      handleIncomingRequest();
     });
 
     return () => {

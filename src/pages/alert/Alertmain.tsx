@@ -65,11 +65,8 @@ const Alertmain = () => {
   };
 
   useEffect(() => {
-    if (read === "unread") {
       getUnreadAlerts();
-    } else if (read === "read") {
       getReadAlerts();
-    }
   }, [notification.trigger, read]);
 
   return (

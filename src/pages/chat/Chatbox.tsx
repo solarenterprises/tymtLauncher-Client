@@ -167,13 +167,14 @@ const Chatbox = ({ view, setView }: propsType) => {
     socket.emit("get-messages-by-room", JSON.stringify(query));
     socket.on("messages-by-room", async (result) => {
       if (result && result.data.length > 0) {
-        (data.message === "anyone" || data.message === "friend") &&
+        if (data.message === "anyone" || data.message === "friend") {
           dispatch(
             setChatHistory({
               messages: [...chatHistoryStore.messages, ...result.data],
             })
           );
-        setPage(page + 1);
+          setPage(page + 1);
+        }
       } else {
         setHasMore(false);
       }
