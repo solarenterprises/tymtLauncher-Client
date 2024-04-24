@@ -8,7 +8,7 @@ interface NotificationContextType {
   setNotificationOpen: (open: boolean) => void;
   setNotificationStatus: (status: string) => void;
   setNotificationTitle: (title: string) => void;
-  setNotificationDetail: (detail: string) => void;
+  setNotificationDetail: (detail: any) => void;
   setNotificationLink: (detail: string) => void;
 }
 

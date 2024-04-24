@@ -11,5 +11,6 @@ export interface propsAlertType {
 export interface propsAlertListType {
   status: string;
   title: string;
-  detail: string;
+  detail: any;
+  read:string;
 }

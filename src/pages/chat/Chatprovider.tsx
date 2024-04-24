@@ -156,7 +156,7 @@ const ChatProvider = () => {
                 notification.alert && setNotificationOpen(true);
                 setNotificationStatus("alert");
                 setNotificationTitle("Friend Request");
-                setNotificationDetail(senderId);
+                setNotificationDetail(alert);
                 setNotificationLink(null);
               }
 
@@ -173,7 +173,7 @@ const ChatProvider = () => {
                 notification.alert && setNotificationOpen(true);
                 setNotificationStatus("alert");
                 setNotificationTitle("Friend Request");
-                setNotificationDetail(senderId);
+                setNotificationDetail(alert);
                 setNotificationLink(null);
               }
               dispatch(setNotification({ ...notification, alertbadge: true }));

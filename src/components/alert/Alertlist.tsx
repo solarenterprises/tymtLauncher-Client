@@ -9,11 +9,10 @@ import warnnigIcon from "../../assets/alert/warnning-icon.svg";
 import alertIcon from "../../assets/alert/alert-icon.png";
 import messageIcon from "../../assets/alert/message-icon.svg";
 import unreaddot from "../../assets/alert/unreaddot.svg";
+import readdot from "../../assets/alert/readdot.svg";
 
 import Avatar from "../home/Avatar";
 
-// import { propsAlertTypes } from "../types/commonTypes";
-// // import { multiWalletType } from "../types/walletTypes";
 import {
   getUserlist,
   // setUserList
@@ -24,30 +23,36 @@ import {
 //   setCurrentChatPartner,
 // } from "../features/chat/Chat-currentPartnerSlice";
 import { userType } from "../../types/chatTypes";
+import { accountType } from "../../types/accountTypes";
+import { multiWalletType } from "../../types/walletTypes";
 
-// import {
-//   getdownState,
-//   setdownState,
-// } from "../features/chat/Chat-scrollDownSlice";
-// // import { getMultiWallet } from "../features/wallet/MultiWalletSlice";
-// // import {
-// //   createContact,
-// //   getaccessToken,
-// //   receiveContactlist,
-// // } from "../features/chat/Chat-contactApi";
-// // import { nonCustodialType } from "../types/accountTypes";
+import { nonCustodialType } from "../../types/accountTypes";
+
 // // import { getNonCustodial } from "../features/account/NonCustodialSlice";
 import {
   getFriendlist,
   setFriendlist,
 } from "../../features/chat/Chat-friendlistSlice";
+import { getaccessToken } from "../../features/chat/Chat-contactApi";
+import {
+  approveFriendRequest,
+  declineFriendRequest,
+} from "../../features/chat/Chat-alertApi";
+import { getAccount } from "../../features/account/AccountSlice";
+import { getNonCustodial } from "../../features/account/NonCustodialSlice";
+import { getMultiWallet } from "../../features/wallet/MultiWalletSlice";
 
-const AlertList = ({ status, title, detail }: propsAlertListType) => {
+const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
   const dispatch = useDispatch();
   const [logo, setLogo] = useState<any>();
   const chatuserlist: userType[] = useSelector(getUserlist);
   const friendlist: userType[] = useSelector(getFriendlist);
-  const senderUser = chatuserlist.find((user) => user._id === detail);
+  const account: accountType = useSelector(getAccount);
+  const nonCustodial: nonCustodialType = useSelector(getNonCustodial);
+  const multiwallet: multiWalletType = useSelector(getMultiWallet);
+  const senderUser = chatuserlist.find(
+    (user) => user._id === detail.note?.sender
+  );
   // const updateContact = async (_id) => {
   //   const accessToken: string = await getaccessToken(
   //     multiwallet.Solar.chain.wallet,
@@ -59,7 +64,7 @@ const AlertList = ({ status, title, detail }: propsAlertListType) => {
   // };
 
   const addFriend = async () => {
-    const senderId = title === "Friend Request" ? detail : null;
+    const senderId = title === "Friend Request" ? detail.note?.sender : null;
     const senderInChatUserlist = chatuserlist.find(
       (user) => user._id === senderId
     );
@@ -71,6 +76,21 @@ const AlertList = ({ status, title, detail }: propsAlertListType) => {
     console.log("chatuserlist", chatuserlist);
     const updatedFriendlist: userType[] = [...friendlist, senderInChatUserlist];
     if (!senderInChatFriendlist) dispatch(setFriendlist(updatedFriendlist));
+  };
+
+  const approveFR = async () => {
+    const accessToken: string = await getaccessToken(
+      multiwallet.Solar.chain.wallet,
+      nonCustodial.password
+    );
+    await approveFriendRequest(detail._id, account.uid, accessToken);
+  };
+  const declineFR = async () => {
+    const accessToken: string = await getaccessToken(
+      multiwallet.Solar.chain.wallet,
+      nonCustodial.password
+    );
+    await declineFriendRequest(detail._id, account.uid, accessToken);
   };
 
   useEffect(() => {
@@ -108,7 +128,12 @@ const AlertList = ({ status, title, detail }: propsAlertListType) => {
               <img src={logo} />
               <Box className={"fs-h4 white"}>{title}</Box>
             </Stack>
-            <img src={unreaddot} width={"12px"} height={"12px"} />
+            {read === "unread" && (
+              <img src={unreaddot} width={"12px"} height={"12px"} />
+            )}
+            {read === "read" && (
+              <img src={readdot} width={"12px"} height={"12px"} />
+            )}
           </Stack>
           <Box className={"fs-16-regular white"} marginTop={"12px"}>
             {title !== "Friend Request" &&
@@ -124,11 +149,7 @@ const AlertList = ({ status, title, detail }: propsAlertListType) => {
                 justifyContent={"space-between"}
                 marginTop={"12px"}
               >
-                <Stack
-                  direction={"row"}
-                  alignItems={"center"}
-                  gap={"7px"}
-                >
+                <Stack direction={"row"} alignItems={"center"} gap={"7px"}>
                   <Avatar
                     onlineStatus={senderUser?.onlineStatus}
                     userid={senderUser?._id}
@@ -143,11 +164,17 @@ const AlertList = ({ status, title, detail }: propsAlertListType) => {
                     className="modal_btn_right"
                     onClick={() => {
                       addFriend();
+                      approveFR();
                     }}
                   >
                     <Box className={"fs-18-bold white"}>Add</Box>
                   </Button>
-                  <Button className="modal_btn_left_fr" onClick={() => {}}>
+                  <Button
+                    className="modal_btn_left_fr"
+                    onClick={() => {
+                      declineFR();
+                    }}
+                  >
                     <Box
                       className={"fs-18-bold"}
                       color={"var(--Main-Blue, #52E1F2)"}

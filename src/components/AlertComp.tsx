@@ -22,6 +22,8 @@ import {
   setCurrentChatPartner,
 } from "../features/chat/Chat-currentPartnerSlice";
 import { scrollDownType, userType } from "../types/chatTypes";
+import { accountType, nonCustodialType } from "../types/accountTypes";
+import { multiWalletType } from "../types/walletTypes";
 
 import {
   getdownState,
@@ -31,6 +33,14 @@ import {
   getFriendlist,
   setFriendlist,
 } from "../features/chat/Chat-friendlistSlice";
+import {
+  approveFriendRequest,
+  declineFriendRequest,
+} from "../features/chat/Chat-alertApi";
+import { getAccount } from "../features/account/AccountSlice";
+import { getaccessToken } from "../features/chat/Chat-contactApi";
+import { getNonCustodial } from "../features/account/NonCustodialSlice";
+import { getMultiWallet } from "../features/wallet/MultiWalletSlice";
 
 function SlideTransition(props) {
   return <Slide {...props} direction="left" />;
@@ -44,23 +54,27 @@ const AlertComp = ({
   setOpen,
   link,
 }: propsAlertTypes) => {
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const classname = CommonStyles();
   const searchParams = new URLSearchParams(link?.split("?")[1]);
   const userdata: userType[] = useSelector(selectPartner);
   const chatuserlist: userType[] = useSelector(getUserlist);
   const scrollstate: scrollDownType = useSelector(getdownState);
   const friendlist: userType[] = useSelector(getFriendlist);
+  const account: accountType = useSelector(getAccount);
+  const nonCustodial: nonCustodialType = useSelector(getNonCustodial);
+  const multiwallet: multiWalletType = useSelector(getMultiWallet);
   const shouldScrollDown = scrollstate.down;
-  const senderId =
-    title === "Friend Request" ? detail : searchParams.get("senderId");
-  const senderUser = chatuserlist.find((user) => user._id === senderId);
-  const navigate = useNavigate();
-  const dispatch = useDispatch();
-  const classname = CommonStyles();
   const [border, setBorder] = useState("");
   const [bg, setBg] = useState("");
   const [logo, setLogo] = useState<any>();
+  const senderId =
+    title === "Friend Request" ? detail.note?.sender : searchParams.get("senderId");
+  const senderUser = chatuserlist.find((user) => user._id === senderId);
+
   const addFriend = async () => {
-    const senderId = detail;
+    const senderId = detail.note?.sender;
     const senderInChatUserlist = chatuserlist.find(
       (user) => user._id === senderId
     );
@@ -69,6 +83,20 @@ const AlertComp = ({
     console.log("chatuserlist", chatuserlist);
     const updatedFriendlist: userType[] = [...friendlist, senderInChatUserlist];
     dispatch(setFriendlist(updatedFriendlist));
+  };
+  const approveFR = async () => {
+    const accessToken: string = await getaccessToken(
+      multiwallet.Solar.chain.wallet,
+      nonCustodial.password
+    );
+    await approveFriendRequest(detail._id, account.uid, accessToken);
+  };
+  const declineFR = async () => {
+    const accessToken: string = await getaccessToken(
+      multiwallet.Solar.chain.wallet,
+      nonCustodial.password
+    );
+    await declineFriendRequest(detail._id, account.uid, accessToken);
   };
   useEffect(() => {
     if (status == "failed") {
@@ -205,6 +233,7 @@ const AlertComp = ({
                     className="modal_btn_right"
                     onClick={() => {
                       addFriend();
+                      approveFR();
                       setOpen(false);
                     }}
                   >
@@ -212,7 +241,10 @@ const AlertComp = ({
                   </Button>
                   <Button
                     className="modal_btn_left_fr"
-                    onClick={() => setOpen(false)}
+                    onClick={() => {
+                      setOpen(false);
+                      declineFR();
+                    }}
                   >
                     <Box
                       className={"fs-18-bold"}

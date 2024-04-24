@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import unreaddot from "../../assets/alert/unreaddot.svg";
+import readdot from "../../assets/alert/readdot.svg";
 import AlertList from "../../components/alert/Alertlist";
 
 import { accountType, nonCustodialType } from "../../types/accountTypes";
@@ -11,6 +12,7 @@ import { accountType, nonCustodialType } from "../../types/accountTypes";
 import { getAccount } from "../../features/account/AccountSlice";
 import {
   fetchCountUnreadAlerts,
+  fetchReadAlerts,
   fetchUnreadAlerts,
   updateAlertReadstatus,
 } from "../../features/chat/Chat-alertApi";
@@ -29,13 +31,21 @@ const Alertmain = () => {
   const dispatch = useDispatch();
   const account: accountType = useSelector(getAccount);
   const [unreadcount, setUnreadCount] = useState<number>(0);
+  const [readcount, setReadCount] = useState<number>(0);
   const [unreadalerts, setUnreadAlerts] = useState<alertType[]>([]);
+  const [readalerts, setReadAlerts] = useState<alertType[]>([]);
+  const [read, setRead] = useState<string>("unread");
   const notification: notificationType = useSelector(selectNotification);
   const getUnreadAlerts = async () => {
     const unreadcount: number = await fetchCountUnreadAlerts(account.uid);
     const unreadalerts: alertType[] = await fetchUnreadAlerts(account.uid);
     setUnreadCount(unreadcount);
     setUnreadAlerts(unreadalerts);
+  };
+  const getReadAlerts = async () => {
+    const readalerts: alertType[] = await fetchReadAlerts(account.uid);
+    setReadCount(readalerts.length);
+    setReadAlerts(readalerts);
   };
   const multiwallet: multiWalletType = useSelector(getMultiWallet);
   const nonCustodial: nonCustodialType = useSelector(getNonCustodial);
@@ -55,8 +65,12 @@ const Alertmain = () => {
   };
 
   useEffect(() => {
-    getUnreadAlerts();
-  }, [notification.trigger]);
+    if (read === "unread") {
+      getUnreadAlerts();
+    } else if (read === "read") {
+      getReadAlerts();
+    }
+  }, [notification.trigger, read]);
 
   return (
     <Box className={"alertmain-container"}>
@@ -76,15 +90,41 @@ const Alertmain = () => {
           alignItems={"center"}
           justifyContent={"space-between"}
         >
-          <Stack
-            display={"flex"}
-            direction={"row"}
-            alignItems={"center"}
-            gap={"8px"}
-          >
-            <Box className={"fs-18-regular gray"}>{unreadcount}</Box>
-            <Box className={"fs-18-regular gray"}>Unread</Box>
-            <img src={unreaddot} width={"8px"} height={"8px"} />
+          <Stack direction={"row"} alignItems={"center"} gap={"5px"}>
+            <Button
+              className="read-status-button"
+              onClick={() => {
+                setRead("unread");
+              }}
+            >
+              <Stack
+                display={"flex"}
+                direction={"row"}
+                alignItems={"center"}
+                gap={"8px"}
+              >
+                <Box className={"fs-18-regular gray"}>{unreadcount}</Box>
+                <Box className={"fs-18-regular gray"}>Unread</Box>
+                <img src={unreaddot} width={"8px"} height={"8px"} />
+              </Stack>
+            </Button>
+            <Button
+              className="read-status-button"
+              onClick={() => {
+                setRead("read");
+              }}
+            >
+              <Stack
+                display={"flex"}
+                direction={"row"}
+                alignItems={"center"}
+                gap={"8px"}
+              >
+                <Box className={"fs-18-regular gray"}>{readcount}</Box>
+                <Box className={"fs-18-regular gray"}>Read</Box>
+                <img src={readdot} width={"8px"} height={"8px"} />
+              </Stack>
+            </Button>
           </Stack>
           <Button
             className="modal_btn_left_fr"
@@ -104,24 +144,50 @@ const Alertmain = () => {
           </Button>
         </Stack>
         <Box className={"alert-inbox-scrollbar"}>
-          {unreadalerts.reverse().map((alert, index) => (
-            <AlertList
-              key={index}
-              status={alert.alertType === "chat" ? "message" : "alert"}
-              title={
-                alert.alertType === "friend-request"
-                  ? "Friend Request"
-                  : alert.alertType === "chat"
-                  ? `${alert.note?.sender}`
-                  : "Update"
-              }
-              detail={
-                alert.alertType === "friend-request"
-                  ? `${alert.note?.sender}`
-                  : `${alert.note?.detail}`
-              }
-            />
-          ))}
+          {read === "unread" &&
+            unreadalerts
+              .reverse()
+              .map((alert, index) => (
+                <AlertList
+                  key={index}
+                  status={alert.alertType === "chat" ? "message" : "alert"}
+                  title={
+                    alert.alertType === "friend-request"
+                      ? "Friend Request"
+                      : alert.alertType === "chat"
+                      ? `${alert.note?.sender}`
+                      : "Update"
+                  }
+                  detail={
+                    alert.alertType === "friend-request"
+                      ? alert
+                      : `${alert.note?.detail}`
+                  }
+                  read={"unread"}
+                />
+              ))}
+          {read === "read" &&
+            readalerts
+              .reverse()
+              .map((alert, index) => (
+                <AlertList
+                  key={index}
+                  status={alert.alertType === "chat" ? "message" : "alert"}
+                  title={
+                    alert.alertType === "friend-request"
+                      ? "Friend Request"
+                      : alert.alertType === "chat"
+                      ? `${alert.note?.sender}`
+                      : "Update"
+                  }
+                  detail={
+                    alert.alertType === "friend-request"
+                      ? alert
+                      : `${alert.note?.detail}`
+                  }
+                  read={"read"}
+                />
+              ))}
         </Box>
       </Box>
     </Box>
