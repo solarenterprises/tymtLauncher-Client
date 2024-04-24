@@ -109,6 +109,7 @@ const ChatuserlistinRoom = ({ view, setView }: propsType) => {
     };
     socket.emit("post-alert", JSON.stringify(data));
     setOpenRequestModal(false);
+    await updateContact(selectedusertoDelete.id);
   };
 
   /***Modals of Userlist ***/

@@ -183,7 +183,9 @@ const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
                     status={senderUser?.notificationStatus}
                   />
                   <Box className={"fs-18-regular white"}>
-                    {senderUser?.nickName}
+                    {senderUser?.nickName.length > 14
+                      ? `${senderUser?.nickName.substring(0, 13)}...`
+                      : senderUser?.nickName}
                   </Box>
                 </Stack>
                 <Stack direction={"row"} alignItems={"center"} gap={"16px"}>

@@ -71,8 +71,9 @@ const Alertmain = () => {
   }, [notification.trigger, read]);
 
   useEffect(() => {
-    if (unreadcount > 0)
+    if (unreadcount > 0) {
       dispatch(setNotification({ ...notification, alertbadge: true }));
+    }
   }, [notification.trigger, read]);
 
   return (
@@ -148,27 +149,25 @@ const Alertmain = () => {
         </Stack>
         <Box className={"alert-inbox-scrollbar"}>
           {read === "unread" &&
-            unreadalerts
-              .reverse()
-              .map((alert, index) => (
-                <AlertList
-                  key={index}
-                  status={alert.alertType === "chat" ? "message" : "alert"}
-                  title={
-                    alert.alertType === "friend-request"
-                      ? "Friend Request"
-                      : alert.alertType === "chat"
-                      ? `chat`
-                      : alert.alertType === "friend-request-accepted"
-                      ? "friend-request-accepted"
-                      : alert.alertType === "friend-request-rejected"
-                      ? "friend-request-rejected"
-                      : "Update"
-                  }
-                  detail={alert}
-                  read={"unread"}
-                />
-              ))}
+            unreadalerts.map((alert, index) => (
+              <AlertList
+                key={index}
+                status={alert.alertType === "chat" ? "message" : "alert"}
+                title={
+                  alert.alertType === "friend-request"
+                    ? "Friend Request"
+                    : alert.alertType === "chat"
+                    ? `chat`
+                    : alert.alertType === "friend-request-accepted"
+                    ? "friend-request-accepted"
+                    : alert.alertType === "friend-request-rejected"
+                    ? "friend-request-rejected"
+                    : "Update"
+                }
+                detail={alert}
+                read={"unread"}
+              />
+            ))}
           {read === "read" &&
             readalerts
               .reverse()

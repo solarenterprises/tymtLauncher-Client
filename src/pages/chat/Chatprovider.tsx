@@ -32,7 +32,10 @@ import {
   setChatHistory,
 } from "../../features/chat/Chat-historySlice";
 import { selectPartner } from "../../features/chat/Chat-currentPartnerSlice";
-import { getFriendlist } from "../../features/chat/Chat-friendlistSlice";
+import {
+  getFriendlist,
+  setFriendlist,
+} from "../../features/chat/Chat-friendlistSlice";
 
 const socket: Socket = io(socket_backend_url as string);
 import { socket_backend_url } from "../../configs";
@@ -100,6 +103,7 @@ const ChatProvider = () => {
           dispatch(setChatHistory({ messages: updatedHistory }));
         }
         if (data.message === "friend" && senderInChatFriendlist) {
+          console.log("senderInChatFriendlist", senderInChatFriendlist);
           const updatedHistory = [message, ...chatHistoryStore.messages];
           dispatch(setChatHistory({ messages: updatedHistory }));
         }
@@ -131,6 +135,7 @@ const ChatProvider = () => {
           if (data.message === "friend") {
             if (senderInChatFriendlist) {
               const senderName = senderInChatFriendlist.nickName;
+              setNotificationOpen(true);
               setNotificationStatus("message");
               setNotificationTitle(senderName);
               setNotificationDetail(message.message);
@@ -202,12 +207,27 @@ const ChatProvider = () => {
             alert.receivers[0] === account.uid)
         ) {
           {
-            notification.alert && setNotificationOpen(true);
-            setNotificationStatus("alert");
-            setNotificationTitle(`Friend request ${alert.note.status}`);
-            setNotificationDetail(`Friend request accepted`);
-            setNotificationLink(null);
-            triggerBadge();
+            if (notification.alert) {
+              setNotificationOpen(true);
+              setNotificationStatus("alert");
+              setNotificationTitle(`Friend request ${alert.note.status}`);
+              setNotificationDetail(`Friend request accepted`);
+              setNotificationLink(null);
+              triggerBadge();
+            }
+            if (
+              alert.note.sender === account.uid &&
+              alert.note.status === "accepted"
+            ) {
+              const senderInChatUserlist = chatuserlist.find(
+                (user) => user._id === alert.receivers[0]
+              );
+              const updatedFriendlist: userType[] = [
+                ...chatfriendlist,
+                senderInChatUserlist,
+              ];
+              dispatch(setFriendlist(updatedFriendlist));
+            }
           }
         } else {
           if (
@@ -233,7 +253,7 @@ const ChatProvider = () => {
       socket.off("alert-posted");
       socket.off("alert-updated");
     };
-  }, [socket, data, chatHistoryStore]);
+  }, [socket, data, chatHistoryStore, chatuserlist, chatfriendlist]);
 
   return (
     <>

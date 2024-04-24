@@ -359,9 +359,9 @@ const Navbar = () => {
                 setShowAlert(!showAlert);
               }}
             >
-              {notification.alertbadge == true && (
+              {/* {notification.alertbadge == true && (
                 <span className={"notification_dot"}></span>
-              )}
+              )} */}
 
               <svg
                 xmlns="http://www.w3.org/2000/svg"

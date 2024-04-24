@@ -114,6 +114,7 @@ const Chatmain = ({ view, setView }: propsType) => {
     };
     socket.emit("post-alert", JSON.stringify(data));
     setOpenRequestModal(false);
+    await updateContact(selectedusertoDelete.id);
     console.log("myid", account.uid);
     console.log("receiver",selectedusertoDelete.id)
   };
