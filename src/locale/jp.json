@@ -352,6 +352,8 @@
     "wal-51_sxp-price": "SXP価格",
     "wal-52_latest-block": "最新ブロック",
     "wal-53_refresh-vote-failed": "更新に失敗しました",
+    "wal-54_success": "無事にリフレッシュされました！",
+    "wal-55_block-producers-refreshed": "ブロックプロデューサーは正常にリフレッシュされました。",
     "sto-1_release-date": "発売日",
     "sto-2_chains": "チェーン",
     "sto-3_genre": "ジャンル",

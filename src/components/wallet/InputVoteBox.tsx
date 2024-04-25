@@ -40,7 +40,7 @@ const InputVoteBox = ({
   };
 
   const isDecimalNumber = (value) => {
-    return /^\d*\.?\d*$/.test(value);
+    return /^(\d+)?(\.\d*)?$/.test(value);
   };
 
   return (

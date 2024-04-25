@@ -172,7 +172,9 @@ export class Solar implements IWallet {
     try {
       return (
         await (
-          await fetch(`${solar_api_url}/wallets/${addr}/transactions?page=1`)
+          await fetch(
+            `${solar_api_url}/wallets/${addr}/transactions?page=1&limit=15`
+          )
         ).json()
       ).data;
     } catch {

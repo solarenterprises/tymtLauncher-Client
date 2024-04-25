@@ -383,6 +383,7 @@ const Wallet = () => {
                   sx={{
                     maxHeight: "800px",
                     overflowY: "auto",
+                    scrollbarWidth: "none",
                   }}
                 >
                   <TransCard />

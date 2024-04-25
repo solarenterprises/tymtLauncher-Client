@@ -9,6 +9,7 @@ import {
   Button,
   Pagination,
   IconButton,
+  Tooltip,
 } from "@mui/material";
 
 import accountIcon from "../../assets/wallet/account.svg";
@@ -59,55 +60,74 @@ const WalletVote = () => {
     setNotificationLink,
   } = useNotification();
 
-  const handleRefreshClick = () => {
+  const SolarGet53Delegates = () => {
+    const query1 = {
+      page: 1,
+      limit: 53,
+      isResigned: false,
+      orderBy: "rank:asc",
+    };
+    return Solar.getDelegates(query1, "delegates");
+  };
+
+  const SolarGetMyVotingData = () => {
+    const query2 = {
+      page: 1,
+      limit: 1,
+    };
+    return SolarAPI.getData(
+      query2,
+      `wallets/${multiWalletStore.Solar.chain.wallet}/votes`
+    );
+  };
+
+  const SolarGet100Delegates = () => {
+    const query3 = {
+      page: 1,
+      limit: 100,
+      isResigned: false,
+      orderBy: "rank:asc",
+    };
+    return Solar.getDelegates(query3, "delegates");
+  };
+
+  const SolarGetBlockchain = () => {
+    return SolarAPI.getData({}, `blockchain`);
+  };
+
+  const handleRefreshClick = async () => {
     try {
       setCurrentPage(1);
-      const query1 = {
-        page: 1,
-        limit: 53,
-        isResigned: false,
-        orderBy: "rank:asc",
-      };
-      Solar.getDelegates(query1, "delegates").then((res) => {
-        setData(res.data.data);
-        setTotalPage(res.data.meta.pageCount);
-      });
 
-      const query2 = {
-        page: 1,
-        limit: 1,
-      };
-      SolarAPI.getData(
-        query2,
-        `wallets/${multiWalletStore.Solar.chain.wallet}/votes`
-      ).then((res) => {
-        setVotingData(res.data.data[0].asset.votes ?? {});
-        setOriginalVotingData(res.data.data[0].asset.votes ?? {});
-      });
+      const [res1, res2, res3, res4] = await Promise.all([
+        SolarGet53Delegates(),
+        SolarGetMyVotingData(),
+        SolarGet100Delegates(),
+        SolarGetBlockchain(),
+      ]);
 
-      const query3 = {
-        page: 1,
-        limit: 100,
-        isResigned: false,
-        orderBy: "rank:asc",
-      };
-      Solar.getDelegates(query3, "delegates").then((res) => {
-        const first100BPArray = res.data.data;
-        const newTotalVoted: number = first100BPArray.reduce(
-          (sum, element) => sum + element.votesReceived.votes / 1e8,
-          0
-        );
-        const newTotalRewards: number = first100BPArray.reduce(
-          (sum, element) => sum + element.forged.total / 1e8,
-          0
-        );
-        setTotalVoted(newTotalVoted);
-        setTotalRewards(newTotalRewards);
-      });
-
-      SolarAPI.getData({}, `blockchain`).then((res) =>
-        setLatestBlock(res.data.data.block.height)
+      setData(res1.data.data);
+      setTotalPage(res1.data.meta.pageCount);
+      setVotingData(res2.data.data[0].asset.votes ?? {});
+      setOriginalVotingData(res2.data.data[0].asset.votes ?? {});
+      const first100BPArray = res3.data.data;
+      const newTotalVoted: number = first100BPArray.reduce(
+        (sum, element) => sum + element.votesReceived.votes / 1e8,
+        0
       );
+      const newTotalRewards: number = first100BPArray.reduce(
+        (sum, element) => sum + element.forged.total / 1e8,
+        0
+      );
+      setTotalVoted(newTotalVoted);
+      setTotalRewards(newTotalRewards);
+      setLatestBlock(res4.data.data.block.height);
+
+      setNotificationStatus("success");
+      setNotificationTitle(t("wal-54_success"));
+      setNotificationDetail(t("wal-55_block-producers-refreshed"));
+      setNotificationOpen(true);
+      setNotificationLink(null);
     } catch (err) {
       console.error("Failed to refresh voting page: ", err);
       setNotificationStatus("failed");
@@ -163,31 +183,37 @@ const WalletVote = () => {
   }, []);
 
   useEffect(() => {
-    const intervalId = setInterval(() => {
-      const query3 = {
-        page: 1,
-        limit: 100,
-        isResigned: false,
-        orderBy: "rank:asc",
-      };
-      Solar.getDelegates(query3, "delegates").then((res) => {
-        const first100BPArray = res.data.data;
-        const newTotalVoted: number = first100BPArray.reduce(
-          (sum, element) => sum + element.votesReceived.votes / 1e8,
-          0
-        );
-        const newTotalRewards: number = first100BPArray.reduce(
-          (sum, element) => sum + element.forged.total / 1e8,
-          0
-        );
-        setTotalVoted(newTotalVoted);
-        setTotalRewards(newTotalRewards);
-      });
+    let intervalId;
+    let error = false;
 
-      SolarAPI.getData({}, `blockchain`).then((res) =>
-        setLatestBlock(res.data.data.block.height)
-      );
-    }, 3000);
+    const fetchData = async () => {
+      if (error) {
+      } else {
+        try {
+          const [res1, res2] = await Promise.all([
+            SolarGet100Delegates(),
+            SolarGetBlockchain(),
+          ]);
+          const first100BPArray = res1.data.data;
+          const newTotalVoted = first100BPArray.reduce(
+            (sum, element) => sum + element.votesReceived.votes / 1e8,
+            0
+          );
+          const newTotalRewards = first100BPArray.reduce(
+            (sum, element) => sum + element.forged.total / 1e8,
+            0
+          );
+          setTotalVoted(newTotalVoted);
+          setTotalRewards(newTotalRewards);
+          setLatestBlock(res2.data.data.block.height);
+        } catch (err) {
+          console.error("Failed to setInterval: ", err);
+          error = true;
+        }
+      }
+    };
+
+    intervalId = setInterval(fetchData, 4000);
 
     return () => clearInterval(intervalId);
   }, []);
@@ -307,9 +333,11 @@ const WalletVote = () => {
                     <Box className="fs-16-regular light">
                       {t("wal-18_total-voted")}
                     </Box>
-                    <Box className="fs-18-bold white">{`${numeral(
-                      sumVoting
-                    ).format("0,0.00")}
+                    <Box
+                      className={`fs-18-bold ${
+                        sumVoting === 0 || sumVoting === 100 ? "white" : "red"
+                      }`}
+                    >{`${numeral(sumVoting).format("0,0.00")}
                     %`}</Box>
                   </Stack>
                   <Stack
@@ -320,9 +348,11 @@ const WalletVote = () => {
                     <Box className="fs-16-regular light">
                       {t("wal-20_remaining")}
                     </Box>
-                    <Box className="fs-18-bold white">{`${numeral(
-                      100 - sumVoting
-                    ).format("0,0.00")}
+                    <Box
+                      className={`fs-18-bold ${
+                        sumVoting === 0 || sumVoting === 100 ? "white" : "red"
+                      }`}
+                    >{`${numeral(100 - sumVoting).format("0,0.00")}
                     %`}</Box>
                   </Stack>
                   <Stack
@@ -341,17 +371,45 @@ const WalletVote = () => {
                 </Stack>
                 <Stack direction={"row"} alignItems={"center"}>
                   <Stack spacing={"8px"} mr={"11px"}>
-                    <IconButton
-                      className={"wallet-icon-button"}
-                      onClick={() => {
-                        handleRefreshClick();
+                    <Tooltip
+                      placement="top"
+                      title={
+                        <Stack
+                          spacing={"10px"}
+                          sx={{
+                            marginBottom: "-10px",
+                            backgroundColor: "rgb(49, 53, 53)",
+                            padding: "6px 8px",
+                            borderRadius: "32px",
+                            border: "1px solid rgb(71, 76, 76)",
+                          }}
+                        >
+                          <Box className="fs-16-regular white">
+                            {t("sto-35_refresh")}
+                          </Box>
+                        </Stack>
+                      }
+                      PopperProps={{
+                        sx: {
+                          [`& .MuiTooltip-tooltip`]: {
+                            backgroundColor: "transparent",
+                            boxShadow: "none",
+                          },
+                        },
                       }}
                     >
-                      <img
-                        src={refreshIcon}
-                        className="wallet-icon-button-icon"
-                      />
-                    </IconButton>
+                      <IconButton
+                        className={"wallet-icon-button"}
+                        onClick={() => {
+                          handleRefreshClick();
+                        }}
+                      >
+                        <img
+                          src={refreshIcon}
+                          className="wallet-icon-button-icon"
+                        />
+                      </IconButton>
+                    </Tooltip>
                   </Stack>
                   <Box
                     sx={{
