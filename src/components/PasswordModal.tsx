@@ -13,6 +13,7 @@ import createKeccakHash from "keccak";
 
 import closeIcon from "../assets/settings/x-icon.svg";
 import logo from "../assets/main/foxhead-comingsoon.png";
+import solarBlockchainIcon from "../assets/main/solarblockchain.png";
 import InputText from "./account/InputText";
 
 import { nonCustodialType } from "../types/accountTypes";
@@ -130,6 +131,15 @@ const PasswordModal = ({ open, setOpen, voteAsset }: props) => {
           className="close-icon"
           onClick={() => setOpen(false)}
         />
+        <img
+          src={logo}
+          alt="tymt icon"
+          className="tymt-top-left-icon"
+          style={{
+            width: "30px",
+            height: "30px",
+          }}
+        />
         <Stack
           direction={"column"}
           justifyContent={"center"}
@@ -185,7 +195,7 @@ const PasswordModal = ({ open, setOpen, voteAsset }: props) => {
             </Box>
           </Stack>
           <Box className="center-align">
-            <img width={200} src={logo} />
+            <img width={200} src={solarBlockchainIcon} />
           </Box>
           <Stack
             direction={"column"}

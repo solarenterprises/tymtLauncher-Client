@@ -26,13 +26,17 @@ import {
   IVotingData,
   multiWalletType,
 } from "../../types/walletTypes";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { getMultiWallet } from "../../features/wallet/MultiWalletSlice";
 import InputVoteBox from "../../components/wallet/InputVoteBox";
 import { getCurrency } from "../../features/wallet/CurrencySlice";
 import { currencySymbols } from "../../consts/currency";
 import solarIcon from "../../assets/chains/solar.svg";
 import { useNotification } from "../../providers/NotificationProvider";
+import { AppDispatch } from "../../store";
+import { setChainAsync } from "../../features/wallet/ChainSlice";
+import { selectWallet, setWallet } from "../../features/settings/WalletSlice";
+import { walletType } from "../../types/settingTypes";
 
 const WalletVote = () => {
   const [data, setData] = useState<any[]>([]);
@@ -48,9 +52,11 @@ const WalletVote = () => {
   const [totalVoted, setTotalVoted] = useState<number>(0);
   const [totalRewards, setTotalRewards] = useState<number>(0);
   const multiWalletStore: multiWalletType = useSelector(getMultiWallet);
+  const walletStore: walletType = useSelector(selectWallet);
   const currencyStore: ICurrency = useSelector(getCurrency);
   const reserve = currencyStore.data[currencyStore.current];
   const symbol: string = currencySymbols[currencyStore.current];
+  const dispatch = useDispatch<AppDispatch>();
 
   const {
     setNotificationStatus,
@@ -162,6 +168,18 @@ const WalletVote = () => {
       setData(res.data.data);
     });
   };
+
+  useEffect(() => {
+    dispatch(setChainAsync(multiWalletStore.Solar)).then(() =>
+      dispatch(
+        setWallet({
+          ...walletStore,
+          status: "minimum",
+          fee: "0.0183",
+        })
+      )
+    );
+  }, []);
 
   useEffect(() => {
     const valuesArray = Object.values(votingData);
