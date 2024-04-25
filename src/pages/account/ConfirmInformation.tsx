@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import createKeccakHash from "keccak";
 
@@ -54,11 +54,14 @@ import {
 import tymtStorage from "../../lib/Storage";
 import { tymt_version } from "../../configs";
 import { useNotification } from "../../providers/NotificationProvider";
+import { selectWallet, setWallet } from "../../features/settings/WalletSlice";
+import { walletType } from "../../types/settingTypes";
 
 const ConfirmInformation = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
   const { t } = useTranslation();
+  const walletStore: walletType = useSelector(selectWallet);
   const accountStore: accountType = useSelector(getAccount);
   const nonCustodialStore: nonCustodialType = useSelector(getNonCustodial);
   const tempNonCustodialStore: nonCustodialType =
@@ -79,6 +82,15 @@ const ConfirmInformation = () => {
     setNotificationOpen,
     setNotificationLink,
   } = useNotification();
+
+  useEffect(() => {
+    dispatch(
+      setWallet({
+        ...walletStore,
+        refreshed: false,
+      })
+    );
+  }, []);
 
   const handleBackClick = () => {
     navigate("/start");

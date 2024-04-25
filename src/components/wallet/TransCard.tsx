@@ -37,6 +37,7 @@ const TransCard = () => {
     const externalLink = path;
     openLink(externalLink);
   };
+
   return (
     <Box>
       {transactions &&
@@ -45,7 +46,7 @@ const TransCard = () => {
             formatTransaction(chain, data);
           return (
             <Button
-              key={index}
+              key={`${index}-${new Date().toISOString()}`}
               sx={{
                 textTransform: "none",
                 width: "100%",

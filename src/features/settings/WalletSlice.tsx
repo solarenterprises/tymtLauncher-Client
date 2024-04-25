@@ -1,10 +1,13 @@
 import { createSlice } from "@reduxjs/toolkit";
 import tymtStorage from "../../lib/Storage";
 import { tymt_version } from "../../configs";
-const loadData = () => {
+import { walletType } from "../../types/settingTypes";
+
+const loadData: () => walletType = () => {
   const data = tymtStorage.get(`wallet_${tymt_version}`);
   if (data === null || data === "") {
     return {
+      refreshed: false,
       hidde: false,
       currency: "USD",
       status: "minimum",

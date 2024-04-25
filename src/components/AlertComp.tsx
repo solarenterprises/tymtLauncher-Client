@@ -37,7 +37,8 @@ import {
 import { nonCustodialType } from "../types/accountTypes";
 import { getNonCustodial } from "../features/account/NonCustodialSlice";
 import {
-  getFriendlist, setFriendlist,
+  getFriendlist,
+  setFriendlist,
 } from "../features/chat/Chat-friendlistSlice";
 
 function SlideTransition(props) {
@@ -87,10 +88,10 @@ const AlertComp = ({
       (user) => user._id === senderId
     );
     if (senderInChatUserlist) {
-      dispatch(setFriendlist([...friendlist,senderInChatUserlist]));
+      dispatch(setFriendlist([...friendlist, senderInChatUserlist]));
     } else {
       await updateContact(senderId);
-      dispatch(setFriendlist([...friendlist,senderInChatUserlist]));
+      dispatch(setFriendlist([...friendlist, senderInChatUserlist]));
     }
     console.log("friendlist", friendlist);
     console.log("request sender", senderInChatUserlist);

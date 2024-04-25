@@ -3,8 +3,10 @@ import { generateMnemonic } from "bip39";
 import { IWallet } from "./IWallet";
 import Big from "big.js";
 import SolarAPI from "../api/SolarAPI";
-import { net_name, solar_api_url } from "../../configs/index";
+import { net_name, solar_api_url, tymt_version } from "../../configs/index";
 import { IRecipient } from "../../features/wallet/CryptoApi";
+import { multiWalletType } from "../../types/walletTypes";
+import tymtStorage from "../Storage";
 
 export class Solar implements IWallet {
   address: string;
@@ -216,10 +218,14 @@ export class Solar implements IWallet {
           );
         });
 
+        const multiWalletStore: multiWalletType = JSON.parse(
+          await tymtStorage.get(`multiWallet_${tymt_version}`)
+        );
+        const sxpPriceUSD = multiWalletStore.Solar.chain.price;
         let itransaction = transaction
           .fee(
             Big(tx.fee)
-              .times(10 ** 8)
+              .times((10 ** 8 / Number(sxpPriceUSD)) as number)
               .toFixed(0)
           )
           .nonce((nonce + 1).toString());
@@ -274,10 +280,14 @@ export class Solar implements IWallet {
               .times(10 ** 8)
               .toFixed(0)
           );
+        const multiWalletStore: multiWalletType = JSON.parse(
+          await tymtStorage.get(`multiWallet_${tymt_version}`)
+        );
+        const sxpPriceUSD = multiWalletStore.Solar.chain.price;
         let itransaction = transaction
           .fee(
             Big(tx.fee)
-              .times(10 ** 8)
+              .times((10 ** 8 / Number(sxpPriceUSD)) as number)
               .toFixed(0)
           )
           .nonce((nonce + 1).toString());
@@ -337,24 +347,30 @@ export class Solar implements IWallet {
     });
   }
 
-  async vote(votesAsset: any, fee: string) {
+  static async vote(
+    passphrase: string,
+    addr: string,
+    votesAsset: any,
+    fee: string
+  ) {
     Managers.configManager.setFromPreset(
       net_name === "mainnet" ? "mainnet" : "testnet"
     );
-    let nonce = await Solar.getCurrentNonce(this.address);
+    const multiWalletStore: multiWalletType = JSON.parse(
+      await tymtStorage.get(`multiWallet_${tymt_version}`)
+    );
+    const sxpPriceUSD = multiWalletStore.Solar.chain.price;
+    let nonce = await Solar.getCurrentNonce(addr);
     let tx = Transactions.BuilderFactory.vote()
       .nonce((nonce + 1).toString())
       .votesAsset(votesAsset)
       .fee(
         Big(fee)
-          .times(10 ** 8)
+          .times((10 ** 8 / Number(sxpPriceUSD)) as number)
           .toFixed(0)
       )
-      .sign(this.passphrase);
+      .sign(passphrase);
 
-    if (this.secondPassphrase && this.secondPassphrase.length > 0) {
-      tx = tx.secondSign(this.secondPassphrase);
-    }
     let txJson = tx.build().toJson();
     let res = SolarAPI.addTxToQueue(
       JSON.stringify({ transactions: [txJson] }),
