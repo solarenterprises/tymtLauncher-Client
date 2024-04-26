@@ -44,7 +44,7 @@ import { multiWalletType } from "../../types/walletTypes";
 import {
   // addEncryptionKey,
   selectEncryptionKeyByUserId,
-} from "../../features/chat/Chat-enryptionkeySlice";
+} from "../../features/chat/Chat-encryptionkeySlice";
 import { getAccount } from "../../features/account/AccountSlice";
 import { decrypt } from "../../lib/api/Encrypt";
 

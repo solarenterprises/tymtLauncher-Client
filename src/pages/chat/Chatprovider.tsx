@@ -61,7 +61,7 @@ import {
   addEncryptionKey,
   selectEncryptionKeyByUserId,
   selectEncryptionKeyStore,
-} from "../../features/chat/Chat-enryptionkeySlice";
+} from "../../features/chat/Chat-encryptionkeySlice";
 import { decrypt } from "../../lib/api/Encrypt";
 
 const ChatProvider = () => {
@@ -286,19 +286,18 @@ const ChatProvider = () => {
     // receive request for  encryption key and generate/send encryption key to partner
     socket.on("ask-encryption-key", (data: askEncryptionKeyType) => {
       console.log("receiving encryption key request--->", data);
-        const userid: string = data.sender_id;
-        const existkey = useSelector((state) =>
-          selectEncryptionKeyByUserId(state, userid)
-        );
-        const key = existkey ? existkey : generateRandomString(32);
-        const deliverydata: deliverEncryptionKeyType = {
-          sender_id: account.uid,
-          recipient_id: data.sender_id,
-          key: key,
-        };
-        socket.emit("deliver-encryption-key", JSON.stringify(deliverydata));
-        dispatch(addEncryptionKey({ userId: userid, encryptionKey: key }));
-
+      const userid: string = data.sender_id;
+      const existkey = useSelector((state) =>
+        selectEncryptionKeyByUserId(state, userid)
+      );
+      const key = existkey ? existkey : generateRandomString(32);
+      const deliverydata: deliverEncryptionKeyType = {
+        sender_id: account.uid,
+        recipient_id: data.sender_id,
+        key: key,
+      };
+      socket.emit("deliver-encryption-key", JSON.stringify(deliverydata));
+      dispatch(addEncryptionKey({ userId: userid, encryptionKey: key }));
     });
     // receive encryption key from partner
     socket.on("deliver-encryption-key", (data: deliverEncryptionKeyType) => {
@@ -309,7 +308,9 @@ const ChatProvider = () => {
         selectEncryptionKeyByUserId(state, userid)
       );
       if (!existkey) {
-        dispatch(addEncryptionKey({ userId: userid, encryptionKey: encryptionkey }));
+        dispatch(
+          addEncryptionKey({ userId: userid, encryptionKey: encryptionkey })
+        );
       }
     });
     return () => {

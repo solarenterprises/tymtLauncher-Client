@@ -45,7 +45,7 @@ import { selectNotification } from "../../features/settings/NotificationSlice";
 import {
   addEncryptionKey,
   selectEncryptionKeyByUserId,
-} from "../../features/chat/Chat-enryptionkeySlice";
+} from "../../features/chat/Chat-encryptionkeySlice";
 
 import EmojiPicker, { SkinTones } from "emoji-picker-react";
 import maximize from "../../assets/chat/maximize.svg";

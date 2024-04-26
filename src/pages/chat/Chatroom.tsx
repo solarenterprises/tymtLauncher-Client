@@ -82,7 +82,10 @@ import _ from "lodash";
 import InfiniteScroll from "react-infinite-scroller";
 import { selectNotification } from "../../features/settings/NotificationSlice";
 import { selectChat } from "../../features/settings/ChatSlice";
-import { addEncryptionKey, selectEncryptionKeyByUserId } from "../../features/chat/Chat-enryptionkeySlice";
+import {
+  addEncryptionKey,
+  selectEncryptionKeyByUserId,
+} from "../../features/chat/Chat-encryptionkeySlice";
 import { decrypt, encrypt } from "../../lib/api/Encrypt";
 import { generateRandomString } from "../../features/chat/Chat-contactApi";
 

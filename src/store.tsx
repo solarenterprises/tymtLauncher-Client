@@ -33,7 +33,7 @@ import currencyReducer from "./features/wallet/CurrencySlice";
 import scrolldownReducer from "./features/chat/Chat-scrollDownSlice";
 import chatfriendlistReducer from "./features/chat/Chat-friendlistSlice";
 import alertbadgeReducer from "./features/alert/AlertbadgeSlice";
-import encryptionReducer from "./features/chat/Chat-enryptionkeySlice";
+import encryptionReducer from "./features/chat/Chat-encryptionkeySlice";
 
 const store = configureStore({
   reducer: {
@@ -70,7 +70,7 @@ const store = configureStore({
     scrolldown: scrolldownReducer,
     chatfriendlist: chatfriendlistReducer,
     alertbadge: alertbadgeReducer,
-    encryption: encryptionReducer
+    encryption: encryptionReducer,
   },
 });
 
