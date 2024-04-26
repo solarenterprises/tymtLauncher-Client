@@ -38,7 +38,7 @@ import { nonCustodialType } from "../../types/accountTypes";
 import { multiWalletType } from "../../types/walletTypes";
 
 const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
-  const {t} = useTranslation();
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const [logo, setLogo] = useState<any>();
   const nonCustodial: nonCustodialType = useSelector(getNonCustodial);
@@ -126,10 +126,6 @@ const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
     }
   }, [status]);
 
-  useEffect(() => {
-    console.log("title", title);
-  }, []);
-
   return (
     <>
       <Box sx={{ width: "100%" }} marginTop={"16px"}>
@@ -142,7 +138,11 @@ const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
             <Stack direction={"row"} gap={"8px"} alignItems={"center"}>
               <img src={logo} />
               <Box className={"fs-h4 white"}>
-                {title === "chat" ? senderUser?.nickName : title}
+                {title === "chat"
+                  ? senderUser?.nickName
+                  : title === "Friend Request"
+                  ? t("not-9_friend-request")
+                  : title}
               </Box>
             </Stack>
             {read === "unread" && (
@@ -159,7 +159,7 @@ const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
                 : detail.note?.message)}
             {title === "Friend Request" &&
               detail.note.status === "pending" &&
-              t("not-10_fr-intro")}             
+              t("not-10_fr-intro")}
             {title === "Friend Request" &&
               detail.note.status === "accepted" &&
               t("not-11_fr-accept")}
@@ -167,7 +167,7 @@ const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
               detail.note.status === "rejected" &&
               t("not-12_fr-reject")}
           </Box>
-          {title === "Friend Request" && (
+          {title === "Friend Request" && detail.note.status === "pending" && (
             <>
               <Stack
                 display={"flex"}
@@ -208,7 +208,7 @@ const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
                       className={"fs-18-bold"}
                       color={"var(--Main-Blue, #52E1F2)"}
                     >
-                    {t("not-6_decline")}
+                      {t("not-6_decline")}
                     </Box>
                   </Button>
                 </Stack>

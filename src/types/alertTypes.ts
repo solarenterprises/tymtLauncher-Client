@@ -12,5 +12,10 @@ export interface propsAlertListType {
   status: string;
   title: string;
   detail: any;
-  read:string;
+  read: string;
+}
+
+export interface alertbadgeType {
+  trigger: boolean;
+  badge: boolean;
 }

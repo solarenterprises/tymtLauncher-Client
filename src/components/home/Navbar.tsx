@@ -20,10 +20,8 @@ import searchlg from "../../assets/main/searchlg.svg";
 import Settings from "../../pages/settings";
 import Back from "./Back";
 import Avatar from "./Avatar";
-// import ComingModal from "../ComingModal";
 
 import { notificationType } from "../../types/settingTypes";
-// import { ChatnotificationType } from "../../types/chatTypes";
 import { PaginationType } from "../../types/homeTypes";
 import { TymtlogoType } from "../../types/homeTypes";
 import {
@@ -33,19 +31,17 @@ import {
   walletEnum,
 } from "../../types/accountTypes";
 import { IChain } from "../../types/walletTypes";
-import {
-  selectNotification,
-  setNotification,
-} from "../../features/settings/NotificationSlice";
 import { getAccount } from "../../features/account/AccountSlice";
 import { getNonCustodial } from "../../features/account/NonCustodialSlice";
 import { getCustodial } from "../../features/account/CustodialSlice";
 import { getCurrentLogo } from "../../features/home/Tymtlogo";
-// import { getchatNotification } from "../../features/chat/Chat-notificationSlice";
 import { getCurrentPage, setCurrentPage } from "../../features/home/Navigation";
 import { getChain } from "../../features/wallet/ChainSlice";
 import CardModal from "../CardModal";
 import Alertindex from "../../pages/alert";
+import { selectBadgeStatus } from "../../features/alert/AlertbadgeSlice";
+import { selectNotification } from "../../features/settings/NotificationSlice";
+import { alertbadgeType } from "../../types/alertTypes";
 
 const theme = createTheme({
   palette: {
@@ -64,7 +60,7 @@ const Navbar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  // const homeclasses = homeStyles();
+  const alertbadge:alertbadgeType = useSelector(selectBadgeStatus);
   const notification: notificationType = useSelector(selectNotification);
   const currentpage: PaginationType = useSelector(getCurrentPage);
   const currentlogo: TymtlogoType = useSelector(getCurrentLogo);
@@ -72,8 +68,6 @@ const Navbar = () => {
   const nonCustodialStore: nonCustodialType = useSelector(getNonCustodial);
   const custodialStore: custodialType = useSelector(getCustodial);
   const chain: IChain = useSelector(getChain);
-  // const chatnotification: ChatnotificationType =
-  //   useSelector(getchatNotification);
   const userStore =
     account.wallet === walletEnum.noncustodial
       ? nonCustodialStore
@@ -83,7 +77,6 @@ const Navbar = () => {
   const [showChat, setShowChat] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
   const [value, setValue] = useState<string>("");
-  // const [coming, setComing] = useState<boolean>(false);
   const [cardModalOpen, setCardModalOpen] = useState<boolean>(false);
 
   const setView = useCallback(
@@ -353,16 +346,12 @@ const Navbar = () => {
               className="button_navbar_common"
               sx={{ position: "relative" }}
               onClick={() => {
-                dispatch(
-                  setNotification({ ...notification, alertbadge: false })
-                );
                 setShowAlert(!showAlert);
               }}
             >
-              {/* {notification.alertbadge == true && (
+              {alertbadge.badge == true && (
                 <span className={"notification_dot"}></span>
-              )} */}
-
+              )}
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="24"

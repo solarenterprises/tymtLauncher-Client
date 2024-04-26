@@ -17,23 +17,23 @@ import {
   updateAlertReadstatus,
 } from "../../features/chat/Chat-alertApi";
 import { alertType } from "../../types/chatTypes";
-import { notificationType } from "../../types/settingTypes";
-import {
-  selectNotification,
-  setNotification,
-} from "../../features/settings/NotificationSlice";
 import { getaccessToken } from "../../features/chat/Chat-contactApi";
 import { multiWalletType } from "../../types/walletTypes";
 import { getMultiWallet } from "../../features/wallet/MultiWalletSlice";
 import { getNonCustodial } from "../../features/account/NonCustodialSlice";
+import { alertbadgeType } from "../../types/alertTypes";
+import {
+  selectBadgeStatus,
+  setBadgeStatus,
+} from "../../features/alert/AlertbadgeSlice";
 
 const Alertmain = () => {
   const dispatch = useDispatch();
   const { t } = useTranslation();
   const account: accountType = useSelector(getAccount);
+  const alertbadge: alertbadgeType = useSelector(selectBadgeStatus);
   const multiwallet: multiWalletType = useSelector(getMultiWallet);
   const nonCustodial: nonCustodialType = useSelector(getNonCustodial);
-  const notification: notificationType = useSelector(selectNotification);
   const [unreadcount, setUnreadCount] = useState<number>(0);
   const [readcount, setReadCount] = useState<number>(0);
   const [unreadalerts, setUnreadAlerts] = useState<alertType[]>([]);
@@ -44,6 +44,9 @@ const Alertmain = () => {
     const unreadalerts: alertType[] = await fetchUnreadAlerts(account.uid);
     setUnreadCount(unreadalerts.length);
     setUnreadAlerts(unreadalerts);
+    if (unreadalerts.length > 0) {
+      dispatch(setBadgeStatus({ ...alertbadge, badge: true }));
+    }
   };
   const getReadAlerts = async () => {
     const readalerts: alertType[] = await fetchReadAlerts(account.uid);
@@ -63,6 +66,7 @@ const Alertmain = () => {
 
     getUnreadAlerts();
     getReadAlerts();
+    dispatch(setBadgeStatus({ ...alertbadge, badge: false }));
 
     console.log("accesstoken", accessToken);
     console.log("userid", account.uid);
@@ -71,13 +75,7 @@ const Alertmain = () => {
   useEffect(() => {
     getUnreadAlerts();
     getReadAlerts();
-  }, [notification.trigger, read]);
-
-  useEffect(() => {
-    if (unreadcount > 0) {
-      dispatch(setNotification({ ...notification, alertbadge: true }));
-    }
-  }, [notification.trigger, read]);
+  }, [alertbadge.trigger, read]);
 
   return (
     <Box className={"alertmain-container"}>
@@ -137,12 +135,6 @@ const Alertmain = () => {
             className="modal_btn_left_fr"
             onClick={() => {
               updateAlert();
-              dispatch(
-                setNotification({
-                  ...notification,
-                  trigger: !notification.trigger,
-                })
-              );
             }}
           >
             <Box className={"fs-18-bold"} color={"var(--Main-Blue, #52E1F2)"}>
@@ -152,21 +144,23 @@ const Alertmain = () => {
         </Stack>
         <Box className={"alert-inbox-scrollbar"}>
           {read === "unread" &&
-            unreadalerts.map((alert, index) => (
-              <AlertList
-                key={index}
-                status={alert.alertType === "chat" ? "message" : "alert"}
-                title={
-                  alert.alertType === "friend-request"
-                    ? "Friend Request"
-                    : alert.alertType === "chat"
-                    ? `chat`
-                    : t("not-8_update-notification")
-                }
-                detail={alert}
-                read={"unread"}
-              />
-            ))}
+            unreadalerts
+              .reverse()
+              .map((alert, index) => (
+                <AlertList
+                  key={index}
+                  status={alert.alertType === "chat" ? "message" : "alert"}
+                  title={
+                    alert.alertType === "friend-request"
+                      ? "Friend Request"
+                      : alert.alertType === "chat"
+                      ? `chat`
+                      : t("not-8_update-notification")
+                  }
+                  detail={alert}
+                  read={"unread"}
+                />
+              ))}
           {read === "read" &&
             readalerts
               .reverse()

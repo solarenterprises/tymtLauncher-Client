@@ -25,6 +25,7 @@ const initialState = {
   msg: "",
 };
 
+
 export const notificationSlice = createSlice({
   name: "notification",
   initialState,
@@ -37,6 +38,7 @@ export const notificationSlice = createSlice({
       );
     },
   },
+
 });
 
 export const selectNotification = (state: any) => state.notification.data;

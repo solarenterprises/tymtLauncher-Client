@@ -44,8 +44,13 @@ import { io, Socket } from "socket.io-client";
 import { useNotification } from "../../providers/NotificationProvider";
 import {
   selectNotification,
-  setNotification,
+  // setNotificationAsync,
 } from "../../features/settings/NotificationSlice";
+import { alertbadgeType } from "../../types/alertTypes";
+import {
+  selectBadgeStatus,
+  setBadgeStatus,
+} from "../../features/alert/AlertbadgeSlice";
 
 const ChatProvider = () => {
   const dispatch = useDispatch();
@@ -57,11 +62,10 @@ const ChatProvider = () => {
   const chatuserlist: userType[] = useSelector(getUserlist);
   const chatfriendlist: userType[] = useSelector(getFriendlist);
   const notification: notificationType = useSelector(selectNotification);
+  const alertbadge: alertbadgeType = useSelector(selectBadgeStatus);
   const data: chatType = useSelector(selectChat);
   const triggerBadge = () => {
-    dispatch(
-      setNotification({ ...notification, trigger: !notification.trigger })
-    );
+    dispatch(setBadgeStatus({ ...alertbadge, trigger: !alertbadge.trigger }));
   };
 
   const {
@@ -94,6 +98,7 @@ const ChatProvider = () => {
       const senderInChatFriendlist = chatfriendlist.find(
         (user) => user._id === senderId
       );
+      console.log("message-posted", message);
       if (
         message.sender_id === currentpartner._id &&
         message.recipient_id === account.uid
@@ -101,8 +106,7 @@ const ChatProvider = () => {
         if (data.message === "anyone") {
           const updatedHistory = [message, ...chatHistoryStore.messages];
           dispatch(setChatHistory({ messages: updatedHistory }));
-        }
-        if (data.message === "friend" && senderInChatFriendlist) {
+        } else if (data.message === "friend" && senderInChatFriendlist) {
           console.log("senderInChatFriendlist", senderInChatFriendlist);
           const updatedHistory = [message, ...chatHistoryStore.messages];
           dispatch(setChatHistory({ messages: updatedHistory }));
@@ -149,7 +153,7 @@ const ChatProvider = () => {
       handleIncomingMessages();
     });
     socket.on("alert-posted", (alert: alertType) => {
-      console.log("friend-request", alert);
+      console.log("alert-posted", alert);
       console.log("receiver", alert.receivers[0]);
       console.log("my id", account.uid);
       const handleIncomingRequest = async () => {
@@ -162,21 +166,21 @@ const ChatProvider = () => {
             console.log("senderInChatuserlist", senderInChatUserlist);
             console.log("senderId", alert.note.sender);
             if (senderInChatUserlist) {
-              notification.alert && setNotificationOpen(true);
+              notification.alert && triggerBadge();
+              setNotificationOpen(true);
               setNotificationStatus("alert");
               setNotificationTitle("Friend Request");
               setNotificationDetail(alert);
               setNotificationLink(null);
-              triggerBadge();
             } else {
               await updateContact(senderId);
               {
-                notification.alert && setNotificationOpen(true);
+                notification.alert && triggerBadge();
+                setNotificationOpen(true);
                 setNotificationStatus("alert");
                 setNotificationTitle("Friend Request");
                 setNotificationDetail(alert);
                 setNotificationLink(null);
-                triggerBadge();
               }
             }
           } else {
@@ -186,13 +190,18 @@ const ChatProvider = () => {
           alert.alertType !== "chat" &&
           alert.receivers.find((userid) => userid === account.uid)
         ) {
+          triggerBadge();
           setNotificationOpen(true);
           setNotificationStatus("alert");
           setNotificationTitle(`${alert.alertType}`);
           setNotificationDetail(`${alert.note.detail}`);
           setNotificationLink(null);
+        } else if (
+          notification.alert &&
+          alert.alertType === "chat" &&
+          alert.receivers.find((userid) => userid === account.uid)
+        ) {
           triggerBadge();
-        } else {
         }
       };
       handleIncomingRequest();
@@ -208,12 +217,12 @@ const ChatProvider = () => {
         ) {
           {
             if (notification.alert) {
+              triggerBadge();
               setNotificationOpen(true);
               setNotificationStatus("alert");
               setNotificationTitle(`Friend request ${alert.note.status}`);
               setNotificationDetail(`Friend request accepted`);
               setNotificationLink(null);
-              triggerBadge();
             }
             if (
               alert.note.sender === account.uid &&
@@ -234,12 +243,12 @@ const ChatProvider = () => {
             notification.alert &&
             alert.receivers.find((userid) => userid === account.uid)
           ) {
+            triggerBadge();
             setNotificationOpen(true);
             setNotificationStatus("alert");
             setNotificationTitle(`${alert.alertType}`);
             setNotificationDetail(`${alert.note.detail}`);
             setNotificationLink(null);
-            triggerBadge();
           } else {
           }
         }
