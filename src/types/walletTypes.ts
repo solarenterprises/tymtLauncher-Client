@@ -130,3 +130,7 @@ export interface ICurrency {
   current: string;
   data: { [key: string]: Number };
 }
+
+export interface IVotingData {
+  [key: string]: number;
+}

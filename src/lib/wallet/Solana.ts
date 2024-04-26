@@ -14,6 +14,7 @@ import { INotification } from "../../features/wallet/CryptoSlice";
 import { IRecipient } from "../../features/wallet/CryptoApi";
 import { Body, fetch as tauriFetch, ResponseType } from "@tauri-apps/api/http";
 import * as bs58 from "bs58";
+import { translateString } from "../api/Translate";
 
 class Solana implements IWallet {
   address: string;
@@ -197,10 +198,11 @@ class Solana implements IWallet {
         return noti;
       } catch (err) {
         console.error("Failed to send SOL transaction: ", err);
+        const translated = await translateString(err.toString());
         const noti: INotification = {
           status: "failed",
           title: "Failed",
-          message: err.toString(),
+          message: translated,
         };
         return noti;
       }

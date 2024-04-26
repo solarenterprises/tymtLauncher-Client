@@ -114,16 +114,42 @@ export const formatTransaction = (chain: IChain, data: any) => {
     logo = chain.chain.logo;
     symbol = chain.chain.symbol;
     if (chain.chain.symbol == "SXP") {
-      if (chain.chain.wallet?.toLowerCase() == data?.sender?.toLowerCase()) {
-        direction = 1;
-        address = data?.asset.transfers[0].recipientId;
+      if (data?.type === 6) {
+        // transfer
+        if (chain.chain.wallet?.toLowerCase() == data?.sender?.toLowerCase()) {
+          //send
+          direction = 1;
+          address = data?.asset.transfers[0].recipientId;
+          amount = formatDecimal(data?.amount ?? 0, 8);
+        } else {
+          // receive
+          direction = 0;
+          address = data?.sender;
+          amount = formatDecimal(
+            data?.asset?.transfers.find(
+              (element: any) =>
+                element?.recipientId?.toLowerCase() ===
+                chain.chain.wallet?.toLocaleLowerCase()
+            )?.amount ?? 0,
+            8
+          );
+        }
+        time = formatDate(data?.timestamp?.unix);
+        url = solar_scan_path + "transaction/" + data?.id;
+      } else if (data?.type === 2) {
+        // vote
+        direction = 2;
+        address = data?.sender;
+        time = formatDate(data?.timestamp?.unix);
+        url = solar_scan_path + "transaction/" + data?.id;
+        amount = formatDecimal(data?.fee ?? 0, 8);
       } else {
         direction = 0;
-        address = data?.sender;
+        address = "";
+        time = formatDate(0);
+        url = "";
+        amount = formatDecimal(0);
       }
-      time = formatDate(data?.timestamp?.unix);
-      url = solar_scan_path + "transaction/" + data?.id;
-      amount = formatDecimal(data?.amount ?? 0);
     } else if (chain.chain.symbol === "BTC") {
       if (data?.result >= 0) {
         direction = 0;

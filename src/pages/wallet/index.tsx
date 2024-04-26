@@ -33,6 +33,9 @@ import {
 import { currencySymbols } from "../../consts/currency";
 
 import { useNotification } from "../../providers/NotificationProvider";
+import { walletType } from "../../types/settingTypes";
+import { selectWallet, setWallet } from "../../features/settings/WalletSlice";
+import { getTransactionsAsync } from "../../features/wallet/CryptoSlice";
 
 const order = [
   "Solar",
@@ -52,8 +55,8 @@ const Wallet = () => {
   const dispatch = useDispatch<AppDispatch>();
   const classname = WalletStyle();
   const tooltip = SettingStyle();
-  const [hide, setHide] = useState(false);
   const wallets: multiWalletType = useSelector(getMultiWallet);
+  const walletStore: walletType = useSelector(selectWallet);
   const chain: IChain = useSelector(getChain);
   const accountStore: accountType = useSelector(getAccount);
   const currencyStore: ICurrency = useSelector(getCurrency);
@@ -69,7 +72,6 @@ const Wallet = () => {
     setNotificationTitle,
     setNotificationDetail,
     setNotificationOpen,
-    setNotificationLink,
   } = useNotification();
 
   useEffect(() => {
@@ -81,6 +83,14 @@ const Wallet = () => {
   }, [wallets, currentChain, currencyStore]);
 
   useEffect(() => {
+    if (!walletStore.refreshed) {
+      handleRefreshClick();
+    } else {
+      handleRefreshClickInBackground();
+    }
+  }, []);
+
+  const handleRefreshClick = () => {
     setLoading(true);
     dispatch(
       refreshBalancesAsync({
@@ -89,15 +99,35 @@ const Wallet = () => {
       })
     ).then(() => {
       dispatch(refreshCurrencyAsync()).then(() => {
-        setLoading(false);
-        setNotificationOpen(true);
-        setNotificationTitle(t("alt-20_balances-refresh"));
-        setNotificationDetail(t("alt-21_balances-refresh-success"));
-        setNotificationStatus("success");
-        setNotificationLink(null);
+        dispatch(getTransactionsAsync(chain)).then(() => {
+          dispatch(
+            setWallet({
+              ...walletStore,
+              refreshed: true,
+            })
+          );
+          setLoading(false);
+          setNotificationOpen(true);
+          setNotificationTitle(t("alt-20_balances-refresh"));
+          setNotificationDetail(t("alt-21_balances-refresh-success"));
+          setNotificationStatus("success");
+        });
       });
     });
-  }, []);
+  };
+
+  const handleRefreshClickInBackground = () => {
+    dispatch(
+      refreshBalancesAsync({
+        _multiWalletStore: wallets,
+        _accountStore: accountStore,
+      })
+    ).then(() => {
+      dispatch(refreshCurrencyAsync()).then(() => {
+        dispatch(getTransactionsAsync(chain));
+      });
+    });
+  };
 
   const selectToken = useCallback(
     (token: string) => {
@@ -224,25 +254,7 @@ const Wallet = () => {
                         <IconButton
                           className={"wallet-icon-button"}
                           onClick={() => {
-                            setLoading(true);
-                            dispatch(
-                              refreshBalancesAsync({
-                                _multiWalletStore: wallets,
-                                _accountStore: accountStore,
-                              })
-                            ).then(() => {
-                              dispatch(refreshCurrencyAsync()).then(() => {
-                                setLoading(false);
-                                setNotificationOpen(true);
-                                setNotificationTitle(
-                                  t("alt-20_balances-refresh")
-                                );
-                                setNotificationDetail(
-                                  t("alt-21_balances-refresh-success")
-                                );
-                                setNotificationStatus("success");
-                              });
-                            });
+                            handleRefreshClick();
                           }}
                         >
                           <img
@@ -271,16 +283,21 @@ const Wallet = () => {
                     </Box>
                     <Box>
                       <SwitchComp
-                        checked={hide}
+                        checked={walletStore.hidde}
                         onClick={() => {
-                          setHide(!hide);
+                          dispatch(
+                            setWallet({
+                              ...walletStore,
+                              hidde: !walletStore.hidde,
+                            })
+                          );
                         }}
                       />
                     </Box>
                   </Stack>
                   <Grid container spacing={"32px"}>
                     {order.map((chainName, index) => {
-                      if (hide) {
+                      if (walletStore.hidde) {
                         if (Number(wallets[chainName]?.chain.balance) !== 0) {
                           return (
                             <Grid item xs={6} key={index}>
@@ -366,6 +383,7 @@ const Wallet = () => {
                   sx={{
                     maxHeight: "800px",
                     overflowY: "auto",
+                    scrollbarWidth: "none",
                   }}
                 >
                   <TransCard />

@@ -17,10 +17,12 @@ const Wallet = ({ view, setView }: propsType) => {
   const dispatch = useDispatch();
   const data: walletType = useSelector(selectWallet);
   const currencyStore: ICurrency = useSelector(getCurrency);
+  
   const updateWallet = useCallback(() => {
     const updateData = { ...data, hidde: !data.hidde };
     dispatch(setWallet(updateData));
   }, [data]);
+
   return (
     <>
       {view === "wallet" && (

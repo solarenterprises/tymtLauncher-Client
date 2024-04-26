@@ -33,6 +33,7 @@ export interface propsSettingType {
 }
 
 export interface walletType {
+  refreshed: boolean;
   hidde: boolean;
   currency: string;
   status: string;
