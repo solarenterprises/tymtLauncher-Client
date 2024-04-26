@@ -65,8 +65,8 @@ class ERC20 {
     if (tx.recipients.length < 1) {
       const noti: INotification = {
         status: "failed",
-        title: "No Recipients",
-        message: "Please add recipients.",
+        title: await translateString("No Recipients"),
+        message: await translateString("Please add recipients."),
       };
       return noti;
     }
@@ -87,8 +87,8 @@ class ERC20 {
       console.log("Response of send EVM native token transaction: ", response);
       const noti: INotification = {
         status: "success",
-        title: "Success",
-        message: "Successfully Transferred!",
+        title: await translateString("Success"),
+        message: await translateString("Successfully Transferred!"),
       };
       return noti;
     } catch (err) {
@@ -96,7 +96,7 @@ class ERC20 {
       const translated = await translateString(err.toString());
       const noti: INotification = {
         status: "failed",
-        title: "Failed",
+        title: await translateString("Failed"),
         message: translated,
       };
       return noti;
@@ -111,8 +111,8 @@ class ERC20 {
     if (tx.recipients.length < 1) {
       const noti: INotification = {
         status: "failed",
-        title: "No Recipients",
-        message: "Please add recipients.",
+        title: await translateString("No Recipients"),
+        message: await translateString("Please add recipients."),
       };
       return noti;
     }
@@ -133,8 +133,8 @@ class ERC20 {
       console.log("Response of send EVM native token transaction: ", response);
       const noti: INotification = {
         status: "success",
-        title: "Success",
-        message: "Successfully Transferred!",
+        title: await translateString("Success"),
+        message: await translateString("Successfully Transferred!"),
       };
       return noti;
     } catch (err) {
@@ -142,7 +142,7 @@ class ERC20 {
       const translated = await translateString(err.toString());
       const noti: INotification = {
         status: "failed",
-        title: "Failed",
+        title: await translateString("Failed"),
         message: translated,
       };
       return noti;
