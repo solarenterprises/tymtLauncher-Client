@@ -10,24 +10,22 @@ import donotdisturbframe from "../../assets/chat/donotdisturbframe.svg";
 import mask from "../../assets/account/mask.png";
 
 import { IChain } from "../../types/walletTypes";
-import { chatType, notificationType } from "../../types/settingTypes";
+import { notificationType } from "../../types/settingTypes";
 import { getChain } from "../../features/wallet/ChainSlice";
 import { selectNotification } from "../../features/settings/NotificationSlice";
-import { selectChat } from "../../features/settings/ChatSlice";
 
 const Avatar = ({ size, userid, onlineStatus, ischain, status }: any) => {
   const { t } = useTranslation();
   const chain: IChain = useSelector(getChain);
   const [notificationstatus, setNotificationStatus] = useState("");
   const notificationStore: notificationType = useSelector(selectNotification);
-  const data: chatType = useSelector(selectChat);
   const getNotificationStatus = () => {
     setNotificationStatus(status);
   };
 
   useEffect(() => {
     getNotificationStatus();
-  }, [userid, notificationStore.alert, data.disturb]);
+  }, [userid, notificationStore.alert]);
 
   return (
     <>

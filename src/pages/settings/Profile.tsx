@@ -10,7 +10,7 @@ import editIcon from "../../assets/settings/edit-icon.svg";
 
 import InputText from "../../components/account/InputText";
 import { getAccount, setAccount } from "../../features/account/AccountSlice";
-import { chatType, propsType } from "../../types/settingTypes";
+import { notificationType, propsType } from "../../types/settingTypes";
 import {
   accountType,
   custodialType,
@@ -30,11 +30,11 @@ import {
   fileUpload,
   updateUserNickname,
 } from "../../features/account/AccountApi";
-import { selectChat } from "../../features/settings/ChatSlice";
 import { AppDispatch } from "../../store";
 import Avatar from "../../components/home/Avatar";
 
 import { useNotification } from "../../providers/NotificationProvider";
+import { selectNotification } from "../../features/settings/NotificationSlice";
 
 const Profile = ({ view, setView }: propsType) => {
   const classname = SettingStyle();
@@ -43,7 +43,7 @@ const Profile = ({ view, setView }: propsType) => {
   const account: accountType = useSelector(getAccount);
   const nonCustodial: nonCustodialType = useSelector(getNonCustodial);
   const custodial: custodialType = useSelector(getCustodial);
-  const data: chatType = useSelector(selectChat);
+  const notificationStore: notificationType = useSelector(selectNotification);
   const userStore =
     account.wallet === walletEnum.noncustodial ? nonCustodial : custodial;
   const [nickname, setNickname] = useState(userStore.nickname);
@@ -171,7 +171,7 @@ const Profile = ({ view, setView }: propsType) => {
                     onlineStatus={true}
                     userid={account.uid}
                     size={92}
-                    status={data.disturb ? "donotdisturb" : "online"}
+                    status={!notificationStore.alert ? "donotdisturb" : "online"}
                   />
                 </Box>
                 <Box className="fs-h5 white">{t("set-68_change-avatar")}</Box>

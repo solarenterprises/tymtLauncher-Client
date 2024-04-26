@@ -456,6 +456,18 @@
     "tol-5_offline": "オフライン",
     "tol-6_donotdisturb": "邪魔しないでください",
     "tol-7_ingame": "インゲーム",
-    "tol-8_solar-card": "ソーラーカード"
+    "tol-8_solar-card": "ソーラーカード",
+    "not-1_notifications": "通知",
+    "not-2_unread": "未読",
+    "not-3_read": "既読",
+    "not-4_mark-all-as-read": "すべてを既読にする",
+    "not-5_add": "追加",
+    "not-6_decline": "辞退",
+    "not-7_intro": "通知はありません",
+    "not-8_update-notification": "通知を更新",
+    "not-9_friend-request": "友達リクエスト",
+    "not-10_fr-intro": "楽しみを逃さないで - 今すぐ友達に追加してください！",
+    "not-11_fr-accept": "友達リクエストが承認されました",
+    "not-12_fr-reject": "友達リクエストが拒否されました"
   }
 }

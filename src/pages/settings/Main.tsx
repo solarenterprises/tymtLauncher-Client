@@ -13,17 +13,18 @@ import searchIcon from "../../assets/settings/search-icon.svg";
 import exitIcon from "../../assets/settings/exit-icon.svg";
 import Avatar from "../../components/home/Avatar";
 
-import { chatType, propsType } from "../../types/settingTypes";
+import { notificationType, propsType } from "../../types/settingTypes";
 import { accountType, walletEnum } from "../../types/accountTypes";
 import { IChain } from "../../types/walletTypes";
 import { getAccount } from "../../features/account/AccountSlice";
 import { getNonCustodial } from "../../features/account/NonCustodialSlice";
 import { getCustodial } from "../../features/account/CustodialSlice";
 import { getChain } from "../../features/wallet/ChainSlice";
-import { selectChat } from "../../features/settings/ChatSlice";
+import { selectNotification } from "../../features/settings/NotificationSlice";
 
 import { getExplorerUrl } from "../../lib/helper";
 import { openLink } from "../../lib/api/Downloads";
+
 
 
 const Main = ({ view, setView }: propsType) => {
@@ -32,7 +33,7 @@ const Main = ({ view, setView }: propsType) => {
   const navigate = useNavigate();
   const account: accountType = useSelector(getAccount);
   const chain: IChain = useSelector(getChain);
-  const data: chatType = useSelector(selectChat);
+  const notificationStore: notificationType = useSelector(selectNotification);
   const userStore =
     account.wallet === walletEnum.noncustodial
       ? useSelector(getNonCustodial)
@@ -53,7 +54,7 @@ const Main = ({ view, setView }: propsType) => {
                   onlineStatus={true}
                   userid={account.uid}
                   size={60}
-                  status={data.disturb ? "donotdisturb" : "online"}
+                  status={!notificationStore.alert ? "donotdisturb" : "online"}
                 />
               </Box>
               <Box

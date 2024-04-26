@@ -11,7 +11,7 @@ import {
   userType,
 } from "../../types/chatTypes";
 import { accountType } from "../../types/accountTypes";
-import { chatType } from "../../types/settingTypes";
+import { chatType, notificationType } from "../../types/settingTypes";
 
 import { getAccount } from "../../features/account/AccountSlice";
 import { getsenderName } from "../../features/chat/Chat-contactApi";
@@ -32,12 +32,25 @@ import {
   setChatHistory,
 } from "../../features/chat/Chat-historySlice";
 import { selectPartner } from "../../features/chat/Chat-currentPartnerSlice";
+import {
+  getFriendlist,
+  setFriendlist,
+} from "../../features/chat/Chat-friendlistSlice";
 
 const socket: Socket = io(socket_backend_url as string);
 import { socket_backend_url } from "../../configs";
 import { io, Socket } from "socket.io-client";
 
 import { useNotification } from "../../providers/NotificationProvider";
+import {
+  selectNotification,
+  // setNotificationAsync,
+} from "../../features/settings/NotificationSlice";
+import { alertbadgeType } from "../../types/alertTypes";
+import {
+  selectBadgeStatus,
+  setBadgeStatus,
+} from "../../features/alert/AlertbadgeSlice";
 
 const ChatProvider = () => {
   const dispatch = useDispatch();
@@ -47,7 +60,14 @@ const ChatProvider = () => {
   const chatHistoryStore: ChatHistoryType = useSelector(getChatHistory);
   const currentpartner: userType = useSelector(selectPartner);
   const chatuserlist: userType[] = useSelector(getUserlist);
+  const chatfriendlist: userType[] = useSelector(getFriendlist);
+  const notification: notificationType = useSelector(selectNotification);
+  const alertbadge: alertbadgeType = useSelector(selectBadgeStatus);
   const data: chatType = useSelector(selectChat);
+  const triggerBadge = () => {
+    dispatch(setBadgeStatus({ ...alertbadge, trigger: !alertbadge.trigger }));
+  };
+
   const {
     setNotificationStatus,
     setNotificationTitle,
@@ -71,34 +91,55 @@ const ChatProvider = () => {
       socket.emit("user-joined", `${account.uid}`);
     });
     socket.on("message-posted", (message: ChatMessageType) => {
+      const senderId = message.sender_id;
+      const senderInChatUserlist = chatuserlist.find(
+        (user) => user._id === senderId
+      );
+      const senderInChatFriendlist = chatfriendlist.find(
+        (user) => user._id === senderId
+      );
+      console.log("message-posted", message);
       if (
         message.sender_id === currentpartner._id &&
-        message.recipient_id === account.uid &&
-        data.message === "anyone"
+        message.recipient_id === account.uid
       ) {
-        const updatedHistory = [message, ...chatHistoryStore.messages];
-        dispatch(setChatHistory({ messages: updatedHistory }));
+        if (data.message === "anyone") {
+          const updatedHistory = [message, ...chatHistoryStore.messages];
+          dispatch(setChatHistory({ messages: updatedHistory }));
+        } else if (data.message === "friend" && senderInChatFriendlist) {
+          console.log("senderInChatFriendlist", senderInChatFriendlist);
+          const updatedHistory = [message, ...chatHistoryStore.messages];
+          dispatch(setChatHistory({ messages: updatedHistory }));
+        }
       }
       const handleIncomingMessages = async () => {
         if (message.recipient_id === account.uid) {
-          const senderId = message.sender_id;
-          const senderInChatUserlist = chatuserlist.find(
-            (user) => user._id === senderId
-          );
-          if (!senderInChatUserlist) {
-            const senderName = await getsenderName(message.sender_id);
-            await updateContact(message.sender_id);
-            {
-              !data.disturb && setNotificationOpen(true);
-              setNotificationStatus("message");
-              setNotificationTitle(senderName);
-              setNotificationDetail(message.message);
-              setNotificationLink(`/chat?senderId=${message.sender_id}`);
+          if (data.message === "anyone") {
+            if (!senderInChatUserlist) {
+              const senderName = await getsenderName(message.sender_id);
+              await updateContact(message.sender_id);
+              {
+                notification.alert && setNotificationOpen(true);
+                setNotificationStatus("message");
+                setNotificationTitle(senderName);
+                setNotificationDetail(message.message);
+                setNotificationLink(`/chat?senderId=${message.sender_id}`);
+              }
+            } else {
+              const senderName = senderInChatUserlist.nickName;
+              {
+                notification.alert && setNotificationOpen(true);
+                setNotificationStatus("message");
+                setNotificationTitle(senderName);
+                setNotificationDetail(message.message);
+                setNotificationLink(`/chat?senderId=${message.sender_id}`);
+              }
             }
-          } else {
-            const senderName = senderInChatUserlist.nickName;
-            {
-              !data.disturb && setNotificationOpen(true);
+          }
+          if (data.message === "friend") {
+            if (senderInChatFriendlist) {
+              const senderName = senderInChatFriendlist.nickName;
+              setNotificationOpen(true);
               setNotificationStatus("message");
               setNotificationTitle(senderName);
               setNotificationDetail(message.message);
@@ -108,33 +149,120 @@ const ChatProvider = () => {
         } else {
         }
       };
+
       handleIncomingMessages();
     });
     socket.on("alert-posted", (alert: alertType) => {
-      console.log("friend request", alert);
+      console.log("alert-posted", alert);
       console.log("receiver", alert.receivers[0]);
       console.log("my id", account.uid);
-      if (alert.alertType === "Friend Request") {
-        if (
-          !data.disturb &&
-          data.friend === "anyone" &&
-          alert.receivers[0] === account.uid
+      const handleIncomingRequest = async () => {
+        if (alert.alertType === "friend-request") {
+          if (data.friend === "anyone" && alert.receivers[0] === account.uid) {
+            const senderId = alert.note?.sender;
+            const senderInChatUserlist = chatuserlist.find(
+              (user) => user._id === senderId
+            );
+            console.log("senderInChatuserlist", senderInChatUserlist);
+            console.log("senderId", alert.note.sender);
+            if (senderInChatUserlist) {
+              notification.alert && triggerBadge();
+              setNotificationOpen(true);
+              setNotificationStatus("alert");
+              setNotificationTitle("Friend Request");
+              setNotificationDetail(alert);
+              setNotificationLink(null);
+            } else {
+              await updateContact(senderId);
+              {
+                notification.alert && triggerBadge();
+                setNotificationOpen(true);
+                setNotificationStatus("alert");
+                setNotificationTitle("Friend Request");
+                setNotificationDetail(alert);
+                setNotificationLink(null);
+              }
+            }
+          } else {
+          }
+        } else if (
+          notification.alert &&
+          alert.alertType !== "chat" &&
+          alert.receivers.find((userid) => userid === account.uid)
         ) {
+          triggerBadge();
           setNotificationOpen(true);
           setNotificationStatus("alert");
-          setNotificationTitle("Friend Request");
-          setNotificationDetail(alert.note);
+          setNotificationTitle(`${alert.alertType}`);
+          setNotificationDetail(`${alert.note.detail}`);
           setNotificationLink(null);
+        } else if (
+          notification.alert &&
+          alert.alertType === "chat" &&
+          alert.receivers.find((userid) => userid === account.uid)
+        ) {
+          triggerBadge();
         }
-      }
+      };
+      handleIncomingRequest();
+    });
+
+    socket.on("alert-updated", (alert: alertType) => {
+      console.log("alert-updated", alert);
+      const handleIncomingUpdatedAlert = () => {
+        if (
+          alert.alertType === "friend-request" &&
+          (alert.note.sender === account.uid ||
+            alert.receivers[0] === account.uid)
+        ) {
+          {
+            if (notification.alert) {
+              triggerBadge();
+              setNotificationOpen(true);
+              setNotificationStatus("alert");
+              setNotificationTitle(`Friend request ${alert.note.status}`);
+              setNotificationDetail(`Friend request accepted`);
+              setNotificationLink(null);
+            }
+            if (
+              alert.note.sender === account.uid &&
+              alert.note.status === "accepted"
+            ) {
+              const senderInChatUserlist = chatuserlist.find(
+                (user) => user._id === alert.receivers[0]
+              );
+              const updatedFriendlist: userType[] = [
+                ...chatfriendlist,
+                senderInChatUserlist,
+              ];
+              dispatch(setFriendlist(updatedFriendlist));
+            }
+          }
+        } else {
+          if (
+            notification.alert &&
+            alert.receivers.find((userid) => userid === account.uid)
+          ) {
+            triggerBadge();
+            setNotificationOpen(true);
+            setNotificationStatus("alert");
+            setNotificationTitle(`${alert.alertType}`);
+            setNotificationDetail(`${alert.note.detail}`);
+            setNotificationLink(null);
+          } else {
+          }
+        }
+      };
+      handleIncomingUpdatedAlert();
     });
 
     return () => {
       socket.off("connect");
       socket.off("message-posted");
       socket.off("alert-posted");
+      socket.off("alert-updated");
     };
-  }, [socket, data, chatHistoryStore]);
+  }, [socket, data, chatHistoryStore, chatuserlist, chatfriendlist]);
 
   return (
     <>
