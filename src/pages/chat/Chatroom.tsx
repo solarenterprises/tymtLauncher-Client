@@ -29,7 +29,8 @@ import {
   ChatHistoryType,
   scrollDownType,
   ChatMessageType,
-  askEncryptionKeyType,
+  // askEncryptionKeyType,
+  deliverEncryptionKeyType,
 } from "../../types/chatTypes";
 import { chatType, notificationType } from "../../types/settingTypes";
 
@@ -81,8 +82,9 @@ import _ from "lodash";
 import InfiniteScroll from "react-infinite-scroller";
 import { selectNotification } from "../../features/settings/NotificationSlice";
 import { selectChat } from "../../features/settings/ChatSlice";
-import { selectEncryptionKeyByUserId } from "../../features/chat/Chat-enryptionkeySlice";
+import { addEncryptionKey, selectEncryptionKeyByUserId } from "../../features/chat/Chat-enryptionkeySlice";
 import { decrypt, encrypt } from "../../lib/api/Encrypt";
+import { generateRandomString } from "../../features/chat/Chat-contactApi";
 
 const socket: Socket = io(socket_backend_url as string);
 
@@ -160,11 +162,14 @@ const Chatroom = () => {
     if (existkey) {
       setKeyperUser(existkey);
     } else {
-      const askData: askEncryptionKeyType = {
+      const key = generateRandomString(32);
+      const deliverydata: deliverEncryptionKeyType = {
         sender_id: account.uid,
         recipient_id: currentpartner._id,
+        key: key,
       };
-      socket.emit("ask-encryption-key", JSON.stringify(askData));
+      socket.emit("deliver-encryption-key", JSON.stringify(deliverydata));
+      dispatch(addEncryptionKey({ userid, key }));
     }
   }, [currentpartner._id, existkey]);
 

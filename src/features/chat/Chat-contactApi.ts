@@ -183,7 +183,7 @@ export const updateUsernotificationStatus = async (
   } catch (err) {}
 };
 
-export const generateRandomString = (length = 32) =>  {
+export const generateRandomString = (length:number) =>  {
   let result = '';
   const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_!#~$%^&*()-=+';
   const charactersLength = characters.length;

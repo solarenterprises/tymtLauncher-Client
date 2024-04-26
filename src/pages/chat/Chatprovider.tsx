@@ -278,7 +278,7 @@ const ChatProvider = () => {
         const existkey = useSelector((state) =>
           selectEncryptionKeyByUserId(state, userid)
         );
-        const key = existkey ? existkey : generateRandomString();
+        const key = existkey ? existkey : generateRandomString(32);
 
         const deliverydata: deliverEncryptionKeyType = {
           sender_id: account.uid,
@@ -292,11 +292,9 @@ const ChatProvider = () => {
     // receive encryption key from partner
     socket.on("deliver-encryption-key", (data: deliverEncryptionKeyType) => {
       console.log("encryption-key delievery--->", data);
-      if (data.recipient_id === account.uid) {
-        const userid = data.sender_id;
-        const encryptionkey = data.key;
-        dispatch(addEncryptionKey({ userid, encryptionkey }));
-      }
+      const userid = data.sender_id;
+      const encryptionkey = data.key;
+      dispatch(addEncryptionKey({ userid, encryptionkey }));
     });
     return () => {
       socket.off("connect");
