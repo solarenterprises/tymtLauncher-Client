@@ -135,15 +135,11 @@ const Chatbox = ({ view, setView }: propsType) => {
       };
       socket.emit("ask-encryption-key", JSON.stringify(askData));
     }
-  }, [currentpartner._id]);
+  }, [currentpartner._id, existkey]);
 
   const sendMessage = async () => {
     try {
       if (value.trim() !== "") {
-        // if(encryptionKey) {
-
-        // }
-        // const randomstring: string = generateRandomString();
         const encryptedvalue = await encrypt(value, keyperuser);
         const message = {
           sender_id: account.uid,
