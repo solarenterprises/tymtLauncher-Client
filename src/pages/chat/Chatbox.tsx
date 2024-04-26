@@ -17,6 +17,8 @@ import {
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import {
   ChatHistoryType,
+  ChatMessageType,
+  askEncryptionKeyType,
   propsType,
   scrollDownType,
   userType,
@@ -39,6 +41,7 @@ import {
 } from "../../features/chat/Chat-scrollDownSlice";
 import { selectChat } from "../../features/settings/ChatSlice";
 import { selectNotification } from "../../features/settings/NotificationSlice";
+import { selectEncryptionKeyByUserId } from "../../features/chat/Chat-enryptionkeySlice";
 
 import EmojiPicker, { SkinTones } from "emoji-picker-react";
 import maximize from "../../assets/chat/maximize.svg";
@@ -58,6 +61,9 @@ import { io, Socket } from "socket.io-client";
 import { AppDispatch } from "../../store";
 import _ from "lodash";
 import InfiniteScroll from "react-infinite-scroller";
+// import { generateRandomString } from "../../features/chat/Chat-contactApi";
+// import { selectEncryptionKeyByUserId } from "../../features/chat/Chat-enryptionkeySlice";
+import { encrypt, decrypt } from "../../lib/api/Encrypt";
 
 const socket: Socket = io(socket_backend_url as string);
 
@@ -95,6 +101,14 @@ const Chatbox = ({ view, setView }: propsType) => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+  const [decryptedMessages, setDecryptedMessages] = useState<ChatMessageType[]>(
+    []
+  );
+  const [keyperuser, setKeyperUser] = useState<string>("");
+  const userid: string = currentpartner._id;
+  const existkey: string = useSelector((state) =>
+    selectEncryptionKeyByUserId(state, userid)
+  );
 
   const handleEmojiClick = (event: any) => {
     setAnchorEl(event.currentTarget);
@@ -109,14 +123,33 @@ const Chatbox = ({ view, setView }: propsType) => {
     setValue(value + emoji.emoji);
   };
 
+  // When currentpartner is changed ask encryption key to partner
+
+  useEffect(() => {
+    if (existkey) {
+      setKeyperUser(existkey);
+    } else {
+      const askData: askEncryptionKeyType = {
+        sender_id: account.uid,
+        recipient_id: currentpartner._id,
+      };
+      socket.emit("ask-encryption-key", JSON.stringify(askData));
+    }
+  }, [currentpartner._id]);
+
   const sendMessage = async () => {
     try {
       if (value.trim() !== "") {
+        // if(encryptionKey) {
+
+        // }
+        // const randomstring: string = generateRandomString();
+        const encryptedvalue = await encrypt(value, keyperuser);
         const message = {
           sender_id: account.uid,
           recipient_id: currentpartner._id,
           room_id: `room_${account.uid}_${currentpartner._id}`,
-          message: value,
+          message: encryptedvalue,
           createdAt: Date.now(),
         };
         socket.emit("post-message", JSON.stringify(message));
@@ -124,7 +157,7 @@ const Chatbox = ({ view, setView }: propsType) => {
           alertType: "chat",
           note: {
             sender: `${account.uid}`,
-            message: value,
+            message: encryptedvalue,
           },
           receivers: [currentpartner._id],
         };
@@ -156,7 +189,9 @@ const Chatbox = ({ view, setView }: propsType) => {
       }, 0);
     } else if (e.key === "Enter") {
       e.preventDefault();
-      await sendMessage(); // Handle sending the message
+      if (existkey) {
+        await sendMessage();
+      } // Handle sending the message
       setValue(""); // Reset input field
       dispatch(setdownState({ down: !shouldScrollDown }));
     }
@@ -239,7 +274,30 @@ const Chatbox = ({ view, setView }: propsType) => {
     }, [shouldScrollDown, currentpartnerid, view]);
     return scrollRef;
   }
+
   const scrollRef = useChatScroll(shouldScrollDown, currentpartner._id, view);
+
+  useEffect(() => {
+    const decryptMessages = async () => {
+      const decryptedMessages = await Promise.all(
+        chatHistoryStore.messages.map(async (message) => {
+          const messagetodecrypt: string = message?.message;
+
+          const decryptedMessage: string = await decrypt(
+            messagetodecrypt,
+            keyperuser
+          );
+          return {
+            ...message,
+            message: decryptedMessage,
+          };
+        })
+      );
+      setDecryptedMessages(decryptedMessages);
+    };
+
+    decryptMessages();
+  }, [chatHistoryStore.messages]);
 
   return (
     <>
@@ -327,125 +385,122 @@ const Chatbox = ({ view, setView }: propsType) => {
               isReverse={true}
               useWindow={false}
             >
-              {[...chatHistoryStore.messages]
-                .reverse()
-                ?.map((message, index) => {
-                  const isSameDay = (date1, date2) => {
-                    return (
-                      date1.getFullYear() === date2.getFullYear() &&
-                      date1.getMonth() === date2.getMonth() &&
-                      date1.getDate() === date2.getDate()
-                    );
-                  };
-
-                  const isFirstMessageOfDay = () => {
-                    if (index === 0) return true;
-
-                    const previousMessageDate = new Date(
-                      [...chatHistoryStore.messages].reverse()[
-                        index - 1
-                      ]?.createdAt
-                    );
-                    const currentMessageDate = new Date(message.createdAt);
-
-                    return !isSameDay(previousMessageDate, currentMessageDate);
-                  };
-
-                  const timeline = isFirstMessageOfDay()
-                    ? formatDateDifference(message.createdAt)
-                    : null;
-
+              {[...decryptedMessages].reverse()?.map((message, index) => {
+                const isSameDay = (date1, date2) => {
                   return (
-                    <>
-                      {/* Existing Box for rendering the message */}
-                      <Box
-                        key={`${
-                          message.sender_id
-                        }-${index}-${new Date().toISOString()}`}
-                        sx={{
-                          width: "100%",
-                          textOverflow: "ellipsis",
-                          whiteSpace: "normal",
-                          wordWrap: "break-word",
-                          marginTop: "30px",
-                        }}
-                      >
-                        {timeline && <OrLinechat timeline={timeline} />}
-                        <Stack flexDirection={"row"} alignItems={"center"}>
-                          {message.sender_id === account.uid && (
-                            <>
-                              <Avatar
-                                onlineStatus={true}
-                                userid={account.uid}
-                                size={40}
-                                status={
-                                  !notificationStore.alert
-                                    ? "donotdisturb"
-                                    : "online"
-                                }
-                              />
+                    date1.getFullYear() === date2.getFullYear() &&
+                    date1.getMonth() === date2.getMonth() &&
+                    date1.getDate() === date2.getDate()
+                  );
+                };
+
+                const isFirstMessageOfDay = () => {
+                  if (index === 0) return true;
+
+                  const previousMessageDate = new Date(
+                    [...chatHistoryStore.messages].reverse()[
+                      index - 1
+                    ]?.createdAt
+                  );
+                  const currentMessageDate = new Date(message.createdAt);
+
+                  return !isSameDay(previousMessageDate, currentMessageDate);
+                };
+
+                const timeline = isFirstMessageOfDay()
+                  ? formatDateDifference(message.createdAt)
+                  : null;
+                return (
+                  <>
+                    {/* Existing Box for rendering the message */}
+                    <Box
+                      key={`${
+                        message.sender_id
+                      }-${index}-${new Date().toISOString()}`}
+                      sx={{
+                        width: "100%",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "normal",
+                        wordWrap: "break-word",
+                        marginTop: "30px",
+                      }}
+                    >
+                      {timeline && <OrLinechat timeline={timeline} />}
+                      <Stack flexDirection={"row"} alignItems={"center"}>
+                        {message.sender_id === account.uid && (
+                          <>
+                            <Avatar
+                              onlineStatus={true}
+                              userid={account.uid}
+                              size={40}
+                              status={
+                                !notificationStore.alert
+                                  ? "donotdisturb"
+                                  : "online"
+                              }
+                            />
+                            <Box
+                              className={"fs-16 white"}
+                              sx={{ marginLeft: "16px" }}
+                            >
+                              {userStore.nickname}
+                            </Box>
+                          </>
+                        )}
+                        {message.sender_id !== account.uid && (
+                          <>
+                            <Avatar
+                              onlineStatus={currentpartner.onlineStatus}
+                              userid={currentpartner._id}
+                              size={40}
+                              status={currentpartner.notificationStatus}
+                            />
+                            <Stack>
                               <Box
                                 className={"fs-16 white"}
                                 sx={{ marginLeft: "16px" }}
                               >
-                                {userStore.nickname}
+                                {currentpartner.nickName}
                               </Box>
-                            </>
-                          )}
-                          {message.sender_id !== account.uid && (
-                            <>
-                              <Avatar
-                                onlineStatus={currentpartner.onlineStatus}
-                                userid={currentpartner._id}
-                                size={40}
-                                status={currentpartner.notificationStatus}
-                              />
-                              <Stack>
-                                <Box
-                                  className={"fs-16 white"}
-                                  sx={{ marginLeft: "16px" }}
-                                >
-                                  {currentpartner.nickName}
-                                </Box>
-                              </Stack>
-                            </>
-                          )}
-                        </Stack>
-                        <Box
-                          className={"fs-14-regular white"}
-                          sx={{
-                            marginTop: "10px",
-                            overflow: "hidden",
-                            whiteSpace: "normal",
-                            wordWrap: "break-word",
-                            WebkitBoxOrient: "vertical",
-                            display: "-webkit-box",
-                            zIndex: 50,
-                          }}
-                        >
-                          {message.message.split("\n").map((line) => (
-                            <React.Fragment>
-                              {line}
-                              <br />
-                            </React.Fragment>
-                          ))}
-                        </Box>
-                        <Box
-                          className={"fs-12-light"}
-                          color={"gray"}
-                          sx={{
-                            marginTop: "10px",
-                          }}
-                        >
-                          {new Date(message.createdAt).toLocaleString("en-US", {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
-                        </Box>
+                            </Stack>
+                          </>
+                        )}
+                      </Stack>
+                      <Box
+                        className={"fs-14-regular white"}
+                        sx={{
+                          marginTop: "10px",
+                          overflow: "hidden",
+                          whiteSpace: "normal",
+                          wordWrap: "break-word",
+                          WebkitBoxOrient: "vertical",
+                          display: "-webkit-box",
+                          zIndex: 50,
+                        }}
+                      >
+                        {message.message.split("\n").map((line) => (
+                          <React.Fragment>
+                            {line}
+                            <br />
+                          </React.Fragment>
+                        ))}
                       </Box>
-                    </>
-                  );
-                })}
+                      <Box
+                        className={"fs-12-light"}
+                        color={"gray"}
+                        sx={{
+                          marginTop: "10px",
+                        }}
+                      >
+                        {new Date(message.createdAt).toLocaleString("en-US", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </Box>
+                    </Box>
+                  </>
+                );
+              })}
             </InfiniteScroll>
           </Box>
 

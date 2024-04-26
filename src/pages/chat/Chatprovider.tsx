@@ -8,13 +8,19 @@ import {
   ChatHistoryType,
   ChatMessageType,
   alertType,
+  askEncryptionKeyType,
+  deliverEncryptionKeyType,
+  encryptionkeyStoreType,
   userType,
 } from "../../types/chatTypes";
 import { accountType } from "../../types/accountTypes";
 import { chatType, notificationType } from "../../types/settingTypes";
 
 import { getAccount } from "../../features/account/AccountSlice";
-import { getsenderName } from "../../features/chat/Chat-contactApi";
+import {
+  generateRandomString,
+  getsenderName,
+} from "../../features/chat/Chat-contactApi";
 import { getNonCustodial } from "../../features/account/NonCustodialSlice";
 import { getMultiWallet } from "../../features/wallet/MultiWalletSlice";
 import {
@@ -51,6 +57,11 @@ import {
   selectBadgeStatus,
   setBadgeStatus,
 } from "../../features/alert/AlertbadgeSlice";
+import {
+  addEncryptionKey,
+  selectEncryptionKeyByUserId,
+  selectEncryptionKeyStore,
+} from "../../features/chat/Chat-enryptionkeySlice";
 
 const ChatProvider = () => {
   const dispatch = useDispatch();
@@ -64,6 +75,9 @@ const ChatProvider = () => {
   const notification: notificationType = useSelector(selectNotification);
   const alertbadge: alertbadgeType = useSelector(selectBadgeStatus);
   const data: chatType = useSelector(selectChat);
+  const keystore: encryptionkeyStoreType = useSelector(
+    selectEncryptionKeyStore
+  );
   const triggerBadge = () => {
     dispatch(setBadgeStatus({ ...alertbadge, trigger: !alertbadge.trigger }));
   };
@@ -256,13 +270,43 @@ const ChatProvider = () => {
       handleIncomingUpdatedAlert();
     });
 
+    // receive request for  encryption key and generate/send encryption key to partner
+    socket.on("ask-encryption-key", (data: askEncryptionKeyType) => {
+      console.log("receiving encryption key request--->", data);
+      if (data.recipient_id === account.uid) {
+        const userid: string = data.sender_id;
+        const existkey = useSelector((state) =>
+          selectEncryptionKeyByUserId(state, userid)
+        );
+        const key = existkey ? existkey : generateRandomString();
+
+        const deliverydata: deliverEncryptionKeyType = {
+          sender_id: account.uid,
+          recipient_id: data.sender_id,
+          key: key,
+        };
+        socket.emit("deliver-encryption-key", JSON.stringify(deliverydata));
+        dispatch(addEncryptionKey({ userid, key }));
+      }
+    });
+    // receive encryption key from partner
+    socket.on("deliver-encryption-key", (data: deliverEncryptionKeyType) => {
+      console.log("encryption-key delievery--->", data);
+      if (data.recipient_id === account.uid) {
+        const userid = data.sender_id;
+        const encryptionkey = data.key;
+        dispatch(addEncryptionKey({ userid, encryptionkey }));
+      }
+    });
     return () => {
       socket.off("connect");
       socket.off("message-posted");
       socket.off("alert-posted");
       socket.off("alert-updated");
+      socket.off("ask-encryption-key");
+      socket.off("deliver-encryption-key");
     };
-  }, [socket, data, chatHistoryStore, chatuserlist, chatfriendlist]);
+  }, [socket, data, chatHistoryStore, chatuserlist, chatfriendlist, keystore]);
 
   return (
     <>
