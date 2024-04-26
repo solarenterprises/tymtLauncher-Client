@@ -3,7 +3,8 @@
     "beforeDevCommand": "yarn dev",
     "beforeBuildCommand": "yarn build",
     "devPath": "http://localhost:1420",
-    "distDir": "../dist"
+    "distDir": "../dist",
+    "withGlobalTauri": true
   },
   "package": {
     "productName": "tymtLauncher",
@@ -33,6 +34,8 @@
       },
       "shell": {
         "all": true,
+        "execute": true,
+        "sidecar": true,
         "open": true
       },
       "clipboard": {

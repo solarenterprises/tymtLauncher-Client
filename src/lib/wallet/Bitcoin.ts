@@ -185,8 +185,8 @@ class Bitcoin implements IWallet {
         if (feeSat >= sumUTXOSat) {
           const noti: INotification = {
             status: "failed",
-            title: "Fail",
-            message: "Insufficient BTC balance for fee!",
+            title: await translateString("Fail"),
+            message: await translateString("Insufficient BTC balance for fee!"),
           };
           return noti;
         }
@@ -210,8 +210,8 @@ class Bitcoin implements IWallet {
 
         const noti: INotification = {
           status: "success",
-          title: "Success",
-          message: "Successfully Transferred!",
+          title: await translateString("Success"),
+          message: await translateString("Successfully Transferred!"),
         };
         return noti;
       } catch (err) {
@@ -219,7 +219,7 @@ class Bitcoin implements IWallet {
         const translated = await translateString(err.toString());
         const noti: INotification = {
           status: "failed",
-          title: "Failed",
+          title: await translateString("Failed"),
           message: translated,
         };
         return noti;

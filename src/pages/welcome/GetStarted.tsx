@@ -22,12 +22,19 @@ import { languageType } from "../../types/settingTypes";
 import { AppDispatch } from "../../store";
 
 import { getAccount, setAccount } from "../../features/account/AccountSlice";
-import { accountType, loginEnum } from "../../types/accountTypes";
+import { IMachineId, accountType, loginEnum } from "../../types/accountTypes";
+
+import {
+  getMachineId,
+  setMachineId,
+} from "../../features/account/MachineIdSlice";
+import { invoke } from "@tauri-apps/api/tauri";
 
 const GetStarted = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
   const accountStore: accountType = useSelector(getAccount);
+  const machineIdStore: IMachineId = useSelector(getMachineId);
 
   const {
     t,
@@ -56,6 +63,19 @@ const GetStarted = () => {
   }, []);
 
   useEffect(() => {
+    invoke("get_machine_id")
+      .then((hwid) => {
+        console.log("Unique Machine ID:", hwid);
+        dispatch(
+          setMachineId({
+            ...machineIdStore,
+            machineId: hwid,
+          })
+        );
+      })
+      .catch((error) => {
+        console.error("Error getting Machine ID:", error);
+      });
     dispatch(
       setAccount({
         ...accountStore,

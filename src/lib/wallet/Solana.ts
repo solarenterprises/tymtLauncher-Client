@@ -192,8 +192,8 @@ class Solana implements IWallet {
 
         const noti: INotification = {
           status: "success",
-          title: "Success",
-          message: "Successfully Transferred!",
+          title: await translateString("Success"),
+          message: await translateString("Successfully Transferred!"),
         };
         return noti;
       } catch (err) {
@@ -201,7 +201,7 @@ class Solana implements IWallet {
         const translated = await translateString(err.toString());
         const noti: INotification = {
           status: "failed",
-          title: "Failed",
+          title: await translateString("Failed"),
           message: translated,
         };
         return noti;
