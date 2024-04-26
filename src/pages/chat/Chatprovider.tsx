@@ -8,7 +8,7 @@ import {
   ChatHistoryType,
   ChatMessageType,
   alertType,
-  askEncryptionKeyType,
+  // askEncryptionKeyType,
   deliverEncryptionKeyType,
   encryptionkeyStoreType,
   userType,
@@ -18,7 +18,7 @@ import { chatType, notificationType } from "../../types/settingTypes";
 
 import { getAccount } from "../../features/account/AccountSlice";
 import {
-  generateRandomString,
+  // generateRandomString,
   getsenderName,
 } from "../../features/chat/Chat-contactApi";
 import { getNonCustodial } from "../../features/account/NonCustodialSlice";
@@ -271,37 +271,42 @@ const ChatProvider = () => {
     });
 
     // receive request for  encryption key and generate/send encryption key to partner
-    socket.on("ask-encryption-key", (data: askEncryptionKeyType) => {
-      console.log("receiving encryption key request--->", data);
-      if (data.recipient_id === account.uid) {
-        const userid: string = data.sender_id;
-        const existkey = useSelector((state) =>
-          selectEncryptionKeyByUserId(state, userid)
-        );
-        const key = existkey ? existkey : generateRandomString(32);
+    // socket.on("ask-encryption-key", (data: askEncryptionKeyType) => {
+    //   console.log("receiving encryption key request--->", data);
+    //   if (data.recipient_id === account.uid) {
+    //     const userid: string = data.sender_id;
+    //     const existkey = useSelector((state) =>
+    //       selectEncryptionKeyByUserId(state, userid)
+    //     );
+    //     const key = existkey ? existkey : generateRandomString(32);
 
-        const deliverydata: deliverEncryptionKeyType = {
-          sender_id: account.uid,
-          recipient_id: data.sender_id,
-          key: key,
-        };
-        socket.emit("deliver-encryption-key", JSON.stringify(deliverydata));
-        dispatch(addEncryptionKey({ userid, key }));
-      }
-    });
+    //     const deliverydata: deliverEncryptionKeyType = {
+    //       sender_id: account.uid,
+    //       recipient_id: data.sender_id,
+    //       key: key,
+    //     };
+    //     socket.emit("deliver-encryption-key", JSON.stringify(deliverydata));
+    //     dispatch(addEncryptionKey({ userid, key }));
+    //   }
+    // });
     // receive encryption key from partner
     socket.on("deliver-encryption-key", (data: deliverEncryptionKeyType) => {
       console.log("encryption-key delievery--->", data);
       const userid = data.sender_id;
       const encryptionkey = data.key;
-      dispatch(addEncryptionKey({ userid, encryptionkey }));
+      const existkey = useSelector((state) =>
+        selectEncryptionKeyByUserId(state, userid)
+      );
+      if (!existkey) {
+        dispatch(addEncryptionKey({ userid, encryptionkey }));
+      }
     });
     return () => {
       socket.off("connect");
       socket.off("message-posted");
       socket.off("alert-posted");
       socket.off("alert-updated");
-      socket.off("ask-encryption-key");
+      // socket.off("ask-encryption-key");
       socket.off("deliver-encryption-key");
     };
   }, [socket, data, chatHistoryStore, chatuserlist, chatfriendlist, keystore]);

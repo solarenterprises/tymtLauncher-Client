@@ -32,7 +32,7 @@ const encryptionkeySlice = createSlice({
 });
 
 export const selectEncryptionKeyByUserId = (state: any, userId: string) =>
-  state.encryption.data.encryptionKeys[userId];
+  state.encryption.data.encryption_Keys[userId];
 export const selectEncryptionKeyStore = (state: any) => state.encryption.data;
 export const { addEncryptionKey } = encryptionkeySlice.actions;
 
