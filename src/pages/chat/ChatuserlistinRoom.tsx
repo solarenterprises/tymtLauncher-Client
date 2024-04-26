@@ -28,7 +28,7 @@ import { selectPartner } from "../../features/chat/Chat-currentPartnerSlice";
 import { getMultiWallet } from "../../features/wallet/MultiWalletSlice";
 import { getNonCustodial } from "../../features/account/NonCustodialSlice";
 import { multiWalletType } from "../../types/walletTypes";
-import { nonCustodialType } from "../../types/accountTypes";
+import { accountType, nonCustodialType } from "../../types/accountTypes";
 import {
   getaccessToken,
   deleteContact,
@@ -43,12 +43,12 @@ import { createContact } from "../../features/chat/Chat-contactApi";
 import { selecteduserType } from "../../types/chatTypes";
 import { searchUsers } from "../../features/chat/Chat-contactApi";
 import { setChatHistory } from "../../features/chat/Chat-historySlice";
-import { sendFriendRequest } from "../../features/chat/Chat-friendRequestAPI";
 
 const socket: Socket = io(socket_backend_url as string);
 import { socket_backend_url } from "../../configs";
 import { io, Socket } from "socket.io-client";
 import { debounce } from "lodash";
+import { getAccount } from "../../features/account/AccountSlice";
 
 const ChatuserlistinRoom = ({ view, setView }: propsType) => {
   const dispatch = useDispatch();
@@ -57,6 +57,7 @@ const ChatuserlistinRoom = ({ view, setView }: propsType) => {
   const chatuserlist: userType[] = useSelector(getUserlist);
   const currentpartner: userType = useSelector(selectPartner);
   const [searchedresult, setSearchedresult] = useState<userType[]>([]);
+  const account: accountType = useSelector(getAccount);
   const multiwallet: multiWalletType = useSelector(getMultiWallet);
   const nonCustodial: nonCustodialType = useSelector(getNonCustodial);
   const selectedusertoDelete: selecteduserType = useSelector(getSelectedUser);
@@ -78,7 +79,7 @@ const ChatuserlistinRoom = ({ view, setView }: propsType) => {
   const debouncedFilterUsers = debounce(async (value) => {
     setSearchedresult(await searchUsers(value));
   }, 1000);
-  
+
   const filterUsers = (value) => {
     debouncedFilterUsers(value);
   };
@@ -98,18 +99,17 @@ const ChatuserlistinRoom = ({ view, setView }: propsType) => {
   };
 
   const sendRequest = async () => {
-    const accessToken: string = await getaccessToken(
-      multiwallet.Solar.chain.wallet,
-      nonCustodial.password
-    );
-    await sendFriendRequest([selectedusertoDelete.id], accessToken);
     const data = {
-      alertType: "Friend Request",
-      note:"Don't miss out on the fun - add to your friends now!",
-      receivers: [selectedusertoDelete.id]
+      alertType: "friend-request",
+      note: {
+        sender: `${account.uid}`,
+        status: "pending",
+      },
+      receivers: [selectedusertoDelete.id],
     };
     socket.emit("post-alert", JSON.stringify(data));
     setOpenRequestModal(false);
+    await updateContact(selectedusertoDelete.id);
   };
 
   /***Modals of Userlist ***/

@@ -2,6 +2,7 @@ import { Snackbar, Stack, Box, Button } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
+import { useTranslation } from "react-i18next";
 
 import Slide from "@mui/material/Slide";
 
@@ -15,31 +16,32 @@ import closeIcon from "../assets/settings/x-icon.svg";
 import Avatar from "./home/Avatar";
 
 import { propsAlertTypes } from "../types/commonTypes";
-import { multiWalletType } from "../types/walletTypes";
-import { getUserlist, setUserList } from "../features/chat/Chat-userlistSlice";
+import { getUserlist } from "../features/chat/Chat-userlistSlice";
 import { notification_duration } from "../configs";
 import {
   selectPartner,
   setCurrentChatPartner,
 } from "../features/chat/Chat-currentPartnerSlice";
 import { scrollDownType, userType } from "../types/chatTypes";
+import { accountType, nonCustodialType } from "../types/accountTypes";
+import { multiWalletType } from "../types/walletTypes";
 
 import {
   getdownState,
   setdownState,
 } from "../features/chat/Chat-scrollDownSlice";
-import { getMultiWallet } from "../features/wallet/MultiWalletSlice";
-import {
-  createContact,
-  getaccessToken,
-  receiveContactlist,
-} from "../features/chat/Chat-contactApi";
-import { nonCustodialType } from "../types/accountTypes";
-import { getNonCustodial } from "../features/account/NonCustodialSlice";
 import {
   getFriendlist,
   setFriendlist,
 } from "../features/chat/Chat-friendlistSlice";
+import {
+  approveFriendRequest,
+  declineFriendRequest,
+} from "../features/chat/Chat-alertApi";
+import { getAccount } from "../features/account/AccountSlice";
+import { getaccessToken } from "../features/chat/Chat-contactApi";
+import { getNonCustodial } from "../features/account/NonCustodialSlice";
+import { getMultiWallet } from "../features/wallet/MultiWalletSlice";
 
 function SlideTransition(props) {
   return <Slide {...props} direction="left" />;
@@ -53,48 +55,52 @@ const AlertComp = ({
   setOpen,
   link,
 }: propsAlertTypes) => {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const classname = CommonStyles();
   const searchParams = new URLSearchParams(link?.split("?")[1]);
   const userdata: userType[] = useSelector(selectPartner);
   const chatuserlist: userType[] = useSelector(getUserlist);
   const scrollstate: scrollDownType = useSelector(getdownState);
-  const multiwallet: multiWalletType = useSelector(getMultiWallet);
-  const nonCustodial: nonCustodialType = useSelector(getNonCustodial);
   const friendlist: userType[] = useSelector(getFriendlist);
+  const account: accountType = useSelector(getAccount);
+  const nonCustodial: nonCustodialType = useSelector(getNonCustodial);
+  const multiwallet: multiWalletType = useSelector(getMultiWallet);
   const shouldScrollDown = scrollstate.down;
-  const senderId =
-    title === "Friend Request" ? detail : searchParams.get("senderId");
-  const senderUser = chatuserlist.find((user) => user._id === senderId);
-  const navigate = useNavigate();
-  const dispatch = useDispatch();
-  const classname = CommonStyles();
   const [border, setBorder] = useState("");
   const [bg, setBg] = useState("");
   const [logo, setLogo] = useState<any>();
+  const senderId =
+    title === "Friend Request"
+      ? detail.note?.sender
+      : searchParams.get("senderId");
+  const senderUser = chatuserlist.find((user) => user._id === senderId);
 
-  const updateContact = async (_id) => {
+  const addFriend = async () => {
+    const senderId = detail.note?.sender;
+    const senderInChatUserlist = chatuserlist.find(
+      (user) => user._id === senderId
+    );
+    console.log("request sender", senderInChatUserlist);
+    console.log("chatuserlist", chatuserlist);
+    const updatedFriendlist: userType[] = [...friendlist, senderInChatUserlist];
+    dispatch(setFriendlist(updatedFriendlist));
+    console.log("friendlist", friendlist);
+  };
+  const approveFR = async () => {
     const accessToken: string = await getaccessToken(
       multiwallet.Solar.chain.wallet,
       nonCustodial.password
     );
-    console.log("accessToken", accessToken);
-    await createContact(_id, accessToken);
-    const contacts: userType[] = await receiveContactlist(accessToken);
-    dispatch(setUserList(contacts));
+    await approveFriendRequest(detail._id, account.uid, accessToken);
   };
-
-  const addFriend = async () => {
-    const senderId = detail;
-    const senderInChatUserlist = chatuserlist.find(
-      (user) => user._id === senderId
+  const declineFR = async () => {
+    const accessToken: string = await getaccessToken(
+      multiwallet.Solar.chain.wallet,
+      nonCustodial.password
     );
-    if (senderInChatUserlist) {
-      dispatch(setFriendlist([...friendlist, senderInChatUserlist]));
-    } else {
-      await updateContact(senderId);
-      dispatch(setFriendlist([...friendlist, senderInChatUserlist]));
-    }
-    console.log("friendlist", friendlist);
-    console.log("request sender", senderInChatUserlist);
+    await declineFriendRequest(detail._id, account.uid, accessToken);
   };
   useEffect(() => {
     if (status == "failed") {
@@ -125,25 +131,20 @@ const AlertComp = ({
   }, [status]);
 
   useEffect(() => {
-    if (title !== "Friend Request") {
-      let timer: NodeJS.Timeout;
-      if (open) {
-        timer = setTimeout(() => {
-          setOpen(false);
-        }, notification_duration as number);
-      }
-
-      return () => {
-        if (timer) {
-          clearTimeout(timer);
-        }
-      };
+    let timer: NodeJS.Timeout;
+    if (open) {
+      timer = setTimeout(() => {
+        setOpen(false);
+      }, notification_duration as number);
     }
+
+    return () => {
+      if (timer) {
+        clearTimeout(timer);
+      }
+    };
   }, [open, status, title, detail]);
 
-  useEffect(() => {
-    console.log("title", title);
-  }, []);
   return (
     <>
       <Snackbar
@@ -161,17 +162,17 @@ const AlertComp = ({
         }}
         onClick={() => {
           navigate(link);
-          if (senderUser && title !== "Friend Request") {
+          if (title !== "Friend Request") {
             dispatch(
               setCurrentChatPartner({
                 ...userdata,
-                _id: senderUser._id,
-                nickName: senderUser.nickName,
-                avatar: senderUser.avatar,
-                lang: senderUser.lang,
-                sxpAddress: senderUser.sxpAddress,
-                onlineStatus: senderUser.onlineStatus,
-                notificationStatus: senderUser.notificationStatus,
+                _id: senderUser?._id,
+                nickName: senderUser?.nickName,
+                avatar: senderUser?.avatar,
+                lang: senderUser?.lang,
+                sxpAddress: senderUser?.sxpAddress,
+                onlineStatus: senderUser?.onlineStatus,
+                notificationStatus: senderUser?.notificationStatus,
               })
             );
             dispatch(setdownState({ down: !shouldScrollDown }));
@@ -200,8 +201,7 @@ const AlertComp = ({
                     (detail.length > 100
                       ? detail.substring(0, 100) + "..."
                       : detail)}
-                  {title === "Friend Request" &&
-                    "Don't miss out on the fun - add to your friends now!"}
+                  {title === "Friend Request" && t("not-10_fr-intro")}
                 </Box>
               </Stack>
             </Stack>
@@ -223,12 +223,15 @@ const AlertComp = ({
                   marginLeft={"43px"}
                 >
                   <Avatar
-                    onlineStatus={senderUser.onlineStatus}
-                    userid={senderUser._id}
+                    onlineStatus={senderUser?.onlineStatus}
+                    userid={senderUser?._id}
                     size={40}
+                    status={senderUser?.notificationStatus}
                   />
                   <Box className={"fs-18-regular white"}>
-                    {senderUser.nickName}
+                    {senderUser?.nickName.length > 14
+                      ? `${senderUser?.nickName.substring(0, 13)}...`
+                      : senderUser?.nickName}
                   </Box>
                 </Stack>
                 <Stack direction={"row"} alignItems={"center"} gap={"16px"}>
@@ -236,16 +239,25 @@ const AlertComp = ({
                     className="modal_btn_right"
                     onClick={() => {
                       addFriend();
+                      approveFR();
                       setOpen(false);
                     }}
                   >
-                    <Box className={"fs-18-bold white"}>Add</Box>
+                    <Box className={"fs-18-bold white"}>{t("not-5_add")}</Box>
                   </Button>
                   <Button
                     className="modal_btn_left_fr"
-                    onClick={() => setOpen(false)}
+                    onClick={() => {
+                      setOpen(false);
+                      declineFR();
+                    }}
                   >
-                    <Box className={"fs-18-bold white"}>Decline</Box>
+                    <Box
+                      className={"fs-18-bold"}
+                      color={"var(--Main-Blue, #52E1F2)"}
+                    >
+                      {t("not-6_decline")}
+                    </Box>
                   </Button>
                 </Stack>
               </Stack>

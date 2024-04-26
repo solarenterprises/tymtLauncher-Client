@@ -28,7 +28,7 @@ export interface propsAlertTypes {
   open: boolean;
   status: string;
   title: string;
-  detail: string;
+  detail: any;
   setOpen: (open: boolean) => void;
   link: string;
 }

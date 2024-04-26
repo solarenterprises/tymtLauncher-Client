@@ -11,6 +11,8 @@ const loadNotification: () => notificationType = () => {
       update: false,
       sound: false,
       hour: 1,
+      trigger: false,
+      alertbadge: false
     };
   } else {
     return JSON.parse(data);
@@ -22,6 +24,7 @@ const initialState = {
   status: "notification",
   msg: "",
 };
+
 
 export const notificationSlice = createSlice({
   name: "notification",
@@ -35,6 +38,7 @@ export const notificationSlice = createSlice({
       );
     },
   },
+
 });
 
 export const selectNotification = (state: any) => state.notification.data;

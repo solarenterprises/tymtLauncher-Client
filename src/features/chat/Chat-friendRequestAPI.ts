@@ -3,23 +3,23 @@ import axios from "axios";
 
 export interface alertrequestinterface {
   alertType: string;
-  note: string;
+  note: object;
   receivers: string[];
-  reads: string[];
-  readAts: Object;
 }
 
 export const sendFriendRequest = async (
   receivers: string[],
-  accessToken: string
+  accessToken: string,
+  senderId:string
 ) => {
   try {
     const alertrequest: alertrequestinterface = {
-      alertType: "Friend Request",
-      note: "Don't miss out on the fun - add to your friends now!",
-      receivers: receivers,
-      reads: [],
-      readAts: {},
+      alertType: "friend-request",
+      note: {
+        sender: `${senderId}`,
+        status:"pending"
+      },
+      receivers: receivers
     };
     const res = await axios.post(`${tymt_backend_url}/alerts`, alertrequest, {
       headers: {

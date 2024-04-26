@@ -1,0 +1,50 @@
+.alertmain-container {
+  display: flex;
+  padding: 16px 8px 16px 16px;
+  flex-direction: column;
+  margin: 10px;
+}
+.alert-inbox-scrollbar {
+  width: 101%;
+  height: calc(100vh - 190px);
+  overflow-y: auto;
+  margin-top: 16px;
+  padding-right: 10px;
+
+  &::-webkit-scrollbar {
+    width: 5px;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 100px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: var(
+      --bg-stroke-white-10-stroke-default,
+      rgba(255, 255, 255, 0.1)
+    );
+    border-radius: 100px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    cursor: pointer;
+    background: #888;
+    border-radius: 100px;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: #555;
+  }
+}
+
+.read-status-button {
+  &.MuiButtonBase-root {
+    padding: 2px;
+    background-color: transparent;
+    &:hover {
+      background-color: #ffffff1a;
+    }
+    text-transform: none;
+    justify-content: center;
+    align-items: center;
+  }
+}
