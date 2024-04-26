@@ -169,7 +169,7 @@ const Chatroom = () => {
         key: key,
       };
       socket.emit("deliver-encryption-key", JSON.stringify(deliverydata));
-      dispatch(addEncryptionKey({ userid, key }));
+      dispatch(addEncryptionKey({ userId: userid, encryptionKey: key }));
     }
   }, [currentpartner._id, existkey]);
 

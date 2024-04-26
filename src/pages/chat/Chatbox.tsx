@@ -42,7 +42,10 @@ import {
 } from "../../features/chat/Chat-scrollDownSlice";
 import { selectChat } from "../../features/settings/ChatSlice";
 import { selectNotification } from "../../features/settings/NotificationSlice";
-import { addEncryptionKey, selectEncryptionKeyByUserId } from "../../features/chat/Chat-enryptionkeySlice";
+import {
+  addEncryptionKey,
+  selectEncryptionKeyByUserId,
+} from "../../features/chat/Chat-enryptionkeySlice";
 
 import EmojiPicker, { SkinTones } from "emoji-picker-react";
 import maximize from "../../assets/chat/maximize.svg";
@@ -138,7 +141,7 @@ const Chatbox = ({ view, setView }: propsType) => {
         key: key,
       };
       socket.emit("deliver-encryption-key", JSON.stringify(deliverydata));
-      dispatch(addEncryptionKey({ userid, key }));
+      dispatch(addEncryptionKey({ userId: userid, encryptionKey: key }));
     }
   }, [currentpartner._id, existkey]);
 
@@ -170,6 +173,8 @@ const Chatbox = ({ view, setView }: propsType) => {
           })
         );
         setValue("");
+        console.log("partnerid", currentpartner._id);
+        console.log("key", keyperuser);
       }
     } catch (err: any) {}
   };

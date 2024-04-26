@@ -27,6 +27,11 @@ const encryptionkeySlice = createSlice({
     addEncryptionKey(state, action) {
       const { userId, encryptionKey } = action.payload;
       state.data.encryption_Keys[userId] = encryptionKey;
+      tymtStorage.set(
+        `encryption`,
+        JSON.stringify(state.data)
+      );
+      console.log("added encryptionkey", state.data.encryption_Keys[userId]);
     },
   },
 });

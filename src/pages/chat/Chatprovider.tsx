@@ -297,7 +297,7 @@ const ChatProvider = () => {
           key: key,
         };
         socket.emit("deliver-encryption-key", JSON.stringify(deliverydata));
-        dispatch(addEncryptionKey({ userid, key }));
+        dispatch(addEncryptionKey({ userId: userid, encryptionKey: key }));
 
     });
     // receive encryption key from partner
@@ -309,7 +309,7 @@ const ChatProvider = () => {
         selectEncryptionKeyByUserId(state, userid)
       );
       if (!existkey) {
-        dispatch(addEncryptionKey({ userid, encryptionkey }));
+        dispatch(addEncryptionKey({ userId: userid, encryptionKey: encryptionkey }));
       }
     });
     return () => {
