@@ -20,6 +20,7 @@ zip-extensions = "*"
 tauri-plugin-fs-watch = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1" }
 tar = "0.4"
 flate2 = "1.0"
+machineid-rs = "1.2.4"
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem

@@ -14,9 +14,10 @@ export const translateString = async (origin: string) => {
   );
   const i18nLang = languageStore.language;
   let translatedMessage: string = "";
+  const refinedOrigin = origin.replace(/[&#]/g, " ");
   if (i18nLang !== "en") {
     const googleLang = i18nGoogle[i18nLang];
-    translatedMessage = await translate(origin, {
+    translatedMessage = await translate(refinedOrigin, {
       from: "en",
       to: googleLang,
     });

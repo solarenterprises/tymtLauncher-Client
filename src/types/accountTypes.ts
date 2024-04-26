@@ -66,3 +66,7 @@ export interface benefitModalType {
 export interface ITymt {
   version: string;
 }
+
+export interface IMachineId {
+  machineId: string;
+}

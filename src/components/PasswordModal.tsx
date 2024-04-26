@@ -87,7 +87,6 @@ const PasswordModal = ({ open, setOpen, voteAsset }: props) => {
         voteAsset,
         walletStore.fee
       );
-      console.log(res);
       if (res.data.data.invalid[0]) {
         const temp = res.data.data.invalid[0];
         const err = res.data.errors[temp].message;

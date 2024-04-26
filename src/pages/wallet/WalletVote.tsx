@@ -520,7 +520,7 @@ const WalletVote = () => {
               </Grid>
               {data.map((item, index) => (
                 <Button
-                  key={`blockproducer-${item.address}-${index}`}
+                  key={`blockproducer-${item.address}`}
                   sx={{
                     height: "74px",
                     textTransform: "none",
@@ -690,6 +690,7 @@ const WalletVote = () => {
                 <Grid item xs={12} container justifyContent={"center"}>
                   <Pagination
                     count={totalPage}
+                    page={currentPage}
                     onChange={handlePageChange}
                     shape="rounded"
                     sx={{

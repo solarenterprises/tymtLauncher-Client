@@ -62,8 +62,8 @@ const InputVoteBox = ({
         className={"fs-14-light light"}
         sx={{
           position: "absolute",
-          top: "10px",
-          left: "10px",
+          top: "8px",
+          left: "8px",
         }}
       >
         {numeral(
