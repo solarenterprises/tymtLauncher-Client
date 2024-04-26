@@ -33,6 +33,8 @@ import numeral from "numeral";
 import { currencySymbols } from "../consts/currency";
 import { useNotification } from "../providers/NotificationProvider";
 
+import { translateString } from "../lib/api/Translate";
+
 interface props {
   open: boolean;
   setOpen: (status: boolean) => void;
@@ -89,9 +91,10 @@ const PasswordModal = ({ open, setOpen, voteAsset }: props) => {
       if (res.data.data.invalid[0]) {
         const temp = res.data.data.invalid[0];
         const err = res.data.errors[temp].message;
+        const translated = await translateString(err);
         setNotificationStatus("failed");
         setNotificationTitle(t("wal-49_vote-failed"));
-        setNotificationDetail(err);
+        setNotificationDetail(translated);
         setNotificationOpen(true);
         setNotificationLink(null);
       } else {
@@ -105,9 +108,10 @@ const PasswordModal = ({ open, setOpen, voteAsset }: props) => {
       setPassword("");
     } catch (err) {
       console.error("Failed to Vote: ", err);
+      const translated = await translateString(err.toString());
       setNotificationStatus("failed");
       setNotificationTitle(t("wal-49_vote-failed"));
-      setNotificationDetail(err.toString());
+      setNotificationDetail(translated);
       setNotificationOpen(true);
       setNotificationLink(null);
       setOpen(false);
@@ -206,7 +210,7 @@ const PasswordModal = ({ open, setOpen, voteAsset }: props) => {
           >
             <InputText
               id="password"
-              label={"Password"}
+              label={t("cca-3_password")}
               type="password"
               name="password"
               value={password}

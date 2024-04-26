@@ -4,6 +4,7 @@ import * as bip39 from "bip39";
 import { IRecipient } from "../../features/wallet/CryptoApi";
 import { INotification } from "../../features/wallet/CryptoSlice";
 import * as multichainWallet from "multichain-crypto-wallet";
+import { translateString } from "../api/Translate";
 
 class ERC20 {
   static async getPrivateKeyFromMnemonic(mnemonic: string): Promise<string> {
@@ -92,10 +93,11 @@ class ERC20 {
       return noti;
     } catch (err) {
       console.error("Failed to send EVM native token transaction: ", err);
+      const translated = await translateString(err.toString());
       const noti: INotification = {
         status: "failed",
         title: "Failed",
-        message: err.toString(),
+        message: translated,
       };
       return noti;
     }
@@ -137,10 +139,11 @@ class ERC20 {
       return noti;
     } catch (err) {
       console.error("Failed to send EVM native token transaction: ", err);
+      const translated = await translateString(err.toString());
       const noti: INotification = {
         status: "failed",
         title: "Failed",
-        message: err.toString(),
+        message: translated,
       };
       return noti;
     }

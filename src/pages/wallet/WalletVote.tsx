@@ -37,6 +37,7 @@ import { AppDispatch } from "../../store";
 import { setChainAsync } from "../../features/wallet/ChainSlice";
 import { selectWallet, setWallet } from "../../features/settings/WalletSlice";
 import { walletType } from "../../types/settingTypes";
+import { translateString } from "../../lib/api/Translate";
 
 const WalletVote = () => {
   const [data, setData] = useState<any[]>([]);
@@ -87,14 +88,33 @@ const WalletVote = () => {
     );
   };
 
-  const SolarGet100Delegates = () => {
-    const query3 = {
+  const SolarGetAllDelegates = async () => {
+    const query1 = {
       page: 1,
       limit: 100,
       isResigned: false,
-      orderBy: "rank:asc",
+      orderBy: "address:asc",
     };
-    return Solar.getDelegates(query3, "delegates");
+    const res1: any = await Solar.getDelegates(query1, "delegates");
+    const numberOfDelegates = res1.data.meta.totalCount;
+    const numberOfPages = Math.ceil(numberOfDelegates / 100);
+    let queries = [];
+    for (let i = 2; i <= numberOfPages; i++) {
+      queries.push({
+        page: i,
+        limit: 100,
+        isResigned: false,
+        orderBy: "address:asc",
+      });
+    }
+    const res2: any[] = await Promise.all(
+      queries.map((query) => Solar.getDelegates(query, "delegates"))
+    );
+    let res3: any[] = res1.data.data;
+    for (let i = 0; i < res2.length; i++) {
+      res3 = [...res3, ...res2[i].data.data];
+    }
+    return res3;
   };
 
   const SolarGetBlockchain = () => {
@@ -108,7 +128,7 @@ const WalletVote = () => {
       const [res1, res2, res3, res4] = await Promise.all([
         SolarGet53Delegates(),
         SolarGetMyVotingData(),
-        SolarGet100Delegates(),
+        SolarGetAllDelegates(),
         SolarGetBlockchain(),
       ]);
 
@@ -116,12 +136,11 @@ const WalletVote = () => {
       setTotalPage(res1.data.meta.pageCount);
       setVotingData(res2.data.data[0].asset.votes ?? {});
       setOriginalVotingData(res2.data.data[0].asset.votes ?? {});
-      const first100BPArray = res3.data.data;
-      const newTotalVoted: number = first100BPArray.reduce(
+      const newTotalVoted: number = res3.reduce(
         (sum, element) => sum + element.votesReceived.votes / 1e8,
         0
       );
-      const newTotalRewards: number = first100BPArray.reduce(
+      const newTotalRewards: number = res3.reduce(
         (sum, element) => sum + element.forged.total / 1e8,
         0
       );
@@ -136,9 +155,10 @@ const WalletVote = () => {
       setNotificationLink(null);
     } catch (err) {
       console.error("Failed to refresh voting page: ", err);
+      const translated = await translateString(err.toString());
       setNotificationStatus("failed");
       setNotificationTitle(t("wal-53_refresh-vote-failed"));
-      setNotificationDetail(err.toString());
+      setNotificationDetail(translated);
       setNotificationOpen(true);
       setNotificationLink(null);
     }
@@ -208,33 +228,50 @@ const WalletVote = () => {
       if (error) {
       } else {
         try {
-          const [res1, res2] = await Promise.all([
-            SolarGet100Delegates(),
-            SolarGetBlockchain(),
-          ]);
-          const first100BPArray = res1.data.data;
-          const newTotalVoted = first100BPArray.reduce(
-            (sum, element) => sum + element.votesReceived.votes / 1e8,
-            0
-          );
-          const newTotalRewards = first100BPArray.reduce(
-            (sum, element) => sum + element.forged.total / 1e8,
-            0
-          );
-          setTotalVoted(newTotalVoted);
-          setTotalRewards(newTotalRewards);
-          setLatestBlock(res2.data.data.block.height);
+          const res = await SolarGetBlockchain();
+          setLatestBlock(res.data.data.block.height);
         } catch (err) {
-          console.error("Failed to setInterval: ", err);
+          console.error("Failed to setInterval 4*1e3: ", err);
           error = true;
         }
       }
     };
 
-    intervalId = setInterval(fetchData, 4000);
+    intervalId = setInterval(fetchData, 4 * 1e3);
 
     return () => clearInterval(intervalId);
   }, []);
+
+  useEffect(() => {
+    let intervalId;
+    let error = false;
+
+    const fetchData = async () => {
+      if (error) {
+      } else {
+        try {
+          const BPArray = await SolarGetAllDelegates();
+          const newTotalVoted = BPArray.reduce(
+            (sum, element) => sum + element.votesReceived.votes / 1e8,
+            0
+          );
+          const newTotalRewards = BPArray.reduce(
+            (sum, element) => sum + element.forged.total / 1e8,
+            0
+          );
+          setTotalVoted(newTotalVoted);
+          setTotalRewards(newTotalRewards);
+        } catch (err) {
+          console.error("Failed to setInterval 120*1e3: ", err);
+          error = true;
+        }
+      }
+    };
+
+    intervalId = setInterval(fetchData, 120 * 1e3);
+
+    return () => clearInterval(intervalId);
+  });
 
   return (
     <>
