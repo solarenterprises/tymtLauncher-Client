@@ -79,9 +79,11 @@ const ChooseChainDrawer = ({ view, setView }: props) => {
     dispatch(setTransasctions());
     dispatch(setChainAsync(udpateData)).then(() => {
       setNotificationOpen(true);
-      setNotificationTitle(`Switched network to ${data?.chain.name}`);
+      setNotificationTitle(
+        `${t("alt-11_switched-network")} ${data?.chain?.name}`
+      );
       setNotificationDetail(
-        `Network is successfully switched to ${data?.chain.name}`
+        `${t("alt-12_switched-network-intro")} ${data?.chain?.name}`
       );
       setNotificationStatus("success");
       setNotificationLink(null);

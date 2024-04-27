@@ -111,13 +111,13 @@ const ChatSetting = ({ view, setView }: propsType) => {
                     setNotificationStatus("success");
                     setNotificationTitle(
                       !notificationStore.alert
-                        ? "Do-not-disturb disabled"
-                        : "Do-not-disturb enabled"
+                        ? t("cha-28_not-disturb-disabled")
+                        : t("cha-29_not-disturb-enabled")
                     );
                     setNotificationDetail(
                       !notificationStore.alert
-                        ? "Disabled Do-not-disturb mode"
-                        : "Switched to Do-not-disturb mode"
+                        ? t("cha-30_disabled-not-disturb")
+                        : t("cha-31_switched-not-disturb")
                     );
                     setNotificationOpen(true);
                     setNotificationLink(null);

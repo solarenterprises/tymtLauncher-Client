@@ -7,6 +7,7 @@ import {
   Button,
   TextField,
   InputAdornment,
+  CircularProgress,
 } from "@mui/material";
 
 import createKeccakHash from "keccak";
@@ -51,6 +52,7 @@ const PasswordModal = ({ open, setOpen, voteAsset }: props) => {
   const symbol: string = currencySymbols[currencyStore.current];
 
   const [password, setPassword] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
   const classname = SettingStyle();
   const dispatch = useDispatch();
 
@@ -77,6 +79,7 @@ const PasswordModal = ({ open, setOpen, voteAsset }: props) => {
 
   const handleVoteClick = async () => {
     try {
+      setLoading(true);
       const passphrase: string = await decrypt(
         nonCustodialStore.mnemonic,
         password
@@ -105,6 +108,7 @@ const PasswordModal = ({ open, setOpen, voteAsset }: props) => {
       }
       setOpen(false);
       setPassword("");
+      setLoading(false);
     } catch (err) {
       console.error("Failed to Vote: ", err);
       const translated = await translateString(err.toString());
@@ -115,6 +119,7 @@ const PasswordModal = ({ open, setOpen, voteAsset }: props) => {
       setNotificationLink(null);
       setOpen(false);
       setPassword("");
+      setLoading(false);
     }
   };
 
@@ -220,10 +225,17 @@ const PasswordModal = ({ open, setOpen, voteAsset }: props) => {
               fullWidth
               className="red-button"
               onClick={handleVoteClick}
-              disabled={!validatePassword()}
+              disabled={!validatePassword() || loading}
             >
               <Box className="fs-18-bold white" padding={"10px 18px"}>
-                {t("ncca-51_confirm")}
+                {loading && (
+                  <CircularProgress
+                    sx={{
+                      color: "#F5EBFF",
+                    }}
+                  />
+                )}
+                {!loading && t("ncca-51_confirm")}
               </Box>
             </Button>
           </Stack>
