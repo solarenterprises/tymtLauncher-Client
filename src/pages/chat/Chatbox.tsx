@@ -133,6 +133,7 @@ const Chatbox = ({ view, setView }: propsType) => {
   useEffect(() => {
     if (existkey) {
       setKeyperUser(existkey);
+      console.log("keyperuser",existkey)
     } else {
       const key = generateRandomString(32);
       const deliverydata: deliverEncryptionKeyType = {

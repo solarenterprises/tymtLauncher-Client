@@ -42,6 +42,6 @@ export const decrypt = async (
     );
   } catch (e) {
     console.log(e);
-    return e;
+    return "Unable to decode message";
   }
 };

@@ -101,6 +101,20 @@ const ChatProvider = () => {
     dispatch(setUserList(contacts));
   };
 
+  const handleEncryptionKeyDelivery = (data, dispatch, useSelector) => {
+    const userid = data.sender_id;
+    const encryptionkey = data.key;
+    const existkey = useSelector((state) =>
+      selectEncryptionKeyByUserId(state, userid)
+    );
+
+    if (!existkey) {
+      dispatch(
+        addEncryptionKey({ userId: userid, encryptionKey: encryptionkey })
+      );
+    }
+  };
+
   useEffect(() => {
     socket.on("connect", function () {
       socket.emit("user-joined", `${account.uid}`);
@@ -302,23 +316,14 @@ const ChatProvider = () => {
     // receive encryption key from partner
     socket.on("deliver-encryption-key", (data: deliverEncryptionKeyType) => {
       console.log("encryption-key delievery--->", data);
-      const userid = data.sender_id;
-      const encryptionkey = data.key;
-      const existkey = useSelector((state) =>
-        selectEncryptionKeyByUserId(state, userid)
-      );
-      if (!existkey) {
-        dispatch(
-          addEncryptionKey({ userId: userid, encryptionKey: encryptionkey })
-        );
-      }
+      handleEncryptionKeyDelivery(data, dispatch, useSelector);
     });
     return () => {
       socket.off("connect");
       socket.off("message-posted");
       socket.off("alert-posted");
       socket.off("alert-updated");
-      // socket.off("ask-encryption-key");
+      socket.off("ask-encryption-key");
       socket.off("deliver-encryption-key");
     };
   }, [socket, data, chatHistoryStore, chatuserlist, chatfriendlist, keystore]);
