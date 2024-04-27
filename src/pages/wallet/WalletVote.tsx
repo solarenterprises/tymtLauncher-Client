@@ -289,7 +289,7 @@ const WalletVote = () => {
               </Box>
             </Stack>
             <Stack>
-              <Box className="fs-18-regular light">{`Balance`}</Box>
+              <Box className="fs-18-regular light">{t("set-4_balance")}</Box>
               <Stack direction={"row"} spacing={"4px"} alignItems={"center"}>
                 <Box
                   component={"img"}
@@ -498,7 +498,7 @@ const WalletVote = () => {
                 <Grid item xs={0.3}>
                   <Box className="fs-14-regular light">{t("wal-24_tx#")}</Box>
                 </Grid>
-                <Grid item xs={3}>
+                <Grid item xs={3.5}>
                   <Box className="fs-14-regular light">
                     {t("wal-25_account")}
                   </Box>
@@ -511,7 +511,7 @@ const WalletVote = () => {
                     {t("wal-28_rewards-earned")}
                   </Box>
                 </Grid>
-                <Grid item xs={3}>
+                <Grid item xs={2.5}>
                   <Box className="fs-14-regular light">{t("wal-29_vote")}</Box>
                 </Grid>
                 <Grid item xs={2.2}>
@@ -547,7 +547,7 @@ const WalletVote = () => {
                           </Box>
                         </Stack>
                       </Grid>
-                      <Grid item xs={3}>
+                      <Grid item xs={3.5}>
                         <Stack
                           direction={"row"}
                           alignItems={"center"}
@@ -586,7 +586,7 @@ const WalletVote = () => {
                                     padding: "4px 8px",
                                   }}
                                 >
-                                  active
+                                  {t("wal-58_active")}
                                 </Box>
                               )}
                               <Box
@@ -598,7 +598,9 @@ const WalletVote = () => {
                                   padding: "4px 8px",
                                 }}
                               >
-                                {item.votesReceived.voters} voters
+                                {`${item.votesReceived.voters} ${t(
+                                  "wal-59_voters"
+                                )}`}
                               </Box>
                             </Stack>
                           </Stack>
@@ -635,7 +637,7 @@ const WalletVote = () => {
                           </Stack>
                         </Stack>
                       </Grid>
-                      <Grid item xs={3}>
+                      <Grid item xs={2.5}>
                         <Stack
                           direction={"row"}
                           alignItems={"center"}

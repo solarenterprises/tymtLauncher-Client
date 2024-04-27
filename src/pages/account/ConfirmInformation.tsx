@@ -56,6 +56,7 @@ import { tymt_version } from "../../configs";
 import { useNotification } from "../../providers/NotificationProvider";
 import { selectWallet, setWallet } from "../../features/settings/WalletSlice";
 import { walletType } from "../../types/settingTypes";
+import { translateString } from "../../lib/api/Translate";
 
 const ConfirmInformation = () => {
   const navigate = useNavigate();
@@ -125,10 +126,10 @@ const ConfirmInformation = () => {
           dispatch(setChainAsync(updateData));
           navigate("/home");
         } catch (err) {
-          console.log(err);
+          console.error("Failed to Non-custodial Login: ", err);
           setNotificationStatus("failed");
-          setNotificationTitle("Error");
-          setNotificationDetail(err);
+          setNotificationTitle(t("hom-23_error"));
+          setNotificationDetail(await translateString(err.toString()));
           setNotificationOpen(true);
           setNotificationLink(null);
         }
@@ -249,8 +250,8 @@ const ConfirmInformation = () => {
         } catch (err) {
           console.log(err);
           setNotificationStatus("failed");
-          setNotificationTitle("Error");
-          setNotificationDetail(err);
+          setNotificationTitle(t("hom-23_error"));
+          setNotificationDetail(await translateString(err.toString()));
           setNotificationOpen(true);
           setNotificationLink(null);
         }
@@ -371,8 +372,8 @@ const ConfirmInformation = () => {
         } catch (err) {
           console.log(err);
           setNotificationStatus("failed");
-          setNotificationTitle("Error");
-          setNotificationDetail(err);
+          setNotificationTitle(t("hom-23_error"));
+          setNotificationDetail(await translateString(err.toString()));
           setNotificationOpen(true);
           setNotificationLink(null);
         }
@@ -481,8 +482,8 @@ const ConfirmInformation = () => {
         } catch (err) {
           console.log(err);
           setNotificationStatus("failed");
-          setNotificationTitle("Error");
-          setNotificationDetail(err);
+          setNotificationTitle(t("hom-23_error"));
+          setNotificationDetail(await translateString(err.toString()));
           setNotificationOpen(true);
           setNotificationLink(null);
         }

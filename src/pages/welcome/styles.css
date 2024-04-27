@@ -20,6 +20,7 @@ body {
   height: 37.5vw;
   filter: blur(5vw);
   background: radial-gradient(circle at 50% 50%, var(--tymt-red), #00000000);
+  animation: blink 1s infinite 0.3s;
 }
 
 .blue-blur {
@@ -30,4 +31,17 @@ body {
   height: 37.5vw;
   filter: blur(5vw);
   background: radial-gradient(circle at 50% 50%, var(--tymt-blue), #00000000);
+  animation: blink 1s infinite;
+}
+
+@keyframes blink {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
 }

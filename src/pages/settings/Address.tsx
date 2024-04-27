@@ -41,14 +41,14 @@ const Address = ({ view, setView }: propsType) => {
     if (seq == -1) {
       const updatedData = [...data, { name: name, address: info }];
       dispatch(setAddress(updatedData));
-      setNotificationTitle("Add Wallet");
-      setNotificationDetail("Wallet successfully added");
+      setNotificationTitle(t("set-85_success"));
+      setNotificationDetail(t("set-86_wallet-successfully-added"));
     } else {
       const updateData = [...data];
       updateData[seq] = { name: name, address: info };
       dispatch(setAddress(updateData));
-      setNotificationTitle("Update Wallet");
-      setNotificationDetail("Wallet successfully updated");
+      setNotificationTitle(t("set-85_success"));
+      setNotificationDetail(t("set-87_wallet-successfully-updated"));
     }
     setNotificationStatus("success");
     setNotificationOpen(true);
