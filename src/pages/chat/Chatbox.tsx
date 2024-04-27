@@ -133,9 +133,10 @@ const Chatbox = ({ view, setView }: propsType) => {
   useEffect(() => {
     if (existkey) {
       setKeyperUser(existkey);
-      console.log("keyperuser",existkey)
+      console.log("keyperuser", existkey);
     } else {
       const key = generateRandomString(32);
+      setKeyperUser(key);
       const deliverydata: deliverEncryptionKeyType = {
         sender_id: account.uid,
         recipient_id: currentpartner._id,
@@ -144,7 +145,7 @@ const Chatbox = ({ view, setView }: propsType) => {
       socket.emit("deliver-encryption-key", JSON.stringify(deliverydata));
       dispatch(addEncryptionKey({ userId: userid, encryptionKey: key }));
     }
-  }, [currentpartner._id, existkey]);
+  }, [currentpartner._id, socket]);
 
   const sendMessage = async () => {
     try {

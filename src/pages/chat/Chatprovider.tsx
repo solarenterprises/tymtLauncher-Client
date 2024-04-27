@@ -101,6 +101,12 @@ const ChatProvider = () => {
     dispatch(setUserList(contacts));
   };
 
+  const selectEncryptionKey = (message) => {
+    return useSelector((state) =>
+      selectEncryptionKeyByUserId(state, message.sender_id)
+    );
+  };
+
   const handleEncryptionKeyDelivery = (data, dispatch, useSelector) => {
     const userid = data.sender_id;
     const encryptionkey = data.key;
@@ -113,6 +119,69 @@ const ChatProvider = () => {
         addEncryptionKey({ userId: userid, encryptionKey: encryptionkey })
       );
     }
+  };
+
+  const handleIncomingMessages = async (
+    message: ChatMessageType,
+    senderInChatUserlist: userType,
+    senderInChatFriendlist: userType
+  ) => {
+    if (message.recipient_id === account.uid) {
+      if (data.message === "anyone") {
+        if (!senderInChatUserlist) {
+          const senderName = await getsenderName(message.sender_id);
+          await updateContact(message.sender_id);
+          const key = selectEncryptionKey(message);
+          const decryptedmessage = await decrypt(message.message, key);
+          {
+            notification.alert && setNotificationOpen(true);
+            setNotificationStatus("message");
+            setNotificationTitle(senderName);
+            setNotificationDetail(decryptedmessage);
+            setNotificationLink(`/chat?senderId=${message.sender_id}`);
+          }
+        } else {
+          const senderName = senderInChatUserlist.nickName;
+          const key = selectEncryptionKey(message);
+          const decryptedmessage = await decrypt(message.message, key);
+          {
+            notification.alert && setNotificationOpen(true);
+            setNotificationStatus("message");
+            setNotificationTitle(senderName);
+            setNotificationDetail(decryptedmessage);
+            setNotificationLink(`/chat?senderId=${message.sender_id}`);
+          }
+        }
+      }
+      if (data.message === "friend") {
+        if (senderInChatFriendlist) {
+          const senderName = senderInChatFriendlist.nickName;
+          const key = selectEncryptionKey(message);
+          const decryptedmessage = await decrypt(message.message, key);
+          setNotificationOpen(true);
+          setNotificationStatus("message");
+          setNotificationTitle(senderName);
+          setNotificationDetail(decryptedmessage);
+          setNotificationLink(`/chat?senderId=${message.sender_id}`);
+        }
+      }
+    } else {
+    }
+  };
+
+  const handleAskingEncryptionKey = (data) => {
+    const userid: string = data.sender_id;
+    const existkey = useSelector((state) =>
+      selectEncryptionKeyByUserId(state, userid)
+    );
+    const key = existkey ? existkey : generateRandomString(32);
+    const deliverydata: deliverEncryptionKeyType = {
+      sender_id: account.uid,
+      recipient_id: data.sender_id,
+      key: key,
+    };
+    socket.emit("deliver-encryption-key", JSON.stringify(deliverydata));
+    dispatch(addEncryptionKey({ userId: userid, encryptionKey: key }));
   };
 
   useEffect(() => {
@@ -141,57 +210,11 @@ const ChatProvider = () => {
           dispatch(setChatHistory({ messages: updatedHistory }));
         }
       }
-      const handleIncomingMessages = async () => {
-        if (message.recipient_id === account.uid) {
-          if (data.message === "anyone") {
-            if (!senderInChatUserlist) {
-              const senderName = await getsenderName(message.sender_id);
-              await updateContact(message.sender_id);
-              const key = useSelector((state) =>
-                selectEncryptionKeyByUserId(state, message.sender_id)
-              );
-              const decryptedmessage = await decrypt(message.message, key);
-              {
-                notification.alert && setNotificationOpen(true);
-                setNotificationStatus("message");
-                setNotificationTitle(senderName);
-                setNotificationDetail(decryptedmessage);
-                setNotificationLink(`/chat?senderId=${message.sender_id}`);
-              }
-            } else {
-              const senderName = senderInChatUserlist.nickName;
-              const key = useSelector((state) =>
-                selectEncryptionKeyByUserId(state, message.sender_id)
-              );
-              const decryptedmessage = await decrypt(message.message, key);
-              {
-                notification.alert && setNotificationOpen(true);
-                setNotificationStatus("message");
-                setNotificationTitle(senderName);
-                setNotificationDetail(decryptedmessage);
-                setNotificationLink(`/chat?senderId=${message.sender_id}`);
-              }
-            }
-          }
-          if (data.message === "friend") {
-            if (senderInChatFriendlist) {
-              const senderName = senderInChatFriendlist.nickName;
-              const key = useSelector((state) =>
-                selectEncryptionKeyByUserId(state, message.sender_id)
-              );
-              const decryptedmessage = await decrypt(message.message, key);
-              setNotificationOpen(true);
-              setNotificationStatus("message");
-              setNotificationTitle(senderName);
-              setNotificationDetail(decryptedmessage);
-              setNotificationLink(`/chat?senderId=${message.sender_id}`);
-            }
-          }
-        } else {
-        }
-      };
-
-      handleIncomingMessages();
+      handleIncomingMessages(
+        message,
+        senderInChatUserlist,
+        senderInChatFriendlist
+      );
     });
     socket.on("alert-posted", (alert: alertType) => {
       console.log("alert-posted", alert);
@@ -300,18 +323,7 @@ const ChatProvider = () => {
     // receive request for  encryption key and generate/send encryption key to partner
     socket.on("ask-encryption-key", (data: askEncryptionKeyType) => {
       console.log("receiving encryption key request--->", data);
-      const userid: string = data.sender_id;
-      const existkey = useSelector((state) =>
-        selectEncryptionKeyByUserId(state, userid)
-      );
-      const key = existkey ? existkey : generateRandomString(32);
-      const deliverydata: deliverEncryptionKeyType = {
-        sender_id: account.uid,
-        recipient_id: data.sender_id,
-        key: key,
-      };
-      socket.emit("deliver-encryption-key", JSON.stringify(deliverydata));
-      dispatch(addEncryptionKey({ userId: userid, encryptionKey: key }));
+      handleAskingEncryptionKey(data);
     });
     // receive encryption key from partner
     socket.on("deliver-encryption-key", (data: deliverEncryptionKeyType) => {

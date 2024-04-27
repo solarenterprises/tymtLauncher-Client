@@ -164,8 +164,10 @@ const Chatroom = () => {
   useEffect(() => {
     if (existkey) {
       setKeyperUser(existkey);
+      console.log("keyperuser", existkey);
     } else {
       const key = generateRandomString(32);
+      setKeyperUser(key);
       const deliverydata: deliverEncryptionKeyType = {
         sender_id: account.uid,
         recipient_id: currentpartner._id,
@@ -174,7 +176,7 @@ const Chatroom = () => {
       socket.emit("deliver-encryption-key", JSON.stringify(deliverydata));
       dispatch(addEncryptionKey({ userId: userid, encryptionKey: key }));
     }
-  }, [currentpartner._id, existkey]);
+  }, [currentpartner._id, socket]);
 
   ///// send message to firebase RDB
 
