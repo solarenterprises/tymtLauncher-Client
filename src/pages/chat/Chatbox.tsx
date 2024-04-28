@@ -125,6 +125,7 @@ const Chatbox = ({ view, setView }: propsType) => {
   };
 
   const handleEmojiSelect = (emoji: any) => {
+    
     setValue(value + emoji.emoji);
   };
 
@@ -142,6 +143,7 @@ const Chatbox = ({ view, setView }: propsType) => {
         recipient_id: currentpartner._id,
         key: key,
       };
+      console.log("deliverydata", deliverydata);
       socket.emit("deliver-encryption-key", JSON.stringify(deliverydata));
       dispatch(addEncryptionKey({ userId: userid, encryptionKey: key }));
     }

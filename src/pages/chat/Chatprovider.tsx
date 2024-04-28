@@ -10,6 +10,7 @@ import {
   alertType,
   askEncryptionKeyType,
   deliverEncryptionKeyType,
+  deliveredEncryptionKeyType,
   encryptionkeyStoreType,
   userType,
 } from "../../types/chatTypes";
@@ -43,9 +44,15 @@ import {
   setFriendlist,
 } from "../../features/chat/Chat-friendlistSlice";
 
-const socket: Socket = io(socket_backend_url as string);
 import { socket_backend_url } from "../../configs";
 import { io, Socket } from "socket.io-client";
+const socket: Socket = io(socket_backend_url as string, {
+  transports: ['websocket'], 
+  reconnectionDelay: 10000, 
+  reconnectionDelayMax: 10000 
+});
+
+
 
 import { useNotification } from "../../providers/NotificationProvider";
 import {
@@ -62,7 +69,7 @@ import {
   selectEncryptionKeyByUserId,
   selectEncryptionKeyStore,
 } from "../../features/chat/Chat-encryptionkeySlice";
-import { decrypt } from "../../lib/api/Encrypt";
+// import { decrypt } from "../../lib/api/Encrypt";
 
 const ChatProvider = () => {
   const dispatch = useDispatch();
@@ -101,25 +108,11 @@ const ChatProvider = () => {
     dispatch(setUserList(contacts));
   };
 
-  const selectEncryptionKey = (message) => {
-    return useSelector((state) =>
-      selectEncryptionKeyByUserId(state, message.sender_id)
-    );
-  };
-
-  const handleEncryptionKeyDelivery = (data, dispatch, useSelector) => {
-    const userid = data.sender_id;
-    const encryptionkey = data.key;
-    const existkey = useSelector((state) =>
-      selectEncryptionKeyByUserId(state, userid)
-    );
-
-    if (!existkey) {
-      dispatch(
-        addEncryptionKey({ userId: userid, encryptionKey: encryptionkey })
-      );
-    }
-  };
+  // const selectEncryptionKey = (message) => {
+  //   return useSelector((state) =>
+  //     selectEncryptionKeyByUserId(state, message.sender_id)
+  //   );
+  // };
 
   const handleIncomingMessages = async (
     message: ChatMessageType,
@@ -131,24 +124,24 @@ const ChatProvider = () => {
         if (!senderInChatUserlist) {
           const senderName = await getsenderName(message.sender_id);
           await updateContact(message.sender_id);
-          const key = selectEncryptionKey(message);
-          const decryptedmessage = await decrypt(message.message, key);
+          // const key = selectEncryptionKey(message);
+          // const decryptedmessage = await decrypt(message.message, key);
           {
             notification.alert && setNotificationOpen(true);
             setNotificationStatus("message");
             setNotificationTitle(senderName);
-            setNotificationDetail(decryptedmessage);
+            setNotificationDetail(message.message);
             setNotificationLink(`/chat?senderId=${message.sender_id}`);
           }
         } else {
           const senderName = senderInChatUserlist.nickName;
-          const key = selectEncryptionKey(message);
-          const decryptedmessage = await decrypt(message.message, key);
+          // const key = selectEncryptionKey(message);
+          // const decryptedmessage = await decrypt(message.message, key);
           {
             notification.alert && setNotificationOpen(true);
             setNotificationStatus("message");
             setNotificationTitle(senderName);
-            setNotificationDetail(decryptedmessage);
+            setNotificationDetail(message.message);
             setNotificationLink(`/chat?senderId=${message.sender_id}`);
           }
         }
@@ -156,16 +149,32 @@ const ChatProvider = () => {
       if (data.message === "friend") {
         if (senderInChatFriendlist) {
           const senderName = senderInChatFriendlist.nickName;
-          const key = selectEncryptionKey(message);
-          const decryptedmessage = await decrypt(message.message, key);
-          setNotificationOpen(true);
-          setNotificationStatus("message");
-          setNotificationTitle(senderName);
-          setNotificationDetail(decryptedmessage);
-          setNotificationLink(`/chat?senderId=${message.sender_id}`);
+          // const key = selectEncryptionKey(message);
+          // const decryptedmessage = await decrypt(message.message, key);
+          {
+            notification.alert && setNotificationOpen(true);
+            setNotificationStatus("message");
+            setNotificationTitle(senderName);
+            setNotificationDetail(message.message);
+            setNotificationLink(`/chat?senderId=${message.sender_id}`);
+          }
         }
       }
     } else {
+    }
+  };
+  
+  const handleEncryptionKeyDelivery = (data) => {
+    const userid = data.sender_id;
+    const encryptionkey = data.key;
+    const existkey = useSelector((state) =>
+      selectEncryptionKeyByUserId(state, userid)
+    );
+
+    if (!existkey) {
+      dispatch(
+        addEncryptionKey({ userId: userid, encryptionKey: encryptionkey })
+      );
     }
   };
 
@@ -209,6 +218,7 @@ const ChatProvider = () => {
           const updatedHistory = [message, ...chatHistoryStore.messages];
           dispatch(setChatHistory({ messages: updatedHistory }));
         }
+      } else {
       }
       handleIncomingMessages(
         message,
@@ -326,9 +336,9 @@ const ChatProvider = () => {
       handleAskingEncryptionKey(data);
     });
     // receive encryption key from partner
-    socket.on("deliver-encryption-key", (data: deliverEncryptionKeyType) => {
+    socket.on("deliver-encryption-key", (data: deliveredEncryptionKeyType) => {
       console.log("encryption-key delievery--->", data);
-      handleEncryptionKeyDelivery(data, dispatch, useSelector);
+      handleEncryptionKeyDelivery(data);
     });
     return () => {
       socket.off("connect");

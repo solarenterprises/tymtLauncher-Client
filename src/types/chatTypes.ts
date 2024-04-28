@@ -104,3 +104,8 @@ export interface deliverEncryptionKeyType {
   recipient_id:string;
   key:string;
 }
+
+export interface deliveredEncryptionKeyType {
+  sender_id:string;
+  key:string;
+}
