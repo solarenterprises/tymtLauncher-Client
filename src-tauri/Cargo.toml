@@ -1,6 +1,6 @@
 [package]
 name = "tymtlauncher"
-version = "2.0.1"
+version = "2.0.2"
 description = "tymtLauncher"
 authors = ["solar"]
 edition = "2021"
