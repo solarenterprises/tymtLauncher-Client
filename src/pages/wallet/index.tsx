@@ -201,7 +201,7 @@ const Wallet = () => {
                       >
                         <Box className="fs-h4 white">{symbol}</Box>
                         <Box className="fs-h2 white">
-                          {formatBalance(value, 3)}
+                          {formatBalance(value)}
                         </Box>
                       </Stack>
                     </Stack>

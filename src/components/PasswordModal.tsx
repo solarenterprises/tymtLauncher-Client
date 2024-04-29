@@ -181,6 +181,15 @@ const PasswordModal = ({ open, setOpen, voteAsset }: props) => {
                 value={numeral(
                   Number(walletStore.fee) * Number(reserve)
                 ).format("0,0.0000")}
+                // onBlur={(e) => {
+                //   dispatch(
+                //     setWallet({
+                //       ...walletStore,
+                //       status: "input",
+                //       fee: Number(e.target.value) / Number(reserve),
+                //     })
+                //   );
+                // }}
                 onChange={(e) => {
                   dispatch(
                     setWallet({

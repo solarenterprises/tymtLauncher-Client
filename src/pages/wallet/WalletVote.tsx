@@ -299,7 +299,7 @@ const WalletVote = () => {
                 />
                 <Box className="fs-32-italic white">
                   {numeral(multiWalletStore.Solar.chain.balance).format(
-                    "0,0.00"
+                    "0,0.0000"
                   )}
                 </Box>
               </Stack>

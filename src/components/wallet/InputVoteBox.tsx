@@ -44,7 +44,7 @@ const InputVoteBox = ({
   };
 
   return (
-    <FormControl sx={{ width: "100%" }} variant="outlined">
+    <FormControl sx={{ width: "100%", zIndex: "100" }} variant="outlined">
       <InputLabel
         htmlFor={id}
         sx={{
@@ -101,6 +101,14 @@ const InputVoteBox = ({
         value={value[id]?.toString() ?? ""}
         error={error}
         autoComplete="off"
+        onClick={(e: React.MouseEvent<HTMLElement>) => {
+          e.preventDefault();
+          e.stopPropagation();
+        }}
+        onDoubleClick={(e: React.MouseEvent<HTMLElement>) => {
+          e.preventDefault();
+          e.stopPropagation();
+        }}
       />
     </FormControl>
   );
