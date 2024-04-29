@@ -84,20 +84,21 @@ const CustodialReset3 = () => {
   return (
     <>
       <Grid container className="basic-container">
-        <Grid item xs={12}>
-          <Stack direction={"row"}>
-            <Stack
-              sx={{
-                width: "calc(100vw - 656px)",
-                height: "1008px",
-              }}
-            >
-              <Grid container justifyContent={"center"} pt={"56px"}>
+        <Grid item xs={12} container justifyContent={"center"}>
+          <Stack
+            direction={"row"}
+            alignItems={"center"}
+            justifyContent={"center"}
+            gap={"64px"}
+          >
+            <Stack alignItems={"center"} justifyContent={"center"}>
+              <Grid container justifyContent={"center"}>
                 <Grid
                   item
                   container
                   sx={{
                     width: "520px",
+                    padding: "10px 0px",
                   }}
                 >
                   <Grid item xs={12} container justifyContent={"space-between"}>
@@ -183,7 +184,7 @@ const CustodialReset3 = () => {
                     </Grid>
                   </form>
 
-                  <Grid item xs={12} mt={"217px"}>
+                  <Grid item xs={12} mt={"50px"}>
                     <DontHaveAccount />
                   </Grid>
                 </Grid>
@@ -193,9 +194,7 @@ const CustodialReset3 = () => {
               component={"img"}
               src={tymt4}
               sx={{
-                width: "656px",
-                height: "1008px",
-                padding: "32px",
+                height: "calc(100vh - 64px)",
               }}
             />
           </Stack>
