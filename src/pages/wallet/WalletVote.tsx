@@ -134,8 +134,13 @@ const WalletVote = () => {
 
       setData(res1.data.data);
       setTotalPage(res1.data.meta.pageCount);
-      setVotingData(res2.data.data[0].asset.votes ?? {});
-      setOriginalVotingData(res2.data.data[0].asset.votes ?? {});
+      if (Array.isArray(res2.data.data) && res2.data.data.length > 0) {
+        setVotingData(res2.data.data[0].asset.votes ?? {});
+        setOriginalVotingData(res2.data.data[0].asset.votes ?? {});
+      } else {
+        setVotingData({});
+        setOriginalVotingData({});
+      }
       const newTotalVoted: number = res3.reduce(
         (sum, element) => sum + element.votesReceived.votes / 1e8,
         0
