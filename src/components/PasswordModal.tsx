@@ -111,15 +111,15 @@ const PasswordModal = ({ open, setOpen, voteAsset }: props) => {
       setLoading(false);
     } catch (err) {
       console.error("Failed to Vote: ", err);
+      setOpen(false);
+      setPassword("");
+      setLoading(false);
       const translated = await translateString(err.toString());
       setNotificationStatus("failed");
       setNotificationTitle(t("wal-49_vote-failed"));
       setNotificationDetail(translated);
       setNotificationOpen(true);
       setNotificationLink(null);
-      setOpen(false);
-      setPassword("");
-      setLoading(false);
     }
   };
 

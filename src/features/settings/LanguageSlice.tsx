@@ -6,9 +6,11 @@ import { tymt_version } from "../../configs";
 const loadData: () => languageType = () => {
   const data = tymtStorage.get(`language_${tymt_version}`);
   if (data === null || data === "") {
-    return {
+    const init: languageType = {
       language: "en",
     };
+    tymtStorage.set(`language_${tymt_version}`, JSON.stringify(init));
+    return init;
   } else {
     return JSON.parse(data);
   }
