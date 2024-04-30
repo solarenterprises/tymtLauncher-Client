@@ -34,6 +34,7 @@ import scrolldownReducer from "./features/chat/Chat-scrollDownSlice";
 import chatfriendlistReducer from "./features/chat/Chat-friendlistSlice";
 import alertbadgeReducer from "./features/alert/AlertbadgeSlice";
 import machineIdReducer from "./features/account/MachineIdSlice";
+import socketHashReducer from "./features/chat/SocketHashSlice";
 
 const store = configureStore({
   reducer: {
@@ -71,6 +72,7 @@ const store = configureStore({
     chatfriendlist: chatfriendlistReducer,
     alertbadge: alertbadgeReducer,
     machineId: machineIdReducer,
+    socketHash: socketHashReducer,
   },
 });
 
