@@ -37,6 +37,7 @@ import { getCustodial } from "../../features/account/CustodialSlice";
 import { getCurrentLogo } from "../../features/home/Tymtlogo";
 import { getCurrentPage, setCurrentPage } from "../../features/home/Navigation";
 import { getChain } from "../../features/wallet/ChainSlice";
+import ComingModal from "../ComingModal";
 import CardModal from "../CardModal";
 import Alertindex from "../../pages/alert";
 import { selectBadgeStatus } from "../../features/alert/AlertbadgeSlice";
@@ -60,7 +61,7 @@ const Navbar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const alertbadge:alertbadgeType = useSelector(selectBadgeStatus);
+  const alertbadge: alertbadgeType = useSelector(selectBadgeStatus);
   const notification: notificationType = useSelector(selectNotification);
   const currentpage: PaginationType = useSelector(getCurrentPage);
   const currentlogo: TymtlogoType = useSelector(getCurrentLogo);
@@ -78,6 +79,7 @@ const Navbar = () => {
   const [showAlert, setShowAlert] = useState(false);
   const [value, setValue] = useState<string>("");
   const [cardModalOpen, setCardModalOpen] = useState<boolean>(false);
+  const [coming, setComing] = useState<boolean>(false);
 
   const setView = useCallback(
     (view: boolean) => {
@@ -397,7 +399,10 @@ const Navbar = () => {
           >
             <Button
               className="button_navbar_common"
-              onClick={() => setShowChat(!showChat)}
+              onClick={() => {
+                setComing(true);
+                // setShowChat(!showChat);
+              }}
               sx={{ position: "relative" }}
             >
               {/* {chatnotification.alert === true && (
@@ -486,7 +491,7 @@ const Navbar = () => {
         <Chatindex viewChat={showChat} setViewChat={setChat} />
         <Alertindex viewAlert={showAlert} setViewAlert={setAlert} />
       </Grid>
-      {/* <ComingModal open={coming} setOpen={setComing} /> */}
+      <ComingModal open={coming} setOpen={setComing} />
       <CardModal open={cardModalOpen} setOpen={setCardModalOpen} />
     </>
   );

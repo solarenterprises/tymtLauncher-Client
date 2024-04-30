@@ -49,7 +49,7 @@ const ComingModal = ({ open, setOpen }: props) => {
             gap={"10px"}
           >
             <Box className="fs-h3 white">{`tymtLauncher v${tymt_version}`}</Box>
-            <Box className="fs-h3 white">{`(April 11, 2024 released)`}</Box>
+            <Box className="fs-h3 white">{`(April 29th, 2024 released)`}</Box>
           </Stack>
         </Stack>
       </Box>

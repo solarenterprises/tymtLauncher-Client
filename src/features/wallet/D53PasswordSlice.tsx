@@ -7,9 +7,11 @@ import { tymt_version } from "../../configs";
 const loadD53Password: () => ID53Password = () => {
   const data = tymtStorage.get(`d53Password_${tymt_version}`);
   if (data === null || data === "") {
-    return {
+    const init: ID53Password = {
       password: "",
     };
+    tymtStorage.set(`d53Password_${tymt_version}`, JSON.stringify(init));
+    return init;
   } else {
     return JSON.parse(data);
   }

@@ -17,7 +17,7 @@ const Tymtshow = ({ image }: any) => {
           style={{
             aspectRatio: "1.78",
             borderRadius: "16px",
-            opacity: 0.8,
+            opacity: 1.0,
             flexShrink: 1,
           }}
           loading="lazy"
@@ -61,5 +61,3 @@ const Tymtshow = ({ image }: any) => {
 };
 
 export default Tymtshow;
-
-

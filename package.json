@@ -12,7 +12,7 @@
     "Solar Enterprises Team <hello@solarenterprises.com>",
     "Dokdo UAB Team <hello@dokdo.sh>"
   ],
-  "version": "2.0.1",
+  "version": "2.0.2",
   "type": "commonjs",
   "scripts": {
     "dev": "vite",
@@ -56,6 +56,7 @@
     "bitcoin-address-validation": "^2.2.3",
     "bitcoinjs-lib": "^6.1.5",
     "buffer": "^6.0.3",
+    "child_process": "^1.0.2",
     "cors": "^2.8.5",
     "ed25519-hd-key": "^1.3.0",
     "emoji-mart": "^5.5.2",
@@ -94,6 +95,7 @@
     "socket.io-client": "^4.7.5",
     "swiper": "^11.0.7",
     "tiny-secp256k1": "^2.2.3",
+    "translate": "^3.0.0",
     "vite-plugin-node-polyfills": "^0.21.0",
     "wif": "^4.0.0",
     "yup": "^1.4.0"
@@ -103,6 +105,7 @@
     "@types/bs58": "^4.0.4",
     "@types/lodash": "^4.17.0",
     "@types/multicoin-address-validator": "^0.5.2",
+    "@types/numeral": "^2.0.5",
     "@types/react": "^18.2.15",
     "@types/react-dom": "^18.2.7",
     "@types/react-infinite-scroller": "^1.2.5",

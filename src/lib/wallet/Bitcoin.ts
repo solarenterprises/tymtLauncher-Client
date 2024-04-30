@@ -11,6 +11,7 @@ import { IRecipient } from "../../features/wallet/CryptoApi";
 import tymtStorage from "../Storage";
 import { multiWalletType } from "../../types/walletTypes";
 import { fetch as tauriFetch, ResponseType } from "@tauri-apps/api/http";
+import { translateString } from "../api/Translate";
 
 class Bitcoin implements IWallet {
   address: string;
@@ -184,8 +185,8 @@ class Bitcoin implements IWallet {
         if (feeSat >= sumUTXOSat) {
           const noti: INotification = {
             status: "failed",
-            title: "Fail",
-            message: "Insufficient BTC balance for fee!",
+            title: await translateString("Fail"),
+            message: await translateString("Insufficient BTC balance for fee!"),
           };
           return noti;
         }
@@ -209,16 +210,17 @@ class Bitcoin implements IWallet {
 
         const noti: INotification = {
           status: "success",
-          title: "Success",
-          message: "Successfully Transferred!",
+          title: await translateString("Success"),
+          message: await translateString("Successfully Transferred!"),
         };
         return noti;
       } catch (err) {
         console.error("Failed to send BTC transaction", err);
+        const translated = await translateString(err.toString());
         const noti: INotification = {
           status: "failed",
-          title: "Failed",
-          message: err.toString(),
+          title: await translateString("Failed"),
+          message: translated,
         };
         return noti;
       }

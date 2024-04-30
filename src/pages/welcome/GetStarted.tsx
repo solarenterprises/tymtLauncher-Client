@@ -22,12 +22,19 @@ import { languageType } from "../../types/settingTypes";
 import { AppDispatch } from "../../store";
 
 import { getAccount, setAccount } from "../../features/account/AccountSlice";
-import { accountType, loginEnum } from "../../types/accountTypes";
+import { IMachineId, accountType, loginEnum } from "../../types/accountTypes";
+
+import {
+  getMachineId,
+  setMachineId,
+} from "../../features/account/MachineIdSlice";
+import { invoke } from "@tauri-apps/api/tauri";
 
 const GetStarted = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
   const accountStore: accountType = useSelector(getAccount);
+  const machineIdStore: IMachineId = useSelector(getMachineId);
 
   const {
     t,
@@ -56,6 +63,19 @@ const GetStarted = () => {
   }, []);
 
   useEffect(() => {
+    invoke("get_machine_id")
+      .then((hwid) => {
+        console.log("Unique Machine ID:", hwid);
+        dispatch(
+          setMachineId({
+            ...machineIdStore,
+            machineId: hwid,
+          })
+        );
+      })
+      .catch((error) => {
+        console.error("Error getting Machine ID:", error);
+      });
     dispatch(
       setAccount({
         ...accountStore,
@@ -69,20 +89,21 @@ const GetStarted = () => {
   return (
     <>
       <Grid container className="basic-container">
-        <Grid item xs={12}>
-          <Stack direction={"row"}>
-            <Stack
-              sx={{
-                width: "calc(100vw - 656px)",
-                height: "1008px",
-              }}
-            >
-              <Grid container justifyContent={"center"} pt={"180px"}>
+        <Grid item xs={12} container justifyContent={"center"}>
+          <Stack
+            direction={"row"}
+            alignItems={"center"}
+            justifyContent={"center"}
+            gap={"64px"}
+          >
+            <Stack alignItems={"center"} justifyContent={"center"}>
+              <Grid container justifyContent={"center"}>
                 <Grid
                   item
                   container
                   sx={{
                     width: "520px",
+                    padding: "10px 0px",
                   }}
                 >
                   <Grid item xs={12}>
@@ -139,9 +160,7 @@ const GetStarted = () => {
               component={"img"}
               src={tymt1}
               sx={{
-                width: "656px",
-                height: "1008px",
-                padding: "32px",
+                height: "calc(100vh - 64px)",
               }}
             />
           </Stack>

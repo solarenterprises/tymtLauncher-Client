@@ -34,6 +34,7 @@ import scrolldownReducer from "./features/chat/Chat-scrollDownSlice";
 import chatfriendlistReducer from "./features/chat/Chat-friendlistSlice";
 import alertbadgeReducer from "./features/alert/AlertbadgeSlice";
 import encryptionReducer from "./features/chat/Chat-encryptionkeySlice";
+import machineIdReducer from "./features/account/MachineIdSlice";
 
 const store = configureStore({
   reducer: {
@@ -71,6 +72,7 @@ const store = configureStore({
     chatfriendlist: chatfriendlistReducer,
     alertbadge: alertbadgeReducer,
     encryption: encryptionReducer,
+    machineId: machineIdReducer,
   },
 });
 

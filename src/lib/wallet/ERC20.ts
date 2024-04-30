@@ -4,6 +4,7 @@ import * as bip39 from "bip39";
 import { IRecipient } from "../../features/wallet/CryptoApi";
 import { INotification } from "../../features/wallet/CryptoSlice";
 import * as multichainWallet from "multichain-crypto-wallet";
+import { translateString } from "../api/Translate";
 
 class ERC20 {
   static async getPrivateKeyFromMnemonic(mnemonic: string): Promise<string> {
@@ -64,8 +65,8 @@ class ERC20 {
     if (tx.recipients.length < 1) {
       const noti: INotification = {
         status: "failed",
-        title: "No Recipients",
-        message: "Please add recipients.",
+        title: await translateString("No Recipients"),
+        message: await translateString("Please add recipients."),
       };
       return noti;
     }
@@ -86,16 +87,17 @@ class ERC20 {
       console.log("Response of send EVM native token transaction: ", response);
       const noti: INotification = {
         status: "success",
-        title: "Success",
-        message: "Successfully Transferred!",
+        title: await translateString("Success"),
+        message: await translateString("Successfully Transferred!"),
       };
       return noti;
     } catch (err) {
       console.error("Failed to send EVM native token transaction: ", err);
+      const translated = await translateString(err.toString());
       const noti: INotification = {
         status: "failed",
-        title: "Failed",
-        message: err.toString(),
+        title: await translateString("Failed"),
+        message: translated,
       };
       return noti;
     }
@@ -109,8 +111,8 @@ class ERC20 {
     if (tx.recipients.length < 1) {
       const noti: INotification = {
         status: "failed",
-        title: "No Recipients",
-        message: "Please add recipients.",
+        title: await translateString("No Recipients"),
+        message: await translateString("Please add recipients."),
       };
       return noti;
     }
@@ -131,16 +133,17 @@ class ERC20 {
       console.log("Response of send EVM native token transaction: ", response);
       const noti: INotification = {
         status: "success",
-        title: "Success",
-        message: "Successfully Transferred!",
+        title: await translateString("Success"),
+        message: await translateString("Successfully Transferred!"),
       };
       return noti;
     } catch (err) {
       console.error("Failed to send EVM native token transaction: ", err);
+      const translated = await translateString(err.toString());
       const noti: INotification = {
         status: "failed",
-        title: "Failed",
-        message: err.toString(),
+        title: await translateString("Failed"),
+        message: translated,
       };
       return noti;
     }

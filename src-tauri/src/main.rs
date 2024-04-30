@@ -51,7 +51,8 @@ fn main() {
                 run_macos,
                 run_app_macos,
                 run_command,
-                open_directory
+                open_directory,
+                get_machine_id
             ]
         )
         .system_tray(tray)
@@ -131,6 +132,7 @@ use std::path::PathBuf;
 use std::process::Command;
 use std::{ fs, io };
 use tauri::Manager;
+use machineid_rs::{ IdBuilder, Encryption, HWIDComponent };
 
 fn copy_dir_all(src: impl AsRef<Path>, dst: impl AsRef<Path>) -> io::Result<()> {
     fs::create_dir_all(&dst)?;
@@ -668,4 +670,13 @@ fn open_directory(path: &str) {
         Ok(output) => println!("Opened directory successfully: {:?}", output),
         Err(e) => println!("Failed to open directory: {}", e),
     }
+}
+
+#[tauri::command]
+fn get_machine_id() -> Result<String, String> {
+    let mut builder = IdBuilder::new(Encryption::SHA256);
+    builder.add_component(HWIDComponent::SystemID);
+    let hwid = builder.build("tymtLauncher").map_err(|err| err.to_string())?;
+
+    Ok(hwid)
 }

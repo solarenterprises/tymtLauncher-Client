@@ -258,6 +258,12 @@ const InputText = ({
                 color: "#FFFFFF",
                 padding: "5px",
                 top: "-10px",
+                "& input[type='password']::-ms-reveal": {
+                  display: "none",
+                },
+                "& input[type='password']::-ms-clear": {
+                  display: "none",
+                },
               }}
             />
           </FormControl>

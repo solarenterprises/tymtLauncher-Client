@@ -3,11 +3,12 @@
     "beforeDevCommand": "yarn dev",
     "beforeBuildCommand": "yarn build",
     "devPath": "http://localhost:1420",
-    "distDir": "../dist"
+    "distDir": "../dist",
+    "withGlobalTauri": true
   },
   "package": {
     "productName": "tymtLauncher",
-    "version": "2.0.1"
+    "version": "2.0.2"
   },
   "tauri": {
     "allowlist": {
@@ -33,6 +34,8 @@
       },
       "shell": {
         "all": true,
+        "execute": true,
+        "sidecar": true,
         "open": true
       },
       "clipboard": {
@@ -55,7 +58,7 @@
     "windows": [
       {
         "label": "tymtLauncher",
-        "title": "tymtLauncher 2.0.1",
+        "title": "tymtLauncher 2.0.2",
         "resizable": true,
         "width": 1440,
         "height": 1024,

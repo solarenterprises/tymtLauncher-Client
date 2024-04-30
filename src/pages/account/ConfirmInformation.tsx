@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import createKeccakHash from "keccak";
 
@@ -54,11 +54,15 @@ import {
 import tymtStorage from "../../lib/Storage";
 import { tymt_version } from "../../configs";
 import { useNotification } from "../../providers/NotificationProvider";
+import { selectWallet, setWallet } from "../../features/settings/WalletSlice";
+import { walletType } from "../../types/settingTypes";
+import { translateString } from "../../lib/api/Translate";
 
 const ConfirmInformation = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
   const { t } = useTranslation();
+  const walletStore: walletType = useSelector(selectWallet);
   const accountStore: accountType = useSelector(getAccount);
   const nonCustodialStore: nonCustodialType = useSelector(getNonCustodial);
   const tempNonCustodialStore: nonCustodialType =
@@ -79,6 +83,15 @@ const ConfirmInformation = () => {
     setNotificationOpen,
     setNotificationLink,
   } = useNotification();
+
+  useEffect(() => {
+    dispatch(
+      setWallet({
+        ...walletStore,
+        refreshed: false,
+      })
+    );
+  }, []);
 
   const handleBackClick = () => {
     navigate("/start");
@@ -113,10 +126,10 @@ const ConfirmInformation = () => {
           dispatch(setChainAsync(updateData));
           navigate("/home");
         } catch (err) {
-          console.log(err);
+          console.error("Failed to Non-custodial Login: ", err);
           setNotificationStatus("failed");
-          setNotificationTitle("Error");
-          setNotificationDetail(err);
+          setNotificationTitle(t("hom-23_error"));
+          setNotificationDetail(await translateString(err.toString()));
           setNotificationOpen(true);
           setNotificationLink(null);
         }
@@ -237,8 +250,8 @@ const ConfirmInformation = () => {
         } catch (err) {
           console.log(err);
           setNotificationStatus("failed");
-          setNotificationTitle("Error");
-          setNotificationDetail(err);
+          setNotificationTitle(t("hom-23_error"));
+          setNotificationDetail(await translateString(err.toString()));
           setNotificationOpen(true);
           setNotificationLink(null);
         }
@@ -359,8 +372,8 @@ const ConfirmInformation = () => {
         } catch (err) {
           console.log(err);
           setNotificationStatus("failed");
-          setNotificationTitle("Error");
-          setNotificationDetail(err);
+          setNotificationTitle(t("hom-23_error"));
+          setNotificationDetail(await translateString(err.toString()));
           setNotificationOpen(true);
           setNotificationLink(null);
         }
@@ -469,8 +482,8 @@ const ConfirmInformation = () => {
         } catch (err) {
           console.log(err);
           setNotificationStatus("failed");
-          setNotificationTitle("Error");
-          setNotificationDetail(err);
+          setNotificationTitle(t("hom-23_error"));
+          setNotificationDetail(await translateString(err.toString()));
           setNotificationOpen(true);
           setNotificationLink(null);
         }
@@ -481,20 +494,21 @@ const ConfirmInformation = () => {
   return (
     <>
       <Grid container className="basic-container">
-        <Grid item xs={12}>
-          <Stack direction={"row"}>
-            <Stack
-              sx={{
-                width: "calc(100vw - 656px)",
-                height: "1008px",
-              }}
-            >
-              <Grid container justifyContent={"center"} pt={"56px"}>
+        <Grid item xs={12} container justifyContent={"center"}>
+          <Stack
+            direction={"row"}
+            alignItems={"center"}
+            justifyContent={"center"}
+            gap={"64px"}
+          >
+            <Stack alignItems={"center"} justifyContent={"center"}>
+              <Grid container justifyContent={"center"}>
                 <Grid
                   item
                   container
                   sx={{
                     width: "520px",
+                    padding: "10px 0px",
                   }}
                 >
                   <Grid item xs={12} container justifyContent={"space-between"}>
@@ -536,9 +550,7 @@ const ConfirmInformation = () => {
               component={"img"}
               src={tymt2}
               sx={{
-                width: "656px",
-                height: "1008px",
-                padding: "32px",
+                height: "calc(100vh - 64px)",
               }}
             />
           </Stack>
