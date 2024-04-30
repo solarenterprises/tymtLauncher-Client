@@ -101,7 +101,7 @@ class Bitcoin implements IWallet {
   static async getTransactions(addr: string): Promise<any> {
     try {
       if (net_name === "mainnet") {
-        const apiURL = `${btc_api_url}/rawaddr/${addr}?limit=10`;
+        const apiURL = `${btc_api_url}/rawaddr/${addr}?limit=15`;
         const response: any = await tauriFetch(apiURL, {
           method: "GET",
           timeout: 30,

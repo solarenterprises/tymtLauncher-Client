@@ -80,9 +80,9 @@ class Avalanche implements IWallet {
   static async getTransactions(addr: string): Promise<any> {
     let endpoint = "";
     if (net_name === "mainnet") {
-      endpoint = `${avax_api_url}/address/${addr}/erc20-transfers?limit=25`;
+      endpoint = `${avax_api_url}/address/${addr}/erc20-transfers?limit=15`;
     } else {
-      endpoint = `${avax_api_url}/address/${addr}/transactions?sort=desc&limit=10`;
+      endpoint = `${avax_api_url}/address/${addr}/transactions?sort=desc&limit=15`;
     }
     try {
       return (await (await fetch(endpoint)).json()).items;

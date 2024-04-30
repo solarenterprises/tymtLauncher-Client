@@ -89,7 +89,7 @@ class Solana implements IWallet {
         jsonrpc: "2.0",
         id: 1,
         method: "getSignaturesForAddress",
-        params: [pbKey, { limit: 10 }],
+        params: [pbKey, { limit: 15 }],
       };
       const body1 = Body.json(bodyContent1);
       const response1: any = await tauriFetch(apiURL, {

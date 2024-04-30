@@ -313,9 +313,9 @@ export const getTransactionUrl = (chain: IChain): string => {
   }
   if (chain.chain.symbol === "AVAX") {
     if (net_name === "mainnet") {
-      return `${avax_api_url}/address/${chain.chain.wallet}/erc20-transfers?limit=25`;
+      return `${avax_api_url}/address/${chain.chain.wallet}/erc20-transfers?limit=15`;
     } else {
-      return `${avax_api_url}/address/${chain.chain.wallet}/transactions?sort=desc&limit=10`;
+      return `${avax_api_url}/address/${chain.chain.wallet}/transactions?sort=desc&limit=15`;
     }
   }
 

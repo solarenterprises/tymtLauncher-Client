@@ -1,4 +1,5 @@
 import { Stack, Box, Button } from "@mui/material";
+import { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 
 import timerIcon from "../../assets/wallet/timer-icon.svg";
@@ -16,6 +17,7 @@ import { openLink } from "../../lib/api/Downloads";
 import { ICurrency } from "../../types/walletTypes";
 import { getCurrency } from "../../features/wallet/CurrencySlice";
 import { currencySymbols } from "../../consts/currency";
+import InfiniteScroll from "react-infinite-scroller";
 
 const TransCard = () => {
   const chain: IChain = useSelector(getChain);
@@ -24,10 +26,8 @@ const TransCard = () => {
   const currencyStore: ICurrency = useSelector(getCurrency);
   const reserve: number = currencyStore.data[currencyStore.current] as number;
   const currencySymbol: string = currencySymbols[currencyStore.current];
-
-  useEffect(() => {
-    dispatch(getTransactionsAsync(chain));
-  }, [dispatch]);
+  const [page, setPage] = useState<number>(1);
+  const [hasMore, setHasMore] = useState<boolean>(false);
 
   useEffect(() => {
     dispatch(getTransactionsAsync(chain));
@@ -38,89 +38,101 @@ const TransCard = () => {
     openLink(externalLink);
   };
 
+  const loadMore = () => {
+    
+  }
+
   return (
     <Box>
-      {transactions &&
-        transactions?.map((data, index) => {
-          const { direction, address, time, url, amount, logo, symbol } =
-            formatTransaction(chain, data);
-          if (!address || !url || !amount) return null;
-          else
-            return (
-              <Button
-                key={`${index}-${new Date().toISOString()}`}
-                sx={{
-                  textTransform: "none",
-                  width: "100%",
-                }}
-                onDoubleClick={() => handleButtonClick(url)}
-              >
-                <Stack
-                  direction={"row"}
-                  justifyContent={"space-between"}
-                  alignItems={"center"}
-                  padding={"7px 25px"}
-                  width={"100%"}
+      <InfiniteScroll
+        pageStart={page}
+        loadMore={loadMore}
+        hasMore={hasMore}
+        isReverse={false}
+        useWindow={false}
+      >
+        {transactions &&
+          transactions?.map((data, index) => {
+            const { direction, address, time, url, amount, logo, symbol } =
+              formatTransaction(chain, data);
+            if (!address || !url || !amount) return null;
+            else
+              return (
+                <Button
+                  key={`${index}-${new Date().toISOString()}`}
+                  sx={{
+                    textTransform: "none",
+                    width: "100%",
+                  }}
+                  onDoubleClick={() => handleButtonClick(url)}
                 >
                   <Stack
                     direction={"row"}
-                    spacing={"16px"}
+                    justifyContent={"space-between"}
                     alignItems={"center"}
+                    padding={"7px 25px"}
+                    width={"100%"}
                   >
-                    <Box
-                      component={"img"}
-                      src={transactionIconMap.get(direction)}
-                      width={"32px"}
-                      height={"32px"}
-                    />
-                    <Stack>
-                      <Box className={"fs-16-regular white"}>
-                        {address?.substring(0, 6)}...
-                        {address?.substring(address.length - 10)}
-                      </Box>
-                      <Stack
-                        direction={"row"}
-                        alignItems={"center"}
-                        spacing={"8px"}
-                      >
-                        <Box
-                          component={"img"}
-                          src={timerIcon}
-                          width={"12px"}
-                          height={"12px"}
-                        />
-                        <Box className={"fs-12-regular light"}>{time}</Box>
-                      </Stack>
-                    </Stack>
-                  </Stack>
-                  <Stack>
                     <Stack
                       direction={"row"}
-                      spacing={"8px"}
+                      spacing={"16px"}
                       alignItems={"center"}
                     >
                       <Box
                         component={"img"}
-                        src={logo}
-                        width={"16px"}
-                        height={"16px"}
-                      ></Box>
-                      <Box className={"fs-16-regular white center-align"}>
-                        {`${amount} ${symbol}`}
+                        src={transactionIconMap.get(direction)}
+                        width={"32px"}
+                        height={"32px"}
+                      />
+                      <Stack>
+                        <Box className={"fs-16-regular white"}>
+                          {address?.substring(0, 6)}...
+                          {address?.substring(address.length - 10)}
+                        </Box>
+                        <Stack
+                          direction={"row"}
+                          alignItems={"center"}
+                          spacing={"8px"}
+                        >
+                          <Box
+                            component={"img"}
+                            src={timerIcon}
+                            width={"12px"}
+                            height={"12px"}
+                          />
+                          <Box className={"fs-12-regular light"}>{time}</Box>
+                        </Stack>
+                      </Stack>
+                    </Stack>
+                    <Stack>
+                      <Stack
+                        direction={"row"}
+                        spacing={"8px"}
+                        alignItems={"center"}
+                      >
+                        <Box
+                          component={"img"}
+                          src={logo}
+                          width={"16px"}
+                          height={"16px"}
+                        ></Box>
+                        <Box className={"fs-16-regular white center-align"}>
+                          {`${amount} ${symbol}`}
+                        </Box>
+                      </Stack>
+                      <Box className={"fs-12-light light t-right"}>
+                        {`${currencySymbol} ${formatBalance(
+                          Number(chain.chain.price ?? 0) *
+                            Number(amount) *
+                            reserve
+                        )}`}
                       </Box>
                     </Stack>
-                    <Box className={"fs-12-light light t-right"}>
-                      {`${currencySymbol} ${formatBalance(
-                        Number(chain.chain.price ?? 0) *
-                          Number(amount) *
-                          reserve
-                      )}`}
-                    </Box>
                   </Stack>
-                </Stack>
-              </Button>
-            );
-        })}
+                </Button>
+              );
+          })}
+      </InfiniteScroll>
     </Box>
   );
 };
