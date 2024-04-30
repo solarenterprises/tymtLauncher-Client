@@ -47,12 +47,11 @@ import {
 import { socket_backend_url } from "../../configs";
 import { io, Socket } from "socket.io-client";
 const socket: Socket = io(socket_backend_url as string, {
-  transports: ['websocket'], 
-  reconnectionDelay: 10000, 
-  reconnectionDelayMax: 10000 
+  // autoConnect:false,
+  transports: ["websocket"],
+  reconnectionDelay: 10000,
+  reconnectionDelayMax: 10000,
 });
-
-
 
 import { useNotification } from "../../providers/NotificationProvider";
 import {
@@ -163,7 +162,7 @@ const ChatProvider = () => {
     } else {
     }
   };
-  
+
   const handleEncryptionKeyDelivery = (data) => {
     const userid = data.sender_id;
     const encryptionkey = data.key;
@@ -194,7 +193,7 @@ const ChatProvider = () => {
   };
 
   useEffect(() => {
-    socket.on("connect", function () {
+    socket.on("connection", function () {
       socket.emit("user-joined", `${account.uid}`);
     });
     socket.on("message-posted", (message: ChatMessageType) => {
@@ -341,7 +340,7 @@ const ChatProvider = () => {
       handleEncryptionKeyDelivery(data);
     });
     return () => {
-      socket.off("connect");
+      socket.off("connection");
       socket.off("message-posted");
       socket.off("alert-posted");
       socket.off("alert-updated");

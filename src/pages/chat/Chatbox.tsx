@@ -125,7 +125,6 @@ const Chatbox = ({ view, setView }: propsType) => {
   };
 
   const handleEmojiSelect = (emoji: any) => {
-    
     setValue(value + emoji.emoji);
   };
 
@@ -156,7 +155,7 @@ const Chatbox = ({ view, setView }: propsType) => {
         const message = {
           sender_id: account.uid,
           recipient_id: currentpartner._id,
-          room_id: `room_${account.uid}_${currentpartner._id}`,
+          // room_id: `room_${account.uid}_${currentpartner._id}`,
           message: encryptedvalue,
           createdAt: Date.now(),
         };

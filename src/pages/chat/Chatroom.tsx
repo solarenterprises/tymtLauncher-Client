@@ -187,7 +187,7 @@ const Chatroom = () => {
         const message = {
           sender_id: account.uid,
           recipient_id: currentpartner._id,
-          room_id: `room_${account.uid}_${currentpartner._id}`,
+          // room_id: `room_${account.uid}_${currentpartner._id}`,
           message: encryptedvalue,
           createdAt: Date.now(),
         };
