@@ -57,6 +57,12 @@ import { useNotification } from "../../providers/NotificationProvider";
 import { selectWallet, setWallet } from "../../features/settings/WalletSlice";
 import { walletType } from "../../types/settingTypes";
 import { translateString } from "../../lib/api/Translate";
+import { generateSocketHash } from "../../features/chat/SocketHashApi";
+import {
+  getSocketHash,
+  setSocketHash,
+} from "../../features/chat/SocketHashSlice";
+import { ISocketHash } from "../../types/chatTypes";
 
 const ConfirmInformation = () => {
   const navigate = useNavigate();
@@ -74,6 +80,7 @@ const ConfirmInformation = () => {
     tymtStorage.get(`tempD53Password_${tymt_version}`)
   );
   const d53PasswordStore: ID53Password = useSelector(getD53Password);
+  const socketHashStore: ISocketHash = useSelector(getSocketHash);
   const [loading, setLoading] = useState<boolean>(false);
 
   const {
@@ -161,6 +168,15 @@ const ConfirmInformation = () => {
               password: tempD53PasswordStore.password,
             })
           );
+          const newSocketHash: string = generateSocketHash(
+            tempNonCustodialStore.mnemonic.toString()
+          );
+          dispatch(
+            setSocketHash({
+              ...socketHashStore,
+              socketHash: newSocketHash,
+            })
+          );
           dispatch(
             setTempNonCustodial({
               mnemonic: "",
@@ -283,6 +299,15 @@ const ConfirmInformation = () => {
               password: tempD53PasswordStore.password,
             })
           );
+          const newSocketHash: string = generateSocketHash(
+            tempNonCustodialStore.mnemonic.toString()
+          );
+          dispatch(
+            setSocketHash({
+              ...socketHashStore,
+              socketHash: newSocketHash,
+            })
+          );
           dispatch(
             setTempNonCustodial({
               mnemonic: "",
@@ -403,6 +428,15 @@ const ConfirmInformation = () => {
             setD53Password({
               ...d53PasswordStore,
               password: tempD53PasswordStore.password,
+            })
+          );
+          const newSocketHash: string = generateSocketHash(
+            tempNonCustodialStore.mnemonic.toString()
+          );
+          dispatch(
+            setSocketHash({
+              ...socketHashStore,
+              socketHash: newSocketHash,
             })
           );
           dispatch(

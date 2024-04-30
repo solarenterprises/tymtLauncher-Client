@@ -109,3 +109,6 @@ export interface deliveredEncryptionKeyType {
   sender_id:string;
   key:string;
 }
+export interface ISocketHash {
+  socketHash: string;
+}
