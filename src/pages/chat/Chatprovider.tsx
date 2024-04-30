@@ -193,7 +193,7 @@ const ChatProvider = () => {
   };
 
   useEffect(() => {
-    socket.on("connection", function () {
+    socket.on("connect", function () {
       socket.emit("user-joined", `${account.uid}`);
     });
     socket.on("message-posted", (message: ChatMessageType) => {
