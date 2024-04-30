@@ -171,15 +171,15 @@ const ChatProvider = () => {
   const handleEncryptionKeyDelivery = (data) => {
     const userid = data.sender_id;
     const encryptionkey = data.key;
-    const existkey = useSelector((state) =>
-      selectEncryptionKeyByUserId(state, userid)
-    );
+    // const existkey = useSelector((state) =>
+    //   selectEncryptionKeyByUserId(state, userid)
+    // );
 
-    if (!existkey) {
+    // if (!existkey) {
       dispatch(
         addEncryptionKey({ userId: userid, encryptionKey: encryptionkey })
       );
-    }
+    // }
   };
 
   const handleAskingEncryptionKey = (data) => {

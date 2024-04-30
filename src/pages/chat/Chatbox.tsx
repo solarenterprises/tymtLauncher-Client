@@ -210,14 +210,13 @@ const Chatbox = ({ view, setView }: propsType) => {
 
   const fetchMessages = _.debounce(async () => {
     if (!hasMore) return;
-
     const query = {
-      sender_id: account.uid,
-      recipient_id: currentpartner._id,
+      room_user_ids: [account.uid, currentpartner._id],
       pagination: { page: page, pageSize: 7 },
     };
     socket.emit("get-messages-by-room", JSON.stringify(query));
     socket.on("messages-by-room", async (result) => {
+      console.log("messages-by-room", result);
       if (result && result.data.length > 0) {
         if (data.message === "anyone" || data.message === "friend") {
           dispatch(

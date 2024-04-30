@@ -171,7 +171,7 @@ const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
       };
       decryptMessage();
     }
-  }, [existkey]);
+  }, [detail]);
 
   return (
     <>

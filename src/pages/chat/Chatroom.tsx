@@ -240,8 +240,7 @@ const Chatroom = () => {
     if (!hasMore) return;
 
     const query = {
-      sender_id: account.uid,
-      recipient_id: currentpartner._id,
+      room_user_ids: [account.uid, currentpartner._id],
       pagination: { page: page, pageSize: 7 },
     };
 
