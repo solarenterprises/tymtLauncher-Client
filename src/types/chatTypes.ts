@@ -89,3 +89,7 @@ export interface alertType {
   note: any;
   receivers: string[];
 }
+
+export interface ISocketHash {
+  socketHash: string;
+}
