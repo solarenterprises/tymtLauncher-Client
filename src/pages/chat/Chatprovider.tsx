@@ -7,6 +7,7 @@ import { multiWalletType } from "../../types/walletTypes";
 import {
   ChatHistoryType,
   ChatMessageType,
+  ISocketHash,
   alertType,
   askEncryptionKeyType,
   deliverEncryptionKeyType,
@@ -46,12 +47,6 @@ import {
 
 import { socket_backend_url } from "../../configs";
 import { io, Socket } from "socket.io-client";
-const socket: Socket = io(socket_backend_url as string, {
-  // autoConnect:false,
-  transports: ["websocket"],
-  reconnectionDelay: 10000,
-  reconnectionDelayMax: 10000,
-});
 
 import { useNotification } from "../../providers/NotificationProvider";
 import {
@@ -68,6 +63,7 @@ import {
   selectEncryptionKeyByUserId,
   selectEncryptionKeyStore,
 } from "../../features/chat/Chat-encryptionkeySlice";
+import { getSocketHash } from "../../features/chat/SocketHashSlice";
 // import { decrypt } from "../../lib/api/Encrypt";
 
 const ChatProvider = () => {
@@ -84,6 +80,15 @@ const ChatProvider = () => {
   const data: chatType = useSelector(selectChat);
   const keystore: encryptionkeyStoreType = useSelector(
     selectEncryptionKeyStore
+  );
+  const sockethash: ISocketHash = useSelector(getSocketHash);
+  const socket: Socket = io(
+    socket_backend_url as string,
+    // autoConnect:false,
+    // transports: ["websocket"],
+    // reconnectionDelay: 10000,
+    // reconnectionDelayMax: 10000,
+    { auth: { userId: account.uid, socket_hash: sockethash.socketHash } }
   );
   const triggerBadge = () => {
     dispatch(setBadgeStatus({ ...alertbadge, trigger: !alertbadge.trigger }));
@@ -194,7 +199,7 @@ const ChatProvider = () => {
 
   useEffect(() => {
     socket.on("connect", function () {
-      socket.emit("user-joined", `${account.uid}`);
+      console.log("socket connected");
     });
     socket.on("message-posted", (message: ChatMessageType) => {
       const senderId = message.sender_id;
