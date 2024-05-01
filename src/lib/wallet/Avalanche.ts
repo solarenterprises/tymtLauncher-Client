@@ -2,8 +2,14 @@ import { IWallet } from "./IWallet";
 import { ethers } from "ethers";
 import * as ethereumjsWallet from "ethereumjs-wallet";
 import * as bip39 from "bip39";
-import { avax_api_url, avax_rpc_url, net_name } from "../../configs";
+import {
+  avax_api_url,
+  avax_rpc_url,
+  net_name,
+  tymt_version,
+} from "../../configs";
 import { IToken, IGetTokenBalanceRes } from "../../types/walletTypes";
+import tymtStorage from "../Storage";
 
 class Avalanche implements IWallet {
   address: string;
@@ -77,18 +83,36 @@ class Avalanche implements IWallet {
     }
   }
 
-  static async getTransactions(addr: string): Promise<any> {
-    let endpoint = "";
-    if (net_name === "mainnet") {
-      endpoint = `${avax_api_url}/address/${addr}/erc20-transfers?limit=25`;
+  static async getTransactions(addr: string, page: number): Promise<any> {
+    if (page === 1) {
+      let endpoint = "";
+      tymtStorage.set(`avaxNextToken_${tymt_version}`, "");
+      if (net_name === "mainnet") {
+        endpoint = `${avax_api_url}/address/${addr}/erc20-transfers?limit=15`;
+      } else {
+        endpoint = `${avax_api_url}/address/${addr}/transactions?&limit=15`;
+      }
+      try {
+        const res = await (await fetch(endpoint)).json();
+        const nextToken: string = res.link.nextToken;
+        tymtStorage.set(`avaxNextToken_${tymt_version}`, nextToken);
+        return res.items;
+      } catch (error) {
+        console.error("Error fetching transactions:", error);
+        return [];
+      }
     } else {
-      endpoint = `${avax_api_url}/address/${addr}/transactions?sort=desc&limit=10`;
-    }
-    try {
-      return (await (await fetch(endpoint)).json()).items;
-    } catch (error) {
-      console.error("Error fetching transactions:", error);
-      return [];
+      const nextToken = tymtStorage.get(`avaxNextToken_${tymt_version}`);
+      let endpoint = `${avax_api_url}/address/${addr}/erc20-transfers?limit=15&next=${nextToken}`;
+      try {
+        const res = await (await fetch(endpoint)).json();
+        const nextToken: string = res.link.nextToken;
+        tymtStorage.set(`avaxNextToken_${tymt_version}`, nextToken);
+        return res.items;
+      } catch (error) {
+        console.error("Error fetching transactions:", error);
+        return [];
+      }
     }
   }
 

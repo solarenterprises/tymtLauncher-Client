@@ -76,32 +76,34 @@ export const sendCoin = async ({ chain, data }: ISendCoin): Promise<any> => {
   }
 };
 
-export async function walletTransaction(chain: IChain) {
-  if (chain.chain.symbol === "SXP") {
-    return await Solar.getTransactions(chain.chain.wallet);
-  } else if (chain.chain.symbol === "BTC") {
+export async function walletTransaction(data: { chain: IChain; page: number }) {
+  if (data.chain.chain.symbol === "SXP") {
+    return await Solar.getTransactions(data.chain.chain.wallet, data.page);
+  } else if (data.chain.chain.symbol === "BTC") {
     return await tymtCore.Blockchains.btc.wallet.getTransactions(
-      chain.chain.wallet
+      data.chain.chain.wallet,
+      data.page
     );
-  } else if (chain.chain.symbol === "AVAX") {
-    return await Avalanche.getTransactions(chain.chain.wallet);
-  } else if (chain.chain.symbol === "SOL") {
+  } else if (data.chain.chain.symbol === "AVAX") {
+    return await Avalanche.getTransactions(data.chain.chain.wallet, data.page);
+  } else if (data.chain.chain.symbol === "SOL") {
     return await tymtCore.Blockchains.solana.wallet.getTransactions(
-      chain.chain.wallet
+      data.chain.chain.wallet,
+      data.page
     );
   } else {
-    if (chain.currentToken == "chain" || chain.currentToken == "") {
-      const url = getTransactionUrl(chain);
+    if (data.chain.currentToken == "chain" || data.chain.currentToken == "") {
+      const url = getTransactionUrl(data.chain, data.page);
       return await ERC20.getTransactions(url);
     } else {
       let selectedToken;
-      chain.tokens.map((token) => {
-        if (token.symbol == chain.currentToken) {
+      data.chain.tokens.map((token) => {
+        if (token.symbol == data.chain.currentToken) {
           selectedToken = token;
         }
       });
-      const { api_url, api_key } = getAPIAndKey(chain);
-      const url = `${api_url}?module=account&action=tokentx&contractaddress=${selectedToken.address}&address=${chain.chain.wallet}&page=1&offset=10&sort=desc&apikey=${api_key}`;
+      const { api_url, api_key } = getAPIAndKey(data.chain);
+      const url = `${api_url}?module=account&action=tokentx&contractaddress=${selectedToken.address}&address=${data.chain.chain.wallet}&page=${data.page}&offset=15&apikey=${api_key}`;
       return await ERC20.getERCTransactions(url);
     }
   }

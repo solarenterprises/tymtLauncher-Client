@@ -35,7 +35,10 @@ import { currencySymbols } from "../../consts/currency";
 import { useNotification } from "../../providers/NotificationProvider";
 import { walletType } from "../../types/settingTypes";
 import { selectWallet, setWallet } from "../../features/settings/WalletSlice";
-import { getTransactionsAsync } from "../../features/wallet/CryptoSlice";
+import {
+  getTransactionsAsync,
+  setTransasctions,
+} from "../../features/wallet/CryptoSlice";
 
 const order = [
   "Solar",
@@ -84,13 +87,34 @@ const Wallet = () => {
 
   useEffect(() => {
     if (!walletStore.refreshed) {
-      handleRefreshClick();
+      setLoading(true);
+      dispatch(
+        refreshBalancesAsync({
+          _multiWalletStore: wallets,
+          _accountStore: accountStore,
+        })
+      ).then(() => {
+        dispatch(refreshCurrencyAsync()).then(() => {
+          dispatch(
+            setWallet({
+              ...walletStore,
+              refreshed: true,
+            })
+          );
+          setLoading(false);
+          setNotificationOpen(true);
+          setNotificationTitle(t("alt-20_balances-refresh"));
+          setNotificationDetail(t("alt-21_balances-refresh-success"));
+          setNotificationStatus("success");
+        });
+      });
     } else {
       handleRefreshClickInBackground();
     }
   }, []);
 
   const handleRefreshClick = () => {
+    dispatch(setTransasctions());
     setLoading(true);
     dispatch(
       refreshBalancesAsync({
@@ -99,7 +123,12 @@ const Wallet = () => {
       })
     ).then(() => {
       dispatch(refreshCurrencyAsync()).then(() => {
-        dispatch(getTransactionsAsync(chain)).then(() => {
+        dispatch(
+          getTransactionsAsync({
+            chain: chain,
+            page: 1,
+          })
+        ).then(() => {
           dispatch(
             setWallet({
               ...walletStore,
@@ -117,15 +146,14 @@ const Wallet = () => {
   };
 
   const handleRefreshClickInBackground = () => {
+    dispatch(setTransasctions());
     dispatch(
       refreshBalancesAsync({
         _multiWalletStore: wallets,
         _accountStore: accountStore,
       })
     ).then(() => {
-      dispatch(refreshCurrencyAsync()).then(() => {
-        dispatch(getTransactionsAsync(chain));
-      });
+      dispatch(refreshCurrencyAsync()).then(() => {});
     });
   };
 
