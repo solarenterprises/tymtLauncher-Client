@@ -148,7 +148,7 @@ const Alertmain = () => {
               .reverse()
               .map((alert, index) => (
                 <AlertList
-                  key={index}
+                  key={`${index}-${new Date().toISOString()}`}
                   status={alert.alertType === "chat" ? "message" : "alert"}
                   title={
                     alert.alertType === "friend-request"
@@ -166,7 +166,7 @@ const Alertmain = () => {
               .reverse()
               .map((alert, index) => (
                 <AlertList
-                  key={index}
+                  key={`${index}-${new Date().toISOString()}`}
                   status={alert.alertType === "chat" ? "message" : "alert"}
                   title={
                     alert.alertType === "friend-request"

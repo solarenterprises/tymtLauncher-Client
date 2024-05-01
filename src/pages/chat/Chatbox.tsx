@@ -208,14 +208,14 @@ const Chatbox = ({ view, setView }: propsType) => {
 
   // When the scrolling up, this function fetches one page of history for each loading.
 
-  const fetchMessages = _.debounce(async () => {
+  const fetchMessages = _.debounce( () => {
     if (!hasMore) return;
     const query = {
       room_user_ids: [account.uid, currentpartner._id],
       pagination: { page: page, pageSize: 7 },
     };
     socket.emit("get-messages-by-room", JSON.stringify(query));
-    socket.on("messages-by-room", async (result) => {
+    socket.on("messages-by-room", (result) => {
       console.log("messages-by-room", result);
       if (result && result.data.length > 0) {
         if (data.message === "anyone" || data.message === "friend") {

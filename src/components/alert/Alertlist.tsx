@@ -71,6 +71,7 @@ const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
     if (title === "chat") {
       if (existkey) {
         setKeyperUser(existkey);
+        console.log("alertlist chatkey-->", existkey);
       } else {
         const userid = detail.note?.sender;
         const askdata: askEncryptionKeyType = {
@@ -80,7 +81,7 @@ const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
         socket.emit("ask-encryption-key", JSON.stringify(askdata));
       }
     }
-  }, [detail.note?.sender, existkey]);
+  }, [detail, existkey]);
 
   const addFriend = async () => {
     const senderId = title === "Friend Request" ? detail.note?.sender : null;
@@ -161,7 +162,7 @@ const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
   }, [status]);
 
   useEffect(() => {
-    if (title === "chat" && existkey) {
+    if (title === "chat") {
       const decryptMessage = async () => {
         const messagedecrytped = await decrypt(
           detail.note?.message,
@@ -171,7 +172,7 @@ const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
       };
       decryptMessage();
     }
-  }, [detail]);
+  }, [keyperuser]);
 
   return (
     <>
@@ -199,7 +200,11 @@ const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
               <img src={readdot} width={"12px"} height={"12px"} />
             )}
           </Stack>
-          <Box className={"fs-16-regular white"} marginTop={"12px"}>
+          <Box
+            className={"fs-16-regular white"}
+            marginTop={"12px"}
+            sx={{ textWrap: "wrap" }}
+          >
             {title === "update" &&
               (detail.note?.message.length > 100
                 ? detail.note?.message.substring(0, 100) + "..."

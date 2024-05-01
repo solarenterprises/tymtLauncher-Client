@@ -128,8 +128,6 @@ const ChatProvider = () => {
         if (!senderInChatUserlist) {
           const senderName = await getsenderName(message.sender_id);
           await updateContact(message.sender_id);
-          // const key = selectEncryptionKey(message);
-          // const decryptedmessage = await decrypt(message.message, key);
           {
             notification.alert && setNotificationOpen(true);
             setNotificationStatus("message");
@@ -139,8 +137,6 @@ const ChatProvider = () => {
           }
         } else {
           const senderName = senderInChatUserlist.nickName;
-          // const key = selectEncryptionKey(message);
-          // const decryptedmessage = await decrypt(message.message, key);
           {
             notification.alert && setNotificationOpen(true);
             setNotificationStatus("message");
@@ -153,8 +149,6 @@ const ChatProvider = () => {
       if (data.message === "friend") {
         if (senderInChatFriendlist) {
           const senderName = senderInChatFriendlist.nickName;
-          // const key = selectEncryptionKey(message);
-          // const decryptedmessage = await decrypt(message.message, key);
           {
             notification.alert && setNotificationOpen(true);
             setNotificationStatus("message");
@@ -176,9 +170,9 @@ const ChatProvider = () => {
     // );
 
     // if (!existkey) {
-      dispatch(
-        addEncryptionKey({ userId: userid, encryptionKey: encryptionkey })
-      );
+    dispatch(
+      addEncryptionKey({ userId: userid, encryptionKey: encryptionkey })
+    );
     // }
   };
 
