@@ -304,12 +304,12 @@ export const getBalanceUrl = (chain: IChain): string => {
     return `${matic_api_url}?module=account&action=balance&address=${chain.chain.wallet}&apikey=${matic_api_key}`;
   }
 };
-export const getTransactionUrl = (chain: IChain): string => {
+export const getTransactionUrl = (chain: IChain, page: number): string => {
   if (chain.chain.symbol === "ETH") {
-    return `${eth_api_url}?module=account&action=txlist&address=${chain.chain.wallet}&startblock=0&endblock=99999999&page=1&offset=10&sort=desc&apikey=${eth_api_key}`;
+    return `${eth_api_url}?module=account&action=txlist&address=${chain.chain.wallet}&page=${page}&offset=15&sort=desc&apikey=${eth_api_key}`;
   }
   if (chain.chain.symbol === "ARBETH") {
-    return `${arb_api_url}?module=account&action=txlist&address=${chain.chain.wallet}&tag=latest&apikey=${arb_api_key}`;
+    return `${arb_api_url}?module=account&action=txlist&address=${chain.chain.wallet}&page=${page}&offset=15&sort=desc&apikey=${arb_api_key}`;
   }
   if (chain.chain.symbol === "AVAX") {
     if (net_name === "mainnet") {
@@ -320,13 +320,13 @@ export const getTransactionUrl = (chain: IChain): string => {
   }
 
   if (chain.chain.symbol === "BNB") {
-    return `${bsc_api_url}?module=account&action=txlist&address=${chain.chain.wallet}&startblock=0&endblock=99999999&page=1&offset=10&sort=desc&apikey=${bsc_api_key}`;
+    return `${bsc_api_url}?module=account&action=txlist&address=${chain.chain.wallet}&page=${page}&offset=15&sort=desc&apikey=${bsc_api_key}`;
   }
   if (chain.chain.symbol === "OETH") {
-    return `${op_api_url}?module=account&action=txlist&address=${chain.chain.wallet}&startblock=0&endblock=99999999&page=1&offset=10&sort=desc&apikey=${op_api_key}`;
+    return `${op_api_url}?module=account&action=txlist&address=${chain.chain.wallet}&page=${page}&offset=15&sort=desc&apikey=${op_api_key}`;
   }
   if (chain.chain.symbol === "MATIC") {
-    return `${matic_api_url}?module=account&action=txlist&address=${chain.chain.wallet}&apikey=${matic_api_key}`;
+    return `${matic_api_url}?module=account&action=txlist&address=${chain.chain.wallet}&page=${page}&offset=15&sort=desc&apikey=${matic_api_key}`;
   }
 };
 

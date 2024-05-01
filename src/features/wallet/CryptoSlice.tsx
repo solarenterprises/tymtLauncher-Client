@@ -46,7 +46,7 @@ export const cryptoSlice = createSlice({
       })
       .addCase(getTransactionsAsync.fulfilled, (state, action) => {
         state.pending = false;
-        state.transactions = action.payload;
+        state.transactions = [...state.transactions, ...action.payload];
         state.msg = "We will contact you as soon as possible";
       });
   },

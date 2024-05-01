@@ -80,7 +80,7 @@ class Solana implements IWallet {
     }
   }
 
-  static async getTransactions(addr: string): Promise<any> {
+  static async getTransactions(addr: string, page: number): Promise<any> {
     try {
       const apiURL = "https://api.mainnet-beta.solana.com";
       const pbKey = new PublicKey(addr).toBase58();
@@ -89,7 +89,7 @@ class Solana implements IWallet {
         jsonrpc: "2.0",
         id: 1,
         method: "getSignaturesForAddress",
-        params: [pbKey, { limit: 15 }],
+        params: [pbKey, { limit: 15 * page }],
       };
       const body1 = Body.json(bodyContent1);
       const response1: any = await tauriFetch(apiURL, {
@@ -98,9 +98,9 @@ class Solana implements IWallet {
         body: body1,
         responseType: ResponseType.JSON,
       });
-      const signatures: string[] = response1?.data?.result?.map(
-        (signature: any) => signature?.signature
-      );
+      const signatures: string[] = response1?.data?.result
+        .slice(-15)
+        .map((signature: any) => signature?.signature);
       // get transactions
       let bodyContent2 = [];
       for (let i = 0; i < signatures?.length; i++) {

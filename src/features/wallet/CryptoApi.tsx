@@ -78,22 +78,22 @@ export const sendCoin = async ({ chain, data }: ISendCoin): Promise<any> => {
 
 export async function walletTransaction(data: { chain: IChain; page: number }) {
   if (data.chain.chain.symbol === "SXP") {
-    return await Solar.getTransactions(data.chain.chain.wallet, page);
+    return await Solar.getTransactions(data.chain.chain.wallet, data.page);
   } else if (data.chain.chain.symbol === "BTC") {
     return await tymtCore.Blockchains.btc.wallet.getTransactions(
       data.chain.chain.wallet,
-      page
+      data.page
     );
   } else if (data.chain.chain.symbol === "AVAX") {
-    return await Avalanche.getTransactions(data.chain.chain.wallet, page);
+    return await Avalanche.getTransactions(data.chain.chain.wallet, data.page);
   } else if (data.chain.chain.symbol === "SOL") {
     return await tymtCore.Blockchains.solana.wallet.getTransactions(
       data.chain.chain.wallet,
-      page
+      data.page
     );
   } else {
     if (data.chain.currentToken == "chain" || data.chain.currentToken == "") {
-      const url = getTransactionUrl(data.chain, page);
+      const url = getTransactionUrl(data.chain, data.page);
       return await ERC20.getTransactions(url);
     } else {
       let selectedToken;
@@ -103,7 +103,7 @@ export async function walletTransaction(data: { chain: IChain; page: number }) {
         }
       });
       const { api_url, api_key } = getAPIAndKey(data.chain);
-      const url = `${api_url}?module=account&action=tokentx&contractaddress=${selectedToken.address}&address=${data.chain.chain.wallet}&page=1&offset=10&sort=desc&apikey=${api_key}`;
+      const url = `${api_url}?module=account&action=tokentx&contractaddress=${selectedToken.address}&address=${data.chain.chain.wallet}&page=${data.page}&offset=15&apikey=${api_key}`;
       return await ERC20.getERCTransactions(url);
     }
   }
