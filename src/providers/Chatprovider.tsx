@@ -2,68 +2,61 @@ import { Outlet } from "react-router-dom";
 import { useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 
-import { nonCustodialType } from "../../types/accountTypes";
-import { multiWalletType } from "../../types/walletTypes";
+import { nonCustodialType } from "../types/accountTypes";
+import { multiWalletType } from "../types/walletTypes";
 import {
   ChatHistoryType,
   ChatMessageType,
-  ISocketHash,
   alertType,
   askEncryptionKeyType,
   deliverEncryptionKeyType,
   deliveredEncryptionKeyType,
   encryptionkeyStoreType,
   userType,
-} from "../../types/chatTypes";
-import { accountType } from "../../types/accountTypes";
-import { chatType, notificationType } from "../../types/settingTypes";
+} from "../types/chatTypes";
+import { accountType } from "../types/accountTypes";
+import { chatType, notificationType } from "../types/settingTypes";
 
-import { getAccount } from "../../features/account/AccountSlice";
+import { getAccount } from "../features/account/AccountSlice";
 import {
   generateRandomString,
   getsenderName,
-} from "../../features/chat/Chat-contactApi";
-import { getNonCustodial } from "../../features/account/NonCustodialSlice";
-import { getMultiWallet } from "../../features/wallet/MultiWalletSlice";
+} from "../features/chat/Chat-contactApi";
+import { getNonCustodial } from "../features/account/NonCustodialSlice";
+import { getMultiWallet } from "../features/wallet/MultiWalletSlice";
 import {
   getaccessToken,
   createContact,
   receiveContactlist,
-} from "../../features/chat/Chat-contactApi";
-import {
-  getUserlist,
-  setUserList,
-} from "../../features/chat/Chat-userlistSlice";
-import { selectChat } from "../../features/settings/ChatSlice";
+} from "../features/chat/Chat-contactApi";
+import { getUserlist, setUserList } from "../features/chat/Chat-userlistSlice";
+import { selectChat } from "../features/settings/ChatSlice";
 import {
   getChatHistory,
   setChatHistory,
-} from "../../features/chat/Chat-historySlice";
-import { selectPartner } from "../../features/chat/Chat-currentPartnerSlice";
+} from "../features/chat/Chat-historySlice";
+import { selectPartner } from "../features/chat/Chat-currentPartnerSlice";
 import {
   getFriendlist,
   setFriendlist,
-} from "../../features/chat/Chat-friendlistSlice";
+} from "../features/chat/Chat-friendlistSlice";
 
-import { socket_backend_url } from "../../configs";
-import { io, Socket } from "socket.io-client";
-
-import { useNotification } from "../../providers/NotificationProvider";
+import { useNotification } from "./NotificationProvider";
+import { useSocket } from "./SocketProvider";
 import {
   selectNotification,
   // setNotificationAsync,
-} from "../../features/settings/NotificationSlice";
-import { alertbadgeType } from "../../types/alertTypes";
+} from "../features/settings/NotificationSlice";
+import { alertbadgeType } from "../types/alertTypes";
 import {
   selectBadgeStatus,
   setBadgeStatus,
-} from "../../features/alert/AlertbadgeSlice";
+} from "../features/alert/AlertbadgeSlice";
 import {
   addEncryptionKey,
   selectEncryptionKeyByUserId,
   selectEncryptionKeyStore,
-} from "../../features/chat/Chat-encryptionkeySlice";
-import { getSocketHash } from "../../features/chat/SocketHashSlice";
+} from "../features/chat/Chat-encryptionkeySlice";
 // import { decrypt } from "../../lib/api/Encrypt";
 
 const ChatProvider = () => {
@@ -81,15 +74,7 @@ const ChatProvider = () => {
   const keystore: encryptionkeyStoreType = useSelector(
     selectEncryptionKeyStore
   );
-  const sockethash: ISocketHash = useSelector(getSocketHash);
-  const socket: Socket = io(
-    socket_backend_url as string,
-    // autoConnect:false,
-    // transports: ["websocket"],
-    // reconnectionDelay: 10000,
-    // reconnectionDelayMax: 10000,
-    { auth: { userId: account.uid, socket_hash: sockethash.socketHash } }
-  );
+  const { socket } = useSocket();
   const triggerBadge = () => {
     dispatch(setBadgeStatus({ ...alertbadge, trigger: !alertbadge.trigger }));
   };
@@ -337,6 +322,7 @@ const ChatProvider = () => {
     socket.on("deliver-encryption-key", (data: deliveredEncryptionKeyType) => {
       console.log("encryption-key delievery--->", data);
       handleEncryptionKeyDelivery(data);
+      socket.emit("received-encryption-key", JSON.stringify(data));
     });
     return () => {
       socket.off("connection");

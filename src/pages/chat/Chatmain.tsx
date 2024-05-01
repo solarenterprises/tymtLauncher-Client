@@ -23,6 +23,7 @@ import BlockModal from "../../components/chat/BlockModal";
 import DeleteModal from "../../components/chat/DeleteModal";
 import RequestModal from "../../components/chat/RequestModal";
 
+import { useSocket } from "../../providers/SocketProvider";
 import { propsType, selecteduserType, userType } from "../../types/chatTypes";
 import { accountType, nonCustodialType } from "../../types/accountTypes";
 import {
@@ -63,12 +64,11 @@ const theme = createTheme({
   },
 });
 
-const socket: Socket = io(socket_backend_url as string);
-import { socket_backend_url } from "../../configs";
-import { io, Socket } from "socket.io-client";
+
 
 const Chatmain = ({ view, setView }: propsType) => {
   const classes = ChatStyle();
+  const { socket } = useSocket();
   const dispatch = useDispatch();
   const { t } = useTranslation();
   const [value, setValue] = useState<string>("");

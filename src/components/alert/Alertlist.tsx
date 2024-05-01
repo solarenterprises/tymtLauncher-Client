@@ -30,9 +30,7 @@ import {
 import { getNonCustodial } from "../../features/account/NonCustodialSlice";
 import { getMultiWallet } from "../../features/wallet/MultiWalletSlice";
 
-const socket: Socket = io(socket_backend_url as string);
-import { socket_backend_url } from "../../configs";
-import { io, Socket } from "socket.io-client";
+import { useSocket } from "../../providers/SocketProvider";
 import {
   createContact,
   // generateRandomString,
@@ -51,6 +49,7 @@ import { decrypt } from "../../lib/api/Encrypt";
 const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
+  const { socket } = useSocket();
   const [logo, setLogo] = useState<any>();
   const [keyperuser, setKeyperUser] = useState<string>("");
   const [decryptedmessage, setDecryptedMessage] = useState<string>("");

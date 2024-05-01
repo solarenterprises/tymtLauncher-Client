@@ -60,8 +60,7 @@ import "firebase/database";
 
 import React from "react";
 
-import { socket_backend_url } from "../../configs";
-import { io, Socket } from "socket.io-client";
+import { useSocket } from "../../providers/SocketProvider";
 import { AppDispatch } from "../../store";
 import _ from "lodash";
 import InfiniteScroll from "react-infinite-scroller";
@@ -69,8 +68,6 @@ import InfiniteScroll from "react-infinite-scroller";
 // import { selectEncryptionKeyByUserId } from "../../features/chat/Chat-enryptionkeySlice";
 import { encrypt, decrypt } from "../../lib/api/Encrypt";
 import { generateRandomString } from "../../features/chat/Chat-contactApi";
-
-const socket: Socket = io(socket_backend_url as string);
 
 const theme = createTheme({
   palette: {
@@ -100,6 +97,7 @@ const Chatbox = ({ view, setView }: propsType) => {
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
   const { t } = useTranslation();
+  const { socket } = useSocket();
   const classes = ChatStyle();
   const [value, setValue] = useState<string>("");
   const [EmojiLibraryOpen, setIsEmojiLibraryOpen] = useState(false);
@@ -208,7 +206,7 @@ const Chatbox = ({ view, setView }: propsType) => {
 
   // When the scrolling up, this function fetches one page of history for each loading.
 
-  const fetchMessages = _.debounce( () => {
+  const fetchMessages = _.debounce(() => {
     if (!hasMore) return;
     const query = {
       room_user_ids: [account.uid, currentpartner._id],
@@ -246,9 +244,11 @@ const Chatbox = ({ view, setView }: propsType) => {
     const weekAgo = new Date(today);
     weekAgo.setDate(weekAgo.getDate() - 7);
 
+    const options = { month: "long", day: "numeric" };
+
     const messageDate: any = new Date(date);
-    const diffTime = today.getTime() - messageDate.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    // const diffTime = today.getTime() - messageDate.getTime();
+    // const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
     if (messageDate.setHours(0, 0, 0, 0) === today.setHours(0, 0, 0, 0)) {
       return "Today";
@@ -256,16 +256,8 @@ const Chatbox = ({ view, setView }: propsType) => {
       messageDate.setHours(0, 0, 0, 0) === yesterday.setHours(0, 0, 0, 0)
     ) {
       return "Yesterday";
-    } else if (diffDays <= 7) {
-      return `${diffDays} days ago`;
-    } else if (diffDays > 7 && diffDays <= 14) {
-      return `1 Week ago`;
-    } else if (diffDays > 14 && diffDays <= 21) {
-      return `2 Weeks ago`;
-    } else if (diffDays > 21 && diffDays <= 28) {
-      return `3 Weeks ago`;
     } else {
-      return `1 Month ago`;
+      return messageDate.toLocaleDateString("en-US", options);
     }
   };
 
