@@ -332,7 +332,15 @@ const ChatProvider = () => {
       socket.off("ask-encryption-key");
       socket.off("deliver-encryption-key");
     };
-  }, [socket, data, chatHistoryStore, chatuserlist, chatfriendlist, keystore]);
+  }, [
+    socket,
+    data,
+    chatHistoryStore,
+    chatuserlist,
+    chatfriendlist,
+    keystore,
+    alertbadge.trigger,
+  ]);
 
   return (
     <>

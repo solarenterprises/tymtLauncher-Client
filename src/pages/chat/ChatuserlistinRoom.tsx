@@ -329,7 +329,7 @@ const ChatuserlistinRoom = ({ view, setView }: propsType) => {
                           </Box>
 
                           <Box className={"fs-16 white"} sx={{ opacity: 0.3 }}>
-                            {user?.lang}
+                            {/* {user?.lang} */}
                           </Box>
                         </Stack>
                       </Grid>

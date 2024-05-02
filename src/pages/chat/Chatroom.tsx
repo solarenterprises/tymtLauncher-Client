@@ -88,7 +88,6 @@ import {
 import { decrypt, encrypt } from "../../lib/api/Encrypt";
 import { generateRandomString } from "../../features/chat/Chat-contactApi";
 
-
 const theme = createTheme({
   palette: {
     primary: {
@@ -127,7 +126,7 @@ const Chatroom = () => {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [isEmojiLibraryOpen, setIsEmojiLibraryOpen] = useState(false);
-  const [decryptedMessages, setDecryptedMessages] = useState<ChatMessageType[]>(
+  const [decryptedmessages, setDecryptedMessages] = useState<ChatMessageType[]>(
     []
   );
   const [keyperuser, setKeyperUser] = useState<string>("");
@@ -206,6 +205,7 @@ const Chatroom = () => {
             messages: updatedHistory,
           })
         );
+        dispatch(setdownState({ down: !shouldScrollDown }));
         setValue("");
       }
     } catch (err: any) {}
@@ -231,7 +231,6 @@ const Chatroom = () => {
         await sendMessage();
       } // Handle sending the message
       setValue(""); // Reset input field
-      dispatch(setdownState({ down: !shouldScrollDown }));
     }
   };
 
@@ -256,12 +255,18 @@ const Chatroom = () => {
             })
           );
           setPage(page + 1);
+        } else {
         }
       } else {
         setHasMore(false); // No more messages to load
       }
     });
   }, 1000);
+
+  const debouncedFetchMessages = () => {
+    fetchMessages();
+  };
+
 
   useEffect(() => {
     setPage(1);
@@ -444,13 +449,13 @@ const Chatroom = () => {
               >
                 <Box sx={{ width: "100%", flex: "1 1 auto" }}></Box>
                 <InfiniteScroll
-                  pageStart={page}
-                  loadMore={fetchMessages}
+                  pageStart={1}
+                  loadMore={debouncedFetchMessages}
                   hasMore={hasMore}
                   isReverse={true}
                   useWindow={false}
                 >
-                  {[...decryptedMessages].reverse()?.map((message, index) => {
+                  {[...decryptedmessages].reverse()?.map((message, index) => {
                     const isSameDay = (date1, date2) => {
                       return (
                         date1.getFullYear() === date2.getFullYear() &&

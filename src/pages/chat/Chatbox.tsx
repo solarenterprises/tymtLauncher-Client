@@ -102,12 +102,13 @@ const Chatbox = ({ view, setView }: propsType) => {
   const [value, setValue] = useState<string>("");
   const [EmojiLibraryOpen, setIsEmojiLibraryOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useState<number>(1);
   const [hasMore, setHasMore] = useState(true);
-  const [decryptedMessages, setDecryptedMessages] = useState<ChatMessageType[]>(
+  const [decryptedmessages, setDecryptedMessages] = useState<ChatMessageType[]>(
     []
   );
   const [keyperuser, setKeyperUser] = useState<string>("");
+  const [processedPages, setProcessedPages] = useState(new Set());
   const userid: string = currentpartner._id;
   const existkey: string = useSelector((state) =>
     selectEncryptionKeyByUserId(state, userid)
@@ -174,6 +175,7 @@ const Chatbox = ({ view, setView }: propsType) => {
           })
         );
         setValue("");
+        dispatch(setdownState({ down: !shouldScrollDown }));
         console.log("partnerid", currentpartner._id);
         console.log("key", keyperuser);
       }
@@ -200,21 +202,36 @@ const Chatbox = ({ view, setView }: propsType) => {
         await sendMessage();
       } // Handle sending the message
       setValue(""); // Reset input field
-      dispatch(setdownState({ down: !shouldScrollDown }));
     }
   };
 
   // When the scrolling up, this function fetches one page of history for each loading.
 
-  const fetchMessages = _.debounce(() => {
+  const fetchMessages = async () => {
+    console.log("has more", hasMore);
     if (!hasMore) return;
+
     const query = {
       room_user_ids: [account.uid, currentpartner._id],
       pagination: { page: page, pageSize: 7 },
     };
-    socket.emit("get-messages-by-room", JSON.stringify(query));
-    socket.on("messages-by-room", (result) => {
+
+    console.log("query pagenumber", page);
+
+    // Check if the page number has already been processed
+    if (!processedPages.has(page)) {
+      // Add the current page number to the set of processed pages
+      setProcessedPages(processedPages.add(page));
+
+      socket.emit("get-messages-by-room", JSON.stringify(query));
+    }
+  };
+
+  useEffect(() => {
+    socket.on("messages-by-room", async (result) => {
       console.log("messages-by-room", result);
+      console.log("result length", result.data.length);
+
       if (result && result.data.length > 0) {
         if (data.message === "anyone" || data.message === "friend") {
           dispatch(
@@ -223,17 +240,28 @@ const Chatbox = ({ view, setView }: propsType) => {
             })
           );
           setPage(page + 1);
+          console.log("pagenumber", page);
+        } else {
         }
       } else {
         setHasMore(false);
       }
     });
-  }, 1000);
+
+    return () => {
+      socket.off("messages-by-room"); // Clean up event listener
+    };
+  }, [socket, chatHistoryStore.messages, currentpartner._id]);
+
+  // Setup event listener outside of fetchMessages function
+
+  const debouncedFetchMessages = _.debounce(fetchMessages, 1000);
 
   useEffect(() => {
     setPage(1);
     setHasMore(true);
     dispatch(setChatHistory({ messages: [] }));
+    setProcessedPages(new Set());
   }, [currentpartner._id]);
 
   const formatDateDifference = (date) => {
@@ -261,19 +289,22 @@ const Chatbox = ({ view, setView }: propsType) => {
     }
   };
 
-  function useChatScroll(
+  const useChatScroll = (
     shouldScrollDown: boolean,
     currentpartnerid: string,
     view: string
-  ) {
+  ) => {
     const scrollRef = useRef<HTMLDivElement>();
+
     useEffect(() => {
       if (scrollRef.current) {
         scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+        console.log("scrolltop", scrollRef.current.scrollTop);
+        console.log("scrollheight", scrollRef.current.scrollHeight);
       }
     }, [shouldScrollDown, currentpartnerid, view]);
     return scrollRef;
-  }
+  };
 
   const scrollRef = useChatScroll(shouldScrollDown, currentpartner._id, view);
 
@@ -297,6 +328,7 @@ const Chatbox = ({ view, setView }: propsType) => {
     };
 
     decryptMessages();
+    console.log("chathistorystore messages", chatHistoryStore.messages.length);
   }, [chatHistoryStore.messages]);
 
   return (
@@ -379,13 +411,13 @@ const Chatbox = ({ view, setView }: propsType) => {
           >
             <Box sx={{ width: "100%", flex: "1 1 auto" }}></Box>
             <InfiniteScroll
-              pageStart={page}
-              loadMore={fetchMessages}
+              // pageStart={page}
+              loadMore={debouncedFetchMessages}
               hasMore={hasMore}
               isReverse={true}
               useWindow={false}
             >
-              {[...decryptedMessages].reverse()?.map((message, index) => {
+              {[...decryptedmessages].reverse()?.map((message, index) => {
                 const isSameDay = (date1, date2) => {
                   return (
                     date1.getFullYear() === date2.getFullYear() &&

@@ -364,7 +364,7 @@ const Chatmain = ({ view, setView }: propsType) => {
                               className={"fs-16 white"}
                               sx={{ opacity: 0.3 }}
                             >
-                              {user?.lang}
+                              {/* {user?.lang} */}
                             </Box>
                           </Stack>
                         </Grid>

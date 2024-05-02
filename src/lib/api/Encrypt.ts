@@ -41,7 +41,7 @@ export const decrypt = async (
       decipher.final("utf8")
     );
   } catch (e) {
-    console.log(e);
+    // console.log(e);
     return "Unable to decode message";
   }
 };

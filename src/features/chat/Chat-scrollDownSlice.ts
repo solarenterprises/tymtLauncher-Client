@@ -27,7 +27,10 @@ const scrollDownSlice = createSlice({
   reducers: {
     setdownState(state, action) {
       state.data = action.payload;
-      // tymtStorage.set("navigation", JSON.stringify(action.payload));
+      tymtStorage.set(
+        `scrolldown_${tymt_version}`,
+        JSON.stringify(action.payload)
+      );
     },
   },
 });

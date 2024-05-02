@@ -64,8 +64,8 @@ const Alertmain = () => {
       await updateAlertReadstatus(alert._id, account.uid, accessToken);
     }
 
-    getUnreadAlerts();
-    getReadAlerts();
+    await getUnreadAlerts();
+    await getReadAlerts();
     dispatch(setBadgeStatus({ ...alertbadge, badge: false }));
 
     console.log("accesstoken", accessToken);

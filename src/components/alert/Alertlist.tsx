@@ -70,7 +70,7 @@ const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
     if (title === "chat") {
       if (existkey) {
         setKeyperUser(existkey);
-        console.log("alertlist chatkey-->", existkey);
+        // console.log("alertlist chatkey-->", existkey);
       } else {
         const userid = detail.note?.sender;
         const askdata: askEncryptionKeyType = {
@@ -78,6 +78,7 @@ const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
           recipient_id: userid,
         };
         socket.emit("ask-encryption-key", JSON.stringify(askdata));
+        console.log("request for asking key", askdata);
       }
     }
   }, [detail, existkey]);
