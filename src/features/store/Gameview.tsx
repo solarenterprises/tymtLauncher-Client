@@ -1,15 +1,16 @@
 import { createSlice } from "@reduxjs/toolkit";
 import tymtStorage from "../../lib/Storage";
-
 import { viewType } from "../../types/storeTypes";
-import { tymt_version } from "../../configs";
+import { compareJSONStructure } from "../../lib/api/JSONHelper";
+
+const init: viewType = {
+  mode: "overview",
+};
 
 const loadData: () => viewType = () => {
-  const data = tymtStorage.get(`gameoverview_${tymt_version}`);
-  if (data === null || data === "") {
-    return {
-      mode: "overview",
-    };
+  const data = tymtStorage.get(`gameoverview`);
+  if (data === null || data === "" || !compareJSONStructure(data, init)) {
+    return init;
   } else {
     return JSON.parse(data);
   }
@@ -27,10 +28,7 @@ export const gameoverviewSlice = createSlice({
   reducers: {
     setViewmode: (state, action) => {
       state.data = action.payload;
-      tymtStorage.set(
-        `gameoverview_${tymt_version}`,
-        JSON.stringify(action.payload)
-      );
+      tymtStorage.set(`gameoverview`, JSON.stringify(action.payload));
     },
   },
 });

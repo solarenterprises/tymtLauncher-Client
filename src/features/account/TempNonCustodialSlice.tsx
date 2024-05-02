@@ -1,19 +1,20 @@
 import { createSlice } from "@reduxjs/toolkit";
 import tymtStorage from "../../lib/Storage";
-
 import { nonCustodialType } from "../../types/accountTypes";
-import { tymt_version } from "../../configs";
+import { compareJSONStructure } from "../../lib/api/JSONHelper";
+
+const init: nonCustodialType = {
+  mnemonic: "",
+  mnemonicLength: 12,
+  avatar: "",
+  nickname: "",
+  password: "",
+};
 
 const loadTempNonCustodial: () => nonCustodialType = () => {
-  const data = tymtStorage.get(`tempNonCustodial_${tymt_version}`);
-  if (data === null || data === "") {
-    return {
-      mnemonic: "",
-      mnemonicLength: 12,
-      avatar: "",
-      nickname: "",
-      password: "",
-    };
+  const data = tymtStorage.get(`tempNonCustodial`);
+  if (data === null || data === "" || !compareJSONStructure(data, init)) {
+    return init;
   } else {
     return JSON.parse(data);
   }
@@ -30,10 +31,7 @@ export const tempNonCustodialSlice = createSlice({
   reducers: {
     setTempNonCustodial: (state, action) => {
       state.data = action.payload;
-      tymtStorage.set(
-        `tempNonCustodial_${tymt_version}`,
-        JSON.stringify(action.payload)
-      );
+      tymtStorage.set(`tempNonCustodial`, JSON.stringify(action.payload));
     },
   },
 });

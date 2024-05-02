@@ -204,10 +204,10 @@ export async function runGame(game_key: string, serverIp?: string) {
       const d53_server = d53_ip.split(":")[0];
       const d53_port = d53_ip.split(":")[1];
       const multiWalletStore: multiWalletType = JSON.parse(
-        await tymtStorage.get(`multiWallet_${tymt_version}`)
+        await tymtStorage.get(`multiWallet`)
       );
       const d53PasswordStore: ID53Password = JSON.parse(
-        await tymtStorage.get(`d53Password_${tymt_version}`)
+        await tymtStorage.get(`d53Password`)
       );
       const sxpAddr = multiWalletStore.Solar.chain.wallet;
       const password = d53PasswordStore.password;

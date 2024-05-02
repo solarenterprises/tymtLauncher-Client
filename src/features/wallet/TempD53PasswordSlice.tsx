@@ -2,14 +2,16 @@ import { createSlice } from "@reduxjs/toolkit";
 import tymtStorage from "../../lib/Storage";
 
 import { ID53Password } from "../../types/walletTypes";
-import { tymt_version } from "../../configs";
+import { compareJSONStructure } from "../../lib/api/JSONHelper";
+
+const init: ID53Password = {
+  password: "",
+};
 
 const loadTempD53Password: () => ID53Password = () => {
-  const data = tymtStorage.get(`tempD53Password_${tymt_version}`);
-  if (data === null || data === "") {
-    return {
-      password: "",
-    };
+  const data = tymtStorage.get(`tempD53Password`);
+  if (data === null || data === "" || !compareJSONStructure(data, init)) {
+    return init;
   } else {
     return JSON.parse(data);
   }
@@ -26,10 +28,7 @@ export const tempD53PasswordSlice = createSlice({
   reducers: {
     setTempD53Password: (state, action) => {
       state.data = action.payload;
-      tymtStorage.set(
-        `tempD53Password_${tymt_version}`,
-        JSON.stringify(action.payload)
-      );
+      tymtStorage.set(`tempD53Password`, JSON.stringify(action.payload));
     },
   },
 });

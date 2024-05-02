@@ -1,18 +1,19 @@
 import { createSlice } from "@reduxjs/toolkit";
 import tymtStorage from "../../lib/Storage";
-
 import { threeConfirmType } from "../../types/accountTypes";
-import { tymt_version } from "../../configs";
+import { compareJSONStructure } from "../../lib/api/JSONHelper";
+
+const init: threeConfirmType = {
+  first: "",
+  second: "",
+  third: "",
+  focus: 1,
+};
 
 const loadThreeConfirm: () => threeConfirmType = () => {
-  const data = tymtStorage.get(`threeConfirm_${tymt_version}`);
-  if (data === null || data === "") {
-    return {
-      first: "",
-      second: "",
-      third: "",
-      focus: 1,
-    };
+  const data = tymtStorage.get(`threeConfirm`);
+  if (data === null || data === "" || !compareJSONStructure(data, init)) {
+    return init;
   } else {
     return JSON.parse(data);
   }
@@ -29,10 +30,7 @@ export const threeConfirmSlice = createSlice({
   reducers: {
     setThreeConfirm: (state, action) => {
       state.data = action.payload;
-      tymtStorage.set(
-        `threeConfirm_${tymt_version}`,
-        JSON.stringify(action.payload)
-      );
+      tymtStorage.set(`threeConfirm`, JSON.stringify(action.payload));
     },
   },
 });

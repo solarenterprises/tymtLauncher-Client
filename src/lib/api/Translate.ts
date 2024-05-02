@@ -1,6 +1,5 @@
 import translate from "translate";
 import { languageType } from "../../types/settingTypes";
-import { tymt_version } from "../../configs";
 import tymtStorage from "../Storage";
 
 export const i18nGoogle = {
@@ -10,7 +9,7 @@ export const i18nGoogle = {
 
 export const translateString = async (origin: string) => {
   const languageStore: languageType = JSON.parse(
-    await tymtStorage.get(`language_${tymt_version}`)
+    await tymtStorage.get(`language`)
   );
   const i18nLang = languageStore.language;
   let translatedMessage: string = "";

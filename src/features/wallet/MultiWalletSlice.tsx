@@ -3,12 +3,12 @@ import { getAddressesFromMnemonic, refreshBalances } from "./MultiWalletApi";
 import tymtStorage from "../../lib/Storage";
 import { chains } from "../../consts/contracts";
 import { multiWalletType } from "../../types/walletTypes";
-import { tymt_version } from "../../configs";
+import { compareJSONStructure } from "../../lib/api/JSONHelper";
 
 const loadMultiWallet: () => multiWalletType = () => {
-  const data = tymtStorage.get(`multiWallet_${tymt_version}`);
-  if (data === null || data === "") {
-    return chains as multiWalletType;
+  const data = tymtStorage.get(`multiWallet`);
+  if (data === null || data === "" || !compareJSONStructure(data, chains)) {
+    return chains;
   } else {
     return JSON.parse(data) as multiWalletType;
   }
@@ -36,10 +36,7 @@ export const multiWalletSlice = createSlice({
   reducers: {
     setMultiWallet: (state, action) => {
       state.data = action.payload;
-      tymtStorage.set(
-        `multiWallet_${tymt_version}`,
-        JSON.stringify(action.payload)
-      );
+      tymtStorage.set(`multiWallet`, JSON.stringify(action.payload));
     },
   },
   extraReducers: (builder) => {
@@ -52,10 +49,7 @@ export const multiWalletSlice = createSlice({
         (state, action: PayloadAction<any>) => {
           // Update state based on the fetched addresses
           state.data = { ...state.data, ...action.payload };
-          tymtStorage.set(
-            `multiWallet_${tymt_version}`,
-            JSON.stringify(state.data)
-          );
+          tymtStorage.set(`multiWallet`, JSON.stringify(state.data));
           state.status = "succeeded";
         }
       )
@@ -66,10 +60,7 @@ export const multiWalletSlice = createSlice({
         refreshBalancesAsync.fulfilled,
         (state, action: PayloadAction<any>) => {
           state.data = { ...state.data, ...action.payload };
-          tymtStorage.set(
-            `multiWallet_${tymt_version}`,
-            JSON.stringify(state.data)
-          );
+          tymtStorage.set(`multiWallet`, JSON.stringify(state.data));
           state.status = "succeeded";
         }
       )

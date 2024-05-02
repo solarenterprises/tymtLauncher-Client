@@ -6,7 +6,6 @@ import {
   avax_api_url,
   avax_rpc_url,
   net_name,
-  tymt_version,
 } from "../../configs";
 import { IToken, IGetTokenBalanceRes } from "../../types/walletTypes";
 import tymtStorage from "../Storage";
@@ -86,7 +85,7 @@ class Avalanche implements IWallet {
   static async getTransactions(addr: string, page: number): Promise<any> {
     if (page === 1) {
       let endpoint = "";
-      tymtStorage.set(`avaxNextToken_${tymt_version}`, "");
+      tymtStorage.set(`avaxNextToken`, "");
       if (net_name === "mainnet") {
         endpoint = `${avax_api_url}/address/${addr}/erc20-transfers?limit=15`;
       } else {
@@ -95,19 +94,19 @@ class Avalanche implements IWallet {
       try {
         const res = await (await fetch(endpoint)).json();
         const nextToken: string = res.link.nextToken;
-        tymtStorage.set(`avaxNextToken_${tymt_version}`, nextToken);
+        tymtStorage.set(`avaxNextToken`, nextToken);
         return res.items;
       } catch (error) {
         console.error("Error fetching transactions:", error);
         return [];
       }
     } else {
-      const nextToken = tymtStorage.get(`avaxNextToken_${tymt_version}`);
+      const nextToken = tymtStorage.get(`avaxNextToken`);
       let endpoint = `${avax_api_url}/address/${addr}/erc20-transfers?limit=15&next=${nextToken}`;
       try {
         const res = await (await fetch(endpoint)).json();
         const nextToken: string = res.link.nextToken;
-        tymtStorage.set(`avaxNextToken_${tymt_version}`, nextToken);
+        tymtStorage.set(`avaxNextToken`, nextToken);
         return res.items;
       } catch (error) {
         console.error("Error fetching transactions:", error);

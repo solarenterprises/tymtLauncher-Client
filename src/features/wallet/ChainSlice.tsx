@@ -3,13 +3,15 @@ import tymtStorage from "../../lib/Storage";
 import { setChain } from "./ChainApi";
 import { IChain } from "../../types/walletTypes";
 import { chains } from "../../consts/contracts";
-import { tymt_version } from "../../configs";
+import { compareJSONStructure } from "../../lib/api/JSONHelper";
 export const setChainAsync = createAsyncThunk("set/chain", setChain);
 
+const init: IChain = chains.Solar;
+
 const loadChain: () => IChain = () => {
-  const data = tymtStorage.get(`chain_${tymt_version}`);
-  if (data === null || data === "") {
-    return chains.Solar;
+  const data = tymtStorage.get(`chain`);
+  if (data === null || data === "" || !compareJSONStructure(data, init)) {
+    return init;
   } else {
     return JSON.parse(data);
   }
@@ -29,7 +31,7 @@ export const chainSlice = createSlice({
   reducers: {
     setChain: (state, action) => {
       state.data = action.payload;
-      tymtStorage.set(`chain_${tymt_version}`, JSON.stringify(action.payload));
+      tymtStorage.set(`chain`, JSON.stringify(action.payload));
     },
   },
   extraReducers: (builder) => {
@@ -43,10 +45,7 @@ export const chainSlice = createSlice({
 
         state.pending = false;
         state.msg = "We will contat you as soon as possible";
-        tymtStorage.set(
-          `chain_${tymt_version}`,
-          JSON.stringify(action.payload)
-        );
+        tymtStorage.set(`chain`, JSON.stringify(action.payload));
       });
   },
 });

@@ -1,5 +1,6 @@
 import solarIcon from "../assets/chains/solar.svg";
-export const chains = {
+import { multiWalletType } from "../types/walletTypes";
+export const chains: multiWalletType = {
   Ethereum: {
     chain: {
       address: "",

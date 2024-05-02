@@ -1,11 +1,12 @@
 import { createSlice } from "@reduxjs/toolkit";
 import tymtStorage from "../../lib/Storage";
-import { tymt_version } from "../../configs";
+
+const init = [];
 
 const loadAddress = () => {
-  const data = tymtStorage.get(`address_${tymt_version}`);
+  const data = tymtStorage.get(`address`);
   if (data === null || data === "") {
-    return [];
+    return init;
   } else {
     return JSON.parse(data);
   }
@@ -23,10 +24,7 @@ export const addressSlice = createSlice({
   reducers: {
     setAddress: (state, action) => {
       state.data = action.payload;
-      tymtStorage.set(
-        `address_${tymt_version}`,
-        JSON.stringify(action.payload)
-      );
+      tymtStorage.set(`address`, JSON.stringify(action.payload));
     },
   },
 });

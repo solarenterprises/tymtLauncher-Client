@@ -2,16 +2,18 @@ import { createSlice } from "@reduxjs/toolkit";
 
 import tymtStorage from "../../lib/Storage";
 import { processType } from "../../types/homeTypes";
-import { tymt_version } from "../../configs";
+import { compareJSONStructure } from "../../lib/api/JSONHelper";
+
+const init: processType = {
+  progress: 0,
+  inprogress: false,
+  name: "",
+};
 
 const loadData: () => processType = () => {
-  const data = tymtStorage.get(`installprocess_${tymt_version}`);
-  if (data === null || data === "") {
-    return {
-      progress: 0,
-      inprogress: false,
-      name: "",
-    };
+  const data = tymtStorage.get(`installprocess`);
+  if (data === null || data === "" || !compareJSONStructure(data, init)) {
+    return init;
   } else {
     return JSON.parse(data);
   }

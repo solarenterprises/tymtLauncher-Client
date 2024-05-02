@@ -3,7 +3,7 @@ import { mnemonicToSeed } from "bip39";
 import { BIP32Factory } from "bip32";
 import { payments, networks, Psbt } from "bitcoinjs-lib";
 import axios from "axios";
-import { btc_api_url, net_name, tymt_version } from "../../configs";
+import { btc_api_url, net_name } from "../../configs";
 import { validate } from "bitcoin-address-validation";
 import * as ecc from "tiny-secp256k1";
 import { INotification } from "../../features/wallet/CryptoSlice";
@@ -176,7 +176,7 @@ class Bitcoin implements IWallet {
 
         // Transaction fee calculation
         const multiWalletStore: multiWalletType = JSON.parse(
-          await tymtStorage.get(`multiWallet_${tymt_version}`)
+          await tymtStorage.get(`multiWallet`)
         );
         const btcPriceUSD = multiWalletStore.Bitcoin.chain.price;
         const feeSat = ((Number(tx.fee) / Number(btcPriceUSD)) * 1e8) as number;

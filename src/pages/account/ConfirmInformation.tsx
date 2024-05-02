@@ -52,7 +52,6 @@ import {
   setD53Password,
 } from "../../features/wallet/D53PasswordSlice";
 import tymtStorage from "../../lib/Storage";
-import { tymt_version } from "../../configs";
 import { useNotification } from "../../providers/NotificationProvider";
 import { selectWallet, setWallet } from "../../features/settings/WalletSlice";
 import { walletType } from "../../types/settingTypes";
@@ -77,7 +76,7 @@ const ConfirmInformation = () => {
   const tempMultiWallet: multiWalletType = useSelector(getTempMultiWallet);
   const multiWalletStore: multiWalletType = useSelector(getMultiWallet);
   const tempD53PasswordStore: ID53Password = JSON.parse(
-    tymtStorage.get(`tempD53Password_${tymt_version}`)
+    tymtStorage.get(`tempD53Password`)
   );
   const d53PasswordStore: ID53Password = useSelector(getD53Password);
   const socketHashStore: ISocketHash = useSelector(getSocketHash);
