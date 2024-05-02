@@ -1,16 +1,18 @@
 import { createSlice } from "@reduxjs/toolkit";
 import tymtStorage from "../../lib/Storage";
-import { tymt_version } from "../../configs";
+import { compareJSONStructure } from "../../lib/api/JSONHelper";
+
+const init = {
+  alert: true,
+  update: false,
+  sound: false,
+  unreadmessage: 0,
+};
 
 const loadNotification = () => {
-  const data = tymtStorage.get(`chatnotification_${tymt_version}`);
-  if (data === null || data === "") {
-    return {
-      alert: true,
-      update: false,
-      sound: false,
-      unreadmessage: 0,
-    };
+  const data = tymtStorage.get(`chatnotification`);
+  if (data === null || data === "" || !compareJSONStructure(data, init)) {
+    return init;
   } else {
     return JSON.parse(data);
   }
@@ -27,10 +29,7 @@ export const chatnotificationSlice = createSlice({
   reducers: {
     setchatNotification: (state, action) => {
       state.data = action.payload;
-      tymtStorage.set(
-        `chatnotification_${tymt_version}`,
-        JSON.stringify(action.payload)
-      );
+      tymtStorage.set(`chatnotification`, JSON.stringify(action.payload));
     },
   },
 });

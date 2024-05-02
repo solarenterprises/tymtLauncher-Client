@@ -9,7 +9,6 @@ import {
 } from "@solar-network/crypto/dist/crypto/index.js";
 
 import tymtStorage from "../../lib/Storage";
-import { tymt_version } from "../../configs";
 
 interface MnemonicPayload {
   mnemonic: string;
@@ -30,10 +29,7 @@ export const getTempAddressesFromMnemonic = async (
   const { mnemonic } = payload;
 
   const signature = await getCredentials(mnemonic.normalize("NFD"));
-  tymtStorage.set(
-    `tempD53Password_${tymt_version}`,
-    JSON.stringify({ password: signature })
-  );
+  tymtStorage.set(`tempD53Password`, JSON.stringify({ password: signature }));
 
   const solarAddr = await tymtCore.Blockchains.solar.wallet.getAddress(
     mnemonic

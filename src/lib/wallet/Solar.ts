@@ -3,7 +3,7 @@ import { generateMnemonic } from "bip39";
 import { IWallet } from "./IWallet";
 import Big from "big.js";
 import SolarAPI from "../api/SolarAPI";
-import { net_name, solar_api_url, tymt_version } from "../../configs/index";
+import { net_name, solar_api_url } from "../../configs/index";
 import { IRecipient } from "../../features/wallet/CryptoApi";
 import { multiWalletType } from "../../types/walletTypes";
 import tymtStorage from "../Storage";
@@ -221,7 +221,7 @@ export class Solar implements IWallet {
         });
 
         const multiWalletStore: multiWalletType = JSON.parse(
-          await tymtStorage.get(`multiWallet_${tymt_version}`)
+          await tymtStorage.get(`multiWallet`)
         );
         const sxpPriceUSD = multiWalletStore.Solar.chain.price;
         let itransaction = transaction
@@ -283,7 +283,7 @@ export class Solar implements IWallet {
               .toFixed(0)
           );
         const multiWalletStore: multiWalletType = JSON.parse(
-          await tymtStorage.get(`multiWallet_${tymt_version}`)
+          await tymtStorage.get(`multiWallet`)
         );
         const sxpPriceUSD = multiWalletStore.Solar.chain.price;
         let itransaction = transaction
@@ -359,7 +359,7 @@ export class Solar implements IWallet {
       net_name === "mainnet" ? "mainnet" : "testnet"
     );
     const multiWalletStore: multiWalletType = JSON.parse(
-      await tymtStorage.get(`multiWallet_${tymt_version}`)
+      await tymtStorage.get(`multiWallet`)
     );
     const sxpPriceUSD = multiWalletStore.Solar.chain.price;
     let nonce = await Solar.getCurrentNonce(addr);

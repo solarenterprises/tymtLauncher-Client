@@ -5,7 +5,6 @@ import { decrypt } from "../../lib/api/Encrypt";
 import { getAPIAndKey, getRPCUrl, getTransactionUrl } from "../../lib/helper";
 import ERC20 from "../../lib/wallet/ERC20";
 import Avalanche from "../../lib/wallet/Avalanche";
-import { tymt_version } from "../../configs";
 import tymtCore from "../../lib/core/tymtCore";
 // import { INotification } from "./CryptoSlice";
 
@@ -32,9 +31,7 @@ export interface ISendCoin {
 
 export const sendCoin = async ({ chain, data }: ISendCoin): Promise<any> => {
   const tx = { recipients: data.recipients, fee: data.fee };
-  const nonCustodialStore = JSON.parse(
-    await tymtStorage.get(`nonCustodial_${tymt_version}`)
-  );
+  const nonCustodialStore = JSON.parse(await tymtStorage.get(`nonCustodial`));
   const rpc_url = getRPCUrl(chain);
   const passphrase = await decrypt(nonCustodialStore.mnemonic, data.passphrase);
   if (chain.chain.symbol === "SXP") {

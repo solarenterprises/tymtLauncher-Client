@@ -3,22 +3,24 @@ import tymtStorage from "../../lib/Storage";
 import randomavatar1 from "../../assets/account/randomavatar1.png";
 import { loginEnum, walletEnum, accountType } from "../../types/accountTypes";
 import { updateUser } from "./AccountApi";
-import { tymt_version } from "../../configs";
+import { compareJSONStructure } from "../../lib/api/JSONHelper";
 
 export const updateUserAsync = createAsyncThunk("update/user", updateUser);
 
+const init: accountType = {
+  mode: loginEnum.login,
+  wallet: walletEnum.noncustodial,
+  agreedTerms: false,
+  uid: "",
+  avatar: randomavatar1,
+  accessToken: "",
+  isLoggedIn: false,
+};
+
 const loadAccount: () => accountType = () => {
-  const data = tymtStorage.get(`account_${tymt_version}`);
-  if (data === null || data === "") {
-    return {
-      mode: loginEnum.login,
-      walletMode: walletEnum.noncustodial,
-      agreedTerms: false,
-      uid: "",
-      avatar: randomavatar1,
-      accessToken: "",
-      isLoggedIn: false,
-    };
+  const data = tymtStorage.get(`account`);
+  if (data === null || data === "" || !compareJSONStructure(data, init)) {
+    return init;
   } else {
     return JSON.parse(data);
   }
@@ -37,10 +39,7 @@ export const accountSlice = createSlice({
   reducers: {
     setAccount: (state, action) => {
       state.data = action.payload;
-      tymtStorage.set(
-        `account_${tymt_version}`,
-        JSON.stringify(action.payload)
-      );
+      tymtStorage.set(`account`, JSON.stringify(action.payload));
     },
   },
   extraReducers: (builder) => {

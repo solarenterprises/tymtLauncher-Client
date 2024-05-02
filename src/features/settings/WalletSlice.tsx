@@ -1,18 +1,20 @@
 import { createSlice } from "@reduxjs/toolkit";
 import tymtStorage from "../../lib/Storage";
-import { tymt_version } from "../../configs";
 import { walletType } from "../../types/settingTypes";
+import { compareJSONStructure } from "../../lib/api/JSONHelper";
+
+const init: walletType = {
+  refreshed: false,
+  hidde: false,
+  currency: "USD",
+  status: "minimum",
+  fee: "0.0",
+};
 
 const loadData: () => walletType = () => {
-  const data = tymtStorage.get(`wallet_${tymt_version}`);
-  if (data === null || data === "") {
-    return {
-      refreshed: false,
-      hidde: false,
-      currency: "USD",
-      status: "minimum",
-      fee: "0.0",
-    };
+  const data = tymtStorage.get(`wallet`);
+  if (data === null || data === "" || !compareJSONStructure(data, init)) {
+    return init;
   } else {
     return JSON.parse(data);
   }
@@ -29,7 +31,7 @@ export const walletSlice = createSlice({
   reducers: {
     setWallet: (state, action) => {
       state.data = action.payload;
-      tymtStorage.set(`wallet_${tymt_version}`, JSON.stringify(action.payload));
+      tymtStorage.set(`wallet`, JSON.stringify(action.payload));
     },
   },
 });

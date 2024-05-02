@@ -2,15 +2,17 @@ import { createSlice } from "@reduxjs/toolkit";
 
 import tymtStorage from "../../lib/Storage";
 import { PaginationType } from "../../types/homeTypes";
-import { tymt_version } from "../../configs";
+import { compareJSONStructure } from "../../lib/api/JSONHelper";
+
+const init: PaginationType = {
+  index: 0,
+  page: "home",
+};
 
 const loadData: () => PaginationType = () => {
-  const data = tymtStorage.get(`navigation_${tymt_version}`);
-  if (data === null || data === "") {
-    return {
-      index: 0,
-      page: "home",
-    };
+  const data = tymtStorage.get(`navigation`);
+  if (data === null || data === "" || !compareJSONStructure(data, init)) {
+    return init;
   } else {
     return JSON.parse(data);
   }
