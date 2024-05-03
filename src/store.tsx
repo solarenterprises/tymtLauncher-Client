@@ -36,6 +36,7 @@ import alertbadgeReducer from "./features/alert/AlertbadgeSlice";
 import encryptionReducer from "./features/chat/Chat-encryptionkeySlice";
 import machineIdReducer from "./features/account/MachineIdSlice";
 import socketHashReducer from "./features/chat/SocketHashSlice";
+import chatmountedReducer from "./features/chat/Chat-intercomSupportSlice";
 
 const store = configureStore({
   reducer: {
@@ -75,6 +76,7 @@ const store = configureStore({
     encryption: encryptionReducer,
     machineId: machineIdReducer,
     socketHash: socketHashReducer,
+    chatmounted: chatmountedReducer
   },
 });
 

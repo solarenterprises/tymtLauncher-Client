@@ -68,6 +68,10 @@ import InfiniteScroll from "react-infinite-scroller";
 // import { selectEncryptionKeyByUserId } from "../../features/chat/Chat-enryptionkeySlice";
 import { encrypt, decrypt } from "../../lib/api/Encrypt";
 import { generateRandomString } from "../../features/chat/Chat-contactApi";
+import {
+  setMountedFalse,
+  setMountedTrue,
+} from "../../features/chat/Chat-intercomSupportSlice";
 
 const theme = createTheme({
   palette: {
@@ -218,42 +222,34 @@ const Chatbox = ({ view, setView }: propsType) => {
 
     console.log("query pagenumber", page);
 
-    // Check if the page number has already been processed
     if (!processedPages.has(page)) {
       // Add the current page number to the set of processed pages
-      setProcessedPages(processedPages.add(page));
+      setProcessedPages(new Set(processedPages.add(page)));
 
       socket.emit("get-messages-by-room", JSON.stringify(query));
-    }
-  };
 
-  useEffect(() => {
-    socket.on("messages-by-room", async (result) => {
-      console.log("messages-by-room", result);
-      console.log("result length", result.data.length);
+      socket.on("messages-by-room", async (result) => {
+        console.log("messages-by-room", result);
+        console.log("result length", result.data.length);
 
-      if (result && result.data.length > 0) {
-        if (data.message === "anyone" || data.message === "friend") {
-          dispatch(
-            setChatHistory({
-              messages: [...chatHistoryStore.messages, ...result.data],
-            })
-          );
-          setPage(page + 1);
-          console.log("pagenumber", page);
+        if (result && result.data.length > 0) {
+          if (data.message === "anyone" || data.message === "friend") {
+            dispatch(
+              setChatHistory({
+                messages: [...chatHistoryStore.messages, ...result.data],
+              })
+            );
+            setPage(page + 1);
+          } else {
+            setHasMore(false);
+          }
         } else {
+          setHasMore(false);
         }
-      } else {
-        setHasMore(false);
-      }
-    });
-
-    return () => {
-      socket.off("messages-by-room"); // Clean up event listener
-    };
-  }, [socket, chatHistoryStore.messages, currentpartner._id]);
-
-  // Setup event listener outside of fetchMessages function
+      });
+    }
+    // }
+  };
 
   const debouncedFetchMessages = _.debounce(fetchMessages, 1000);
 
@@ -330,6 +326,17 @@ const Chatbox = ({ view, setView }: propsType) => {
     decryptMessages();
     console.log("chathistorystore messages", chatHistoryStore.messages.length);
   }, [chatHistoryStore.messages]);
+
+  // Set mounted to true when chatbox is mounted
+  useEffect(() => {
+    if (view === "chatbox") {
+      dispatch(setMountedTrue());
+    }
+
+    return () => {
+      dispatch(setMountedFalse());
+    };
+  }, [dispatch, view]);
 
   return (
     <>

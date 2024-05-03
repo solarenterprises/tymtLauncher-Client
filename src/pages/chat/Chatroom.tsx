@@ -87,6 +87,10 @@ import {
 } from "../../features/chat/Chat-encryptionkeySlice";
 import { decrypt, encrypt } from "../../lib/api/Encrypt";
 import { generateRandomString } from "../../features/chat/Chat-contactApi";
+import {
+  setMountedFalse,
+  setMountedTrue,
+} from "../../features/chat/Chat-intercomSupportSlice";
 
 const theme = createTheme({
   palette: {
@@ -130,6 +134,7 @@ const Chatroom = () => {
     []
   );
   const [keyperuser, setKeyperUser] = useState<string>("");
+  const [processedPages, setProcessedPages] = useState(new Set());
   const userid: string = currentpartner._id;
   const existkey: string = useSelector((state) =>
     selectEncryptionKeyByUserId(state, userid)
@@ -233,8 +238,9 @@ const Chatroom = () => {
       setValue(""); // Reset input field
     }
   };
-
-  const fetchMessages = _.debounce(async () => {
+  
+  const fetchMessages = async () => {
+    console.log("has more", hasMore);
     if (!hasMore) return;
 
     const query = {
@@ -242,36 +248,44 @@ const Chatroom = () => {
       pagination: { page: page, pageSize: 7 },
     };
 
-    // Emit the event to fetch messages
-    socket.emit("get-messages-by-room", JSON.stringify(query));
+    console.log("query pagenumber", page);
 
-    // Listen for the new messages from the server
-    socket.on("messages-by-room", async (result) => {
-      if (result && result.data.length > 0) {
-        if (data.message === "anyone" || data.message === "friend") {
-          dispatch(
-            setChatHistory({
-              messages: [...chatHistoryStore.messages, ...result.data],
-            })
-          );
-          setPage(page + 1);
+    if (!processedPages.has(page)) {
+      // Add the current page number to the set of processed pages
+      setProcessedPages(new Set(processedPages.add(page)));
+
+      socket.emit("get-messages-by-room", JSON.stringify(query));
+
+      socket.on("messages-by-room", async (result) => {
+        console.log("messages-by-room", result);
+        console.log("result length", result.data.length);
+
+        if (result && result.data.length > 0) {
+          if (data.message === "anyone" || data.message === "friend") {
+            dispatch(
+              setChatHistory({
+                messages: [...chatHistoryStore.messages, ...result.data],
+              })
+            );
+            setPage(page + 1);
+          } else {
+            setHasMore(false);
+          }
         } else {
+          setHasMore(false);
         }
-      } else {
-        setHasMore(false); // No more messages to load
-      }
-    });
-  }, 1000);
-
-  const debouncedFetchMessages = () => {
-    fetchMessages();
+      });
+    }
+    // }
   };
 
+  const debouncedFetchMessages = _.debounce(fetchMessages, 1000);
 
   useEffect(() => {
     setPage(1);
     setHasMore(true);
     dispatch(setChatHistory({ messages: [] }));
+    setProcessedPages(new Set());
   }, [currentpartner._id]);
 
   const formatDateDifference = (date) => {
@@ -298,7 +312,8 @@ const Chatroom = () => {
       return messageDate.toLocaleDateString("en-US", options);
     }
   };
-
+  
+  //scroll down when partner changed or send message
   function useChatScroll(shouldScrollDown: boolean, currentpartnerid: string) {
     const scrollRef = useRef<HTMLDivElement>();
     useEffect(() => {
@@ -309,6 +324,8 @@ const Chatroom = () => {
     return scrollRef;
   }
   const scrollRef = useChatScroll(shouldScrollDown, currentpartner._id);
+
+  //decrypt every message displaying on chatroom
 
   useEffect(() => {
     const decryptMessages = async () => {
@@ -331,6 +348,15 @@ const Chatroom = () => {
 
     decryptMessages();
   }, [chatHistoryStore.messages]);
+
+  // Set mounted to true when chatroom is mounted
+  useEffect(() => {
+    dispatch(setMountedTrue());
+
+    return () => {
+      dispatch(setMountedFalse());
+    };
+  }, [dispatch]);
 
   return (
     <>
@@ -449,7 +475,7 @@ const Chatroom = () => {
               >
                 <Box sx={{ width: "100%", flex: "1 1 auto" }}></Box>
                 <InfiniteScroll
-                  pageStart={1}
+                  // pageStart={page}
                   loadMore={debouncedFetchMessages}
                   hasMore={hasMore}
                   isReverse={true}
