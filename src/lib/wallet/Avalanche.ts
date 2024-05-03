@@ -2,11 +2,7 @@ import { IWallet } from "./IWallet";
 import { ethers } from "ethers";
 import * as ethereumjsWallet from "ethereumjs-wallet";
 import * as bip39 from "bip39";
-import {
-  avax_api_url,
-  avax_rpc_url,
-  net_name,
-} from "../../configs";
+import { avax_api_url, avax_rpc_url, net_name } from "../../configs";
 import { IToken, IGetTokenBalanceRes } from "../../types/walletTypes";
 import tymtStorage from "../Storage";
 

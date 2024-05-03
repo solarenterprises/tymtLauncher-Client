@@ -11,10 +11,16 @@ const init: ChatHistoryType = {
 
 const loadData: () => ChatHistoryType = () => {
   const data = tymtStorage.get(`chatHistory`);
-  if (data === null || data === "" || !compareJSONStructure(data, init)) {
+  if (data === null || data === "" || data === undefined) {
+    tymtStorage.set(`chatHistory`, JSON.stringify(init));
     return init;
   } else {
-    return JSON.parse(data);
+    if (compareJSONStructure(JSON.parse(data), init)) {
+      return JSON.parse(data);
+    } else {
+      tymtStorage.set(`chatHistory`, JSON.stringify(init));
+      return init;
+    }
   }
 };
 

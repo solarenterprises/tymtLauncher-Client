@@ -6,10 +6,16 @@ const init = { mode: 0 };
 
 const loadData = () => {
   const data = tymtStorage.get(`librarymode`);
-  if (data === null || data === "" || !compareJSONStructure(data, init)) {
+  if (data === null || data === "" || data === undefined) {
+    tymtStorage.set(`librarymode`, JSON.stringify(init));
     return init;
   } else {
-    return JSON.parse(data);
+    if (compareJSONStructure(JSON.parse(data), init)) {
+      return JSON.parse(data);
+    } else {
+      tymtStorage.set(`librarymode`, JSON.stringify(init));
+      return init;
+    }
   }
 };
 const initialState = {

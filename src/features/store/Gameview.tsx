@@ -9,10 +9,16 @@ const init: viewType = {
 
 const loadData: () => viewType = () => {
   const data = tymtStorage.get(`gameoverview`);
-  if (data === null || data === "" || !compareJSONStructure(data, init)) {
+  if (data === null || data === "" || data === undefined) {
+    tymtStorage.set(`gameoverview`, JSON.stringify(init));
     return init;
   } else {
-    return JSON.parse(data);
+    if (compareJSONStructure(JSON.parse(data), init)) {
+      return JSON.parse(data);
+    } else {
+      tymtStorage.set(`gameoverview`, JSON.stringify(init));
+      return init;
+    }
   }
 };
 

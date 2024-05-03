@@ -1,8 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-
-import tymtStorage from "../../lib/Storage";
 import { processType } from "../../types/homeTypes";
-import { compareJSONStructure } from "../../lib/api/JSONHelper";
 
 const init: processType = {
   progress: 0,
@@ -11,12 +8,7 @@ const init: processType = {
 };
 
 const loadData: () => processType = () => {
-  const data = tymtStorage.get(`installprocess`);
-  if (data === null || data === "" || !compareJSONStructure(data, init)) {
-    return init;
-  } else {
-    return JSON.parse(data);
-  }
+  return init;
 };
 
 const initialState = {

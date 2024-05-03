@@ -13,10 +13,16 @@ const init: walletType = {
 
 const loadData: () => walletType = () => {
   const data = tymtStorage.get(`wallet`);
-  if (data === null || data === "" || !compareJSONStructure(data, init)) {
+  if (data === null || data === "" || data === undefined) {
+    tymtStorage.set(`wallet`, JSON.stringify(init));
     return init;
   } else {
-    return JSON.parse(data);
+    if (compareJSONStructure(JSON.parse(data), init)) {
+      return JSON.parse(data);
+    } else {
+      tymtStorage.set(`wallet`, JSON.stringify(init));
+      return init;
+    }
   }
 };
 const initialState = {

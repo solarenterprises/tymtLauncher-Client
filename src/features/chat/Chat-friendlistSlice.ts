@@ -1,28 +1,11 @@
 import { createSlice } from "@reduxjs/toolkit";
 import tymtStorage from "../../lib/Storage";
 import { userType } from "../../types/chatTypes";
-import { compareJSONStructure } from "../../lib/api/JSONHelper";
-
-const init: userType = {
-  onlineStatus: true,
-  _id: "",
-  nickName: "",
-  lang: "",
-  sxpAddress: "",
-  avatar: "",
-  notificationStatus: "",
-  friend: true,
-};
 
 const loadData: () => userType[] = () => {
   const data = tymtStorage.get(`chatfriendlist`);
-  if (
-    data === null ||
-    data === "" ||
-    data === undefined ||
-    data[0] === undefined ||
-    !compareJSONStructure(data[0], init)
-  ) {
+  if (data === null || data === "" || data === undefined) {
+    tymtStorage.set(`chatfriendlist`, JSON.stringify([]));
     return [];
   } else {
     return JSON.parse(data);

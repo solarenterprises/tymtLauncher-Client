@@ -9,11 +9,16 @@ const init: ISocketHash = {
 
 const load: () => ISocketHash = () => {
   const data = tymtStorage.get(`socketHash`);
-  if (data === null || data === "" || !compareJSONStructure(data, init)) {
+  if (data === null || data === "" || data === undefined) {
     tymtStorage.set(`socketHash`, JSON.stringify(init));
     return init;
   } else {
-    return JSON.parse(data);
+    if (compareJSONStructure(JSON.parse(data), init)) {
+      return JSON.parse(data);
+    } else {
+      tymtStorage.set(`socketHash`, JSON.stringify(init));
+      return init;
+    }
   }
 };
 

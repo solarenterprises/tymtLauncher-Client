@@ -10,10 +10,16 @@ const init: ITymt = {
 
 const loadTymt: () => ITymt = () => {
   const data = tymtStorage.get(`tymt`);
-  if (data === null || data === "" || !compareJSONStructure(data, init)) {
+  if (data === null || data === "" || data === undefined) {
+    tymtStorage.set(`tymt`, JSON.stringify(init));
     return init;
   } else {
-    return JSON.parse(data);
+    if (compareJSONStructure(JSON.parse(data), init)) {
+      return JSON.parse(data);
+    } else {
+      tymtStorage.set(`tymt`, JSON.stringify(init));
+      return init;
+    }
   }
 };
 

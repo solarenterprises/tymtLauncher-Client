@@ -10,10 +10,16 @@ const init: ID53Password = {
 
 const loadTempD53Password: () => ID53Password = () => {
   const data = tymtStorage.get(`tempD53Password`);
-  if (data === null || data === "" || !compareJSONStructure(data, init)) {
+  if (data === null || data === "" || data === undefined) {
+    tymtStorage.set(`tempD53Password`, JSON.stringify(init));
     return init;
   } else {
-    return JSON.parse(data);
+    if (compareJSONStructure(JSON.parse(data), init)) {
+      return JSON.parse(data);
+    } else {
+      tymtStorage.set(`tempD53Password`, JSON.stringify(init));
+      return init;
+    }
   }
 };
 const initialState = {

@@ -19,10 +19,16 @@ const init: accountType = {
 
 const loadAccount: () => accountType = () => {
   const data = tymtStorage.get(`account`);
-  if (data === null || data === "" || !compareJSONStructure(data, init)) {
+  if (data === null || data === "" || data === undefined) {
+    tymtStorage.set(`account`, JSON.stringify(init));
     return init;
   } else {
-    return JSON.parse(data);
+    if (compareJSONStructure(JSON.parse(data), init)) {
+      return JSON.parse(data);
+    } else {
+      tymtStorage.set(`account`, JSON.stringify(init));
+      return init;
+    }
   }
 };
 

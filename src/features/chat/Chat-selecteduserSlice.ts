@@ -8,15 +8,16 @@ const init = {
 
 const loadData = () => {
   const data = tymtStorage.get(`selecteduser`);
-  if (
-    data === null ||
-    data === "" ||
-    data === undefined ||
-    !compareJSONStructure(data, init)
-  ) {
+  if (data === null || data === "" || data === undefined) {
+    tymtStorage.set(`selecteduser`, JSON.stringify(init));
     return init;
   } else {
-    return JSON.parse(data);
+    if (compareJSONStructure(JSON.parse(data), init)) {
+      return JSON.parse(data);
+    } else {
+      tymtStorage.set(`selecteduser`, JSON.stringify(init));
+      return init;
+    }
   }
 };
 

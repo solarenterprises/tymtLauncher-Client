@@ -473,6 +473,7 @@
     "alt-35_avatar-notsaved-intro": "Your avatar has not been saved.",
     "alt-36_server-required": "Server IP required",
     "alt-37_please-fill-server": "Please select a server or input a valid address.",
+    "alt-38_sorry-server-full": "Sorry, the server is currently at full capacity with active players.",
     "tol-1_wallet": "Wallet",
     "tol-2_alert": "Alert",
     "tol-3_chat": "Chat",

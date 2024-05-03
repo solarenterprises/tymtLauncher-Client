@@ -12,10 +12,16 @@ const init: threeConfirmType = {
 
 const loadThreeConfirm: () => threeConfirmType = () => {
   const data = tymtStorage.get(`threeConfirm`);
-  if (data === null || data === "" || !compareJSONStructure(data, init)) {
+  if (data === null || data === "" || data === undefined) {
+    tymtStorage.set(`threeConfirm`, JSON.stringify(init));
     return init;
   } else {
-    return JSON.parse(data);
+    if (compareJSONStructure(JSON.parse(data), init)) {
+      return JSON.parse(data);
+    } else {
+      tymtStorage.set(`threeConfirm`, JSON.stringify(init));
+      return init;
+    }
   }
 };
 const initialState = {

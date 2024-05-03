@@ -12,10 +12,16 @@ const init: custodialType = {
 
 const loadTempCustodial: () => custodialType = () => {
   const data = tymtStorage.get(`tempCustodial`);
-  if (data === null || data === "" || !compareJSONStructure(data, init)) {
+  if (data === null || data === "" || data === undefined) {
+    tymtStorage.set(`tempCustodial`, JSON.stringify(init));
     return init;
   } else {
-    return JSON.parse(data);
+    if (compareJSONStructure(JSON.parse(data), init)) {
+      return JSON.parse(data);
+    } else {
+      tymtStorage.set(`tempCustodial`, JSON.stringify(init));
+      return init;
+    }
   }
 };
 
