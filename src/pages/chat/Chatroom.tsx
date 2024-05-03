@@ -238,7 +238,7 @@ const Chatroom = () => {
       setValue(""); // Reset input field
     }
   };
-  
+
   const fetchMessages = async () => {
     console.log("has more", hasMore);
     if (!hasMore) return;
@@ -312,17 +312,22 @@ const Chatroom = () => {
       return messageDate.toLocaleDateString("en-US", options);
     }
   };
-  
+
   //scroll down when partner changed or send message
-  function useChatScroll(shouldScrollDown: boolean, currentpartnerid: string) {
+  const useChatScroll = (
+    shouldScrollDown: boolean,
+    currentpartnerid: string
+  ) => {
     const scrollRef = useRef<HTMLDivElement>();
+
     useEffect(() => {
       if (scrollRef.current) {
         scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
       }
     }, [shouldScrollDown, currentpartnerid]);
     return scrollRef;
-  }
+  };
+
   const scrollRef = useChatScroll(shouldScrollDown, currentpartner._id);
 
   //decrypt every message displaying on chatroom
