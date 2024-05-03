@@ -9,11 +9,16 @@ const init: languageType = {
 
 const loadData: () => languageType = () => {
   const data = tymtStorage.get(`language`);
-  if (data === null || data === "" || !compareJSONStructure(data, init)) {
+  if (data === null || data === "" || data === undefined) {
     tymtStorage.set(`language`, JSON.stringify(init));
     return init;
   } else {
-    return JSON.parse(data);
+    if (compareJSONStructure(JSON.parse(data), init)) {
+      return JSON.parse(data);
+    } else {
+      tymtStorage.set(`language`, JSON.stringify(init));
+      return init;
+    }
   }
 };
 

@@ -10,10 +10,16 @@ const init = {
 
 const loadData = () => {
   const data = tymtStorage.get(`chat`);
-  if (data === null || data === "" || !compareJSONStructure(data, init)) {
+  if (data === null || data === "" || data === undefined) {
+    tymtStorage.set(`chat`, JSON.stringify(init));
     return init;
   } else {
-    return JSON.parse(data);
+    if (compareJSONStructure(JSON.parse(data), init)) {
+      return JSON.parse(data);
+    } else {
+      tymtStorage.set(`chat`, JSON.stringify(init));
+      return init;
+    }
   }
 };
 

@@ -1,20 +1,12 @@
 import { createSlice } from "@reduxjs/toolkit";
-
-import tymtStorage from "../../lib/Storage";
 import { scrollDownType } from "../../types/chatTypes";
-import { compareJSONStructure } from "../../lib/api/JSONHelper";
 
 const init: scrollDownType = {
   down: false,
 };
 
 const loadData: () => scrollDownType = () => {
-  const data = tymtStorage.get(`scrolldown`);
-  if (data === null || data === "" || !compareJSONStructure(data, init)) {
-    return init;
-  } else {
-    return JSON.parse(data);
-  }
+  return init;
 };
 
 const initialState = {
@@ -29,7 +21,6 @@ const scrollDownSlice = createSlice({
   reducers: {
     setdownState(state, action) {
       state.data = action.payload;
-      // tymtStorage.set("navigation", JSON.stringify(action.payload));
     },
   },
 });

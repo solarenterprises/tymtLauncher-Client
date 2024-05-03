@@ -16,16 +16,16 @@ export const compareJSONStructure = (json1, json2) => {
     }
 
     // Check data types of the values
-    if (typeof json1[key] !== typeof json2[key]) {
-      return false;
-    }
+    // if (typeof json1[key] !== typeof json2[key]) {
+    //   return false;
+    // }
 
     // Recursively check nested objects
-    if (typeof json1[key] === "object" && typeof json2[key] === "object") {
-      if (!compareJSONStructure(json1[key], json2[key])) {
-        return false;
-      }
-    }
+    // if (typeof json1[key] === "object" && typeof json2[key] === "object") {
+    //   if (!compareJSONStructure(json1[key], json2[key])) {
+    //     return false;
+    //   }
+    // }
   }
 
   return true;

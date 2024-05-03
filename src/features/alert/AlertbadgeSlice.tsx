@@ -10,10 +10,16 @@ const init: alertbadgeType = {
 
 const loadData: () => alertbadgeType = () => {
   const data = tymtStorage.get(`alertbadge`);
-  if (data === null || data === "" || !compareJSONStructure(data, init)) {
+  if (data === null || data === "" || data === undefined) {
+    tymtStorage.set(`alertbadge`, JSON.stringify(init));
     return init;
   } else {
-    return JSON.parse(data);
+    if (compareJSONStructure(JSON.parse(data), init)) {
+      return JSON.parse(data);
+    } else {
+      tymtStorage.set(`alertbadge`, JSON.stringify(init));
+      return init;
+    }
   }
 };
 const initialState = {

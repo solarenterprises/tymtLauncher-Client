@@ -7,10 +7,16 @@ import { compareJSONStructure } from "../../lib/api/JSONHelper";
 
 const loadMultiWallet: () => multiWalletType = () => {
   const data = tymtStorage.get(`multiWallet`);
-  if (data === null || data === "" || !compareJSONStructure(data, chains)) {
+  if (data === null || data === "" || data === undefined) {
+    tymtStorage.set(`multiWallet`, JSON.stringify(chains));
     return chains;
   } else {
-    return JSON.parse(data) as multiWalletType;
+    if (compareJSONStructure(JSON.parse(data), chains)) {
+      return JSON.parse(data);
+    } else {
+      tymtStorage.set(`multiWallet`, JSON.stringify(chains));
+      return chains;
+    }
   }
 };
 

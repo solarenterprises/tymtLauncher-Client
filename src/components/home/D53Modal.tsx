@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+// import axios from "axios";
 
 import { Box, Stack, Modal, Button } from "@mui/material";
 
@@ -11,6 +11,8 @@ import InputText from "../account/InputText";
 
 import { useNotification } from "../../providers/NotificationProvider";
 
+import { fetch as tauriFetch, ResponseType } from "@tauri-apps/api/http";
+
 interface props {
   open: boolean;
   setOpen: (status: boolean) => void;
@@ -21,6 +23,9 @@ interface IServer {
   name: string;
   ip: string;
   visible: boolean;
+  status: string;
+  clients: number;
+  clients_max: number;
 }
 
 const D53Modal = ({ open, setOpen }: props) => {
@@ -50,13 +55,24 @@ const D53Modal = ({ open, setOpen }: props) => {
       setNotificationOpen(true);
       setNotificationLink(null);
     } else {
-      const res = await runGame("district53", serverIp);
-      if (!res) {
+      const selectedServer = serverList.find(
+        (server) => server.ip === serverIp
+      );
+      if (selectedServer.clients >= selectedServer.clients_max) {
         setNotificationStatus("failed");
         setNotificationTitle(t("alt-9_run-failed"));
-        setNotificationDetail(t("alt-10_run-failed-intro"));
+        setNotificationDetail(t("alt-38_sorry-server-full"));
         setNotificationOpen(true);
         setNotificationLink(null);
+      } else {
+        const res = await runGame("district53", serverIp);
+        if (!res) {
+          setNotificationStatus("failed");
+          setNotificationTitle(t("alt-9_run-failed"));
+          setNotificationDetail(t("alt-10_run-failed-intro"));
+          setNotificationOpen(true);
+          setNotificationLink(null);
+        }
       }
     }
     setOpen(false);
@@ -69,13 +85,20 @@ const D53Modal = ({ open, setOpen }: props) => {
 
   useEffect(() => {
     const init = async () => {
-      const res = await axios.get(
-        `https://raw.githubusercontent.com/district53/announced_servers/main/list`
-      );
+      const apiURL = `http://65.108.19.142:5000/`;
+      const res: any = await tauriFetch(apiURL, {
+        method: "GET",
+        timeout: 30,
+        responseType: ResponseType.JSON,
+      });
       setServerList(res.data);
       setServerIp(res.data[0].ip);
     };
+
     init();
+    const intervalId = setInterval(init, 30 * 1e3);
+
+    return () => clearInterval(intervalId);
   }, []);
 
   return (
@@ -130,11 +153,18 @@ const D53Modal = ({ open, setOpen }: props) => {
                     border: "1px solid #FFFFFF33",
                     borderRadius: "0px",
                     marginTop: "-1px",
+                    filter:
+                      server.status !== "online" ? "grayscale(100%)" : null,
                   }}
+                  disabled={server.status !== "online"}
                 >
                   <Box
-                    className={"fs-16-regular white"}
-                  >{`${server.display_name}`}</Box>
+                    className={
+                      server.clients < server.clients_max
+                        ? "fs-16-regular white"
+                        : "fs-16-regular red"
+                    }
+                  >{`${server.display_name} ${server.clients}/${server.clients_max}`}</Box>
                 </Button>
               ) : (
                 <></>

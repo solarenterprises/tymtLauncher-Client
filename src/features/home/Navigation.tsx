@@ -1,8 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-
-import tymtStorage from "../../lib/Storage";
 import { PaginationType } from "../../types/homeTypes";
-import { compareJSONStructure } from "../../lib/api/JSONHelper";
 
 const init: PaginationType = {
   index: 0,
@@ -10,12 +7,7 @@ const init: PaginationType = {
 };
 
 const loadData: () => PaginationType = () => {
-  const data = tymtStorage.get(`navigation`);
-  if (data === null || data === "" || !compareJSONStructure(data, init)) {
-    return init;
-  } else {
-    return JSON.parse(data);
-  }
+  return init;
 };
 
 const initialState = {

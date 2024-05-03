@@ -10,10 +10,16 @@ const init: IChain = chains.Solar;
 
 const loadChain: () => IChain = () => {
   const data = tymtStorage.get(`chain`);
-  if (data === null || data === "" || !compareJSONStructure(data, init)) {
+  if (data === null || data === "" || data === undefined) {
+    tymtStorage.set(`chain`, JSON.stringify(init));
     return init;
   } else {
-    return JSON.parse(data);
+    if (compareJSONStructure(JSON.parse(data), init)) {
+      return JSON.parse(data);
+    } else {
+      tymtStorage.set(`chain`, JSON.stringify(init));
+      return init;
+    }
   }
 };
 
