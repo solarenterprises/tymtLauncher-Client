@@ -75,6 +75,7 @@ const Wallet = () => {
     setNotificationTitle,
     setNotificationDetail,
     setNotificationOpen,
+    setNotificationLink,
   } = useNotification();
 
   useEffect(() => {
@@ -106,6 +107,7 @@ const Wallet = () => {
           setNotificationTitle(t("alt-20_balances-refresh"));
           setNotificationDetail(t("alt-21_balances-refresh-success"));
           setNotificationStatus("success");
+          setNotificationLink(null);
         });
       });
     } else {
@@ -140,6 +142,7 @@ const Wallet = () => {
           setNotificationTitle(t("alt-20_balances-refresh"));
           setNotificationDetail(t("alt-21_balances-refresh-success"));
           setNotificationStatus("success");
+          setNotificationLink(null);
         });
       });
     });
