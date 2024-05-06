@@ -74,6 +74,7 @@ export const sendCoin = async ({ chain, data }: ISendCoin): Promise<any> => {
 };
 
 export async function walletTransaction(data: { chain: IChain; page: number }) {
+  tymtStorage.set(`loadMoreAvailable`, true);
   if (data.chain.chain.symbol === "SXP") {
     return await Solar.getTransactions(data.chain.chain.wallet, data.page);
   } else if (data.chain.chain.symbol === "BTC") {

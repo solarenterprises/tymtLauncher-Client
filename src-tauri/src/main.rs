@@ -8,6 +8,7 @@ use tauri::{ CustomMenuItem, SystemTray, SystemTrayEvent, SystemTrayMenu, System
 
 fn main() {
     ///// For SystemTray
+    let showVisible = CustomMenuItem::new("showVisible".to_string(), "Show tymtLauncher");
     let fullscreen = CustomMenuItem::new("fullscreen".to_string(), "Full-screen Mode  (F11)");
     let games = CustomMenuItem::new("games".to_string(), "Games");
     let wallet = CustomMenuItem::new("wallet".to_string(), "Wallet");
@@ -20,6 +21,8 @@ fn main() {
         "Disable Notifications"
     );
     let tray_menu = SystemTrayMenu::new()
+        .add_item(showVisible)
+        .add_native_item(SystemTrayMenuItem::Separator)
         .add_item(fullscreen)
         .add_native_item(SystemTrayMenuItem::Separator)
         .add_item(games)
@@ -88,6 +91,12 @@ fn main() {
                         "hide" => {
                             let window = app.get_window("tymtLauncher").unwrap();
                             window.hide().unwrap();
+                        }
+                        "showVisible" => {
+                            println!("showVisible received a left click");
+                            let window = app.get_window("tymtLauncher").unwrap();
+                            window.show().unwrap();
+                            window.set_focus().unwrap();
                         }
                         "fullscreen" => {
                             let window = app.get_window("tymtLauncher").unwrap();

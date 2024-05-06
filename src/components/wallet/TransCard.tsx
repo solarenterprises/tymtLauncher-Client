@@ -22,6 +22,7 @@ import { currencySymbols } from "../../consts/currency";
 // import InfiniteScroll from "react-infinite-scroller";
 import _ from "lodash";
 import { useTranslation } from "react-i18next";
+import tymtStorage from "../../lib/Storage";
 
 const TransCard = () => {
   const { t } = useTranslation();
@@ -164,26 +165,29 @@ const TransCard = () => {
               </Button>
             );
         })}
-      <Button
-        key={`load-more`}
-        sx={{
-          textTransform: "none",
-          width: "100%",
-          height: "52px",
-        }}
-        onClick={loadMore}
-      >
-        {!loading && (
-          <Box className="fs-16-regular light">{t("wal-60_load-more")}</Box>
-        )}
-        {loading && (
-          <CircularProgress
-            sx={{
-              color: "#F5EBFF",
-            }}
-          />
-        )}
-      </Button>
+      {tymtStorage.get(`loadMoreAvailable`) === true && (
+        <Button
+          key={`load-more`}
+          sx={{
+            textTransform: "none",
+            width: "100%",
+            height: "52px",
+          }}
+          onClick={loadMore}
+        >
+          {!loading && (
+            <Box className="fs-16-regular light">{t("wal-60_load-more")}</Box>
+          )}
+          {loading && (
+            <CircularProgress
+              sx={{
+                color: "#F5EBFF",
+              }}
+            />
+          )}
+        </Button>
+      )}
+
       {/* </InfiniteScroll> */}
     </Box>
   );
