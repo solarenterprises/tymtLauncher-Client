@@ -1,20 +1,29 @@
 import { createSlice } from "@reduxjs/toolkit";
 import tymtStorage from "../../lib/Storage";
 import { propsAlertTypes } from "../../types/commonTypes";
-import { tymt_version } from "../../configs";
+import { compareJSONStructure } from "../../lib/api/JSONHelper";
+
+const init: propsAlertTypes = {
+  open: false,
+  status: "",
+  title: "",
+  detail: "",
+  setOpen: null,
+  link: "",
+};
 
 const loadUser: () => propsAlertTypes = () => {
-  const data = tymtStorage.get(`chatAlert_${tymt_version}`);
-  if (data === null || data === "") {
-    return {
-      open: false,
-      status: "",
-      title: "",
-      detail: "",
-      setOpen: null,
-    };
+  const data = tymtStorage.get(`chatAlert`);
+  if (data === null || data === "" || data === undefined) {
+    tymtStorage.set(`chatAlert`, JSON.stringify(init));
+    return init;
   } else {
-    return JSON.parse(data);
+    if (compareJSONStructure(JSON.parse(data), init)) {
+      return JSON.parse(data);
+    } else {
+      tymtStorage.set(`chatAlert`, JSON.stringify(init));
+      return init;
+    }
   }
 };
 
@@ -30,10 +39,7 @@ const chatalertSlice = createSlice({
   reducers: {
     setAlertStatus(state, action) {
       state.data = action.payload;
-      tymtStorage.set(
-        `chatAlert_${tymt_version}`,
-        JSON.stringify(action.payload)
-      );
+      tymtStorage.set(`chatAlert`, JSON.stringify(action.payload));
     },
   },
 });

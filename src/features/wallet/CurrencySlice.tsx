@@ -1,21 +1,29 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import tymtStorage from "../../lib/Storage";
 import { ICurrency } from "../../types/walletTypes";
-import { tymt_version } from "../../configs";
 import { currency } from "../../consts/currency";
 import { refreshCurrency } from "./CurrencyApi";
+import { compareJSONStructure } from "../../lib/api/JSONHelper";
 
 export const refreshCurrencyAsync = createAsyncThunk(
   "currency/refreshCurrency",
   refreshCurrency
 );
 
+const init: ICurrency = currency;
+
 const loadCurrency: () => ICurrency = () => {
-  const data = tymtStorage.get(`currency_${tymt_version}`);
-  if (data === null || data === "") {
-    return currency;
+  const data = tymtStorage.get(`currency`);
+  if (data === null || data === "" || data === undefined) {
+    tymtStorage.set(`currency`, JSON.stringify(init));
+    return init;
   } else {
-    return JSON.parse(data);
+    if (compareJSONStructure(JSON.parse(data), init)) {
+      return JSON.parse(data);
+    } else {
+      tymtStorage.set(`currency`, JSON.stringify(init));
+      return init;
+    }
   }
 };
 
@@ -31,10 +39,7 @@ export const currencySlice = createSlice({
   reducers: {
     setCurrency: (state, action) => {
       state.data = action.payload;
-      tymtStorage.set(
-        `currency_${tymt_version}`,
-        JSON.stringify(action.payload)
-      );
+      tymtStorage.set(`currency`, JSON.stringify(action.payload));
     },
   },
   extraReducers: (builder) => {
@@ -46,10 +51,7 @@ export const currencySlice = createSlice({
         refreshCurrencyAsync.fulfilled,
         (state, action: PayloadAction<any>) => {
           state.data = { ...state.data, data: action.payload };
-          tymtStorage.set(
-            `currency_${tymt_version}`,
-            JSON.stringify(state.data)
-          );
+          tymtStorage.set(`currency`, JSON.stringify(state.data));
           state.status = "succeeded";
         }
       )

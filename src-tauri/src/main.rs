@@ -55,6 +55,15 @@ fn main() {
                 get_machine_id
             ]
         )
+        .on_window_event(|event| {
+            match event.event() {
+                tauri::WindowEvent::CloseRequested { api, .. } => {
+                    event.window().hide().unwrap();
+                    api.prevent_close();
+                }
+                _ => {}
+            }
+        })
         .system_tray(tray)
         ///// SystemTray Event handlers
         .on_system_tray_event(|app, event| {
@@ -67,6 +76,9 @@ fn main() {
                 }
                 SystemTrayEvent::DoubleClick { position: _, size: _, .. } => {
                     println!("system tray received a double click");
+                    let window = app.get_window("tymtLauncher").unwrap();
+                    window.show().unwrap();
+                    window.set_focus().unwrap();
                 }
                 SystemTrayEvent::MenuItemClick { id, .. } =>
                     match id.as_str() {

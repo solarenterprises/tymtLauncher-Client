@@ -2,16 +2,23 @@ import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import { getTempAddressesFromMnemonic } from "./TempMultiWalletApi";
 import tymtStorage from "../../lib/Storage";
 import { chains } from "../../consts/contracts";
-
 import { multiWalletType } from "../../types/walletTypes";
-import { tymt_version } from "../../configs";
+import { compareJSONStructure } from "../../lib/api/JSONHelper";
+
+const init: multiWalletType = chains;
 
 const loadTempMultiWallet: () => multiWalletType = () => {
-  const data = tymtStorage.get(`tempMultiWallet_${tymt_version}`);
-  if (data === null || data === "") {
-    return chains as multiWalletType;
+  const data = tymtStorage.get(`tempMultiWallet`);
+  if (data === null || data === "" || data === undefined) {
+    tymtStorage.set(`tempMultiWallet`, JSON.stringify(init));
+    return init;
   } else {
-    return JSON.parse(data) as multiWalletType;
+    if (compareJSONStructure(JSON.parse(data), init)) {
+      return JSON.parse(data);
+    } else {
+      tymtStorage.set(`tempMultiWallet`, JSON.stringify(init));
+      return init;
+    }
   }
 };
 const initialState = {
@@ -31,10 +38,7 @@ export const tempMultiWalletSlice = createSlice({
   reducers: {
     setTempMultiWallet: (state, action) => {
       state.data = action.payload;
-      tymtStorage.set(
-        `tempMultiWallet_${tymt_version}`,
-        JSON.stringify(action.payload)
-      );
+      tymtStorage.set(`tempMultiWallet`, JSON.stringify(action.payload));
     },
   },
   extraReducers: (builder) => {
@@ -46,10 +50,7 @@ export const tempMultiWalletSlice = createSlice({
         getTempAddressesFromMnemonicAsync.fulfilled,
         (state, action: PayloadAction<any>) => {
           state.data = { ...state.data, ...action.payload };
-          tymtStorage.set(
-            `tempMultiWallet_${tymt_version}`,
-            JSON.stringify(state.data)
-          );
+          tymtStorage.set(`tempMultiWallet`, JSON.stringify(state.data));
           state.status = "succeeded";
         }
       )

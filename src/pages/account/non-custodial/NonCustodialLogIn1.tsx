@@ -48,8 +48,15 @@ const NonCustodialLogIn1 = () => {
       password: Yup.string()
         .required(t("cca-63_required"))
         .test(
+          "checks",
+          t("cca-65_please-signup-import"),
+          (_value) =>
+            nonCustodialStore.password !== "" &&
+            nonCustodialStore.mnemonic !== ""
+        )
+        .test(
           "equals",
-          "Wrong Password",
+          t("cca-60_wrong-password"),
           (value) =>
             createKeccakHash("keccak256").update(value).digest("hex") ===
             nonCustodialStore.password

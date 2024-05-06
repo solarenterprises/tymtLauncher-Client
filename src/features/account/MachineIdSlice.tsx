@@ -1,16 +1,24 @@
 import { createSlice } from "@reduxjs/toolkit";
 import tymtStorage from "../../lib/Storage";
 import { IMachineId } from "../../types/accountTypes";
-import { tymt_version } from "../../configs";
+import { compareJSONStructure } from "../../lib/api/JSONHelper";
+
+const init: IMachineId = {
+  machineId: "",
+};
 
 const loadMachineId: () => IMachineId = () => {
-  const data = tymtStorage.get(`machineId_${tymt_version}`);
-  if (data === null || data === "") {
-    return {
-      machineId: "",
-    };
+  const data = tymtStorage.get(`machineId`);
+  if (data === null || data === "" || data === undefined) {
+    tymtStorage.set(`machineId`, JSON.stringify(init));
+    return init;
   } else {
-    return JSON.parse(data);
+    if (compareJSONStructure(JSON.parse(data), init)) {
+      return JSON.parse(data);
+    } else {
+      tymtStorage.set(`machineId`, JSON.stringify(init));
+      return init;
+    }
   }
 };
 
@@ -26,10 +34,7 @@ export const machineIdSlice = createSlice({
   reducers: {
     setMachineId: (state, action) => {
       state.data = action.payload;
-      tymtStorage.set(
-        `machineId_${tymt_version}`,
-        JSON.stringify(action.payload)
-      );
+      tymtStorage.set(`machineId`, JSON.stringify(action.payload));
     },
   },
 });
