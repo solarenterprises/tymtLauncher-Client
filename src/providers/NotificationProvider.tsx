@@ -1,8 +1,21 @@
-import React, { createContext, useContext, useState, ReactNode } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  ReactNode,
+  useEffect,
+} from "react";
 import AlertComp from "../components/AlertComp";
 import { useSelector } from "react-redux";
 import { selectNotification } from "../features/settings/NotificationSlice";
 import { notificationType } from "../types/settingTypes";
+
+import {
+  isPermissionGranted,
+  requestPermission,
+  sendNotification,
+} from "@tauri-apps/api/notification";
+import notiIcon from "../assets/main/32x32.png";
 
 interface NotificationContextType {
   setNotificationOpen: (open: boolean) => void;
@@ -36,6 +49,31 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
   const [notificationLink, setNotificationLink] = useState<string>("");
 
   const notificationStore: notificationType = useSelector(selectNotification);
+
+  useEffect(() => {
+    const init = async () => {
+      let permissionGranted = await isPermissionGranted();
+      if (!permissionGranted) {
+        const permission = await requestPermission();
+        permissionGranted = permission === "granted";
+      }
+      if (permissionGranted) {
+        sendNotification({
+          title: notificationTitle,
+          body: notificationDetail,
+          icon: notiIcon,
+        });
+      }
+    };
+    if (notificationOpen && notificationStore.alert) {
+      init();
+    }
+  }, [
+    notificationOpen,
+    notificationTitle,
+    notificationDetail,
+    notificationStore.alert,
+  ]);
 
   return (
     <NotificationContext.Provider
