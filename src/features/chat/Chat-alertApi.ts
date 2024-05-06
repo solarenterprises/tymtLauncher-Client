@@ -137,3 +137,31 @@ export const declineFriendRequest = async (
     console.log("Decline FR failed");
   }
 };
+
+// export const updateAlertReadstatusperUser = async (
+//   alert_id: string,
+//   userid: string,
+//   accessToken: string
+// ) => {
+//   try {
+//     const res = await axios.put(
+//       `${tymt_backend_url}/alerts/${alert_id}`,
+//       {
+//         reader: `${userid}`,
+//       },
+//       {
+//         headers: {
+//           Authorization: `Bearer ${accessToken}`,
+//           "Content-Type": "application/json",
+//         },
+//       }
+//     );
+//     if (res.status === 200) {
+//       console.log("update alert status success");
+//     } else {
+//       console.log("update alert status failed");
+//     }
+//   } catch (err) {
+//     console.log("update alert status failed");
+//   }
+// };

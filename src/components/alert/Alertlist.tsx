@@ -2,6 +2,7 @@ import { Stack, Box, Button, Divider } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 
 import { propsAlertListType } from "../../types/alertTypes";
 import failedIcon from "../../assets/alert/failed-icon.svg";
@@ -20,6 +21,7 @@ import {
 } from "../../features/chat/Chat-userlistSlice";
 import {
   askEncryptionKeyType,
+  scrollDownType,
   // deliverEncryptionKeyType,
   userType,
 } from "../../types/chatTypes";
@@ -45,10 +47,19 @@ import {
 } from "../../features/chat/Chat-encryptionkeySlice";
 import { getAccount } from "../../features/account/AccountSlice";
 import { decrypt } from "../../lib/api/Encrypt";
+import {
+  selectPartner,
+  setCurrentChatPartner,
+} from "../../features/chat/Chat-currentPartnerSlice";
+import {
+  getdownState,
+  setdownState,
+} from "../../features/chat/Chat-scrollDownSlice";
 
 const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { socket } = useSocket();
   const [logo, setLogo] = useState<any>();
   const [keyperuser, setKeyperUser] = useState<string>("");
@@ -56,6 +67,9 @@ const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
   const nonCustodial: nonCustodialType = useSelector(getNonCustodial);
   const multiwallet: multiWalletType = useSelector(getMultiWallet);
   const account: accountType = useSelector(getAccount);
+  const userdata: userType[] = useSelector(selectPartner);
+  const scrollstate: scrollDownType = useSelector(getdownState);
+  const shouldScrollDown = scrollstate.down;
   const chatuserlist: userType[] = useSelector(getUserlist);
   const friendlist: userType[] = useSelector(getFriendlist);
   const senderUser = chatuserlist.find(
@@ -176,7 +190,34 @@ const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
 
   return (
     <>
-      <Box sx={{ width: "100%" }} marginTop={"16px"}>
+      <Box
+        sx={{
+          width: "100%",
+          cursor: "pointer",
+          "&:hover": {
+            backgroundColor: "#ffffff1a",
+          },
+          padding: "16px 4px 0px 4px",
+        }}
+        onClick={() => {
+          if (title === "chat") {
+            navigate(`/chat?senderId=${detail.note?.sender}`);
+            dispatch(
+              setCurrentChatPartner({
+                ...userdata,
+                _id: senderUser?._id,
+                nickName: senderUser?.nickName,
+                avatar: senderUser?.avatar,
+                lang: senderUser?.lang,
+                sxpAddress: senderUser?.sxpAddress,
+                onlineStatus: senderUser?.onlineStatus,
+                notificationStatus: senderUser?.notificationStatus,
+              })
+            );
+            dispatch(setdownState({ down: !shouldScrollDown }));
+          }
+        }}
+      >
         <Stack direction={"column"}>
           <Stack
             direction={"row"}

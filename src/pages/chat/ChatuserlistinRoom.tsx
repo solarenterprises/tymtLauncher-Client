@@ -1,5 +1,5 @@
 import { useSelector, useDispatch } from "react-redux";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Box,
   Grid,
@@ -23,7 +23,7 @@ import ChatStyle from "../../styles/ChatStyles";
 import { useSocket } from "../../providers/SocketProvider";
 
 import { getUserlist } from "../../features/chat/Chat-userlistSlice";
-import { propsType, userType } from "../../types/chatTypes";
+import { alertType, propsType, userType } from "../../types/chatTypes";
 import { setCurrentChatPartner } from "../../features/chat/Chat-currentPartnerSlice";
 import { selectPartner } from "../../features/chat/Chat-currentPartnerSlice";
 import { getMultiWallet } from "../../features/wallet/MultiWalletSlice";
@@ -45,9 +45,11 @@ import { selecteduserType } from "../../types/chatTypes";
 import { searchUsers } from "../../features/chat/Chat-contactApi";
 import { setChatHistory } from "../../features/chat/Chat-historySlice";
 
-
 import { debounce } from "lodash";
 import { getAccount } from "../../features/account/AccountSlice";
+import { fetchUnreadAlerts } from "../../features/chat/Chat-alertApi";
+import { selectBadgeStatus } from "../../features/alert/AlertbadgeSlice";
+import { alertbadgeType } from "../../types/alertTypes";
 
 const ChatuserlistinRoom = ({ view, setView }: propsType) => {
   const { socket } = useSocket();
@@ -61,6 +63,7 @@ const ChatuserlistinRoom = ({ view, setView }: propsType) => {
   const multiwallet: multiWalletType = useSelector(getMultiWallet);
   const nonCustodial: nonCustodialType = useSelector(getNonCustodial);
   const selectedusertoDelete: selecteduserType = useSelector(getSelectedUser);
+  const alertbadge: alertbadgeType = useSelector(selectBadgeStatus);
   const [searchvalue, setSearchValue] = useState<string>("");
   const [showContextMenu, setShowContextMenu] = useState(false);
   const [contextMenuPosition, setContextMenuPosition] = useState({
@@ -75,6 +78,7 @@ const ChatuserlistinRoom = ({ view, setView }: propsType) => {
   const [openBlockModal, setOpenBlockModal] = useState(false);
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
   const [openRequestModal, setOpenRequestModal] = useState(false);
+  const [unreadalerts, setUnreadAlerts] = useState<alertType[]>([]);
 
   const debouncedFilterUsers = debounce(async (value) => {
     setSearchedresult(await searchUsers(value));
@@ -144,6 +148,16 @@ const ChatuserlistinRoom = ({ view, setView }: propsType) => {
     const contacts: userType[] = await receiveContactlist(accessToken);
     dispatch(setUserList(contacts));
   };
+
+    // read the unread chat alerts and mark the number of unread messages
+    const getUnreadAlerts = async () => {
+      const unreadalerts: alertType[] = await fetchUnreadAlerts(account.uid);
+      setUnreadAlerts(unreadalerts);
+    };
+  
+    useEffect(() => {
+      getUnreadAlerts();
+    }, [alertbadge]);
 
   return (
     <>
@@ -257,84 +271,101 @@ const ChatuserlistinRoom = ({ view, setView }: propsType) => {
             ) : (
               <>
                 {(searchvalue === "" ? chatuserlist : searchedresult)?.map(
-                  (user, index) => (
-                    <Box key={index}>
-                      <Grid
-                        container
-                        sx={{
-                          height: "64px",
-                          flexDirection: "row",
-                          justifyContent: "left",
-                          alignItems: "center",
-                          padding: "12px 5px 12px 5px",
-                          borderRadius: "5px",
-                          backgroundColor:
-                            user._id === currentpartner._id
-                              ? "#52E1F21A"
-                              : "transparent",
-                          cursor: "pointer",
-                          "&:hover": {
+                  (user, index) => {
+                    const count =
+                      searchvalue === ""
+                        ? unreadalerts.filter(
+                            (alert) =>
+                              alert.note.sender === user._id &&
+                              alert.alertType === "chat"
+                          ).length
+                        : 0;
+                    const numberofunreadmessages = count;
+                    return (
+                      <Box key={index}>
+                        <Grid
+                          container
+                          sx={{
+                            height: "64px",
+                            flexDirection: "row",
+                            justifyContent: "left",
+                            alignItems: "center",
+                            padding: "12px 5px 12px 5px",
                             borderRadius: "5px",
-                            borderTopRightRadius: "5px",
-                            borderBottomRightRadius: "5px",
-                            backgroundColor: "#FFFFFF1A",
-                          },
-                          "&:active": {
-                            backgroundColor: "#52E1F21A",
-                          },
-                        }}
-                        onContextMenu={(e) => handleContextMenu(e, user._id)}
-                        onClick={() => {
-                          dispatch(
-                            setCurrentChatPartner({
-                              ...currentpartner,
-                              _id: user._id,
-                              nickName: user.nickName,
-                              avatar: user.avatar,
-                              lang: user.lang,
-                              sxpAddress: user.sxpAddress,
-                              onlineStatus: user.onlineStatus,
-                              notificationStatus: user.notificationStatus,
-                            })
-                          );
-                          updateContact(user._id);
-                        }}
-                      >
-                        <Avatar
-                          onlineStatus={user.onlineStatus}
-                          userid={user._id}
-                          size={40}
-                          status={user.notificationStatus}
-                        />
-                        <Stack
-                          flexDirection={"row"}
-                          alignItems={"center"}
-                          justifyContent={"space-between"}
-                          display={"flex"}
-                          sx={{ marginLeft: "25px", width: "320px" }}
+                            backgroundColor:
+                              user._id === currentpartner._id
+                                ? "#52E1F21A"
+                                : "transparent",
+                            cursor: "pointer",
+                            "&:hover": {
+                              borderRadius: "5px",
+                              borderTopRightRadius: "5px",
+                              borderBottomRightRadius: "5px",
+                              backgroundColor: "#FFFFFF1A",
+                            },
+                            "&:active": {
+                              backgroundColor: "#52E1F21A",
+                            },
+                          }}
+                          onContextMenu={(e) => handleContextMenu(e, user._id)}
+                          onClick={() => {
+                            dispatch(
+                              setCurrentChatPartner({
+                                ...currentpartner,
+                                _id: user._id,
+                                nickName: user.nickName,
+                                avatar: user.avatar,
+                                lang: user.lang,
+                                sxpAddress: user.sxpAddress,
+                                onlineStatus: user.onlineStatus,
+                                notificationStatus: user.notificationStatus,
+                              })
+                            );
+                            updateContact(user._id);
+                          }}
                         >
-                          <Box>
-                            <Stack
-                              direction={"column"}
-                              justifyContent={"flex-start"}
-                              spacing={1}
-                            >
-                              <Box className={"fs-16 white"}>
-                                {user?.nickName}
-                              </Box>
-                              <Box className={"fs-12-light gray"}>
-                                {user?.sxpAddress}
-                              </Box>
-                            </Stack>
-                          </Box>
+                          <Avatar
+                            onlineStatus={user.onlineStatus}
+                            userid={user._id}
+                            size={40}
+                            status={user.notificationStatus}
+                          />
+                          <Stack
+                            flexDirection={"row"}
+                            alignItems={"center"}
+                            justifyContent={"space-between"}
+                            display={"flex"}
+                            sx={{ marginLeft: "25px", width: "320px" }}
+                          >
+                            <Box>
+                              <Stack
+                                direction={"column"}
+                                justifyContent={"flex-start"}
+                                spacing={1}
+                              >
+                                <Box className={"fs-16 white"}>
+                                  {user?.nickName}
+                                </Box>
+                                <Box className={"fs-12-light gray"}>
+                                  {user?.sxpAddress}
+                                </Box>
+                              </Stack>
+                            </Box>
 
-                          <Box className={"fs-16 white"} sx={{ opacity: 0.3 }}>
-                            {/* {user?.lang} */}
-                          </Box>
-                        </Stack>
-                      </Grid>
-                    </Box>
-                  )
+                            <Box
+                              className={"unread-dot fs-10-light"}
+                              sx={{
+                                display:
+                                  numberofunreadmessages > 0 ? "block" : "none",
+                              }}
+                            >
+                              {numberofunreadmessages}
+                            </Box>
+                          </Stack>
+                        </Grid>
+                      </Box>
+                    );
+                  }
                 )}
                 {showContextMenu && (
                   <>
