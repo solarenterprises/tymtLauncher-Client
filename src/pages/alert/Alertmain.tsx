@@ -75,6 +75,7 @@ const Alertmain = () => {
   useEffect(() => {
     getUnreadAlerts();
     getReadAlerts();
+    console.log("alertbadge trigger", alertbadge.trigger);
   }, [alertbadge.trigger, read]);
 
   return (

@@ -212,11 +212,20 @@ const AlertComp = ({
               <Stack direction={"column"} gap={"8px"}>
                 <Box className={"fs-h4 white"}>{title}</Box>
                 <Box className={"fs-16-regular white"}>
-                  {title !== "Friend Request" &&
+                  {status === "message" &&
                     (message.length > 100
                       ? message.substring(0, 100) + "..."
                       : message)}
-                  {title === "Friend Request" && t("not-10_fr-intro")}
+                  {status === "alert" &&
+                    title === "Friend Request" &&
+                    t("not-10_fr-intro")}
+                  {!(
+                    status === "message" ||
+                    (status === "alert" && title === "Friend Request")
+                  ) &&
+                    (detail.length > 100
+                      ? detail.substring(0, 100) + "..."
+                      : detail)}
                 </Box>
               </Stack>
             </Stack>

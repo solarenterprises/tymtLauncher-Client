@@ -199,3 +199,14 @@ $Main-Red: #ef4444;
     }
   }
 }
+
+.unread-dot {
+  padding: 3px 6px 3px 6px;
+  border-radius: 100px;
+  background-color: var(--Main-Blue, #48c5d3);
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 10px;
+}

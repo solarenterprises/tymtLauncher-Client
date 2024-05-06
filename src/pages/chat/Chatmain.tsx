@@ -10,6 +10,7 @@ import {
   InputAdornment,
   Grid,
   Button,
+  Modal,
 } from "@mui/material";
 import { debounce } from "lodash";
 
@@ -24,7 +25,12 @@ import DeleteModal from "../../components/chat/DeleteModal";
 import RequestModal from "../../components/chat/RequestModal";
 
 import { useSocket } from "../../providers/SocketProvider";
-import { propsType, selecteduserType, userType } from "../../types/chatTypes";
+import {
+  alertType,
+  propsType,
+  selecteduserType,
+  userType,
+} from "../../types/chatTypes";
 import { accountType, nonCustodialType } from "../../types/accountTypes";
 import {
   selectPartner,
@@ -50,6 +56,9 @@ import {
 } from "../../features/chat/Chat-selecteduserSlice";
 import { setChatHistory } from "../../features/chat/Chat-historySlice";
 import { getAccount } from "../../features/account/AccountSlice";
+import { fetchUnreadAlerts } from "../../features/chat/Chat-alertApi";
+import { alertbadgeType } from "../../types/alertTypes";
+import { selectBadgeStatus } from "../../features/alert/AlertbadgeSlice";
 
 const theme = createTheme({
   palette: {
@@ -64,8 +73,6 @@ const theme = createTheme({
   },
 });
 
-
-
 const Chatmain = ({ view, setView }: propsType) => {
   const classes = ChatStyle();
   const { socket } = useSocket();
@@ -78,6 +85,7 @@ const Chatmain = ({ view, setView }: propsType) => {
   const multiwallet: multiWalletType = useSelector(getMultiWallet);
   const selectedusertoDelete: selecteduserType = useSelector(getSelectedUser);
   const account: accountType = useSelector(getAccount);
+  const alertbadge: alertbadgeType = useSelector(selectBadgeStatus);
   const [searchedresult, setSearchedresult] = useState<userType[]>([]);
   const [isClickedBlock, setIsClickedBlock] = useState(false);
   const [isClickedDelete, setIsClickedDelete] = useState(false);
@@ -90,6 +98,7 @@ const Chatmain = ({ view, setView }: propsType) => {
     x: 0,
     y: 0,
   });
+  const [unreadalerts, setUnreadAlerts] = useState<alertType[]>([]);
 
   const deleteSelectedUser = async () => {
     const accessToken: string = await getaccessToken(
@@ -116,13 +125,15 @@ const Chatmain = ({ view, setView }: propsType) => {
     setOpenRequestModal(false);
     await updateContact(selectedusertoDelete.id);
     console.log("myid", account.uid);
-    console.log("receiver",selectedusertoDelete.id)
+    console.log("receiver", selectedusertoDelete.id);
   };
 
   const handleContextMenu = (e: any, id: string) => {
     e.preventDefault();
-    const mouseX = e.clientX + window.scrollX;
-    const mouseY = e.clientY + window.scrollY;
+    const mouseX = e.clientX;
+    const mouseY = e.clientY;
+    // const mouseX = e.pageX;
+    // const mouseY = e.pageY;
     setShowContextMenu(true);
     setContextMenuPosition({ x: mouseX, y: mouseY });
     e.stopPropagation();
@@ -138,6 +149,7 @@ const Chatmain = ({ view, setView }: propsType) => {
     };
 
     document.addEventListener("click", handleClickOutsideContextMenu);
+    return false;
   };
 
   const debouncedFilterUsers = debounce(async (value: string) => {
@@ -161,6 +173,16 @@ const Chatmain = ({ view, setView }: propsType) => {
   useEffect(() => {
     filterUsers(value);
   }, [value]);
+
+  // read the unread chat alerts and mark the number of unread messages
+  const getUnreadAlerts = async () => {
+    const unreadalerts: alertType[] = await fetchUnreadAlerts(account.uid);
+    setUnreadAlerts(unreadalerts);
+  };
+
+  useEffect(() => {
+    getUnreadAlerts();
+  }, [alertbadge]);
 
   return (
     <>
@@ -290,95 +312,114 @@ const Chatmain = ({ view, setView }: propsType) => {
               ) : (
                 <>
                   {(value === "" ? chatuserlist : searchedresult)?.map(
-                    (user, index) => (
-                      <Box key={index}>
-                        <Grid
-                          item
-                          xs={12}
-                          container
-                          sx={{
-                            overflowX: "hidden",
-                            height: "64px",
-                            flexDirection: "row",
-                            justifyContent: "left",
-                            alignItems: "center",
-                            padding: "12px 5px 12px 5px",
-                            cursor: "pointer",
-                            "&:hover": {
-                              borderRadius: "5px",
-                              borderTopRightRadius: "0",
-                              borderBottomRightRadius: "0",
-                              backgroundColor: "#FFFFFF1A",
-                            },
-                            "&:active": {
-                              backgroundColor: "#52E1F21A",
-                            },
-                          }}
-                          onContextMenu={(e) => handleContextMenu(e, user._id)}
-                          onClick={() => {
-                            dispatch(
-                              setCurrentChatPartner({
-                                ...userdata,
-                                _id: user._id,
-                                nickName: user.nickName,
-                                avatar: user.avatar,
-                                lang: user.lang,
-                                sxpAddress: user.sxpAddress,
-                                onlineStatus: user.onlineStatus,
-                                notificationStatus: user.notificationStatus,
-                              })
-                            );
-                            setView("chatbox");
-                            updateContact(user._id);
-                          }}
-                        >
-                          <Avatar
-                            onlineStatus={user.onlineStatus}
-                            userid={user._id}
-                            size={40}
-                            status={user.notificationStatus}
-                          />
-                          <Stack
-                            flexDirection={"row"}
-                            alignItems={"center"}
-                            justifyContent={"space-between"}
-                            display={"flex"}
-                            sx={{ marginLeft: "25px", width: "320px" }}
-                          >
-                            <Box>
-                              <Stack
-                                direction={"column"}
-                                justifyContent={"flex-start"}
-                                spacing={1}
-                              >
-                                <Box className={"fs-16 white"}>
-                                  {user?.nickName}
-                                </Box>
-                                <Box className={"fs-12-light gray"}>
-                                  {user?.sxpAddress}
-                                </Box>
-                              </Stack>
-                            </Box>
+                    (user, index) => {
+                      const count =
+                        value === ""
+                          ? unreadalerts.filter(
+                              (alert) =>
+                                alert.note.sender === user._id &&
+                                alert.alertType === "chat"
+                            ).length
+                          : 0;
+                      const numberofunreadmessages = count;
 
-                            <Box
-                              className={"fs-16 white"}
-                              sx={{ opacity: 0.3 }}
+                      return (
+                        <Box key={index}>
+                          <Grid
+                            item
+                            xs={12}
+                            container
+                            sx={{
+                              overflowX: "hidden",
+                              height: "64px",
+                              flexDirection: "row",
+                              justifyContent: "left",
+                              alignItems: "center",
+                              padding: "12px 5px 12px 5px",
+                              cursor: "pointer",
+                              "&:hover": {
+                                borderRadius: "5px",
+                                borderTopRightRadius: "0",
+                                borderBottomRightRadius: "0",
+                                backgroundColor: "#FFFFFF1A",
+                              },
+                              "&:active": {
+                                backgroundColor: "#52E1F21A",
+                              },
+                            }}
+                            onContextMenu={(e) =>
+                              handleContextMenu(e, user._id)
+                            }
+                            onClick={() => {
+                              dispatch(
+                                setCurrentChatPartner({
+                                  ...userdata,
+                                  _id: user._id,
+                                  nickName: user.nickName,
+                                  avatar: user.avatar,
+                                  lang: user.lang,
+                                  sxpAddress: user.sxpAddress,
+                                  onlineStatus: user.onlineStatus,
+                                  notificationStatus: user.notificationStatus,
+                                })
+                              );
+                              setView("chatbox");
+                              updateContact(user._id);
+                            }}
+                          >
+                            <Avatar
+                              onlineStatus={user.onlineStatus}
+                              userid={user._id}
+                              size={40}
+                              status={user.notificationStatus}
+                            />
+                            <Stack
+                              flexDirection={"row"}
+                              alignItems={"center"}
+                              justifyContent={"space-between"}
+                              display={"flex"}
+                              sx={{ marginLeft: "25px", width: "320px" }}
                             >
-                              {/* {user?.lang} */}
-                            </Box>
-                          </Stack>
-                        </Grid>
-                      </Box>
-                    )
+                              <Box>
+                                <Stack
+                                  direction={"column"}
+                                  justifyContent={"flex-start"}
+                                  spacing={1}
+                                >
+                                  <Box className={"fs-16 white"}>
+                                    {user?.nickName}
+                                  </Box>
+                                  <Box className={"fs-12-light gray"}>
+                                    {user?.sxpAddress}
+                                  </Box>
+                                </Stack>
+                              </Box>
+
+                              <Box
+                                className={"unread-dot fs-10-light"}
+                                sx={{
+                                  display:
+                                    numberofunreadmessages > 0
+                                      ? "block"
+                                      : "none",
+                                }}
+                              >
+                                {numberofunreadmessages}
+                              </Box>
+                            </Stack>
+                          </Grid>
+                        </Box>
+                      );
+                    }
                   )}
                   {showContextMenu && (
-                    <>
+                    <Modal open={true}>
                       <Box
                         sx={{
                           position: "fixed",
                           top: contextMenuPosition.y,
                           left: contextMenuPosition.x,
-                          display: "inline-flex",
+                          display: "block",
                           flexDirection: "column",
                           alignItems: "flex-start",
                           cursor: "pointer",
@@ -438,7 +479,7 @@ const Chatmain = ({ view, setView }: propsType) => {
                           </>
                         )}
                       </Box>
-                    </>
+                    </Modal>
                   )}
                   <BlockModal
                     openBlockModal={openBlockModal}
