@@ -1,11 +1,11 @@
 import { createSlice } from "@reduxjs/toolkit";
 import tymtStorage from "../../lib/Storage";
 import { userType } from "../../types/chatTypes";
-import { tymt_version } from "../../configs";
 
 const loadData: () => userType[] = () => {
-  const data = tymtStorage.get(`chatfriendlist_${tymt_version}`);
+  const data = tymtStorage.get(`chatfriendlist`);
   if (data === null || data === "" || data === undefined) {
+    tymtStorage.set(`chatfriendlist`, JSON.stringify([]));
     return [];
   } else {
     return JSON.parse(data);
@@ -24,10 +24,7 @@ const chatFriendList = createSlice({
   reducers: {
     setFriendlist(state, action) {
       state.data = action.payload;
-      tymtStorage.set(
-        `chatfriendlist_${tymt_version}`,
-        JSON.stringify(action.payload)
-      );
+      tymtStorage.set(`chatfriendlist`, JSON.stringify(action.payload));
     },
     deleteFriendlist(state, action) {
       state.data = state.data.filter(
@@ -36,10 +33,7 @@ const chatFriendList = createSlice({
     },
     addFriendlist(state, action) {
       state.data = [...state.data, action.payload];
-      tymtStorage.set(
-        `chatfriendlist_${tymt_version}`,
-        JSON.stringify(action.payload)
-      );
+      tymtStorage.set(`chatfriendlist`, JSON.stringify(action.payload));
     },
   },
 });

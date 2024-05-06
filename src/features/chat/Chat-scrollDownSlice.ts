@@ -1,18 +1,13 @@
 import { createSlice } from "@reduxjs/toolkit";
-
-import tymtStorage from "../../lib/Storage";
-import { tymt_version } from "../../configs";
 import { scrollDownType } from "../../types/chatTypes";
+import tymtStorage from "../../lib/Storage";
 
-const loadData: () => scrollDownType= () => {
-  const data = tymtStorage.get(`scrolldown_${tymt_version}`);
-  if (data === null || data === "") {
-    return {
-      down: false
-    };
-  } else {
-    return JSON.parse(data);
-  }
+const init: scrollDownType = {
+  down: false,
+};
+
+const loadData: () => scrollDownType = () => {
+  return init;
 };
 
 const initialState = {
@@ -28,7 +23,7 @@ const scrollDownSlice = createSlice({
     setdownState(state, action) {
       state.data = action.payload;
       tymtStorage.set(
-        `scrolldown_${tymt_version}`,
+        `scrolldown`,
         JSON.stringify(action.payload)
       );
     },

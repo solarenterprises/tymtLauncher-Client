@@ -1,11 +1,11 @@
 import { createSlice } from "@reduxjs/toolkit";
 import tymtStorage from "../../lib/Storage";
 import { userType } from "../../types/chatTypes";
-import { tymt_version } from "../../configs";
 
-const loadUser: () => userType = () => {
-  const data = tymtStorage.get(`currentPartner_${tymt_version}`);
-  if (data === null || data === "") {
+const loadUser: () => userType[] = () => {
+  const data = tymtStorage.get(`currentPartner`);
+  if (data === null || data === "" || data === undefined) {
+    tymtStorage.set(`currentPartner`, JSON.stringify([]));
     return [];
   } else {
     return JSON.parse(data);
@@ -24,10 +24,7 @@ const partnerSlice = createSlice({
   reducers: {
     setCurrentChatPartner(state, action) {
       state.data = action.payload;
-      tymtStorage.set(
-        `currentPartner_${tymt_version}`,
-        JSON.stringify(action.payload)
-      );
+      tymtStorage.set(`currentPartner`, JSON.stringify(action.payload));
     },
   },
 });

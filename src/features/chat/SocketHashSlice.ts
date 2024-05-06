@@ -1,18 +1,24 @@
 import { createSlice } from "@reduxjs/toolkit";
 import tymtStorage from "../../lib/Storage";
-import { tymt_version } from "../../configs";
 import { ISocketHash } from "../../types/chatTypes";
+import { compareJSONStructure } from "../../lib/api/JSONHelper";
+
+const init: ISocketHash = {
+  socketHash: "",
+};
 
 const load: () => ISocketHash = () => {
-  const data = tymtStorage.get(`socketHash_${tymt_version}`);
-  if (data === null || data === "") {
-    const init: ISocketHash = {
-      socketHash: "",
-    };
-    tymtStorage.set(`socketHash_${tymt_version}`, JSON.stringify(init));
+  const data = tymtStorage.get(`socketHash`);
+  if (data === null || data === "" || data === undefined) {
+    tymtStorage.set(`socketHash`, JSON.stringify(init));
     return init;
   } else {
-    return JSON.parse(data);
+    if (compareJSONStructure(JSON.parse(data), init)) {
+      return JSON.parse(data);
+    } else {
+      tymtStorage.set(`socketHash`, JSON.stringify(init));
+      return init;
+    }
   }
 };
 
@@ -28,10 +34,7 @@ export const socketHashSlice = createSlice({
   reducers: {
     setSocketHash: (state, action) => {
       state.data = action.payload;
-      tymtStorage.set(
-        `socketHash_${tymt_version}`,
-        JSON.stringify(action.payload)
-      );
+      tymtStorage.set(`socketHash`, JSON.stringify(action.payload));
     },
   },
 });

@@ -1,20 +1,27 @@
 import { createSlice } from "@reduxjs/toolkit";
 import tymtStorage from "../../lib/Storage";
-
 import { custodialType } from "../../types/accountTypes";
-import { tymt_version } from "../../configs";
+import { compareJSONStructure } from "../../lib/api/JSONHelper";
+
+const init: custodialType = {
+  email: "",
+  avatar: "",
+  nickname: "",
+  password: "",
+};
 
 const loadCustodial: () => custodialType = () => {
-  const data = tymtStorage.get(`custodial_${tymt_version}`);
-  if (data === null || data === "") {
-    return {
-      email: "",
-      avatar: "",
-      nickname: "",
-      password: "",
-    };
+  const data = tymtStorage.get(`custodial`);
+  if (data === null || data === "" || data === undefined) {
+    tymtStorage.set(`custodial`, JSON.stringify(init));
+    return init;
   } else {
-    return JSON.parse(data);
+    if (compareJSONStructure(JSON.parse(data), init)) {
+      return JSON.parse(data);
+    } else {
+      tymtStorage.set(`custodial`, JSON.stringify(init));
+      return init;
+    }
   }
 };
 
@@ -30,10 +37,7 @@ export const custodialSlice = createSlice({
   reducers: {
     setCustodial: (state, action) => {
       state.data = action.payload;
-      tymtStorage.set(
-        `custodial_${tymt_version}`,
-        JSON.stringify(action.payload)
-      );
+      tymtStorage.set(`custodial`, JSON.stringify(action.payload));
     },
   },
 });

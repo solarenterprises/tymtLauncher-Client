@@ -1,20 +1,14 @@
 import { createSlice } from "@reduxjs/toolkit";
-
-import tymtStorage from "../../lib/Storage";
 import { processType } from "../../types/homeTypes";
-import { tymt_version } from "../../configs";
+
+const init: processType = {
+  progress: 0,
+  inprogress: false,
+  name: "",
+};
 
 const loadData: () => processType = () => {
-  const data = tymtStorage.get(`installprocess_${tymt_version}`);
-  if (data === null || data === "") {
-    return {
-      progress: 0,
-      inprogress: false,
-      name: "",
-    };
-  } else {
-    return JSON.parse(data);
-  }
+  return init;
 };
 
 const initialState = {

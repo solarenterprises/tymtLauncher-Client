@@ -1,15 +1,23 @@
 import { createSlice } from "@reduxjs/toolkit";
 import tymtStorage from "../../lib/Storage";
-import { tymt_version } from "../../configs";
+import { compareJSONStructure } from "../../lib/api/JSONHelper";
+
+const init = {
+  accessToken: "",
+};
 
 const loadUser = () => {
-  const data = tymtStorage.get(`accesstoken_${tymt_version}`);
-  if (data === null || data === "") {
-    return {
-      accessToken: "",
-    };
+  const data = tymtStorage.get(`accesstoken`);
+  if (data === null || data === "" || data === undefined) {
+    tymtStorage.set(`accesstoken`, JSON.stringify(init));
+    return init;
   } else {
-    return JSON.parse(data);
+    if (compareJSONStructure(JSON.parse(data), init)) {
+      return JSON.parse(data);
+    } else {
+      tymtStorage.set(`accesstoken`, JSON.stringify(init));
+      return init;
+    }
   }
 };
 
@@ -25,10 +33,7 @@ const accesstokenSlice = createSlice({
   reducers: {
     setAccessToken(state, action) {
       state.data = action.payload;
-      tymtStorage.set(
-        `accesstoken_${tymt_version}`,
-        JSON.stringify(action.payload)
-      );
+      tymtStorage.set(`accesstoken`, JSON.stringify(action.payload));
     },
   },
 });
