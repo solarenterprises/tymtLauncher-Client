@@ -42,6 +42,8 @@ const GetStarted = () => {
   } = useTranslation();
   const languageStore: languageType = useSelector(selectLanguage);
 
+ 
+
   useEffect(() => {
     changeLanguage(languageStore.language);
   }, [changeLanguage, languageStore.language]);

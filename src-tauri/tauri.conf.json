@@ -38,6 +38,9 @@
         "sidecar": true,
         "open": true
       },
+      "notification": {
+        "all": true
+      },
       "clipboard": {
         "all": true,
         "writeText": true,

@@ -1,5 +1,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { sendCoin, walletTransaction } from "./CryptoApi";
+import tymtStorage from "../../lib/Storage";
 
 const initialState = {
   transactions: [],
@@ -47,6 +48,9 @@ export const cryptoSlice = createSlice({
       .addCase(getTransactionsAsync.fulfilled, (state, action) => {
         state.pending = false;
         state.transactions = [...state.transactions, ...action.payload];
+        if (action.payload.length === 0) {
+          tymtStorage.set(`loadMoreAvailable`, false);
+        }
         state.msg = "We will contact you as soon as possible";
       });
   },
