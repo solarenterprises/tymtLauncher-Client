@@ -28,6 +28,9 @@ import {
   userType,
   ChatHistoryType,
   scrollDownType,
+  ChatMessageType,
+  // askEncryptionKeyType,
+  deliverEncryptionKeyType,
 } from "../../types/chatTypes";
 import { chatType, notificationType } from "../../types/settingTypes";
 
@@ -71,16 +74,23 @@ import ChatMsginRoom from "./Chatsetting-MsginRoom";
 
 //Socket reference
 
-import { socket_backend_url } from "../../configs";
-import { io, Socket } from "socket.io-client";
+import { useSocket } from "../../providers/SocketProvider";
 import { AppDispatch } from "../../store";
 import React from "react";
 import _ from "lodash";
 import InfiniteScroll from "react-infinite-scroller";
 import { selectNotification } from "../../features/settings/NotificationSlice";
 import { selectChat } from "../../features/settings/ChatSlice";
-
-const socket: Socket = io(socket_backend_url as string);
+import {
+  addEncryptionKey,
+  selectEncryptionKeyByUserId,
+} from "../../features/chat/Chat-encryptionkeySlice";
+import { decrypt, encrypt } from "../../lib/api/Encrypt";
+import { generateRandomString } from "../../features/chat/Chat-contactApi";
+import {
+  setMountedFalse,
+  setMountedTrue,
+} from "../../features/chat/Chat-intercomSupportSlice";
 
 const theme = createTheme({
   palette: {
@@ -96,6 +106,7 @@ const theme = createTheme({
 });
 
 const Chatroom = () => {
+  const { socket } = useSocket();
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
   const classes = ChatStyle();
@@ -119,6 +130,15 @@ const Chatroom = () => {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [isEmojiLibraryOpen, setIsEmojiLibraryOpen] = useState(false);
+  const [decryptedmessages, setDecryptedMessages] = useState<ChatMessageType[]>(
+    []
+  );
+  const [keyperuser, setKeyperUser] = useState<string>("");
+  const [processedPages, setProcessedPages] = useState(new Set());
+  const userid: string = currentpartner._id;
+  const existkey: string = useSelector((state) =>
+    selectEncryptionKeyByUserId(state, userid)
+  );
 
   const setChat = useCallback(
     (viewChat: boolean) => {
@@ -142,16 +162,36 @@ const Chatroom = () => {
     setValue(value + emoji.emoji);
   };
 
+  // When currentpartner is changed ask encryption key to partner
+
+  useEffect(() => {
+    if (existkey) {
+      setKeyperUser(existkey);
+      console.log("keyperuser", existkey);
+    } else {
+      const key = generateRandomString(32);
+      setKeyperUser(key);
+      const deliverydata: deliverEncryptionKeyType = {
+        sender_id: account.uid,
+        recipient_id: currentpartner._id,
+        key: key,
+      };
+      socket.emit("deliver-encryption-key", JSON.stringify(deliverydata));
+      dispatch(addEncryptionKey({ userId: userid, encryptionKey: key }));
+    }
+  }, [currentpartner._id, socket]);
+
   ///// send message to firebase RDB
 
   const sendMessage = async () => {
     try {
       if (value.trim() !== "") {
+        const encryptedvalue = await encrypt(value, keyperuser);
         const message = {
           sender_id: account.uid,
           recipient_id: currentpartner._id,
-          room_id: `room_${account.uid}_${currentpartner._id}`,
-          message: value,
+          // room_id: `room_${account.uid}_${currentpartner._id}`,
+          message: encryptedvalue,
           createdAt: Date.now(),
         };
         socket.emit("post-message", JSON.stringify(message));
@@ -159,7 +199,7 @@ const Chatroom = () => {
           alertType: "chat",
           note: {
             sender: `${account.uid}`,
-            message: value,
+            message: encryptedvalue,
           },
           receivers: [currentpartner._id],
         };
@@ -170,6 +210,7 @@ const Chatroom = () => {
             messages: updatedHistory,
           })
         );
+        dispatch(setdownState({ down: !shouldScrollDown }));
         setValue("");
       }
     } catch (err: any) {}
@@ -191,45 +232,60 @@ const Chatroom = () => {
       }, 0);
     } else if (e.key === "Enter") {
       e.preventDefault();
-      await sendMessage(); // Handle sending the message
+      if (existkey) {
+        await sendMessage();
+      } // Handle sending the message
       setValue(""); // Reset input field
-      dispatch(setdownState({ down: !shouldScrollDown }));
     }
   };
 
-  const fetchMessages = _.debounce(async () => {
+  const fetchMessages = async () => {
+    console.log("has more", hasMore);
     if (!hasMore) return;
 
     const query = {
-      sender_id: account.uid,
-      recipient_id: currentpartner._id,
+      room_user_ids: [account.uid, currentpartner._id],
       pagination: { page: page, pageSize: 7 },
     };
 
-    // Emit the event to fetch messages
-    socket.emit("get-messages-by-room", JSON.stringify(query));
+    console.log("query pagenumber", page);
 
-    // Listen for the new messages from the server
-    socket.on("messages-by-room", async (result) => {
-      if (result && result.data.length > 0) {
-        if (data.message === "anyone" || data.message === "friend") {
-          dispatch(
-            setChatHistory({
-              messages: [...chatHistoryStore.messages, ...result.data],
-            })
-          );
-          setPage(page + 1);
+    if (!processedPages.has(page)) {
+      // Add the current page number to the set of processed pages
+      setProcessedPages(new Set(processedPages.add(page)));
+
+      socket.emit("get-messages-by-room", JSON.stringify(query));
+
+      socket.on("messages-by-room", async (result) => {
+        console.log("messages-by-room", result);
+        console.log("result length", result.data.length);
+
+        if (result && result.data.length > 0) {
+          if (data.message === "anyone" || data.message === "friend") {
+            dispatch(
+              setChatHistory({
+                messages: [...chatHistoryStore.messages, ...result.data],
+              })
+            );
+            setPage(page + 1);
+          } else {
+            setHasMore(false);
+          }
+        } else {
+          setHasMore(false);
         }
-      } else {
-        setHasMore(false); // No more messages to load
-      }
-    });
-  }, 1000);
+      });
+    }
+    // }
+  };
+
+  const debouncedFetchMessages = _.debounce(fetchMessages, 1000);
 
   useEffect(() => {
     setPage(1);
     setHasMore(true);
     dispatch(setChatHistory({ messages: [] }));
+    setProcessedPages(new Set());
   }, [currentpartner._id]);
 
   const formatDateDifference = (date) => {
@@ -240,9 +296,11 @@ const Chatroom = () => {
     const weekAgo = new Date(today);
     weekAgo.setDate(weekAgo.getDate() - 7);
 
+    const options = { month: "long", day: "numeric" };
+
     const messageDate: any = new Date(date);
-    const diffTime = today.getTime() - messageDate.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    // const diffTime = today.getTime() - messageDate.getTime();
+    // const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
     if (messageDate.setHours(0, 0, 0, 0) === today.setHours(0, 0, 0, 0)) {
       return "Today";
@@ -250,29 +308,60 @@ const Chatroom = () => {
       messageDate.setHours(0, 0, 0, 0) === yesterday.setHours(0, 0, 0, 0)
     ) {
       return "Yesterday";
-    } else if (diffDays <= 7) {
-      return `${diffDays} days ago`;
-    } else if (diffDays > 7 && diffDays <= 14) {
-      return `1 Week ago`;
-    } else if (diffDays > 14 && diffDays <= 21) {
-      return `2 Weeks ago`;
-    } else if (diffDays > 21 && diffDays <= 28) {
-      return `3 Weeks ago`;
     } else {
-      return `1 Month ago`;
+      return messageDate.toLocaleDateString("en-US", options);
     }
   };
 
-  function useChatScroll(shouldScrollDown: boolean, currentpartnerid: string) {
+  //scroll down when partner changed or send message
+  const useChatScroll = (
+    shouldScrollDown: boolean,
+    currentpartnerid: string
+  ) => {
     const scrollRef = useRef<HTMLDivElement>();
+
     useEffect(() => {
       if (scrollRef.current) {
         scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
       }
     }, [shouldScrollDown, currentpartnerid]);
     return scrollRef;
-  }
+  };
+
   const scrollRef = useChatScroll(shouldScrollDown, currentpartner._id);
+
+  //decrypt every message displaying on chatroom
+
+  useEffect(() => {
+    const decryptMessages = async () => {
+      const decryptedMessages = await Promise.all(
+        chatHistoryStore.messages.map(async (message) => {
+          const messagetodecrypt: string = message?.message;
+
+          const decryptedMessage: string = await decrypt(
+            messagetodecrypt,
+            keyperuser
+          );
+          return {
+            ...message,
+            message: decryptedMessage,
+          };
+        })
+      );
+      setDecryptedMessages(decryptedMessages);
+    };
+
+    decryptMessages();
+  }, [chatHistoryStore.messages]);
+
+  // Set mounted to true when chatroom is mounted
+  useEffect(() => {
+    dispatch(setMountedTrue());
+
+    return () => {
+      dispatch(setMountedFalse());
+    };
+  }, [dispatch]);
 
   return (
     <>
@@ -391,137 +480,135 @@ const Chatroom = () => {
               >
                 <Box sx={{ width: "100%", flex: "1 1 auto" }}></Box>
                 <InfiniteScroll
-                  pageStart={page}
-                  loadMore={fetchMessages}
+                  // pageStart={page}
+                  loadMore={debouncedFetchMessages}
                   hasMore={hasMore}
                   isReverse={true}
                   useWindow={false}
                 >
-                  {[...chatHistoryStore.messages]
-                    .reverse()
-                    ?.map((message, index) => {
-                      const isSameDay = (date1, date2) => {
-                        return (
-                          date1.getFullYear() === date2.getFullYear() &&
-                          date1.getMonth() === date2.getMonth() &&
-                          date1.getDate() === date2.getDate()
-                        );
-                      };
-
-                      const isFirstMessageOfDay = () => {
-                        if (index === 0) return true;
-
-                        const previousMessageDate = new Date(
-                          [...chatHistoryStore.messages].reverse()[
-                            index - 1
-                          ]?.createdAt
-                        );
-                        const currentMessageDate = new Date(message.createdAt);
-
-                        return !isSameDay(
-                          previousMessageDate,
-                          currentMessageDate
-                        );
-                      };
-
-                      const timeline = isFirstMessageOfDay()
-                        ? formatDateDifference(message.createdAt)
-                        : null;
-
+                  {[...decryptedmessages].reverse()?.map((message, index) => {
+                    const isSameDay = (date1, date2) => {
                       return (
-                        <>
-                          {/* Your existing Box component for rendering the message */}
-                          <Box
-                            key={`${
-                              message.sender_id
-                            }-${index}-${new Date().toISOString()}`}
-                            sx={{
-                              width: "100%",
-                              textOverflow: "ellipsis",
-                              whiteSpace: "normal",
-                              wordWrap: "break-word",
-                              marginTop: "30px",
-                            }}
-                          >
-                            {timeline && <OrLinechat timeline={timeline} />}
-                            <Stack flexDirection={"row"} alignItems={"center"}>
-                              {message.sender_id === account.uid && (
-                                <>
-                                  <Avatar
-                                    onlineStatus={true}
-                                    userid={account.uid}
-                                    size={40}
-                                    status={
-                                      !notificationStore.alert
-                                        ? "donotdisturb"
-                                        : "online"
-                                    }
-                                  />
+                        date1.getFullYear() === date2.getFullYear() &&
+                        date1.getMonth() === date2.getMonth() &&
+                        date1.getDate() === date2.getDate()
+                      );
+                    };
+
+                    const isFirstMessageOfDay = () => {
+                      if (index === 0) return true;
+
+                      const previousMessageDate = new Date(
+                        [...chatHistoryStore.messages].reverse()[
+                          index - 1
+                        ]?.createdAt
+                      );
+                      const currentMessageDate = new Date(message.createdAt);
+
+                      return !isSameDay(
+                        previousMessageDate,
+                        currentMessageDate
+                      );
+                    };
+
+                    const timeline = isFirstMessageOfDay()
+                      ? formatDateDifference(message.createdAt)
+                      : null;
+
+                    return (
+                      <>
+                        {/* Your existing Box component for rendering the message */}
+                        <Box
+                          key={`${
+                            message.sender_id
+                          }-${index}-${new Date().toISOString()}`}
+                          sx={{
+                            width: "100%",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "normal",
+                            wordWrap: "break-word",
+                            marginTop: "30px",
+                          }}
+                        >
+                          {timeline && <OrLinechat timeline={timeline} />}
+                          <Stack flexDirection={"row"} alignItems={"center"}>
+                            {message.sender_id === account.uid && (
+                              <>
+                                <Avatar
+                                  onlineStatus={true}
+                                  userid={account.uid}
+                                  size={40}
+                                  status={
+                                    !notificationStore.alert
+                                      ? "donotdisturb"
+                                      : "online"
+                                  }
+                                />
+                                <Box
+                                  className={"fs-16 white"}
+                                  sx={{ marginLeft: "16px" }}
+                                >
+                                  {userStore.nickname}
+                                </Box>
+                              </>
+                            )}
+                            {message.sender_id !== account.uid && (
+                              <>
+                                <Avatar
+                                  onlineStatus={currentpartner.onlineStatus}
+                                  userid={currentpartner._id}
+                                  size={40}
+                                  status={currentpartner.notificationStatus}
+                                />
+                                <Stack>
                                   <Box
                                     className={"fs-16 white"}
                                     sx={{ marginLeft: "16px" }}
                                   >
-                                    {userStore.nickname}
+                                    {currentpartner.nickName}
                                   </Box>
-                                </>
-                              )}
-                              {message.sender_id !== account.uid && (
-                                <>
-                                  <Avatar
-                                    onlineStatus={currentpartner.onlineStatus}
-                                    userid={currentpartner._id}
-                                    size={40}
-                                    status={currentpartner.notificationStatus}
-                                  />
-                                  <Stack>
-                                    <Box
-                                      className={"fs-16 white"}
-                                      sx={{ marginLeft: "16px" }}
-                                    >
-                                      {currentpartner.nickName}
-                                    </Box>
-                                  </Stack>
-                                </>
-                              )}
-                            </Stack>
-                            <Box
-                              className={"fs-14-regular white"}
-                              sx={{
-                                marginTop: "10px",
-                                overflow: "hidden",
-                                whiteSpace: "normal",
-                                wordWrap: "break-word",
-                                WebkitBoxOrient: "vertical",
-                                display: "-webkit-box",
-                                zIndex: 50,
-                              }}
-                            >
-                              {message.message.split("\n").map((line) => (
-                                <React.Fragment>
-                                  {line}
-                                  <br />
-                                </React.Fragment>
-                              ))}
-                            </Box>
-                            <Box
-                              className={"fs-12-light"}
-                              color={"gray"}
-                              sx={{
-                                marginTop: "10px",
-                              }}
-                            >
-                              {new Date(message.createdAt).toLocaleString(
-                                "en-US",
-                                {
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                }
-                              )}
-                            </Box>
+                                </Stack>
+                              </>
+                            )}
+                          </Stack>
+                          <Box
+                            className={"fs-14-regular white"}
+                            sx={{
+                              marginTop: "10px",
+                              overflow: "hidden",
+                              whiteSpace: "normal",
+                              wordWrap: "break-word",
+                              WebkitBoxOrient: "vertical",
+                              display: "-webkit-box",
+                              zIndex: 50,
+                            }}
+                          >
+                            {message.message.split("\n").map((line) => (
+                              <React.Fragment>
+                                {line}
+                                <br />
+                              </React.Fragment>
+                            ))}
                           </Box>
-                        </>
-                      );
-                    })}
+                          <Box
+                            className={"fs-12-light"}
+                            color={"gray"}
+                            sx={{
+                              marginTop: "10px",
+                            }}
+                          >
+                            {new Date(message.createdAt).toLocaleString(
+                              "en-US",
+                              {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              }
+                            )}
+                          </Box>
+                        </Box>
+                      </>
+                    );
+                  })}
                 </InfiniteScroll>
               </Box>
 

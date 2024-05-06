@@ -33,8 +33,10 @@ import currencyReducer from "./features/wallet/CurrencySlice";
 import scrolldownReducer from "./features/chat/Chat-scrollDownSlice";
 import chatfriendlistReducer from "./features/chat/Chat-friendlistSlice";
 import alertbadgeReducer from "./features/alert/AlertbadgeSlice";
+import encryptionReducer from "./features/chat/Chat-encryptionkeySlice";
 import machineIdReducer from "./features/account/MachineIdSlice";
 import socketHashReducer from "./features/chat/SocketHashSlice";
+import chatmountedReducer from "./features/chat/Chat-intercomSupportSlice";
 
 const store = configureStore({
   reducer: {
@@ -71,8 +73,10 @@ const store = configureStore({
     scrolldown: scrolldownReducer,
     chatfriendlist: chatfriendlistReducer,
     alertbadge: alertbadgeReducer,
+    encryption: encryptionReducer,
     machineId: machineIdReducer,
     socketHash: socketHashReducer,
+    chatmounted: chatmountedReducer
   },
 });
 

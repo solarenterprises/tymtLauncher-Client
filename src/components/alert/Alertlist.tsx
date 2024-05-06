@@ -18,7 +18,11 @@ import {
   getUserlist,
   setUserList,
 } from "../../features/chat/Chat-userlistSlice";
-import { userType } from "../../types/chatTypes";
+import {
+  askEncryptionKeyType,
+  // deliverEncryptionKeyType,
+  userType,
+} from "../../types/chatTypes";
 import {
   getFriendlist,
   setFriendlist,
@@ -26,28 +30,59 @@ import {
 import { getNonCustodial } from "../../features/account/NonCustodialSlice";
 import { getMultiWallet } from "../../features/wallet/MultiWalletSlice";
 
-const socket: Socket = io(socket_backend_url as string);
-import { socket_backend_url } from "../../configs";
-import { io, Socket } from "socket.io-client";
+import { useSocket } from "../../providers/SocketProvider";
 import {
   createContact,
+  // generateRandomString,
   getaccessToken,
   receiveContactlist,
 } from "../../features/chat/Chat-contactApi";
-import { nonCustodialType } from "../../types/accountTypes";
+import { accountType, nonCustodialType } from "../../types/accountTypes";
 import { multiWalletType } from "../../types/walletTypes";
+import {
+  // addEncryptionKey,
+  selectEncryptionKeyByUserId,
+} from "../../features/chat/Chat-encryptionkeySlice";
+import { getAccount } from "../../features/account/AccountSlice";
+import { decrypt } from "../../lib/api/Encrypt";
 
 const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
+  const { socket } = useSocket();
   const [logo, setLogo] = useState<any>();
+  const [keyperuser, setKeyperUser] = useState<string>("");
+  const [decryptedmessage, setDecryptedMessage] = useState<string>("");
   const nonCustodial: nonCustodialType = useSelector(getNonCustodial);
   const multiwallet: multiWalletType = useSelector(getMultiWallet);
+  const account: accountType = useSelector(getAccount);
   const chatuserlist: userType[] = useSelector(getUserlist);
   const friendlist: userType[] = useSelector(getFriendlist);
   const senderUser = chatuserlist.find(
     (user) => user._id === detail.note?.sender
   );
+
+  const existkey = useSelector((state) =>
+    selectEncryptionKeyByUserId(state, detail.note?.sender)
+  );
+
+  useEffect(() => {
+    if (title === "chat") {
+      if (existkey) {
+        setKeyperUser(existkey);
+        // console.log("alertlist chatkey-->", existkey);
+      } else {
+        const userid = detail.note?.sender;
+        const askdata: askEncryptionKeyType = {
+          sender_id: account.uid,
+          recipient_id: userid,
+        };
+        socket.emit("ask-encryption-key", JSON.stringify(askdata));
+        console.log("request for asking key", askdata);
+      }
+    }
+  }, [detail, existkey]);
+
   const addFriend = async () => {
     const senderId = title === "Friend Request" ? detail.note?.sender : null;
     const senderInChatUserlist = chatuserlist.find(
@@ -126,6 +161,19 @@ const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
     }
   }, [status]);
 
+  useEffect(() => {
+    if (title === "chat") {
+      const decryptMessage = async () => {
+        const messagedecrytped = await decrypt(
+          detail.note?.message,
+          keyperuser
+        );
+        setDecryptedMessage(messagedecrytped);
+      };
+      decryptMessage();
+    }
+  }, [keyperuser]);
+
   return (
     <>
       <Box sx={{ width: "100%" }} marginTop={"16px"}>
@@ -152,11 +200,18 @@ const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
               <img src={readdot} width={"12px"} height={"12px"} />
             )}
           </Stack>
-          <Box className={"fs-16-regular white"} marginTop={"12px"}>
-            {(title === "chat" || title === "update") &&
+          <Box
+            className={"fs-16-regular white"}
+            marginTop={"12px"}
+            sx={{ textWrap: "wrap" }}
+          >
+            {title === "update" &&
               (detail.note?.message.length > 100
                 ? detail.note?.message.substring(0, 100) + "..."
                 : detail.note?.message)}
+            {title === "chat" && decryptedmessage.length > 100
+              ? decryptedmessage.substring(0, 100) + "..."
+              : decryptedmessage}
             {title === "Friend Request" &&
               detail.note.status === "pending" &&
               t("not-10_fr-intro")}

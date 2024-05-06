@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { scrollDownType } from "../../types/chatTypes";
+import tymtStorage from "../../lib/Storage";
 
 const init: scrollDownType = {
   down: false,
@@ -21,6 +22,10 @@ const scrollDownSlice = createSlice({
   reducers: {
     setdownState(state, action) {
       state.data = action.payload;
+      tymtStorage.set(
+        `scrolldown`,
+        JSON.stringify(action.payload)
+      );
     },
   },
 });

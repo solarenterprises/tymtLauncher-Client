@@ -90,6 +90,25 @@ export interface alertType {
   receivers: string[];
 }
 
+export interface encryptionkeyStoreType {
+  encryption_Keys: Object;
+}
+
+export interface askEncryptionKeyType {
+  sender_id:string;
+  recipient_id:string;
+}
+
+export interface deliverEncryptionKeyType {
+  sender_id:string;
+  recipient_id:string;
+  key:string;
+}
+
+export interface deliveredEncryptionKeyType {
+  sender_id:string;
+  key:string;
+}
 export interface ISocketHash {
   socketHash: string;
 }

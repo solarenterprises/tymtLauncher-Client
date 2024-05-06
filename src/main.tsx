@@ -52,8 +52,9 @@ import WalletBuyGame from "./pages/wallet/WalletBuyGame";
 import { TrayProvider } from "./providers/TrayProvider";
 import { FullscreenProvider } from "./providers/FullscreenProvider";
 import { Provider as StoreProvider } from "react-redux";
-import ChatProvider from "./pages/chat/Chatprovider";
+import ChatProvider from "./providers/Chatprovider";
 import { AuthProvider } from "./providers/AuthProvider";
+import { SocketProvider } from "./providers/SocketProvider";
 
 import store from "./store";
 
@@ -174,39 +175,45 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
                   path="/confirm-information"
                   element={<ConfirmInformation />}
                 />
-                <Route element={<AuthProvider />}>
-                  <Route path="/" element={<ChatProvider />}>
-                    <Route path="/" element={<Layout />}>
-                      <Route path="/wallet" element={<Wallet />} />
-                      <Route
-                        path="/wallet/send-sxp"
-                        element={<WalletSendSXP />}
-                      />
-                      <Route path="/wallet/vote" element={<WalletVote />} />
-                      <Route
-                        path="/wallet/buy-crypto"
-                        element={<WalletBuyCrypto />}
-                      />
-                      <Route
-                        path="/wallet/payment-method"
-                        element={<WalletPaymentMethod />}
-                      />
-                      <Route
-                        path="/wallet/payment-card"
-                        element={<WalletPaymentCard />}
-                      />
-                      <Route
-                        path="/wallet/buy-game"
-                        element={<WalletBuyGame />}
-                      />
 
-                      <Route path="/home" element={<Homepage />} />
-                      <Route path="/store" element={<Store />} />
-                      <Route path="/store/:gameid" element={<GameOverview />} />
-                      <Route path="/library" element={<Library />} />
-                    </Route>
-                    <Route path="/" element={<Layoutchat />}>
-                      <Route path="/chat" element={<Chatroom />} />
+                <Route element={<AuthProvider />}>
+                  <Route path="/" element={<SocketProvider />}>
+                    <Route path="/" element={<ChatProvider />}>
+                      <Route path="/" element={<Layout />}>
+                        <Route path="/wallet" element={<Wallet />} />
+                        <Route
+                          path="/wallet/send-sxp"
+                          element={<WalletSendSXP />}
+                        />
+                        <Route path="/wallet/vote" element={<WalletVote />} />
+                        <Route
+                          path="/wallet/buy-crypto"
+                          element={<WalletBuyCrypto />}
+                        />
+                        <Route
+                          path="/wallet/payment-method"
+                          element={<WalletPaymentMethod />}
+                        />
+                        <Route
+                          path="/wallet/payment-card"
+                          element={<WalletPaymentCard />}
+                        />
+                        <Route
+                          path="/wallet/buy-game"
+                          element={<WalletBuyGame />}
+                        />
+
+                        <Route path="/home" element={<Homepage />} />
+                        <Route path="/store" element={<Store />} />
+                        <Route
+                          path="/store/:gameid"
+                          element={<GameOverview />}
+                        />
+                        <Route path="/library" element={<Library />} />
+                      </Route>
+                      <Route path="/" element={<Layoutchat />}>
+                        <Route path="/chat" element={<Chatroom />} />
+                      </Route>
                     </Route>
                   </Route>
                 </Route>

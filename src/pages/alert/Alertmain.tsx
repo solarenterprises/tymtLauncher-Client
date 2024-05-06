@@ -64,8 +64,8 @@ const Alertmain = () => {
       await updateAlertReadstatus(alert._id, account.uid, accessToken);
     }
 
-    getUnreadAlerts();
-    getReadAlerts();
+    await getUnreadAlerts();
+    await getReadAlerts();
     dispatch(setBadgeStatus({ ...alertbadge, badge: false }));
 
     console.log("accesstoken", accessToken);
@@ -148,7 +148,7 @@ const Alertmain = () => {
               .reverse()
               .map((alert, index) => (
                 <AlertList
-                  key={index}
+                  key={`${index}-${new Date().toISOString()}`}
                   status={alert.alertType === "chat" ? "message" : "alert"}
                   title={
                     alert.alertType === "friend-request"
@@ -166,7 +166,7 @@ const Alertmain = () => {
               .reverse()
               .map((alert, index) => (
                 <AlertList
-                  key={index}
+                  key={`${index}-${new Date().toISOString()}`}
                   status={alert.alertType === "chat" ? "message" : "alert"}
                   title={
                     alert.alertType === "friend-request"

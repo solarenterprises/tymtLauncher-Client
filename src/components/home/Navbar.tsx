@@ -400,8 +400,8 @@ const Navbar = () => {
             <Button
               className="button_navbar_common"
               onClick={() => {
-                setComing(true);
-                // setShowChat(!showChat);
+                // setComing(true);
+                setShowChat(!showChat);
               }}
               sx={{ position: "relative" }}
             >

@@ -20,6 +20,7 @@ import DeleteModal from "../../components/chat/DeleteModal";
 import RequestModal from "../../components/chat/RequestModal";
 
 import ChatStyle from "../../styles/ChatStyles";
+import { useSocket } from "../../providers/SocketProvider";
 
 import { getUserlist } from "../../features/chat/Chat-userlistSlice";
 import { propsType, userType } from "../../types/chatTypes";
@@ -44,13 +45,12 @@ import { selecteduserType } from "../../types/chatTypes";
 import { searchUsers } from "../../features/chat/Chat-contactApi";
 import { setChatHistory } from "../../features/chat/Chat-historySlice";
 
-const socket: Socket = io(socket_backend_url as string);
-import { socket_backend_url } from "../../configs";
-import { io, Socket } from "socket.io-client";
+
 import { debounce } from "lodash";
 import { getAccount } from "../../features/account/AccountSlice";
 
 const ChatuserlistinRoom = ({ view, setView }: propsType) => {
+  const { socket } = useSocket();
   const dispatch = useDispatch();
   const { t } = useTranslation();
   const classes = ChatStyle();
@@ -329,7 +329,7 @@ const ChatuserlistinRoom = ({ view, setView }: propsType) => {
                           </Box>
 
                           <Box className={"fs-16 white"} sx={{ opacity: 0.3 }}>
-                            {user?.lang}
+                            {/* {user?.lang} */}
                           </Box>
                         </Stack>
                       </Grid>

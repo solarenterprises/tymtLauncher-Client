@@ -42,6 +42,8 @@ import { getAccount } from "../features/account/AccountSlice";
 import { getaccessToken } from "../features/chat/Chat-contactApi";
 import { getNonCustodial } from "../features/account/NonCustodialSlice";
 import { getMultiWallet } from "../features/wallet/MultiWalletSlice";
+import { selectEncryptionKeyByUserId } from "../features/chat/Chat-encryptionkeySlice";
+import { decrypt } from "../lib/api/Encrypt";
 
 function SlideTransition(props) {
   return <Slide {...props} direction="left" />;
@@ -71,12 +73,25 @@ const AlertComp = ({
   const [border, setBorder] = useState("");
   const [bg, setBg] = useState("");
   const [logo, setLogo] = useState<any>();
+  const [message, setMessage] = useState<string>("");
   const senderId =
     title === "Friend Request"
       ? detail.note?.sender
       : searchParams.get("senderId");
   const senderUser = chatuserlist.find((user) => user._id === senderId);
+  const existkey: string = useSelector((state) =>
+    selectEncryptionKeyByUserId(state, senderId)
+  );
 
+  useEffect(() => {
+    const decryptmessage = async () => {
+      const decryptedmessage: string = existkey
+        ? await decrypt(detail, existkey)
+        : "Cannot decrypt message";
+      setMessage(decryptedmessage);
+    };
+    decryptmessage();
+  }, [detail]);
   const addFriend = async () => {
     const senderId = detail.note?.sender;
     const senderInChatUserlist = chatuserlist.find(
@@ -198,9 +213,9 @@ const AlertComp = ({
                 <Box className={"fs-h4 white"}>{title}</Box>
                 <Box className={"fs-16-regular white"}>
                   {title !== "Friend Request" &&
-                    (detail.length > 100
-                      ? detail.substring(0, 100) + "..."
-                      : detail)}
+                    (message.length > 100
+                      ? message.substring(0, 100) + "..."
+                      : message)}
                   {title === "Friend Request" && t("not-10_fr-intro")}
                 </Box>
               </Stack>
