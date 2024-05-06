@@ -10,6 +10,7 @@ import {
   InputAdornment,
   Grid,
   Button,
+  Modal,
 } from "@mui/material";
 import { debounce } from "lodash";
 
@@ -129,8 +130,10 @@ const Chatmain = ({ view, setView }: propsType) => {
 
   const handleContextMenu = (e: any, id: string) => {
     e.preventDefault();
-    const mouseX = e.clientX + window.scrollX;
-    const mouseY = e.clientY + window.scrollY;
+    const mouseX = e.clientX;
+    const mouseY = e.clientY;
+    // const mouseX = e.pageX;
+    // const mouseY = e.pageY;
     setShowContextMenu(true);
     setContextMenuPosition({ x: mouseX, y: mouseY });
     e.stopPropagation();
@@ -146,6 +149,7 @@ const Chatmain = ({ view, setView }: propsType) => {
     };
 
     document.addEventListener("click", handleClickOutsideContextMenu);
+    return false;
   };
 
   const debouncedFilterUsers = debounce(async (value: string) => {
@@ -409,13 +413,13 @@ const Chatmain = ({ view, setView }: propsType) => {
                     }
                   )}
                   {showContextMenu && (
-                    <>
+                    <Modal open={true}>
                       <Box
                         sx={{
                           position: "fixed",
                           top: contextMenuPosition.y,
                           left: contextMenuPosition.x,
-                          display: "inline-flex",
+                          display: "block",
                           flexDirection: "column",
                           alignItems: "flex-start",
                           cursor: "pointer",
@@ -475,7 +479,7 @@ const Chatmain = ({ view, setView }: propsType) => {
                           </>
                         )}
                       </Box>
-                    </>
+                    </Modal>
                   )}
                   <BlockModal
                     openBlockModal={openBlockModal}
