@@ -87,7 +87,7 @@ const AlertComp = ({
     const decryptmessage = async () => {
       const decryptedmessage: string = existkey
         ? await decrypt(detail, existkey)
-        : "Cannot decrypt message";
+        : t("not-13_cannot-decrypt");
       setMessage(decryptedmessage);
     };
     decryptmessage();

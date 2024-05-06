@@ -16,6 +16,10 @@ import {
   sendNotification,
 } from "@tauri-apps/api/notification";
 import notiIcon from "../assets/main/32x32.png";
+import { decrypt } from "../lib/api/Encrypt";
+import { selectEncryptionKeyStore } from "../features/chat/Chat-encryptionkeySlice";
+import { encryptionkeyStoreType } from "../types/chatTypes";
+import { useTranslation } from "react-i18next";
 
 interface NotificationContextType {
   setNotificationOpen: (open: boolean) => void;
@@ -42,6 +46,7 @@ interface NotificationProviderProps {
 export const NotificationProvider: React.FC<NotificationProviderProps> = ({
   children,
 }) => {
+  const { t } = useTranslation();
   const [notificationOpen, setNotificationOpen] = useState<boolean>(false);
   const [notificationStatus, setNotificationStatus] = useState<string>("");
   const [notificationTitle, setNotificationTitle] = useState<string>("");
@@ -49,6 +54,10 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
   const [notificationLink, setNotificationLink] = useState<string>("");
 
   const notificationStore: notificationType = useSelector(selectNotification);
+
+  const encryptionStore: encryptionkeyStoreType = useSelector(
+    selectEncryptionKeyStore
+  );
 
   useEffect(() => {
     const init = async () => {
@@ -58,17 +67,36 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
         permissionGranted = permission === "granted";
       }
       if (permissionGranted) {
-        sendNotification({
-          title: notificationTitle,
-          body: notificationDetail,
-          icon: notiIcon,
-        });
+        if (notificationStatus === "message") {
+          const senderId = notificationLink.split("?senderId=")[1];
+          const existkey = encryptionStore.encryption_Keys[senderId];
+          console.log("existkey", existkey);
+          console.log("encryptionStore", encryptionStore);
+          console.log("senderId", senderId);
+          console.log("notiLink", notificationLink);
+          const decryptedmessage: string = existkey
+            ? await decrypt(notificationDetail, existkey)
+            : t("not-13_cannot-decrypt");
+          sendNotification({
+            title: notificationTitle,
+            body: decryptedmessage,
+            icon: notiIcon,
+          });
+        } else {
+          sendNotification({
+            title: notificationTitle,
+            body: notificationDetail,
+            icon: notiIcon,
+          });
+        }
       }
     };
     if (notificationOpen && notificationStore.alert) {
       init();
     }
   }, [
+    notificationStatus,
+    notificationLink,
     notificationOpen,
     notificationTitle,
     notificationDetail,

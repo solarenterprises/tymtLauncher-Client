@@ -493,6 +493,7 @@
     "not-9_friend-request": "Friend Request",
     "not-10_fr-intro": "Don't miss out on the fun - add to your friends now!",
     "not-11_fr-accept": "Friend Request Accepted",
-    "not-12_fr-reject": "Friend Request Rejected"
+    "not-12_fr-reject": "Friend Request Rejected",
+    "not-13_cannot-decrypt": "Cannot decrypt message"
   }
 }
