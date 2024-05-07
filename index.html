@@ -12,46 +12,53 @@
     <script type="module" src="/src/main.tsx"></script>
 
     <script>
-      window.intercomSettings = {
-        api_base: "https://api-iam.eu.intercom.io",
-        app_id: "xgkvkbh2",
-      };
-    </script>
+      fetch("/intercom.json", {
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+      })
+        .then((response) => response.json())
+        .then((intercomSettingsData) => {
+          window.intercomSettings = intercomSettingsData;
 
-    <script>
-      (function () {
-        var w = window;
-        var ic = w.Intercom;
-        if (typeof ic === "function") {
-          ic("reattach_activator");
-          ic("update", w.intercomSettings);
-        } else {
-          var d = document;
-          var i = function () {
-            i.c(arguments);
-          };
-          i.q = [];
-          i.c = function (args) {
-            i.q.push(args);
-          };
-          w.Intercom = i;
-          var l = function () {
-            var s = d.createElement("script");
-            s.type = "text/javascript";
-            s.async = true;
-            s.src = "https://widget.intercom.io/widget/xgkvkbh2";
-            var x = d.getElementsByTagName("script")[0];
-            x.parentNode.insertBefore(s, x);
-          };
-          if (document.readyState === "complete") {
-            l();
-          } else if (w.attachEvent) {
-            w.attachEvent("onload", l);
-          } else {
-            w.addEventListener("load", l, false);
-          }
-        }
-      })();
+          (function () {
+            var w = window;
+            var ic = w.Intercom;
+            if (typeof ic === "function") {
+              ic("reattach_activator");
+              ic("update", w.intercomSettings);
+            } else {
+              var d = document;
+              var i = function () {
+                i.c(arguments);
+              };
+              i.q = [];
+              i.c = function (args) {
+                i.q.push(args);
+              };
+              w.Intercom = i;
+              var l = function () {
+                var s = d.createElement("script");
+                s.type = "text/javascript";
+                s.async = true;
+                s.src = `https://widget.intercom.io/widget/${intercomSettingsData.app_id}`;
+                var x = d.getElementsByTagName("script")[0];
+                x.parentNode.insertBefore(s, x);
+              };
+              if (document.readyState === "complete") {
+                l();
+              } else if (w.attachEvent) {
+                w.attachEvent("onload", l);
+              } else {
+                w.addEventListener("load", l, false);
+              }
+            }
+          })();
+        })
+        .catch(() => {
+          console.error("Intercom initialization failed.");
+        });
     </script>
   </body>
 </html>

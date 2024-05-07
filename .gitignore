@@ -15,6 +15,9 @@ dist-ssr
 *.local
 configs/*
 
+# Intercom config
+/public/intercom.json
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

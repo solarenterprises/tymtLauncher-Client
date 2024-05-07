@@ -36,6 +36,10 @@ const intercomSupportSlice = createSlice({
         `intercomsupport_${tymt_version}`,
         JSON.stringify({ mounted: true })
       );
+
+      (window as any).Intercom('update', {
+        'hide_default_launcher': true
+      });
     },
     setMountedFalse(state) {
       state.data = { mounted: false };
@@ -43,6 +47,10 @@ const intercomSupportSlice = createSlice({
         `intercomsupport_${tymt_version}`,
         JSON.stringify({ mounted: false })
       );
+
+      (window as any).Intercom('update', {
+        'hide_default_launcher': false
+      });
     },
   },
 });

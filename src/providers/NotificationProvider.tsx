@@ -20,6 +20,7 @@ import { decrypt } from "../lib/api/Encrypt";
 import { selectEncryptionKeyStore } from "../features/chat/Chat-encryptionkeySlice";
 import { encryptionkeyStoreType } from "../types/chatTypes";
 import { useTranslation } from "react-i18next";
+import { invoke } from "@tauri-apps/api/tauri";
 
 interface NotificationContextType {
   setNotificationOpen: (open: boolean) => void;
@@ -62,11 +63,12 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
   useEffect(() => {
     const init = async () => {
       let permissionGranted = await isPermissionGranted();
+      const windowIsVisible = await invoke<boolean>("is_window_visible");
       if (!permissionGranted) {
         const permission = await requestPermission();
         permissionGranted = permission === "granted";
       }
-      if (permissionGranted) {
+      if (permissionGranted && !windowIsVisible) {
         if (notificationStatus === "message") {
           const senderId = notificationLink.split("?senderId=")[1];
           const existkey = encryptionStore.encryption_Keys[senderId];
@@ -91,6 +93,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
         }
       }
     };
+
     if (notificationOpen && notificationStore.alert) {
       init();
     }
