@@ -56,7 +56,9 @@ fn main() {
                 run_command,
                 open_directory,
                 get_machine_id,
-                is_window_visible
+                is_window_visible,
+                show_transaction_window,
+                hide_transaction_window
             ]
         )
         .on_window_event(|event| {
@@ -706,4 +708,26 @@ fn get_machine_id() -> Result<String, String> {
 #[tauri::command]
 fn is_window_visible(window: tauri::Window) -> bool {
     window.is_visible().unwrap_or(false)
+}
+
+#[tauri::command]
+async fn show_transaction_window(app_handle: tauri::AppHandle) {
+    if let Some(window) = app_handle.get_window("tymt_d53_transaction") {
+        if let Err(e) = window.show() {
+            eprintln!("Failed to show window: {}", e);
+        }
+    } else {
+        eprintln!("Window 'tymt_d53_transaction' not found");
+    }
+}
+
+#[tauri::command]
+async fn hide_transaction_window(app_handle: tauri::AppHandle) {
+    if let Some(window) = app_handle.get_window("tymt_d53_transaction") {
+        if let Err(e) = window.hide() {
+            eprintln!("Failed to hide window: {}", e);
+        }
+    } else {
+        eprintln!("Window 'tymt_d53_transaction' not found");
+    }
 }

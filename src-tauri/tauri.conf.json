@@ -56,6 +56,10 @@
           "https://api.devnet.solana.com/*",
           "https://unisat.io/*"
         ]
+      },
+      "window": {
+        "all": true,
+        "create": true
       }
     },
     "windows": [
@@ -67,6 +71,17 @@
         "height": 1024,
         "minWidth": 1200,
         "minHeight": 800,
+        "center": true,
+        "additionalBrowserArgs": "--disable-web-security"
+      },
+      {
+        "label": "tymt_d53_transaction",
+        "title": "D53 transaction",
+        "url": "confirm-information",
+        "resizable": false,
+        "visible": false,
+        "width": 400,
+        "height": 300,
         "center": true,
         "additionalBrowserArgs": "--disable-web-security"
       }
