@@ -200,7 +200,7 @@ export class Solar implements IWallet {
   }
   static async sendTransaction(
     passphrase: string,
-    tx: { recipients: IRecipient[]; fee: string; vendorField?: string },
+    tx: { recipients: IRecipient[]; fee: string; vendorField?: string }, // fee in USD
     secondPassphrase?: string
   ) {
     const addr = await Solar.getAddress(passphrase);
