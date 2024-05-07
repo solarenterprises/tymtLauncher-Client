@@ -8,7 +8,7 @@ use tauri::{ CustomMenuItem, SystemTray, SystemTrayEvent, SystemTrayMenu, System
 
 fn main() {
     ///// For SystemTray
-    let showVisible = CustomMenuItem::new("showVisible".to_string(), "Show tymtLauncher");
+    let showvisible = CustomMenuItem::new("showVisible".to_string(), "Show tymtLauncher");
     let fullscreen = CustomMenuItem::new("fullscreen".to_string(), "Full-screen Mode  (F11)");
     let games = CustomMenuItem::new("games".to_string(), "Games");
     let wallet = CustomMenuItem::new("wallet".to_string(), "Wallet");
@@ -21,7 +21,7 @@ fn main() {
         "Disable Notifications"
     );
     let tray_menu = SystemTrayMenu::new()
-        .add_item(showVisible)
+        .add_item(showvisible)
         .add_native_item(SystemTrayMenuItem::Separator)
         .add_item(fullscreen)
         .add_native_item(SystemTrayMenuItem::Separator)
@@ -55,7 +55,8 @@ fn main() {
                 run_app_macos,
                 run_command,
                 open_directory,
-                get_machine_id
+                get_machine_id,
+                is_window_visible
             ]
         )
         .on_window_event(|event| {
@@ -700,4 +701,9 @@ fn get_machine_id() -> Result<String, String> {
     let hwid = builder.build("tymtLauncher").map_err(|err| err.to_string())?;
 
     Ok(hwid)
+}
+
+#[tauri::command]
+fn is_window_visible(window: tauri::Window) -> bool {
+    window.is_visible().unwrap_or(false)
 }

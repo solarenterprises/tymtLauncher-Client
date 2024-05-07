@@ -69,6 +69,7 @@ import "./locale/i18n";
 
 import { Buffer } from "buffer";
 import { NotificationProvider } from "./providers/NotificationProvider";
+import TransactionProvider from "./providers/TransactionProvider";
 
 window.Buffer = Buffer;
 
@@ -179,40 +180,42 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
                 <Route element={<AuthProvider />}>
                   <Route path="/" element={<SocketProvider />}>
                     <Route path="/" element={<ChatProvider />}>
-                      <Route path="/" element={<Layout />}>
-                        <Route path="/wallet" element={<Wallet />} />
-                        <Route
-                          path="/wallet/send-sxp"
-                          element={<WalletSendSXP />}
-                        />
-                        <Route path="/wallet/vote" element={<WalletVote />} />
-                        <Route
-                          path="/wallet/buy-crypto"
-                          element={<WalletBuyCrypto />}
-                        />
-                        <Route
-                          path="/wallet/payment-method"
-                          element={<WalletPaymentMethod />}
-                        />
-                        <Route
-                          path="/wallet/payment-card"
-                          element={<WalletPaymentCard />}
-                        />
-                        <Route
-                          path="/wallet/buy-game"
-                          element={<WalletBuyGame />}
-                        />
+                      <Route path="/" element={<TransactionProvider />}>
+                        <Route path="/" element={<Layout />}>
+                          <Route path="/wallet" element={<Wallet />} />
+                          <Route
+                            path="/wallet/send-sxp"
+                            element={<WalletSendSXP />}
+                          />
+                          <Route path="/wallet/vote" element={<WalletVote />} />
+                          <Route
+                            path="/wallet/buy-crypto"
+                            element={<WalletBuyCrypto />}
+                          />
+                          <Route
+                            path="/wallet/payment-method"
+                            element={<WalletPaymentMethod />}
+                          />
+                          <Route
+                            path="/wallet/payment-card"
+                            element={<WalletPaymentCard />}
+                          />
+                          <Route
+                            path="/wallet/buy-game"
+                            element={<WalletBuyGame />}
+                          />
 
-                        <Route path="/home" element={<Homepage />} />
-                        <Route path="/store" element={<Store />} />
-                        <Route
-                          path="/store/:gameid"
-                          element={<GameOverview />}
-                        />
-                        <Route path="/library" element={<Library />} />
-                      </Route>
-                      <Route path="/" element={<Layoutchat />}>
-                        <Route path="/chat" element={<Chatroom />} />
+                          <Route path="/home" element={<Homepage />} />
+                          <Route path="/store" element={<Store />} />
+                          <Route
+                            path="/store/:gameid"
+                            element={<GameOverview />}
+                          />
+                          <Route path="/library" element={<Library />} />
+                        </Route>
+                        <Route path="/" element={<Layoutchat />}>
+                          <Route path="/chat" element={<Chatroom />} />
+                        </Route>
                       </Route>
                     </Route>
                   </Route>
