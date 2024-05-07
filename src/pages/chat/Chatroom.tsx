@@ -34,11 +34,14 @@ import {
 } from "../../types/chatTypes";
 import { chatType, notificationType } from "../../types/settingTypes";
 
-import { accountType, walletEnum } from "../../types/accountTypes";
+import {
+  accountType,
+  // , walletEnum
+} from "../../types/accountTypes";
 import { getAccount } from "../../features/account/AccountSlice";
 import { selectPartner } from "../../features/chat/Chat-currentPartnerSlice";
-import { getNonCustodial } from "../../features/account/NonCustodialSlice";
-import { getCustodial } from "../../features/account/CustodialSlice";
+// import { getNonCustodial } from "../../features/account/NonCustodialSlice";
+// import { getCustodial } from "../../features/account/CustodialSlice";
 import {
   getChatHistory,
   setChatHistory,
@@ -118,10 +121,10 @@ const Chatroom = () => {
   const scrollstate: scrollDownType = useSelector(getdownState);
   const notificationStore: notificationType = useSelector(selectNotification);
   const shouldScrollDown = scrollstate.down;
-  const userStore =
-    account.wallet === walletEnum.noncustodial
-      ? useSelector(getNonCustodial)
-      : useSelector(getCustodial);
+  // const userStore =
+  //   account.wallet === walletEnum.noncustodial
+  //     ? useSelector(getNonCustodial)
+  //     : useSelector(getCustodial);
   const { t } = useTranslation();
   const [panel, setPanel] = useState("chatroom-chatuserlist");
   const [value, setValue] = useState<string>("");
@@ -135,6 +138,7 @@ const Chatroom = () => {
   );
   const [keyperuser, setKeyperUser] = useState<string>("");
   const [processedPages, setProcessedPages] = useState(new Set());
+  const [screenexpanded, setScreenExpanded] = useState<boolean>(false);
   const userid: string = currentpartner._id;
   const existkey: string = useSelector((state) =>
     selectEncryptionKeyByUserId(state, userid)
@@ -354,6 +358,24 @@ const Chatroom = () => {
     };
   }, [dispatch]);
 
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 1400) {
+        setScreenExpanded(false);
+      } else {
+        setScreenExpanded(true);
+      }
+    };
+
+    handleResize();
+
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
   return (
     <>
       <ThemeProvider theme={theme}>
@@ -506,6 +528,28 @@ const Chatroom = () => {
                       ? formatDateDifference(message.createdAt)
                       : null;
 
+                    const isSameSender = (id1, id2) => {
+                      return id1 === id2;
+                    };
+
+                    const detectLastMessageofStack = () => {
+                      if (index === 0) return true;
+
+                      const nextMessageSender = [
+                        ...chatHistoryStore.messages,
+                      ].reverse()[index + 1]?.sender_id;
+                      const currentMessageSender = [
+                        ...chatHistoryStore.messages,
+                      ].reverse()[index]?.sender_id;
+
+                      return !isSameSender(
+                        nextMessageSender,
+                        currentMessageSender
+                      );
+                    };
+
+                    const isLastMessageofStack = detectLastMessageofStack();
+
                     return (
                       <>
                         {/* Your existing Box component for rendering the message */}
@@ -518,84 +562,160 @@ const Chatroom = () => {
                             textOverflow: "ellipsis",
                             whiteSpace: "normal",
                             wordWrap: "break-word",
-                            marginTop: "30px",
+                            marginTop: "10px",
                           }}
                         >
                           {timeline && <OrLinechat timeline={timeline} />}
-                          <Stack flexDirection={"row"} alignItems={"center"}>
+                          <Stack
+                            flexDirection={"row"}
+                            alignItems={"flex-end"}
+                            marginTop={"10px"}
+                            gap={"15px"}
+                            justifyContent={
+                              !screenexpanded
+                                ? message.sender_id === account.uid
+                                  ? "flex-end"
+                                  : "flex-start"
+                                : "flex-start"
+                            }
+                          >
                             {message.sender_id === account.uid && (
                               <>
-                                <Avatar
-                                  onlineStatus={true}
-                                  userid={account.uid}
-                                  size={40}
-                                  status={
-                                    !notificationStore.alert
-                                      ? "donotdisturb"
-                                      : "online"
-                                  }
-                                />
-                                <Box
+                                {screenexpanded && isLastMessageofStack && (
+                                  <Avatar
+                                    onlineStatus={true}
+                                    userid={account.uid}
+                                    size={40}
+                                    status={
+                                      !notificationStore.alert
+                                        ? "donotdisturb"
+                                        : "online"
+                                    }
+                                  />
+                                )}
+                                {screenexpanded && !isLastMessageofStack && (
+                                  <div
+                                    style={{ width: "40px", height: "40px" }}
+                                  />
+                                )}
+
+                                {/* <Box
                                   className={"fs-16 white"}
                                   sx={{ marginLeft: "16px" }}
                                 >
                                   {userStore.nickname}
+                                </Box> */}
+                                <Box
+                                  className={"fs-14-regular white"}
+                                  sx={{
+                                    // marginTop: "10px",
+                                    padding: "10px",
+                                    borderRadius: "15px",
+                                    backgroundColor: "#58914e",
+                                    overflow: "hidden",
+                                    whiteSpace: "normal",
+                                    wordWrap: "break-word",
+                                    WebkitBoxOrient: "vertical",
+                                    display: "-webkit-box",
+                                    zIndex: 50,
+                                    position: "relative",
+                                  }}
+                                >
+                                  {message.message.split("\n").map((line) => (
+                                    <React.Fragment>
+                                      {line}
+                                      <br />
+                                    </React.Fragment>
+                                  ))}
+                                  <Box
+                                    className={"fs-12-light"}
+                                    color={"#dee6dc"}
+                                    sx={{
+                                      display: "block",
+                                      marginTop: "5px",
+                                      marginRight: "5px",
+                                      alignSelf: "flex-end",
+                                    }}
+                                  >
+                                    {new Date(message.createdAt).toLocaleString(
+                                      "en-US",
+                                      {
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                      }
+                                    )}
+                                  </Box>
                                 </Box>
                               </>
                             )}
                             {message.sender_id !== account.uid && (
                               <>
-                                <Avatar
-                                  onlineStatus={currentpartner.onlineStatus}
-                                  userid={currentpartner._id}
-                                  size={40}
-                                  status={currentpartner.notificationStatus}
-                                />
-                                <Stack>
+                                {screenexpanded && isLastMessageofStack && (
+                                  <Avatar
+                                    onlineStatus={currentpartner.onlineStatus}
+                                    userid={currentpartner._id}
+                                    size={40}
+                                    status={currentpartner.notificationStatus}
+                                  />
+                                )}
+                                {screenexpanded && !isLastMessageofStack && (
+                                  <div
+                                    style={{ width: "40px", height: "40px" }}
+                                  />
+                                )}
+
+                                {/* <Stack>
                                   <Box
                                     className={"fs-16 white"}
                                     sx={{ marginLeft: "16px" }}
                                   >
                                     {currentpartner.nickName}
                                   </Box>
-                                </Stack>
+                                </Stack> */}
+                                <Box
+                                  className={"fs-14-regular white"}
+                                  sx={{
+                                    // marginTop: "10px",
+                                    padding: "10px",
+                                    borderRadius: "15px",
+                                    backgroundColor: "#72916a",
+                                    overflow: "hidden",
+                                    whiteSpace: "normal",
+                                    wordWrap: "break-word",
+                                    WebkitBoxOrient: "vertical",
+                                    display: "-webkit-box",
+                                    zIndex: 50,
+                                    position: "relative",
+                                  }}
+                                >
+                                  {message.message.split("\n").map((line) => (
+                                    <React.Fragment>
+                                      {line}
+                                      <br />
+                                    </React.Fragment>
+                                  ))}
+                                  <Box
+                                    className={"fs-12-light"}
+                                    color={"#dee6dc"}
+                                    sx={{
+                                      display: "block",
+                                      marginTop: "5px",
+                                      marginRight: "5px",
+                                      alignSelf: "flex-end",
+                                    }}
+                                  >
+                                    {new Date(message.createdAt).toLocaleString(
+                                      "en-US",
+                                      {
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                      }
+                                    )}
+                                  </Box>
+                                </Box>
                               </>
                             )}
                           </Stack>
-                          <Box
-                            className={"fs-14-regular white"}
-                            sx={{
-                              marginTop: "10px",
-                              overflow: "hidden",
-                              whiteSpace: "normal",
-                              wordWrap: "break-word",
-                              WebkitBoxOrient: "vertical",
-                              display: "-webkit-box",
-                              zIndex: 50,
-                            }}
-                          >
-                            {message.message.split("\n").map((line) => (
-                              <React.Fragment>
-                                {line}
-                                <br />
-                              </React.Fragment>
-                            ))}
-                          </Box>
-                          <Box
-                            className={"fs-12-light"}
-                            color={"gray"}
-                            sx={{
-                              marginTop: "10px",
-                            }}
-                          >
-                            {new Date(message.createdAt).toLocaleString(
-                              "en-US",
-                              {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              }
-                            )}
-                          </Box>
                         </Box>
                       </>
                     );

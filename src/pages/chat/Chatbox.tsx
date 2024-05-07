@@ -24,14 +24,12 @@ import {
   scrollDownType,
   userType,
 } from "../../types/chatTypes";
-import { accountType, walletEnum } from "../../types/accountTypes";
-import { chatType, notificationType } from "../../types/settingTypes";
+import { accountType } from "../../types/accountTypes";
+import { chatType } from "../../types/settingTypes";
 
 import { selectPartner } from "../../features/chat/Chat-currentPartnerSlice";
 import { getAccount } from "../../features/account/AccountSlice";
 import TextareaAutosize from "@mui/material/TextareaAutosize";
-import { getNonCustodial } from "../../features/account/NonCustodialSlice";
-import { getCustodial } from "../../features/account/CustodialSlice";
 import {
   getChatHistory,
   setChatHistory,
@@ -41,7 +39,6 @@ import {
   setdownState,
 } from "../../features/chat/Chat-scrollDownSlice";
 import { selectChat } from "../../features/settings/ChatSlice";
-import { selectNotification } from "../../features/settings/NotificationSlice";
 import {
   addEncryptionKey,
   selectEncryptionKeyByUserId,
@@ -91,13 +88,7 @@ const Chatbox = ({ view, setView }: propsType) => {
   const currentpartner: userType = useSelector(selectPartner);
   const chatHistoryStore: ChatHistoryType = useSelector(getChatHistory);
   const scrollstate: scrollDownType = useSelector(getdownState);
-  const notificationStore: notificationType = useSelector(selectNotification);
   const data: chatType = useSelector(selectChat);
-  const shouldScrollDown = scrollstate.down;
-  const userStore =
-    account.wallet === walletEnum.noncustodial
-      ? useSelector(getNonCustodial)
-      : useSelector(getCustodial);
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
   const { t } = useTranslation();
@@ -177,7 +168,7 @@ const Chatbox = ({ view, setView }: propsType) => {
           })
         );
         setValue("");
-        dispatch(setdownState({ down: !shouldScrollDown }));
+        dispatch(setdownState({ down: !scrollstate.down }));
       }
     } catch (err: any) {}
   };
@@ -284,12 +275,14 @@ const Chatbox = ({ view, setView }: propsType) => {
     useEffect(() => {
       if (scrollRef.current) {
         scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+        console.log("scrollTop", scrollRef.current.scrollTop);
+        console.log("scrollHeight", scrollRef.current.scrollHeight);
       }
     }, [shouldScrollDown, currentpartnerid, view]);
     return scrollRef;
   };
 
-  const scrollRef = useChatScroll(shouldScrollDown, currentpartner._id, view);
+  const scrollRef = useChatScroll(scrollstate.down, currentpartner._id, view);
 
   useEffect(() => {
     const decryptMessages = async () => {
@@ -404,7 +397,7 @@ const Chatbox = ({ view, setView }: propsType) => {
           >
             <Box sx={{ width: "100%", flex: "1 1 auto" }}></Box>
             <InfiniteScroll
-              // pageStart={page}
+              // pageStart={0}
               loadMore={debouncedFetchMessages}
               hasMore={hasMore}
               isReverse={true}
@@ -447,81 +440,126 @@ const Chatbox = ({ view, setView }: propsType) => {
                         textOverflow: "ellipsis",
                         whiteSpace: "normal",
                         wordWrap: "break-word",
-                        marginTop: "30px",
+                        marginTop: "10px",
                       }}
                     >
                       {timeline && <OrLinechat timeline={timeline} />}
-                      <Stack flexDirection={"row"} alignItems={"center"}>
+                      <Stack
+                        flexDirection={"row"}
+                        alignItems={"flex-end"}
+                        marginTop={"10px"}
+                        gap={"15px"}
+                        justifyContent={
+                          message.sender_id === account.uid
+                            ? "flex-end"
+                            : "flex-start"
+                        }
+                      >
                         {message.sender_id === account.uid && (
                           <>
-                            <Avatar
-                              onlineStatus={true}
-                              userid={account.uid}
-                              size={40}
-                              status={
-                                !notificationStore.alert
-                                  ? "donotdisturb"
-                                  : "online"
-                              }
-                            />
+                            {/* <Box
+                                  className={"fs-16 white"}
+                                  sx={{ marginLeft: "16px" }}
+                                >
+                                  {userStore.nickname}
+                                </Box> */}
                             <Box
-                              className={"fs-16 white"}
-                              sx={{ marginLeft: "16px" }}
+                              className={"fs-14-regular white"}
+                              sx={{
+                                // marginTop: "10px",
+                                padding: "10px",
+                                borderRadius: "15px",
+                                backgroundColor: "#58914e",
+                                overflow: "hidden",
+                                whiteSpace: "normal",
+                                wordWrap: "break-word",
+                                WebkitBoxOrient: "vertical",
+                                display: "-webkit-box",
+                                zIndex: 50,
+                                position: "relative",
+                              }}
                             >
-                              {userStore.nickname}
+                              {message.message.split("\n").map((line) => (
+                                <React.Fragment>
+                                  {line}
+                                  <br />
+                                </React.Fragment>
+                              ))}
+                              <Box
+                                className={"fs-12-light"}
+                                color={"#dee6dc"}
+                                sx={{
+                                  display: "block",
+                                  marginTop: "5px",
+                                  marginRight: "5px",
+                                  alignSelf: "flex-end",
+                                }}
+                              >
+                                {new Date(message.createdAt).toLocaleString(
+                                  "en-US",
+                                  {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  }
+                                )}
+                              </Box>
                             </Box>
                           </>
                         )}
                         {message.sender_id !== account.uid && (
                           <>
-                            <Avatar
-                              onlineStatus={currentpartner.onlineStatus}
-                              userid={currentpartner._id}
-                              size={40}
-                              status={currentpartner.notificationStatus}
-                            />
-                            <Stack>
+                            {/* <Stack>
+                                  <Box
+                                    className={"fs-16 white"}
+                                    sx={{ marginLeft: "16px" }}
+                                  >
+                                    {currentpartner.nickName}
+                                  </Box>
+                                </Stack> */}
+                            <Box
+                              className={"fs-14-regular white"}
+                              sx={{
+                                // marginTop: "10px",
+                                padding: "10px",
+                                borderRadius: "15px",
+                                backgroundColor: "#72916a",
+                                overflow: "hidden",
+                                whiteSpace: "normal",
+                                wordWrap: "break-word",
+                                WebkitBoxOrient: "vertical",
+                                display: "-webkit-box",
+                                zIndex: 50,
+                                position: "relative",
+                              }}
+                            >
+                              {message.message.split("\n").map((line) => (
+                                <React.Fragment>
+                                  {line}
+                                  <br />
+                                </React.Fragment>
+                              ))}
                               <Box
-                                className={"fs-16 white"}
-                                sx={{ marginLeft: "16px" }}
+                                className={"fs-12-light"}
+                                color={"#dee6dc"}
+                                sx={{
+                                  display: "block",
+                                  marginTop: "5px",
+                                  marginRight: "5px",
+                                  alignSelf: "flex-end",
+                                }}
                               >
-                                {currentpartner.nickName}
+                                {new Date(message.createdAt).toLocaleString(
+                                  "en-US",
+                                  {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  }
+                                )}
                               </Box>
-                            </Stack>
+                            </Box>
                           </>
                         )}
                       </Stack>
-                      <Box
-                        className={"fs-14-regular white"}
-                        sx={{
-                          marginTop: "10px",
-                          overflow: "hidden",
-                          whiteSpace: "normal",
-                          wordWrap: "break-word",
-                          WebkitBoxOrient: "vertical",
-                          display: "-webkit-box",
-                          zIndex: 50,
-                        }}
-                      >
-                        {message.message.split("\n").map((line) => (
-                          <React.Fragment>
-                            {line}
-                            <br />
-                          </React.Fragment>
-                        ))}
-                      </Box>
-                      <Box
-                        className={"fs-12-light"}
-                        color={"gray"}
-                        sx={{
-                          marginTop: "10px",
-                        }}
-                      >
-                        {new Date(message.createdAt).toLocaleString("en-US", {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </Box>
                     </Box>
                   </>
                 );

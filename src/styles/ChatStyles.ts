@@ -35,7 +35,6 @@ const ChatStyle = makeStyles({
     backgroundBlendMode: "luminosity",
     backdropFilter: "blur(4px)",
     margin: "10px",
-    // position: "fixed",
     "&.MuiPaper-root": {
       flexDirection: "row",
     },
