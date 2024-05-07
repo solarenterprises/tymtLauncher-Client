@@ -48,6 +48,7 @@ import WalletBuyCrypto from "./pages/wallet/WalletBuyCrypto";
 import WalletPaymentMethod from "./pages/wallet/WalletPaymentMethod";
 import WalletPaymentCard from "./pages/wallet/WalletPaymentCard";
 import WalletBuyGame from "./pages/wallet/WalletBuyGame";
+import WalletD53Transaction from "./pages/wallet/WalletD53Transaction";
 
 import { TrayProvider } from "./providers/TrayProvider";
 import { FullscreenProvider } from "./providers/FullscreenProvider";
@@ -181,6 +182,10 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
                   <Route path="/" element={<SocketProvider />}>
                     <Route path="/" element={<ChatProvider />}>
                       <Route path="/" element={<TransactionProvider />}>
+                        <Route
+                          path="/d53-transaction"
+                          element={<WalletD53Transaction />}
+                        />
                         <Route path="/" element={<Layout />}>
                           <Route path="/wallet" element={<Wallet />} />
                           <Route

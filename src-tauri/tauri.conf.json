@@ -77,13 +77,14 @@
       {
         "label": "tymt_d53_transaction",
         "title": "D53 transaction",
-        "url": "confirm-information",
+        "url": "d53-transaction",
         "resizable": false,
         "visible": false,
         "width": 400,
         "height": 300,
         "center": true,
-        "additionalBrowserArgs": "--disable-web-security"
+        "additionalBrowserArgs": "--disable-web-security",
+        "alwaysOnTop": true
       }
     ],
     "systemTray": {
