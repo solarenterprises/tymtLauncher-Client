@@ -136,7 +136,6 @@ const Chatbox = ({ view, setView }: propsType) => {
   useEffect(() => {
     if (existkey) {
       setKeyperUser(existkey);
-      console.log("keyperuser", existkey);
     } else {
       const key = generateRandomString(32);
       setKeyperUser(key);
@@ -145,7 +144,6 @@ const Chatbox = ({ view, setView }: propsType) => {
         recipient_id: currentpartner._id,
         key: key,
       };
-      console.log("deliverydata", deliverydata);
       socket.emit("deliver-encryption-key", JSON.stringify(deliverydata));
       dispatch(addEncryptionKey({ userId: userid, encryptionKey: key }));
     }
@@ -180,8 +178,6 @@ const Chatbox = ({ view, setView }: propsType) => {
         );
         setValue("");
         dispatch(setdownState({ down: !shouldScrollDown }));
-        console.log("partnerid", currentpartner._id);
-        console.log("key", keyperuser);
       }
     } catch (err: any) {}
   };
@@ -212,16 +208,12 @@ const Chatbox = ({ view, setView }: propsType) => {
   // When the scrolling up, this function fetches one page of history for each loading.
 
   const fetchMessages = async () => {
-    console.log("has more", hasMore);
     if (!hasMore) return;
 
     const query = {
       room_user_ids: [account.uid, currentpartner._id],
       pagination: { page: page, pageSize: 7 },
     };
-
-    console.log("query pagenumber", page);
-
     if (!processedPages.has(page)) {
       // Add the current page number to the set of processed pages
       setProcessedPages(new Set(processedPages.add(page)));
@@ -229,9 +221,6 @@ const Chatbox = ({ view, setView }: propsType) => {
       socket.emit("get-messages-by-room", JSON.stringify(query));
 
       socket.on("messages-by-room", async (result) => {
-        console.log("messages-by-room", result);
-        console.log("result length", result.data.length);
-
         if (result && result.data.length > 0) {
           if (data.message === "anyone" || data.message === "friend") {
             dispatch(
@@ -295,8 +284,6 @@ const Chatbox = ({ view, setView }: propsType) => {
     useEffect(() => {
       if (scrollRef.current) {
         scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-        console.log("scrolltop", scrollRef.current.scrollTop);
-        console.log("scrollheight", scrollRef.current.scrollHeight);
       }
     }, [shouldScrollDown, currentpartnerid, view]);
     return scrollRef;
@@ -324,7 +311,6 @@ const Chatbox = ({ view, setView }: propsType) => {
     };
 
     decryptMessages();
-    console.log("chathistorystore messages", chatHistoryStore.messages.length);
   }, [chatHistoryStore.messages]);
 
   // Set mounted to true when chatbox is mounted

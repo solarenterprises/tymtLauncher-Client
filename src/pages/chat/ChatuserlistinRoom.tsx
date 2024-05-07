@@ -143,7 +143,6 @@ const ChatuserlistinRoom = ({ view, setView }: propsType) => {
       multiwallet.Solar.chain.wallet,
       nonCustodial.password
     );
-    console.log("accessToken", accessToken);
     await createContact(_id, accessToken);
     const contacts: userType[] = await receiveContactlist(accessToken);
     dispatch(setUserList(contacts));

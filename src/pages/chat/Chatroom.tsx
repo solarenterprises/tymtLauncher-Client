@@ -167,7 +167,6 @@ const Chatroom = () => {
   useEffect(() => {
     if (existkey) {
       setKeyperUser(existkey);
-      console.log("keyperuser", existkey);
     } else {
       const key = generateRandomString(32);
       setKeyperUser(key);
@@ -240,7 +239,6 @@ const Chatroom = () => {
   };
 
   const fetchMessages = async () => {
-    console.log("has more", hasMore);
     if (!hasMore) return;
 
     const query = {
@@ -248,18 +246,11 @@ const Chatroom = () => {
       pagination: { page: page, pageSize: 7 },
     };
 
-    console.log("query pagenumber", page);
-
     if (!processedPages.has(page)) {
       // Add the current page number to the set of processed pages
       setProcessedPages(new Set(processedPages.add(page)));
-
       socket.emit("get-messages-by-room", JSON.stringify(query));
-
       socket.on("messages-by-room", async (result) => {
-        console.log("messages-by-room", result);
-        console.log("result length", result.data.length);
-
         if (result && result.data.length > 0) {
           if (data.message === "anyone" || data.message === "friend") {
             dispatch(

@@ -171,9 +171,7 @@ const ChatProvider = () => {
   };
 
   // Check for socket connection
-  socket.on("connect", function () {
-    console.log("socket connected");
-  });
+  socket.on("connect", function () {});
 
   // Handle each posted message incoming to user
   socket.on("message-posted", async (message: ChatMessageType) => {
@@ -209,8 +207,6 @@ const ChatProvider = () => {
   // Handle each posted alert incoming to user
   socket.on("alert-posted", async (alert: alertType) => {
     console.log("alert-posted", alert);
-    console.log("receiver", alert.receivers[0]);
-    console.log("my id", account.uid);
     const handleIncomingRequest = async () => {
       if (alert.alertType === "friend-request") {
         if (data.friend === "anyone" && alert.receivers[0] === account.uid) {
@@ -326,6 +322,38 @@ const ChatProvider = () => {
       socket.emit("received-encryption-key", JSON.stringify(data));
     }
   );
+
+  socket.on("user-online-status-updated", async (data) => {
+    console.log("received updated user online status-->", data);
+    const handleUpdatedOnlineStatus = async () => {
+      const userId = data.userid;
+      const userinChatuserlist = chatuserlist.find(
+        (user) => user._id === userId
+      );
+      if (userinChatuserlist) {
+        dispatch(
+          setUserList({ ...userinChatuserlist, onlineStatus: data.status })
+        );
+      }
+    };
+    handleUpdatedOnlineStatus();
+  });
+
+  socket.on("user-notification-status-updated", async (data) => {
+    console.log("received updated user online status-->", data);
+    const handleUpdatedOnlineStatus = async () => {
+      const userId = data.userid;
+      const userinChatuserlist = chatuserlist.find(
+        (user) => user._id === userId
+      );
+      if (userinChatuserlist) {
+        dispatch(
+          setUserList({ ...userinChatuserlist, notificationStatus: data.status })
+        );
+      }
+    };
+    handleUpdatedOnlineStatus();
+  });
 
   return (
     <>
