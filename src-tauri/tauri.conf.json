@@ -78,11 +78,13 @@
         "label": "tymt_d53_transaction",
         "title": "D53 transaction",
         "url": "d53-transaction",
+        "decorations": false,
         "resizable": false,
         "visible": false,
-        "width": 400,
-        "height": 300,
-        "center": true,
+        "width": 300,
+        "height": 500,
+        "x": 5,
+        "y": 5,
         "additionalBrowserArgs": "--disable-web-security",
         "alwaysOnTop": true
       }
