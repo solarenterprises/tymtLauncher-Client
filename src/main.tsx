@@ -178,14 +178,14 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
                   element={<ConfirmInformation />}
                 />
 
-                <Route element={<AuthProvider />}>
-                  <Route path="/" element={<SocketProvider />}>
-                    <Route path="/" element={<ChatProvider />}>
-                      <Route path="/" element={<TransactionProvider />}>
-                        <Route
-                          path="/d53-transaction"
-                          element={<WalletD53Transaction />}
-                        />
+                <Route path="/" element={<SocketProvider />}>
+                  <Route path="/" element={<ChatProvider />}>
+                    <Route path="/" element={<TransactionProvider />}>
+                      <Route
+                        path="/d53-transaction"
+                        element={<WalletD53Transaction />}
+                      />
+                      <Route element={<AuthProvider />}>
                         <Route path="/" element={<Layout />}>
                           <Route path="/wallet" element={<Wallet />} />
                           <Route
