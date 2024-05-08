@@ -196,6 +196,12 @@ const Chatbox = ({ view, setView }: propsType) => {
     }
   };
 
+  useEffect(() => {
+    setPage(1);
+    setHasMore(true);
+    dispatch(setChatHistory({ messages: [] }));
+    setProcessedPages(new Set());
+  }, [currentpartner._id]);
   // When the scrolling up, this function fetches one page of history for each loading.
 
   const fetchMessages = async () => {
@@ -203,7 +209,7 @@ const Chatbox = ({ view, setView }: propsType) => {
 
     const query = {
       room_user_ids: [account.uid, currentpartner._id],
-      pagination: { page: page, pageSize: 7 },
+      pagination: { page: page, pageSize: 20 },
     };
     if (!processedPages.has(page)) {
       // Add the current page number to the set of processed pages
@@ -232,13 +238,6 @@ const Chatbox = ({ view, setView }: propsType) => {
   };
 
   const debouncedFetchMessages = _.debounce(fetchMessages, 1000);
-
-  useEffect(() => {
-    setPage(1);
-    setHasMore(true);
-    dispatch(setChatHistory({ messages: [] }));
-    setProcessedPages(new Set());
-  }, [currentpartner._id]);
 
   const formatDateDifference = (date) => {
     const today: any = new Date(Date.now());
@@ -271,7 +270,6 @@ const Chatbox = ({ view, setView }: propsType) => {
     view: string
   ) => {
     const scrollRef = useRef<HTMLDivElement>();
-
     useEffect(() => {
       if (scrollRef.current) {
         scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -314,6 +312,7 @@ const Chatbox = ({ view, setView }: propsType) => {
 
     return () => {
       dispatch(setMountedFalse());
+      // dispatch(setChatHistory({ messages: [] }));
     };
   }, [dispatch, view]);
 
@@ -330,15 +329,7 @@ const Chatbox = ({ view, setView }: propsType) => {
           >
             <Stack flexDirection={"row"} alignItems={"center"}>
               <Button className={classes.common_btn}>
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "center",
-                    textAlign: "center",
-                    alignItems: "center",
-                  }}
-                  onClick={() => setView("chatmain")}
-                >
+                <Box className={"backIcon"} onClick={() => setView("chatmain")}>
                   <img src={backIcon} />
                 </Box>
               </Button>
@@ -372,7 +363,13 @@ const Chatbox = ({ view, setView }: propsType) => {
                 right: 0,
                 cursor: "pointer",
               }}
-              onClick={() => navigate("/chat")}
+              onClick={() => {
+                navigate("/chat");
+                setPage(1);
+                setHasMore(true);
+                dispatch(setChatHistory({ messages: [] }));
+                setProcessedPages(new Set());
+              }}
             >
               <Box className={"center-align"}>
                 <img src={maximize} />
@@ -432,16 +429,10 @@ const Chatbox = ({ view, setView }: propsType) => {
                   <>
                     {/* Existing Box for rendering the message */}
                     <Box
+                      className={"bubblecontainer"}
                       key={`${
                         message.sender_id
                       }-${index}-${new Date().toISOString()}`}
-                      sx={{
-                        width: "100%",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "normal",
-                        wordWrap: "break-word",
-                        marginTop: "10px",
-                      }}
                     >
                       {timeline && <OrLinechat timeline={timeline} />}
                       <Stack
@@ -463,37 +454,18 @@ const Chatbox = ({ view, setView }: propsType) => {
                                 >
                                   {userStore.nickname}
                                 </Box> */}
-                            <Box
-                              className={"fs-14-regular white"}
-                              sx={{
-                                // marginTop: "10px",
-                                padding: "10px",
-                                borderRadius: "15px",
-                                backgroundColor: "#58914e",
-                                overflow: "hidden",
-                                whiteSpace: "normal",
-                                wordWrap: "break-word",
-                                WebkitBoxOrient: "vertical",
-                                display: "-webkit-box",
-                                zIndex: 50,
-                                position: "relative",
-                              }}
-                            >
+                            <Box className={"fs-14-regular white bubble sb13"}>
                               {message.message.split("\n").map((line) => (
                                 <React.Fragment>
                                   {line}
                                   <br />
                                 </React.Fragment>
                               ))}
+
                               <Box
-                                className={"fs-12-light"}
+                                className={"fs-12-light timestamp-inbubble"}
+                                sx={{ alignSelf: "flex-end" }}
                                 color={"#dee6dc"}
-                                sx={{
-                                  display: "block",
-                                  marginTop: "5px",
-                                  marginRight: "5px",
-                                  alignSelf: "flex-end",
-                                }}
                               >
                                 {new Date(message.createdAt).toLocaleString(
                                   "en-US",
@@ -517,20 +489,9 @@ const Chatbox = ({ view, setView }: propsType) => {
                                   </Box>
                                 </Stack> */}
                             <Box
-                              className={"fs-14-regular white"}
-                              sx={{
-                                // marginTop: "10px",
-                                padding: "10px",
-                                borderRadius: "15px",
-                                backgroundColor: "#72916a",
-                                overflow: "hidden",
-                                whiteSpace: "normal",
-                                wordWrap: "break-word",
-                                WebkitBoxOrient: "vertical",
-                                display: "-webkit-box",
-                                zIndex: 50,
-                                position: "relative",
-                              }}
+                              className={
+                                "fs-14-regular white bubble-partner sb14"
+                              }
                             >
                               {message.message.split("\n").map((line) => (
                                 <React.Fragment>
@@ -538,15 +499,11 @@ const Chatbox = ({ view, setView }: propsType) => {
                                   <br />
                                 </React.Fragment>
                               ))}
+
                               <Box
-                                className={"fs-12-light"}
+                                className={"fs-12-light timestamp-inbubble"}
+                                sx={{ alignSelf: "flex-end" }}
                                 color={"#dee6dc"}
-                                sx={{
-                                  display: "block",
-                                  marginTop: "5px",
-                                  marginRight: "5px",
-                                  alignSelf: "flex-end",
-                                }}
                               >
                                 {new Date(message.createdAt).toLocaleString(
                                   "en-US",

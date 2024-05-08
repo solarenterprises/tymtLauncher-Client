@@ -242,12 +242,19 @@ const Chatroom = () => {
     }
   };
 
+  useEffect(() => {
+    setPage(1);
+    setHasMore(true);
+    dispatch(setChatHistory({ messages: [] }));
+    setProcessedPages(new Set());
+  }, [currentpartner._id]);
+
   const fetchMessages = async () => {
     if (!hasMore) return;
 
     const query = {
       room_user_ids: [account.uid, currentpartner._id],
-      pagination: { page: page, pageSize: 7 },
+      pagination: { page: page, pageSize: 20 },
     };
 
     if (!processedPages.has(page)) {
@@ -257,6 +264,7 @@ const Chatroom = () => {
       socket.on("messages-by-room", async (result) => {
         if (result && result.data.length > 0) {
           if (data.message === "anyone" || data.message === "friend") {
+            console.log("chathistory", chatHistoryStore.messages);
             dispatch(
               setChatHistory({
                 messages: [...chatHistoryStore.messages, ...result.data],
@@ -275,13 +283,6 @@ const Chatroom = () => {
   };
 
   const debouncedFetchMessages = _.debounce(fetchMessages, 1000);
-
-  useEffect(() => {
-    setPage(1);
-    setHasMore(true);
-    dispatch(setChatHistory({ messages: [] }));
-    setProcessedPages(new Set());
-  }, [currentpartner._id]);
 
   const formatDateDifference = (date) => {
     const today: any = new Date(Date.now());
@@ -355,6 +356,7 @@ const Chatroom = () => {
 
     return () => {
       dispatch(setMountedFalse());
+      // dispatch(setChatHistory({ messages: [] }));
     };
   }, [dispatch]);
 
@@ -554,16 +556,10 @@ const Chatroom = () => {
                       <>
                         {/* Your existing Box component for rendering the message */}
                         <Box
+                          className={"bubblecontainer"}
                           key={`${
                             message.sender_id
                           }-${index}-${new Date().toISOString()}`}
-                          sx={{
-                            width: "100%",
-                            textOverflow: "ellipsis",
-                            whiteSpace: "normal",
-                            wordWrap: "break-word",
-                            marginTop: "10px",
-                          }}
                         >
                           {timeline && <OrLinechat timeline={timeline} />}
                           <Stack
@@ -605,22 +601,7 @@ const Chatroom = () => {
                                 >
                                   {userStore.nickname}
                                 </Box> */}
-                                <Box
-                                  className={"fs-14-regular white"}
-                                  sx={{
-                                    // marginTop: "10px",
-                                    padding: "10px",
-                                    borderRadius: "15px",
-                                    backgroundColor: "#58914e",
-                                    overflow: "hidden",
-                                    whiteSpace: "normal",
-                                    wordWrap: "break-word",
-                                    WebkitBoxOrient: "vertical",
-                                    display: "-webkit-box",
-                                    zIndex: 50,
-                                    position: "relative",
-                                  }}
-                                >
+                                <Box className={"fs-14-regular white bubble"}>
                                   {message.message.split("\n").map((line) => (
                                     <React.Fragment>
                                       {line}
@@ -628,14 +609,9 @@ const Chatroom = () => {
                                     </React.Fragment>
                                   ))}
                                   <Box
-                                    className={"fs-12-light"}
+                                    className={"fs-12-light timestamp-inbubble"}
+                                    sx={{ alignSelf: "flex-end" }}
                                     color={"#dee6dc"}
-                                    sx={{
-                                      display: "block",
-                                      marginTop: "5px",
-                                      marginRight: "5px",
-                                      alignSelf: "flex-end",
-                                    }}
                                   >
                                     {new Date(message.createdAt).toLocaleString(
                                       "en-US",
@@ -673,20 +649,9 @@ const Chatroom = () => {
                                   </Box>
                                 </Stack> */}
                                 <Box
-                                  className={"fs-14-regular white"}
-                                  sx={{
-                                    // marginTop: "10px",
-                                    padding: "10px",
-                                    borderRadius: "15px",
-                                    backgroundColor: "#72916a",
-                                    overflow: "hidden",
-                                    whiteSpace: "normal",
-                                    wordWrap: "break-word",
-                                    WebkitBoxOrient: "vertical",
-                                    display: "-webkit-box",
-                                    zIndex: 50,
-                                    position: "relative",
-                                  }}
+                                  className={
+                                    "fs-14-regular white bubble-partner"
+                                  }
                                 >
                                   {message.message.split("\n").map((line) => (
                                     <React.Fragment>
@@ -695,14 +660,9 @@ const Chatroom = () => {
                                     </React.Fragment>
                                   ))}
                                   <Box
-                                    className={"fs-12-light"}
+                                    className={"fs-12-light timestamp-inbubble"}
+                                    sx={{ alignSelf: "flex-end" }}
                                     color={"#dee6dc"}
-                                    sx={{
-                                      display: "block",
-                                      marginTop: "5px",
-                                      marginRight: "5px",
-                                      alignSelf: "flex-end",
-                                    }}
                                   >
                                     {new Date(message.createdAt).toLocaleString(
                                       "en-US",

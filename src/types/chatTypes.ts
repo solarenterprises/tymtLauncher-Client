@@ -95,20 +95,26 @@ export interface encryptionkeyStoreType {
 }
 
 export interface askEncryptionKeyType {
-  sender_id:string;
-  recipient_id:string;
+  sender_id: string;
+  recipient_id: string;
 }
 
 export interface deliverEncryptionKeyType {
-  sender_id:string;
-  recipient_id:string;
-  key:string;
+  sender_id: string;
+  recipient_id: string;
+  key: string;
 }
 
 export interface deliveredEncryptionKeyType {
-  sender_id:string;
-  key:string;
+  sender_id: string;
+  key: string;
 }
 export interface ISocketHash {
   socketHash: string;
+}
+
+export interface fetchType {
+  page: number;
+  hasmore: boolean;
+  processedPages: Object;
 }
