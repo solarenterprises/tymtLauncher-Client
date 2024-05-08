@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "@emotion/react": "^11.11.4",
-    "@emotion/styled": "^11.11.0",
+    "@emotion/styled": "^11.11.5",
     "@esbuild-plugins/node-globals-polyfill": "^0.2.3",
     "@esbuild-plugins/node-modules-polyfill": "^0.2.2",
     "@joeattardi/emoji-button": "^4.6.4",
@@ -89,6 +89,7 @@
     "react-qr-code": "^2.0.12",
     "react-redux": "^9.1.0",
     "react-router-dom": "^6.22.1",
+    "react-scroll-to-bottom": "^4.2.0",
     "rollup-plugin-babel": "^4.4.0",
     "rollup-plugin-peer-deps-external": "^2.2.4",
     "rollup-plugin-polyfill-node": "^0.13.0",

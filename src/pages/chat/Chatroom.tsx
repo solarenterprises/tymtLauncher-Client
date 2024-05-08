@@ -1,5 +1,7 @@
 import { useSelector, useDispatch } from "react-redux";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, 
+  // useRef 
+} from "react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -94,6 +96,7 @@ import {
   setMountedFalse,
   setMountedTrue,
 } from "../../features/chat/Chat-intercomSupportSlice";
+import ScrollToBottom from "react-scroll-to-bottom";
 
 const theme = createTheme({
   palette: {
@@ -309,22 +312,22 @@ const Chatroom = () => {
     }
   };
 
-  //scroll down when partner changed or send message
-  const useChatScroll = (
-    shouldScrollDown: boolean,
-    currentpartnerid: string
-  ) => {
-    const scrollRef = useRef<HTMLDivElement>();
+  // //scroll down when partner changed or send message
+  // const useChatScroll = (
+  //   shouldScrollDown: boolean,
+  //   currentpartnerid: string
+  // ) => {
+  //   const scrollRef = useRef<HTMLDivElement>();
 
-    useEffect(() => {
-      if (scrollRef.current) {
-        scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-      }
-    }, [shouldScrollDown, currentpartnerid]);
-    return scrollRef;
-  };
+  //   useEffect(() => {
+  //     if (scrollRef.current) {
+  //       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+  //     }
+  //   }, [shouldScrollDown, currentpartnerid]);
+  //   return scrollRef;
+  // };
 
-  const scrollRef = useChatScroll(shouldScrollDown, currentpartner._id);
+  // const scrollRef = useChatScroll(shouldScrollDown, currentpartner._id);
 
   //decrypt every message displaying on chatroom
 
@@ -487,12 +490,7 @@ const Chatroom = () => {
               </Box>
 
               {/* Message inbox */}
-              <Box
-                className={classes.scroll_bar_chatbox}
-                ref={scrollRef}
-                display={"flex"}
-                flexDirection={"column"}
-              >
+              <ScrollToBottom className={classes.scroll_bar_chatbox}>
                 <Box sx={{ width: "100%", flex: "1 1 auto" }}></Box>
                 <InfiniteScroll
                   // pageStart={page}
@@ -681,7 +679,7 @@ const Chatroom = () => {
                     );
                   })}
                 </InfiniteScroll>
-              </Box>
+              </ScrollToBottom>
 
               {/* Input field section */}
               <Box sx={{ marginTop: "5px", marginBottom: "0px" }}>

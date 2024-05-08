@@ -210,6 +210,8 @@ const ChatStyle = makeStyles({
     marginBottom: "0px",
     height: "calc(100vh - 200px)",
     paddingRight: "10px",
+    display:"flex",
+    flexDirection:"column",
     "&::-webkit-scrollbar": {
       borderRadius: "100px",
       width: "5px",
@@ -228,6 +230,7 @@ const ChatStyle = makeStyles({
     "&::-webkit-scrollbar-thumb:hover": {
       background: "#555",
     },
+
   },
 
   // chatroom

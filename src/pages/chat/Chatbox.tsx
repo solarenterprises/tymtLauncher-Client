@@ -1,4 +1,6 @@
-import { useEffect, useRef } from "react";
+import { useEffect, 
+  // useRef 
+} from "react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
@@ -69,6 +71,7 @@ import {
   setMountedFalse,
   setMountedTrue,
 } from "../../features/chat/Chat-intercomSupportSlice";
+import ScrollToBottom from "react-scroll-to-bottom";
 
 const theme = createTheme({
   palette: {
@@ -264,23 +267,10 @@ const Chatbox = ({ view, setView }: propsType) => {
     }
   };
 
-  const useChatScroll = (
-    shouldScrollDown: boolean,
-    currentpartnerid: string,
-    view: string
-  ) => {
-    const scrollRef = useRef<HTMLDivElement>();
-    useEffect(() => {
-      if (scrollRef.current) {
-        scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-        console.log("scrollTop", scrollRef.current.scrollTop);
-        console.log("scrollHeight", scrollRef.current.scrollHeight);
-      }
-    }, [shouldScrollDown, currentpartnerid, view]);
-    return scrollRef;
-  };
-
-  const scrollRef = useChatScroll(scrollstate.down, currentpartner._id, view);
+  // const scrollRef = useRef<any | null>(null);
+  // useEffect(() => {
+  //   if (scrollRef.current) scrollRef.current.scrollIntoView(true);
+  // }, [chatHistoryStore.messages]);
 
   useEffect(() => {
     const decryptMessages = async () => {
@@ -385,13 +375,7 @@ const Chatbox = ({ view, setView }: propsType) => {
           </Box>
 
           {/* Message inbox */}
-
-          <Box
-            className={classes.scroll_bar_chatbox}
-            display={"flex"}
-            flexDirection={"column"}
-            ref={scrollRef}
-          >
+          <ScrollToBottom className={classes.scroll_bar_chatbox}>
             <Box sx={{ width: "100%", flex: "1 1 auto" }}></Box>
             <InfiniteScroll
               // pageStart={0}
@@ -522,7 +506,7 @@ const Chatbox = ({ view, setView }: propsType) => {
                 );
               })}
             </InfiniteScroll>
-          </Box>
+          </ScrollToBottom>
 
           {/* Input field section */}
           <Box sx={{ marginTop: "5px" }}>
