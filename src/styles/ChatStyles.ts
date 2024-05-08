@@ -230,7 +230,6 @@ const ChatStyle = makeStyles({
     "&::-webkit-scrollbar-thumb:hover": {
       background: "#555",
     },
-
   },
 
   // chatroom

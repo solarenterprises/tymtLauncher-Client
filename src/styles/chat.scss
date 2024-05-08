@@ -295,3 +295,37 @@ $Main-Red: #ef4444;
   right: 3px;
   bottom: 5px;
 }
+
+.scroll_bar_chatbox {
+  width: 101%;
+  flex-grow: 1;
+  overflow-y: auto;
+  margin-bottom: 0px;
+  height: calc(100vh - 200px);
+  padding-right: 10px;
+  display: flex;
+  flex-direction: column;
+  // justify-content: flex-end;
+  // scrollbar-width: none;
+  &::-webkit-scrollbar {
+    width: 5px;
+    border-radius: 100px;
+    background-color: rgba(255, 255, 255, 0.05);
+  }
+
+  &::-webkit-scrollbar-track {
+    border-radius: 100px;
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  &::-webkit-scrollbar-thumb {
+    cursor: pointer;
+    border-radius: 100px;
+    background: #888;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: #555;
+  }
+}
+

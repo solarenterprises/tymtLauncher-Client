@@ -1,6 +1,8 @@
 import { useSelector, useDispatch } from "react-redux";
-import { useCallback, useEffect, 
-  // useRef 
+import {
+  useCallback,
+  useEffect,
+  // useRef
 } from "react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -409,7 +411,11 @@ const Chatroom = () => {
               height: "100%",
             }}
           >
-            <Box className={classes.inbox_container}>
+            <Box
+              className={classes.inbox_container}
+              display={"flex"}
+              flexDirection={"column"}
+            >
               {/* Header section */}
               <Box
                 sx={{
@@ -490,7 +496,12 @@ const Chatroom = () => {
               </Box>
 
               {/* Message inbox */}
-              <ScrollToBottom className={classes.scroll_bar_chatbox}>
+              <ScrollToBottom
+                // className={classes.scroll_bar_chatbox}
+                className={"scroll_bar_chatbox"}
+                display={"flex"}
+                flexDirection={"column"}
+              >
                 <Box sx={{ width: "100%", flex: "1 1 auto" }}></Box>
                 <InfiniteScroll
                   // pageStart={page}
@@ -680,7 +691,6 @@ const Chatroom = () => {
                   })}
                 </InfiniteScroll>
               </ScrollToBottom>
-
               {/* Input field section */}
               <Box sx={{ marginTop: "5px", marginBottom: "0px" }}>
                 <Divider
