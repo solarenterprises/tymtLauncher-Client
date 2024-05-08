@@ -9,7 +9,7 @@ const OrLinechat = ({ timeline }: any) => {
         height: "18px",
         padding: "0px 5px 0px 5px",
       }}
-      marginBottom={"24px"}
+      marginBottom={"10px"}
     >
       <Box
         sx={{

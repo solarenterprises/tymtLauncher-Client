@@ -1,9 +1,8 @@
 import { createSlice } from "@reduxjs/toolkit";
 import tymtStorage from "../../lib/Storage";
-import { tymt_version } from "../../configs";
 
 const loadUser = () => {
-  const data = tymtStorage.get(`intercomsupport_${tymt_version}`);
+  const data = tymtStorage.get(`intercomsupport`);
   if (data === null || data === "") {
     return {
       mounted: false,
@@ -26,23 +25,31 @@ const intercomSupportSlice = createSlice({
     setChatMounted(state, action) {
       state.data = action.payload;
       tymtStorage.set(
-        `intercomsupport_${tymt_version}`,
+        `intercomsupport`,
         JSON.stringify(action.payload)
       );
     },
     setMountedTrue(state) {
       state.data = { mounted: true };
       tymtStorage.set(
-        `intercomsupport_${tymt_version}`,
+        `intercomsupport`,
         JSON.stringify({ mounted: true })
       );
+
+      (window as any).Intercom('update', {
+        'hide_default_launcher': true
+      });
     },
     setMountedFalse(state) {
       state.data = { mounted: false };
       tymtStorage.set(
-        `intercomsupport_${tymt_version}`,
+        `intercomsupport`,
         JSON.stringify({ mounted: false })
       );
+
+      (window as any).Intercom('update', {
+        'hide_default_launcher': false
+      });
     },
   },
 });
