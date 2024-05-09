@@ -210,3 +210,128 @@ $Main-Red: #ef4444;
   align-items: center;
   font-size: 10px;
 }
+
+.backIcon {
+  display: flex;
+  justify-content: center;
+  text-align: center;
+  align-items: center;
+}
+
+.bubblecontainer {
+  width: 100%;
+  text-overflow: ellipsis;
+  white-space: normal;
+  word-wrap: break-word;
+  margin-top: 10px;
+}
+
+.bubble {
+  padding: 10px;
+  border-radius: 15px;
+  background-color: #58914e;
+  overflow: hidden;
+  white-space: normal;
+  word-wrap: break-word;
+  -webkit-box-orient: vertical;
+  display: -webkit-box;
+  z-index: 50;
+  position: relative;
+  display: flex;
+  // justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.bubble-partner {
+  padding: 12px;
+  border-radius: 15px;
+  background-color: #72916a;
+  overflow: hidden;
+  white-space: normal;
+  word-wrap: break-word;
+  -webkit-box-orient: vertical;
+  display: -webkit-box;
+  z-index: 50;
+  position: relative;
+  display: flex;
+  // justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.sb13::before {
+  content: "";
+  width: 0px;
+  height: 0px;
+  position: absolute;
+  background-color: #58914e;
+  border-left: 15px solid #58914e;
+  border-right: 15px solid transparent;
+  border-top: 15px solid #58914e;
+  border-bottom: 15px solid transparent;
+  right: -16px;
+  top: 0px;
+}
+
+.sb14::before {
+  content: "";
+  width: 0px;
+  height: 0px;
+  position: absolute;
+  background-color: #72916a;
+  border-left: 15px solid transparent;
+  border-right: 15px solid #72916a;
+  border-top: 15px solid #72916a;
+  border-bottom: 15px solid transparent;
+  left: -16px;
+  top: 0px;
+}
+
+.timestamp-inbubble {
+  display: block;
+  margin-top: 5px;
+  margin-right: 5px;
+  right: 3px;
+  bottom: 5px;
+}
+
+.scroll_bar_chatbox {
+  width: 101%;
+  flex-grow: 1;
+  overflow-y: auto;
+  margin-bottom: 0px;
+  height: calc(100vh - 200px);
+  padding-right: 10px;
+  display: flex;
+  flex-direction: column;
+  scroll-behavior: smooth;
+  // justify-content: flex-end;
+  // scrollbar-width: none;
+  &::-webkit-scrollbar {
+    width: 5px;
+    border-radius: 100px;
+    background-color: rgba(255, 255, 255, 0.05);
+  }
+
+  &::-webkit-scrollbar-track {
+    border-radius: 100px;
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  &::-webkit-scrollbar-thumb {
+    cursor: pointer;
+    border-radius: 100px;
+    background: #888;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: #555;
+  }
+}
+
+.infinitescroll {
+  scrollbar-width: thin;
+}
+
+

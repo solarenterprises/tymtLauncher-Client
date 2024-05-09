@@ -24,14 +24,12 @@ import {
   scrollDownType,
   userType,
 } from "../../types/chatTypes";
-import { accountType, walletEnum } from "../../types/accountTypes";
-import { chatType, notificationType } from "../../types/settingTypes";
+import { accountType } from "../../types/accountTypes";
+import { chatType } from "../../types/settingTypes";
 
 import { selectPartner } from "../../features/chat/Chat-currentPartnerSlice";
 import { getAccount } from "../../features/account/AccountSlice";
 import TextareaAutosize from "@mui/material/TextareaAutosize";
-import { getNonCustodial } from "../../features/account/NonCustodialSlice";
-import { getCustodial } from "../../features/account/CustodialSlice";
 import {
   getChatHistory,
   setChatHistory,
@@ -41,7 +39,6 @@ import {
   setdownState,
 } from "../../features/chat/Chat-scrollDownSlice";
 import { selectChat } from "../../features/settings/ChatSlice";
-import { selectNotification } from "../../features/settings/NotificationSlice";
 import {
   addEncryptionKey,
   selectEncryptionKeyByUserId,
@@ -72,6 +69,7 @@ import {
   setMountedFalse,
   setMountedTrue,
 } from "../../features/chat/Chat-intercomSupportSlice";
+// import ScrollToBottom from "react-scroll-to-bottom";
 
 const theme = createTheme({
   palette: {
@@ -91,13 +89,7 @@ const Chatbox = ({ view, setView }: propsType) => {
   const currentpartner: userType = useSelector(selectPartner);
   const chatHistoryStore: ChatHistoryType = useSelector(getChatHistory);
   const scrollstate: scrollDownType = useSelector(getdownState);
-  const notificationStore: notificationType = useSelector(selectNotification);
   const data: chatType = useSelector(selectChat);
-  const shouldScrollDown = scrollstate.down;
-  const userStore =
-    account.wallet === walletEnum.noncustodial
-      ? useSelector(getNonCustodial)
-      : useSelector(getCustodial);
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
   const { t } = useTranslation();
@@ -136,7 +128,6 @@ const Chatbox = ({ view, setView }: propsType) => {
   useEffect(() => {
     if (existkey) {
       setKeyperUser(existkey);
-      console.log("keyperuser", existkey);
     } else {
       const key = generateRandomString(32);
       setKeyperUser(key);
@@ -145,7 +136,6 @@ const Chatbox = ({ view, setView }: propsType) => {
         recipient_id: currentpartner._id,
         key: key,
       };
-      console.log("deliverydata", deliverydata);
       socket.emit("deliver-encryption-key", JSON.stringify(deliverydata));
       dispatch(addEncryptionKey({ userId: userid, encryptionKey: key }));
     }
@@ -179,9 +169,7 @@ const Chatbox = ({ view, setView }: propsType) => {
           })
         );
         setValue("");
-        dispatch(setdownState({ down: !shouldScrollDown }));
-        console.log("partnerid", currentpartner._id);
-        console.log("key", keyperuser);
+        dispatch(setdownState({ down: !scrollstate.down }));
       }
     } catch (err: any) {}
   };
@@ -209,19 +197,21 @@ const Chatbox = ({ view, setView }: propsType) => {
     }
   };
 
+  useEffect(() => {
+    setPage(1);
+    setHasMore(true);
+    dispatch(setChatHistory({ messages: [] }));
+    setProcessedPages(new Set());
+  }, [currentpartner._id]);
   // When the scrolling up, this function fetches one page of history for each loading.
 
   const fetchMessages = async () => {
-    console.log("has more", hasMore);
     if (!hasMore) return;
 
     const query = {
       room_user_ids: [account.uid, currentpartner._id],
-      pagination: { page: page, pageSize: 7 },
+      pagination: { page: page, pageSize: 20 },
     };
-
-    console.log("query pagenumber", page);
-
     if (!processedPages.has(page)) {
       // Add the current page number to the set of processed pages
       setProcessedPages(new Set(processedPages.add(page)));
@@ -229,9 +219,6 @@ const Chatbox = ({ view, setView }: propsType) => {
       socket.emit("get-messages-by-room", JSON.stringify(query));
 
       socket.on("messages-by-room", async (result) => {
-        console.log("messages-by-room", result);
-        console.log("result length", result.data.length);
-
         if (result && result.data.length > 0) {
           if (data.message === "anyone" || data.message === "friend") {
             dispatch(
@@ -252,13 +239,6 @@ const Chatbox = ({ view, setView }: propsType) => {
   };
 
   const debouncedFetchMessages = _.debounce(fetchMessages, 1000);
-
-  useEffect(() => {
-    setPage(1);
-    setHasMore(true);
-    dispatch(setChatHistory({ messages: [] }));
-    setProcessedPages(new Set());
-  }, [currentpartner._id]);
 
   const formatDateDifference = (date) => {
     const today: any = new Date(Date.now());
@@ -285,25 +265,6 @@ const Chatbox = ({ view, setView }: propsType) => {
     }
   };
 
-  const useChatScroll = (
-    shouldScrollDown: boolean,
-    currentpartnerid: string,
-    view: string
-  ) => {
-    const scrollRef = useRef<HTMLDivElement>();
-
-    useEffect(() => {
-      if (scrollRef.current) {
-        scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-        console.log("scrolltop", scrollRef.current.scrollTop);
-        console.log("scrollheight", scrollRef.current.scrollHeight);
-      }
-    }, [shouldScrollDown, currentpartnerid, view]);
-    return scrollRef;
-  };
-
-  const scrollRef = useChatScroll(shouldScrollDown, currentpartner._id, view);
-
   useEffect(() => {
     const decryptMessages = async () => {
       const decryptedMessages = await Promise.all(
@@ -324,7 +285,6 @@ const Chatbox = ({ view, setView }: propsType) => {
     };
 
     decryptMessages();
-    console.log("chathistorystore messages", chatHistoryStore.messages.length);
   }, [chatHistoryStore.messages]);
 
   // Set mounted to true when chatbox is mounted
@@ -332,11 +292,23 @@ const Chatbox = ({ view, setView }: propsType) => {
     if (view === "chatbox") {
       dispatch(setMountedTrue());
     }
-
     return () => {
       dispatch(setMountedFalse());
+      // dispatch(setChatHistory({ messages: [] }));
     };
   }, [dispatch, view]);
+
+  const scrollref = useRef<HTMLDivElement>(null);
+  const Scroll = () => {
+    const { offsetHeight, scrollHeight, scrollTop } =
+      scrollref.current as HTMLDivElement;
+    if (scrollHeight <= scrollTop + offsetHeight + 100) {
+      scrollref.current?.scrollTo(0, scrollHeight);
+    }
+  };
+  useEffect(() => {
+    if (scrollref.current) Scroll();
+  }, [sendMessage]);
 
   return (
     <>
@@ -351,15 +323,7 @@ const Chatbox = ({ view, setView }: propsType) => {
           >
             <Stack flexDirection={"row"} alignItems={"center"}>
               <Button className={classes.common_btn}>
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "center",
-                    textAlign: "center",
-                    alignItems: "center",
-                  }}
-                  onClick={() => setView("chatmain")}
-                >
+                <Box className={"backIcon"} onClick={() => setView("chatmain")}>
                   <img src={backIcon} />
                 </Box>
               </Button>
@@ -393,7 +357,13 @@ const Chatbox = ({ view, setView }: propsType) => {
                 right: 0,
                 cursor: "pointer",
               }}
-              onClick={() => navigate("/chat")}
+              onClick={() => {
+                navigate("/chat");
+                setPage(1);
+                setHasMore(true);
+                dispatch(setChatHistory({ messages: [] }));
+                setProcessedPages(new Set());
+              }}
             >
               <Box className={"center-align"}>
                 <img src={maximize} />
@@ -409,20 +379,21 @@ const Chatbox = ({ view, setView }: propsType) => {
           </Box>
 
           {/* Message inbox */}
-
           <Box
-            className={classes.scroll_bar_chatbox}
+            // className={classes.scroll_bar_chatbox}
+            className={"scroll_bar_chatbox"}
             display={"flex"}
             flexDirection={"column"}
-            ref={scrollRef}
+            ref={scrollref}
           >
             <Box sx={{ width: "100%", flex: "1 1 auto" }}></Box>
             <InfiniteScroll
-              // pageStart={page}
+              // pageStart={0}
               loadMore={debouncedFetchMessages}
               hasMore={hasMore}
               isReverse={true}
               useWindow={false}
+              // className={"infinitescroll"}
             >
               {[...decryptedmessages].reverse()?.map((message, index) => {
                 const isSameDay = (date1, date2) => {
@@ -453,89 +424,94 @@ const Chatbox = ({ view, setView }: propsType) => {
                   <>
                     {/* Existing Box for rendering the message */}
                     <Box
+                      className={"bubblecontainer"}
                       key={`${
                         message.sender_id
                       }-${index}-${new Date().toISOString()}`}
-                      sx={{
-                        width: "100%",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "normal",
-                        wordWrap: "break-word",
-                        marginTop: "30px",
-                      }}
                     >
                       {timeline && <OrLinechat timeline={timeline} />}
-                      <Stack flexDirection={"row"} alignItems={"center"}>
+                      <Stack
+                        flexDirection={"row"}
+                        alignItems={"flex-end"}
+                        marginTop={"10px"}
+                        gap={"15px"}
+                        justifyContent={
+                          message.sender_id === account.uid
+                            ? "flex-end"
+                            : "flex-start"
+                        }
+                      >
                         {message.sender_id === account.uid && (
                           <>
-                            <Avatar
-                              onlineStatus={true}
-                              userid={account.uid}
-                              size={40}
-                              status={
-                                !notificationStore.alert
-                                  ? "donotdisturb"
-                                  : "online"
-                              }
-                            />
-                            <Box
-                              className={"fs-16 white"}
-                              sx={{ marginLeft: "16px" }}
-                            >
-                              {userStore.nickname}
+                            {/* <Box
+                                  className={"fs-16 white"}
+                                  sx={{ marginLeft: "16px" }}
+                                >
+                                  {userStore.nickname}
+                                </Box> */}
+                            <Box className={"fs-14-regular white bubble sb13"}>
+                              {message.message.split("\n").map((line) => (
+                                <React.Fragment>
+                                  {line}
+                                  <br />
+                                </React.Fragment>
+                              ))}
+
+                              <Box
+                                className={"fs-12-light timestamp-inbubble"}
+                                sx={{ alignSelf: "flex-end" }}
+                                color={"#dee6dc"}
+                              >
+                                {new Date(message.createdAt).toLocaleString(
+                                  "en-US",
+                                  {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  }
+                                )}
+                              </Box>
                             </Box>
                           </>
                         )}
                         {message.sender_id !== account.uid && (
                           <>
-                            <Avatar
-                              onlineStatus={currentpartner.onlineStatus}
-                              userid={currentpartner._id}
-                              size={40}
-                              status={currentpartner.notificationStatus}
-                            />
-                            <Stack>
+                            {/* <Stack>
+                                  <Box
+                                    className={"fs-16 white"}
+                                    sx={{ marginLeft: "16px" }}
+                                  >
+                                    {currentpartner.nickName}
+                                  </Box>
+                                </Stack> */}
+                            <Box
+                              className={
+                                "fs-14-regular white bubble-partner sb14"
+                              }
+                            >
+                              {message.message.split("\n").map((line) => (
+                                <React.Fragment>
+                                  {line}
+                                  <br />
+                                </React.Fragment>
+                              ))}
+
                               <Box
-                                className={"fs-16 white"}
-                                sx={{ marginLeft: "16px" }}
+                                className={"fs-12-light timestamp-inbubble"}
+                                sx={{ alignSelf: "flex-end" }}
+                                color={"#dee6dc"}
                               >
-                                {currentpartner.nickName}
+                                {new Date(message.createdAt).toLocaleString(
+                                  "en-US",
+                                  {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  }
+                                )}
                               </Box>
-                            </Stack>
+                            </Box>
                           </>
                         )}
                       </Stack>
-                      <Box
-                        className={"fs-14-regular white"}
-                        sx={{
-                          marginTop: "10px",
-                          overflow: "hidden",
-                          whiteSpace: "normal",
-                          wordWrap: "break-word",
-                          WebkitBoxOrient: "vertical",
-                          display: "-webkit-box",
-                          zIndex: 50,
-                        }}
-                      >
-                        {message.message.split("\n").map((line) => (
-                          <React.Fragment>
-                            {line}
-                            <br />
-                          </React.Fragment>
-                        ))}
-                      </Box>
-                      <Box
-                        className={"fs-12-light"}
-                        color={"gray"}
-                        sx={{
-                          marginTop: "10px",
-                        }}
-                      >
-                        {new Date(message.createdAt).toLocaleString("en-US", {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </Box>
                     </Box>
                   </>
                 );

@@ -143,21 +143,20 @@ const ChatuserlistinRoom = ({ view, setView }: propsType) => {
       multiwallet.Solar.chain.wallet,
       nonCustodial.password
     );
-    console.log("accessToken", accessToken);
     await createContact(_id, accessToken);
     const contacts: userType[] = await receiveContactlist(accessToken);
     dispatch(setUserList(contacts));
   };
 
-    // read the unread chat alerts and mark the number of unread messages
-    const getUnreadAlerts = async () => {
-      const unreadalerts: alertType[] = await fetchUnreadAlerts(account.uid);
-      setUnreadAlerts(unreadalerts);
-    };
-  
-    useEffect(() => {
-      getUnreadAlerts();
-    }, [alertbadge]);
+  // read the unread chat alerts and mark the number of unread messages
+  const getUnreadAlerts = async () => {
+    const unreadalerts: alertType[] = await fetchUnreadAlerts(account.uid);
+    setUnreadAlerts(unreadalerts);
+  };
+
+  useEffect(() => {
+    getUnreadAlerts();
+  }, [alertbadge]);
 
   return (
     <>
@@ -165,7 +164,7 @@ const ChatuserlistinRoom = ({ view, setView }: propsType) => {
         <Box
           sx={{
             display: "flex",
-            padding: "16px 8px 16px 16px",
+            padding: "16px 8px 16px 8px",
             flexDirection: "column",
             margin: "10px",
           }}

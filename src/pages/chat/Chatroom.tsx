@@ -34,11 +34,14 @@ import {
 } from "../../types/chatTypes";
 import { chatType, notificationType } from "../../types/settingTypes";
 
-import { accountType, walletEnum } from "../../types/accountTypes";
+import {
+  accountType,
+  // , walletEnum
+} from "../../types/accountTypes";
 import { getAccount } from "../../features/account/AccountSlice";
 import { selectPartner } from "../../features/chat/Chat-currentPartnerSlice";
-import { getNonCustodial } from "../../features/account/NonCustodialSlice";
-import { getCustodial } from "../../features/account/CustodialSlice";
+// import { getNonCustodial } from "../../features/account/NonCustodialSlice";
+// import { getCustodial } from "../../features/account/CustodialSlice";
 import {
   getChatHistory,
   setChatHistory,
@@ -118,10 +121,6 @@ const Chatroom = () => {
   const scrollstate: scrollDownType = useSelector(getdownState);
   const notificationStore: notificationType = useSelector(selectNotification);
   const shouldScrollDown = scrollstate.down;
-  const userStore =
-    account.wallet === walletEnum.noncustodial
-      ? useSelector(getNonCustodial)
-      : useSelector(getCustodial);
   const { t } = useTranslation();
   const [panel, setPanel] = useState("chatroom-chatuserlist");
   const [value, setValue] = useState<string>("");
@@ -135,6 +134,7 @@ const Chatroom = () => {
   );
   const [keyperuser, setKeyperUser] = useState<string>("");
   const [processedPages, setProcessedPages] = useState(new Set());
+  const [screenexpanded, setScreenExpanded] = useState<boolean>(false);
   const userid: string = currentpartner._id;
   const existkey: string = useSelector((state) =>
     selectEncryptionKeyByUserId(state, userid)
@@ -167,7 +167,6 @@ const Chatroom = () => {
   useEffect(() => {
     if (existkey) {
       setKeyperUser(existkey);
-      console.log("keyperuser", existkey);
     } else {
       const key = generateRandomString(32);
       setKeyperUser(key);
@@ -239,29 +238,29 @@ const Chatroom = () => {
     }
   };
 
+  useEffect(() => {
+    setPage(1);
+    setHasMore(true);
+    dispatch(setChatHistory({ messages: [] }));
+    setProcessedPages(new Set());
+  }, [currentpartner._id]);
+
   const fetchMessages = async () => {
-    console.log("has more", hasMore);
     if (!hasMore) return;
 
     const query = {
       room_user_ids: [account.uid, currentpartner._id],
-      pagination: { page: page, pageSize: 7 },
+      pagination: { page: page, pageSize: 20 },
     };
-
-    console.log("query pagenumber", page);
 
     if (!processedPages.has(page)) {
       // Add the current page number to the set of processed pages
       setProcessedPages(new Set(processedPages.add(page)));
-
       socket.emit("get-messages-by-room", JSON.stringify(query));
-
       socket.on("messages-by-room", async (result) => {
-        console.log("messages-by-room", result);
-        console.log("result length", result.data.length);
-
         if (result && result.data.length > 0) {
           if (data.message === "anyone" || data.message === "friend") {
+            console.log("chathistory", chatHistoryStore.messages);
             dispatch(
               setChatHistory({
                 messages: [...chatHistoryStore.messages, ...result.data],
@@ -280,13 +279,6 @@ const Chatroom = () => {
   };
 
   const debouncedFetchMessages = _.debounce(fetchMessages, 1000);
-
-  useEffect(() => {
-    setPage(1);
-    setHasMore(true);
-    dispatch(setChatHistory({ messages: [] }));
-    setProcessedPages(new Set());
-  }, [currentpartner._id]);
 
   const formatDateDifference = (date) => {
     const today: any = new Date(Date.now());
@@ -312,23 +304,6 @@ const Chatroom = () => {
       return messageDate.toLocaleDateString("en-US", options);
     }
   };
-
-  //scroll down when partner changed or send message
-  const useChatScroll = (
-    shouldScrollDown: boolean,
-    currentpartnerid: string
-  ) => {
-    const scrollRef = useRef<HTMLDivElement>();
-
-    useEffect(() => {
-      if (scrollRef.current) {
-        scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-      }
-    }, [shouldScrollDown, currentpartnerid]);
-    return scrollRef;
-  };
-
-  const scrollRef = useChatScroll(shouldScrollDown, currentpartner._id);
 
   //decrypt every message displaying on chatroom
 
@@ -360,8 +335,39 @@ const Chatroom = () => {
 
     return () => {
       dispatch(setMountedFalse());
+      // dispatch(setChatHistory({ messages: [] }));
     };
   }, [dispatch]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 1400) {
+        setScreenExpanded(false);
+      } else {
+        setScreenExpanded(true);
+      }
+    };
+
+    handleResize();
+
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
+  const scrollref = useRef<HTMLDivElement>(null);
+  const Scroll = () => {
+    const { offsetHeight, scrollHeight, scrollTop } =
+      scrollref.current as HTMLDivElement;
+    if (scrollHeight <= scrollTop + offsetHeight + 100) {
+      scrollref.current?.scrollTo(0, scrollHeight);
+    }
+  };
+  useEffect(() => {
+    if (scrollref.current) Scroll();
+  }, [sendMessage]);
 
   return (
     <>
@@ -391,7 +397,11 @@ const Chatroom = () => {
               height: "100%",
             }}
           >
-            <Box className={classes.inbox_container}>
+            <Box
+              className={classes.inbox_container}
+              display={"flex"}
+              flexDirection={"column"}
+            >
               {/* Header section */}
               <Box
                 sx={{
@@ -473,10 +483,11 @@ const Chatroom = () => {
 
               {/* Message inbox */}
               <Box
-                className={classes.scroll_bar_chatbox}
-                ref={scrollRef}
+                // className={classes.scroll_bar_chatbox}
+                className={"scroll_bar_chatbox"}
                 display={"flex"}
                 flexDirection={"column"}
+                ref={scrollref}
               >
                 <Box sx={{ width: "100%", flex: "1 1 auto" }}></Box>
                 <InfiniteScroll
@@ -515,103 +526,158 @@ const Chatroom = () => {
                       ? formatDateDifference(message.createdAt)
                       : null;
 
+                    const isSameSender = (id1, id2) => {
+                      return id1 === id2;
+                    };
+
+                    const detectLastMessageofStack = () => {
+                      if (index === 0) return true;
+
+                      const nextMessageSender = [
+                        ...chatHistoryStore.messages,
+                      ].reverse()[index + 1]?.sender_id;
+                      const currentMessageSender = [
+                        ...chatHistoryStore.messages,
+                      ].reverse()[index]?.sender_id;
+
+                      return !isSameSender(
+                        nextMessageSender,
+                        currentMessageSender
+                      );
+                    };
+
+                    const isLastMessageofStack = detectLastMessageofStack();
+
                     return (
                       <>
                         {/* Your existing Box component for rendering the message */}
                         <Box
+                          className={"bubblecontainer"}
                           key={`${
                             message.sender_id
                           }-${index}-${new Date().toISOString()}`}
-                          sx={{
-                            width: "100%",
-                            textOverflow: "ellipsis",
-                            whiteSpace: "normal",
-                            wordWrap: "break-word",
-                            marginTop: "30px",
-                          }}
                         >
                           {timeline && <OrLinechat timeline={timeline} />}
-                          <Stack flexDirection={"row"} alignItems={"center"}>
+                          <Stack
+                            flexDirection={"row"}
+                            alignItems={"flex-end"}
+                            marginTop={"10px"}
+                            gap={"15px"}
+                            justifyContent={
+                              !screenexpanded
+                                ? message.sender_id === account.uid
+                                  ? "flex-end"
+                                  : "flex-start"
+                                : "flex-start"
+                            }
+                          >
                             {message.sender_id === account.uid && (
                               <>
-                                <Avatar
-                                  onlineStatus={true}
-                                  userid={account.uid}
-                                  size={40}
-                                  status={
-                                    !notificationStore.alert
-                                      ? "donotdisturb"
-                                      : "online"
-                                  }
-                                />
-                                <Box
+                                {screenexpanded && isLastMessageofStack && (
+                                  <Avatar
+                                    onlineStatus={true}
+                                    userid={account.uid}
+                                    size={40}
+                                    status={
+                                      !notificationStore.alert
+                                        ? "donotdisturb"
+                                        : "online"
+                                    }
+                                  />
+                                )}
+                                {screenexpanded && !isLastMessageofStack && (
+                                  <div
+                                    style={{ width: "40px", height: "40px" }}
+                                  />
+                                )}
+
+                                {/* <Box
                                   className={"fs-16 white"}
                                   sx={{ marginLeft: "16px" }}
                                 >
                                   {userStore.nickname}
+                                </Box> */}
+                                <Box className={"fs-14-regular white bubble"}>
+                                  {message.message.split("\n").map((line) => (
+                                    <React.Fragment>
+                                      {line}
+                                      <br />
+                                    </React.Fragment>
+                                  ))}
+                                  <Box
+                                    className={"fs-12-light timestamp-inbubble"}
+                                    sx={{ alignSelf: "flex-end" }}
+                                    color={"#dee6dc"}
+                                  >
+                                    {new Date(message.createdAt).toLocaleString(
+                                      "en-US",
+                                      {
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                      }
+                                    )}
+                                  </Box>
                                 </Box>
                               </>
                             )}
                             {message.sender_id !== account.uid && (
                               <>
-                                <Avatar
-                                  onlineStatus={currentpartner.onlineStatus}
-                                  userid={currentpartner._id}
-                                  size={40}
-                                  status={currentpartner.notificationStatus}
-                                />
-                                <Stack>
+                                {screenexpanded && isLastMessageofStack && (
+                                  <Avatar
+                                    onlineStatus={currentpartner.onlineStatus}
+                                    userid={currentpartner._id}
+                                    size={40}
+                                    status={currentpartner.notificationStatus}
+                                  />
+                                )}
+                                {screenexpanded && !isLastMessageofStack && (
+                                  <div
+                                    style={{ width: "40px", height: "40px" }}
+                                  />
+                                )}
+
+                                {/* <Stack>
                                   <Box
                                     className={"fs-16 white"}
                                     sx={{ marginLeft: "16px" }}
                                   >
                                     {currentpartner.nickName}
                                   </Box>
-                                </Stack>
+                                </Stack> */}
+                                <Box
+                                  className={
+                                    "fs-14-regular white bubble-partner"
+                                  }
+                                >
+                                  {message.message.split("\n").map((line) => (
+                                    <React.Fragment>
+                                      {line}
+                                      <br />
+                                    </React.Fragment>
+                                  ))}
+                                  <Box
+                                    className={"fs-12-light timestamp-inbubble"}
+                                    sx={{ alignSelf: "flex-end" }}
+                                    color={"#dee6dc"}
+                                  >
+                                    {new Date(message.createdAt).toLocaleString(
+                                      "en-US",
+                                      {
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                      }
+                                    )}
+                                  </Box>
+                                </Box>
                               </>
                             )}
                           </Stack>
-                          <Box
-                            className={"fs-14-regular white"}
-                            sx={{
-                              marginTop: "10px",
-                              overflow: "hidden",
-                              whiteSpace: "normal",
-                              wordWrap: "break-word",
-                              WebkitBoxOrient: "vertical",
-                              display: "-webkit-box",
-                              zIndex: 50,
-                            }}
-                          >
-                            {message.message.split("\n").map((line) => (
-                              <React.Fragment>
-                                {line}
-                                <br />
-                              </React.Fragment>
-                            ))}
-                          </Box>
-                          <Box
-                            className={"fs-12-light"}
-                            color={"gray"}
-                            sx={{
-                              marginTop: "10px",
-                            }}
-                          >
-                            {new Date(message.createdAt).toLocaleString(
-                              "en-US",
-                              {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              }
-                            )}
-                          </Box>
                         </Box>
                       </>
                     );
                   })}
                 </InfiniteScroll>
               </Box>
-
               {/* Input field section */}
               <Box sx={{ marginTop: "5px", marginBottom: "0px" }}>
                 <Divider
