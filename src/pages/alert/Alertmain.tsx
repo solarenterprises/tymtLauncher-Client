@@ -1,5 +1,5 @@
 import { Box, Button, Stack } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 
@@ -40,19 +40,20 @@ const Alertmain = () => {
   const [readalerts, setReadAlerts] = useState<alertType[]>([]);
   const [read, setRead] = useState<string>("unread");
 
-  const getUnreadAlerts = async () => {
+  const getUnreadAlerts = useCallback(async () => {
     const unreadalerts: alertType[] = await fetchUnreadAlerts(account.uid);
     setUnreadCount(unreadalerts.length);
     setUnreadAlerts(unreadalerts);
     if (unreadalerts.length > 0) {
       dispatch(setBadgeStatus({ ...alertbadge, badge: true }));
     }
-  };
-  const getReadAlerts = async () => {
+  }, [alertbadge.trigger, read]);
+
+  const getReadAlerts = useCallback(async () => {
     const readalerts: alertType[] = await fetchReadAlerts(account.uid);
     setReadCount(readalerts.length);
     setReadAlerts(readalerts);
-  };
+  }, [alertbadge.trigger, read]);
 
   const updateAlert = async () => {
     const accessToken: string = await getaccessToken(
@@ -76,7 +77,7 @@ const Alertmain = () => {
     getUnreadAlerts();
     getReadAlerts();
     console.log("alertbadge trigger", alertbadge.trigger);
-  }, [alertbadge.trigger, read]);
+  }, [getUnreadAlerts,getReadAlerts]);
 
   return (
     <Box className={"alertmain-container"}>

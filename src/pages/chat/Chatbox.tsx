@@ -69,6 +69,7 @@ import {
   setMountedFalse,
   setMountedTrue,
 } from "../../features/chat/Chat-intercomSupportSlice";
+import { ThreeDots } from "react-loader-spinner";
 // import ScrollToBottom from "react-scroll-to-bottom";
 
 const theme = createTheme({
@@ -308,7 +309,7 @@ const Chatbox = ({ view, setView }: propsType) => {
   };
   useEffect(() => {
     if (scrollref.current) Scroll();
-  }, [sendMessage]);
+  }, [sendMessage, currentpartner._id]);
 
   return (
     <>
@@ -420,6 +421,26 @@ const Chatbox = ({ view, setView }: propsType) => {
                 const timeline = isFirstMessageOfDay()
                   ? formatDateDifference(message.createdAt)
                   : null;
+
+                const isSameSender = (id1, id2) => {
+                  return id1 === id2;
+                };
+
+                const detectLastMessageofStack = () => {
+                  if (index === 0) return true;
+
+                  const nextMessageSender = [
+                    ...chatHistoryStore.messages,
+                  ].reverse()[index + 1]?.sender_id;
+                  const currentMessageSender = [
+                    ...chatHistoryStore.messages,
+                  ].reverse()[index]?.sender_id;
+
+                  return !isSameSender(nextMessageSender, currentMessageSender);
+                };
+
+                const isLastMessageofStack = detectLastMessageofStack();
+
                 return (
                   <>
                     {/* Existing Box for rendering the message */}
@@ -429,7 +450,11 @@ const Chatbox = ({ view, setView }: propsType) => {
                         message.sender_id
                       }-${index}-${new Date().toISOString()}`}
                     >
-                      {timeline && <OrLinechat timeline={timeline} />}
+                      {timeline &&
+                        message.message !==
+                          "Unable to decode message #tymt114#" && (
+                          <OrLinechat timeline={timeline} />
+                        )}
                       <Stack
                         flexDirection={"row"}
                         alignItems={"flex-end"}
@@ -449,27 +474,46 @@ const Chatbox = ({ view, setView }: propsType) => {
                                 >
                                   {userStore.nickname}
                                 </Box> */}
-                            <Box className={"fs-14-regular white bubble sb13"}>
-                              {message.message.split("\n").map((line) => (
-                                <React.Fragment>
-                                  {line}
-                                  <br />
-                                </React.Fragment>
-                              ))}
-
-                              <Box
-                                className={"fs-12-light timestamp-inbubble"}
-                                sx={{ alignSelf: "flex-end" }}
-                                color={"#dee6dc"}
-                              >
-                                {new Date(message.createdAt).toLocaleString(
-                                  "en-US",
-                                  {
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                  }
-                                )}
-                              </Box>
+                            <Box
+                              className={
+                                isLastMessageofStack
+                                  ? "fs-14-regular white bubble-lastmessage-unexpanded"
+                                  : "fs-14-regular white bubble"
+                              }
+                            >
+                              {message.message !==
+                              "Unable to decode message #tymt114#" ? (
+                                <>
+                                  {message.message.split("\n").map((line) => (
+                                    <React.Fragment>
+                                      {line}
+                                      <br />
+                                    </React.Fragment>
+                                  ))}
+                                  <Box
+                                    className={"fs-14-light timestamp-inbubble"}
+                                    sx={{ alignSelf: "flex-end" }}
+                                    color={"rgba(11, 11, 11, 0.7)"}
+                                  >
+                                    {new Date(message.createdAt).toLocaleString(
+                                      "en-US",
+                                      {
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                      }
+                                    )}
+                                  </Box>
+                                </>
+                              ) : (
+                                <>
+                                  <ThreeDots
+                                    height="23px"
+                                    width={"40px"}
+                                    radius={4}
+                                    color={`white`}
+                                  />
+                                </>
+                              )}
                             </Box>
                           </>
                         )}
@@ -485,29 +529,44 @@ const Chatbox = ({ view, setView }: propsType) => {
                                 </Stack> */}
                             <Box
                               className={
-                                "fs-14-regular white bubble-partner sb14"
+                                isLastMessageofStack
+                                  ? "fs-14-regular white bubble-partner-lastmessage"
+                                  : "fs-14-regular white bubble-partner"
                               }
                             >
-                              {message.message.split("\n").map((line) => (
-                                <React.Fragment>
-                                  {line}
-                                  <br />
-                                </React.Fragment>
-                              ))}
-
-                              <Box
-                                className={"fs-12-light timestamp-inbubble"}
-                                sx={{ alignSelf: "flex-end" }}
-                                color={"#dee6dc"}
-                              >
-                                {new Date(message.createdAt).toLocaleString(
-                                  "en-US",
-                                  {
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                  }
-                                )}
-                              </Box>
+                              {message.message !==
+                              "Unable to decode message #tymt114#" ? (
+                                <>
+                                  {message.message.split("\n").map((line) => (
+                                    <React.Fragment>
+                                      {line}
+                                      <br />
+                                    </React.Fragment>
+                                  ))}
+                                  <Box
+                                    className={"fs-14-light timestamp-inbubble"}
+                                    sx={{ alignSelf: "flex-end" }}
+                                    color={"rgba(11, 11, 11, 0.7)"}
+                                  >
+                                    {new Date(message.createdAt).toLocaleString(
+                                      "en-US",
+                                      {
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                      }
+                                    )}
+                                  </Box>
+                                </>
+                              ) : (
+                                <>
+                                  <ThreeDots
+                                    height="23px"
+                                    width={"40px"}
+                                    radius={4}
+                                    color={`white`}
+                                  />
+                                </>
+                              )}
                             </Box>
                           </>
                         )}

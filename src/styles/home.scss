@@ -507,3 +507,27 @@
     border: 1px solid var(--Stroke-linear-Hover, rgba(255, 255, 255, 0.1));
   }
 }
+
+.red-blur-static {
+  position: absolute;
+  bottom: -8vw;
+  left: -10%;
+  top: 0px;
+  width: 33vw;
+  height: 33vw;
+  filter: blur(5vw);
+  background: radial-gradient(circle at 50% 50%, var(--tymt-red), #00000000);
+  z-index: 1;
+  opacity: 0.8;
+}
+
+.blue-blur-static {
+  position: absolute;
+  top: -40px;
+  right: -5%;
+  width: 23.5vw;
+  height: 23.5vw;
+  filter: blur(5vw);
+  background: radial-gradient(circle at 50% 50%, var(--tymt-blue), #00000000);
+  z-index: 1;
+}

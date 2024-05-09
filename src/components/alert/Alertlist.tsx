@@ -55,6 +55,7 @@ import {
   getdownState,
   setdownState,
 } from "../../features/chat/Chat-scrollDownSlice";
+import { ThreeDots } from "react-loader-spinner";
 
 const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
   const { t } = useTranslation();
@@ -250,9 +251,20 @@ const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
               (detail.note?.message.length > 100
                 ? detail.note?.message.substring(0, 100) + "..."
                 : detail.note?.message)}
-            {title === "chat" && decryptedmessage.length > 100
+            {title === "chat" &&
+            decryptedmessage !== "Unable to decode message #tymt114#" &&
+            decryptedmessage.length > 100
               ? decryptedmessage.substring(0, 100) + "..."
               : decryptedmessage}
+            {title === "chat" &&
+              decryptedmessage === "Unable to decode message #tymt114#" && (
+                <ThreeDots
+                  height="25px"
+                  width={"40px"}
+                  radius={5}
+                  color={`white`}
+                />
+              )}
             {title === "Friend Request" &&
               detail.note.status === "pending" &&
               t("not-10_fr-intro")}

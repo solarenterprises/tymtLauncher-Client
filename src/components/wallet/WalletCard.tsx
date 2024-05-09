@@ -4,15 +4,15 @@ import { Stack, Box, Button } from "@mui/material";
 
 import CommonStyles from "../../styles/commonStyles";
 
-import walletImg1 from "../../assets/wallet/wallet-card-1.svg";
-import walletImg2 from "../../assets/wallet/wallet-card-2.svg";
-import walletImg3 from "../../assets/wallet/wallet-card-3.svg";
-import walletImg4 from "../../assets/wallet/wallet-card-4.svg";
-import walletImg5 from "../../assets/wallet/wallet-card-5.svg";
-import walletImg6 from "../../assets/wallet/wallet-card-6.svg";
-import walletImg7 from "../../assets/wallet/wallet-card-7.svg";
-import walletImg8 from "../../assets/wallet/wallet-card-8.svg";
-import walletImg9 from "../../assets/wallet/wallet-card-9.svg";
+import walletImg1 from "../../assets/wallet/wallet-card-1.png";
+import walletImg2 from "../../assets/wallet/wallet-card-2.png";
+import walletImg3 from "../../assets/wallet/wallet-card-3.png";
+import walletImg4 from "../../assets/wallet/wallet-card-4.png";
+import walletImg5 from "../../assets/wallet/wallet-card-5.png";
+import walletImg6 from "../../assets/wallet/wallet-card-6.png";
+import walletImg7 from "../../assets/wallet/wallet-card-7.png";
+import walletImg8 from "../../assets/wallet/wallet-card-8.png";
+import walletImg9 from "../../assets/wallet/wallet-card-9.png";
 import qrIcon from "../../assets/wallet/qr-icon.svg";
 
 import { propsWalletCard } from "../../types/commonTypes";
