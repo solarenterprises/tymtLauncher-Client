@@ -77,7 +77,7 @@ const Alertmain = () => {
     getUnreadAlerts();
     getReadAlerts();
     console.log("alertbadge trigger", alertbadge.trigger);
-  }, [alertbadge.trigger, read]);
+  }, [getUnreadAlerts,getReadAlerts]);
 
   return (
     <Box className={"alertmain-container"}>
