@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
@@ -69,7 +69,7 @@ import {
   setMountedFalse,
   setMountedTrue,
 } from "../../features/chat/Chat-intercomSupportSlice";
-import ScrollToBottom from "react-scroll-to-bottom";
+// import ScrollToBottom from "react-scroll-to-bottom";
 
 const theme = createTheme({
   palette: {
@@ -298,6 +298,18 @@ const Chatbox = ({ view, setView }: propsType) => {
     };
   }, [dispatch, view]);
 
+  const scrollref = useRef<HTMLDivElement>(null);
+  const Scroll = () => {
+    const { offsetHeight, scrollHeight, scrollTop } =
+      scrollref.current as HTMLDivElement;
+    if (scrollHeight <= scrollTop + offsetHeight + 100) {
+      scrollref.current?.scrollTo(0, scrollHeight);
+    }
+  };
+  useEffect(() => {
+    if (scrollref.current) Scroll();
+  }, [sendMessage]);
+
   return (
     <>
       {view === "chatbox" && (
@@ -367,103 +379,103 @@ const Chatbox = ({ view, setView }: propsType) => {
           </Box>
 
           {/* Message inbox */}
-          <ScrollToBottom
+          <Box
             // className={classes.scroll_bar_chatbox}
             className={"scroll_bar_chatbox"}
             display={"flex"}
             flexDirection={"column"}
+            ref={scrollref}
           >
             <Box sx={{ width: "100%", flex: "1 1 auto" }}></Box>
-              <InfiniteScroll
-                // pageStart={0}
-                loadMore={debouncedFetchMessages}
-                hasMore={hasMore}
-                isReverse={true}
-                useWindow={false}
-              >
-                {[...decryptedmessages].reverse()?.map((message, index) => {
-                  const isSameDay = (date1, date2) => {
-                    return (
-                      date1.getFullYear() === date2.getFullYear() &&
-                      date1.getMonth() === date2.getMonth() &&
-                      date1.getDate() === date2.getDate()
-                    );
-                  };
-
-                  const isFirstMessageOfDay = () => {
-                    if (index === 0) return true;
-
-                    const previousMessageDate = new Date(
-                      [...chatHistoryStore.messages].reverse()[
-                        index - 1
-                      ]?.createdAt
-                    );
-                    const currentMessageDate = new Date(message.createdAt);
-
-                    return !isSameDay(previousMessageDate, currentMessageDate);
-                  };
-
-                  const timeline = isFirstMessageOfDay()
-                    ? formatDateDifference(message.createdAt)
-                    : null;
+            <InfiniteScroll
+              // pageStart={0}
+              loadMore={debouncedFetchMessages}
+              hasMore={hasMore}
+              isReverse={true}
+              useWindow={false}
+              // className={"infinitescroll"}
+            >
+              {[...decryptedmessages].reverse()?.map((message, index) => {
+                const isSameDay = (date1, date2) => {
                   return (
-                    <>
-                      {/* Existing Box for rendering the message */}
-                      <Box
-                        className={"bubblecontainer"}
-                        key={`${
-                          message.sender_id
-                        }-${index}-${new Date().toISOString()}`}
+                    date1.getFullYear() === date2.getFullYear() &&
+                    date1.getMonth() === date2.getMonth() &&
+                    date1.getDate() === date2.getDate()
+                  );
+                };
+
+                const isFirstMessageOfDay = () => {
+                  if (index === 0) return true;
+
+                  const previousMessageDate = new Date(
+                    [...chatHistoryStore.messages].reverse()[
+                      index - 1
+                    ]?.createdAt
+                  );
+                  const currentMessageDate = new Date(message.createdAt);
+
+                  return !isSameDay(previousMessageDate, currentMessageDate);
+                };
+
+                const timeline = isFirstMessageOfDay()
+                  ? formatDateDifference(message.createdAt)
+                  : null;
+                return (
+                  <>
+                    {/* Existing Box for rendering the message */}
+                    <Box
+                      className={"bubblecontainer"}
+                      key={`${
+                        message.sender_id
+                      }-${index}-${new Date().toISOString()}`}
+                    >
+                      {timeline && <OrLinechat timeline={timeline} />}
+                      <Stack
+                        flexDirection={"row"}
+                        alignItems={"flex-end"}
+                        marginTop={"10px"}
+                        gap={"15px"}
+                        justifyContent={
+                          message.sender_id === account.uid
+                            ? "flex-end"
+                            : "flex-start"
+                        }
                       >
-                        {timeline && <OrLinechat timeline={timeline} />}
-                        <Stack
-                          flexDirection={"row"}
-                          alignItems={"flex-end"}
-                          marginTop={"10px"}
-                          gap={"15px"}
-                          justifyContent={
-                            message.sender_id === account.uid
-                              ? "flex-end"
-                              : "flex-start"
-                          }
-                        >
-                          {message.sender_id === account.uid && (
-                            <>
-                              {/* <Box
+                        {message.sender_id === account.uid && (
+                          <>
+                            {/* <Box
                                   className={"fs-16 white"}
                                   sx={{ marginLeft: "16px" }}
                                 >
                                   {userStore.nickname}
                                 </Box> */}
-                              <Box
-                                className={"fs-14-regular white bubble sb13"}
-                              >
-                                {message.message.split("\n").map((line) => (
-                                  <React.Fragment>
-                                    {line}
-                                    <br />
-                                  </React.Fragment>
-                                ))}
+                            <Box className={"fs-14-regular white bubble sb13"}>
+                              {message.message.split("\n").map((line) => (
+                                <React.Fragment>
+                                  {line}
+                                  <br />
+                                </React.Fragment>
+                              ))}
 
-                                <Box
-                                  className={"fs-12-light timestamp-inbubble"}
-                                  sx={{ alignSelf: "flex-end" }}
-                                  color={"#dee6dc"}
-                                >
-                                  {new Date(message.createdAt).toLocaleString(
-                                    "en-US",
-                                    {
-                                      hour: "2-digit",
-                                      minute: "2-digit",
-                                    }
-                                  )}
-                                </Box>
+                              <Box
+                                className={"fs-12-light timestamp-inbubble"}
+                                sx={{ alignSelf: "flex-end" }}
+                                color={"#dee6dc"}
+                              >
+                                {new Date(message.createdAt).toLocaleString(
+                                  "en-US",
+                                  {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  }
+                                )}
                               </Box>
-                            </>
-                          )}
-                          {message.sender_id !== account.uid && (
-                            <>
-                              {/* <Stack>
+                            </Box>
+                          </>
+                        )}
+                        {message.sender_id !== account.uid && (
+                          <>
+                            {/* <Stack>
                                   <Box
                                     className={"fs-16 white"}
                                     sx={{ marginLeft: "16px" }}
@@ -471,41 +483,41 @@ const Chatbox = ({ view, setView }: propsType) => {
                                     {currentpartner.nickName}
                                   </Box>
                                 </Stack> */}
-                              <Box
-                                className={
-                                  "fs-14-regular white bubble-partner sb14"
-                                }
-                              >
-                                {message.message.split("\n").map((line) => (
-                                  <React.Fragment>
-                                    {line}
-                                    <br />
-                                  </React.Fragment>
-                                ))}
+                            <Box
+                              className={
+                                "fs-14-regular white bubble-partner sb14"
+                              }
+                            >
+                              {message.message.split("\n").map((line) => (
+                                <React.Fragment>
+                                  {line}
+                                  <br />
+                                </React.Fragment>
+                              ))}
 
-                                <Box
-                                  className={"fs-12-light timestamp-inbubble"}
-                                  sx={{ alignSelf: "flex-end" }}
-                                  color={"#dee6dc"}
-                                >
-                                  {new Date(message.createdAt).toLocaleString(
-                                    "en-US",
-                                    {
-                                      hour: "2-digit",
-                                      minute: "2-digit",
-                                    }
-                                  )}
-                                </Box>
+                              <Box
+                                className={"fs-12-light timestamp-inbubble"}
+                                sx={{ alignSelf: "flex-end" }}
+                                color={"#dee6dc"}
+                              >
+                                {new Date(message.createdAt).toLocaleString(
+                                  "en-US",
+                                  {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  }
+                                )}
                               </Box>
-                            </>
-                          )}
-                        </Stack>
-                      </Box>
-                    </>
-                  );
-                })}
-              </InfiniteScroll>
-          </ScrollToBottom>
+                            </Box>
+                          </>
+                        )}
+                      </Stack>
+                    </Box>
+                  </>
+                );
+              })}
+            </InfiniteScroll>
+          </Box>
 
           {/* Input field section */}
           <Box sx={{ marginTop: "5px" }}>

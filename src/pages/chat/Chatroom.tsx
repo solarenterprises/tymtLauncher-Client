@@ -1,9 +1,5 @@
 import { useSelector, useDispatch } from "react-redux";
-import {
-  useCallback,
-  useEffect,
-  // useRef
-} from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -98,7 +94,6 @@ import {
   setMountedFalse,
   setMountedTrue,
 } from "../../features/chat/Chat-intercomSupportSlice";
-import ScrollToBottom from "react-scroll-to-bottom";
 
 const theme = createTheme({
   palette: {
@@ -126,10 +121,6 @@ const Chatroom = () => {
   const scrollstate: scrollDownType = useSelector(getdownState);
   const notificationStore: notificationType = useSelector(selectNotification);
   const shouldScrollDown = scrollstate.down;
-  // const userStore =
-  //   account.wallet === walletEnum.noncustodial
-  //     ? useSelector(getNonCustodial)
-  //     : useSelector(getCustodial);
   const { t } = useTranslation();
   const [panel, setPanel] = useState("chatroom-chatuserlist");
   const [value, setValue] = useState<string>("");
@@ -314,23 +305,6 @@ const Chatroom = () => {
     }
   };
 
-  // //scroll down when partner changed or send message
-  // const useChatScroll = (
-  //   shouldScrollDown: boolean,
-  //   currentpartnerid: string
-  // ) => {
-  //   const scrollRef = useRef<HTMLDivElement>();
-
-  //   useEffect(() => {
-  //     if (scrollRef.current) {
-  //       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-  //     }
-  //   }, [shouldScrollDown, currentpartnerid]);
-  //   return scrollRef;
-  // };
-
-  // const scrollRef = useChatScroll(shouldScrollDown, currentpartner._id);
-
   //decrypt every message displaying on chatroom
 
   useEffect(() => {
@@ -382,6 +356,18 @@ const Chatroom = () => {
       window.removeEventListener("resize", handleResize);
     };
   }, []);
+
+  const scrollref = useRef<HTMLDivElement>(null);
+  const Scroll = () => {
+    const { offsetHeight, scrollHeight, scrollTop } =
+      scrollref.current as HTMLDivElement;
+    if (scrollHeight <= scrollTop + offsetHeight + 100) {
+      scrollref.current?.scrollTo(0, scrollHeight);
+    }
+  };
+  useEffect(() => {
+    if (scrollref.current) Scroll();
+  }, [sendMessage]);
 
   return (
     <>
@@ -496,11 +482,12 @@ const Chatroom = () => {
               </Box>
 
               {/* Message inbox */}
-              <ScrollToBottom
+              <Box
                 // className={classes.scroll_bar_chatbox}
                 className={"scroll_bar_chatbox"}
                 display={"flex"}
                 flexDirection={"column"}
+                ref={scrollref}
               >
                 <Box sx={{ width: "100%", flex: "1 1 auto" }}></Box>
                 <InfiniteScroll
@@ -690,7 +677,7 @@ const Chatroom = () => {
                     );
                   })}
                 </InfiniteScroll>
-              </ScrollToBottom>
+              </Box>
               {/* Input field section */}
               <Box sx={{ marginTop: "5px", marginBottom: "0px" }}>
                 <Divider

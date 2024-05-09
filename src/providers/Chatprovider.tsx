@@ -10,6 +10,7 @@ import {
   askEncryptionKeyType,
   deliverEncryptionKeyType,
   deliveredEncryptionKeyType,
+  scrollDownType,
   userType,
 } from "../types/chatTypes";
 import { accountType } from "../types/accountTypes";
@@ -54,6 +55,7 @@ import {
   addEncryptionKey,
   selectEncryptionKeyByUserId,
 } from "../features/chat/Chat-encryptionkeySlice";
+import { getdownState, setdownState } from "../features/chat/Chat-scrollDownSlice";
 // import { decrypt } from "../../lib/api/Encrypt";
 
 const ChatProvider = () => {
@@ -68,6 +70,7 @@ const ChatProvider = () => {
   const notification: notificationType = useSelector(selectNotification);
   const alertbadge: alertbadgeType = useSelector(selectBadgeStatus);
   const data: chatType = useSelector(selectChat);
+  const scrollstate:scrollDownType = useSelector(getdownState);
   const { socket } = useSocket();
   const triggerBadge = () => {
     dispatch(setBadgeStatus({ ...alertbadge, trigger: !alertbadge.trigger }));
@@ -253,6 +256,7 @@ const ChatProvider = () => {
         alert.receivers.find((userid) => userid === account.uid)
       ) {
         triggerBadge();
+        dispatch(setdownState({ down: !scrollstate.down }));
       }
     };
     handleIncomingRequest();
@@ -348,7 +352,10 @@ const ChatProvider = () => {
       );
       if (userinChatuserlist) {
         dispatch(
-          setUserList({ ...userinChatuserlist, notificationStatus: data.status })
+          setUserList({
+            ...userinChatuserlist,
+            notificationStatus: data.status,
+          })
         );
       }
     };

@@ -305,6 +305,7 @@ $Main-Red: #ef4444;
   padding-right: 10px;
   display: flex;
   flex-direction: column;
+  scroll-behavior: smooth;
   // justify-content: flex-end;
   // scrollbar-width: none;
   &::-webkit-scrollbar {
@@ -328,4 +329,9 @@ $Main-Red: #ef4444;
     background: #555;
   }
 }
+
+.infinitescroll {
+  scrollbar-width: thin;
+}
+
 
