@@ -1,5 +1,5 @@
 import * as crypto from "crypto";
-import { translateString } from "./Translate";
+// import { translateString } from "./Translate";
 
 export const encrypt = async (_mnemonic: string, _password: string) => {
   const key = crypto
@@ -43,6 +43,7 @@ export const decrypt = async (
     );
   } catch (e) {
     // console.log(e);
-    return await translateString("Unable to decode message");
+    return "Unable to decode message #tymt114#";
+    // return <ThreeDots height="100%" width={100} radius={3} color={`#EF4444`} />;
   }
 };

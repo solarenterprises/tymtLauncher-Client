@@ -55,7 +55,11 @@ import {
   addEncryptionKey,
   selectEncryptionKeyByUserId,
 } from "../features/chat/Chat-encryptionkeySlice";
-import { getdownState, setdownState } from "../features/chat/Chat-scrollDownSlice";
+import {
+  getdownState,
+  setdownState,
+} from "../features/chat/Chat-scrollDownSlice";
+import { useEffect } from "react";
 // import { decrypt } from "../../lib/api/Encrypt";
 
 const ChatProvider = () => {
@@ -70,7 +74,7 @@ const ChatProvider = () => {
   const notification: notificationType = useSelector(selectNotification);
   const alertbadge: alertbadgeType = useSelector(selectBadgeStatus);
   const data: chatType = useSelector(selectChat);
-  const scrollstate:scrollDownType = useSelector(getdownState);
+  const scrollstate: scrollDownType = useSelector(getdownState);
   const { socket } = useSocket();
   const triggerBadge = () => {
     dispatch(setBadgeStatus({ ...alertbadge, trigger: !alertbadge.trigger }));
@@ -208,95 +212,41 @@ const ChatProvider = () => {
   });
 
   // Handle each posted alert incoming to user
-  socket.on("alert-posted", async (alert: alertType) => {
-    console.log("alert-posted", alert);
-    const handleIncomingRequest = async () => {
-      if (alert.alertType === "friend-request") {
-        if (data.friend === "anyone" && alert.receivers[0] === account.uid) {
-          const senderId = alert.note?.sender;
-          const senderInChatUserlist = chatuserlist.find(
-            (user) => user._id === senderId
-          );
-          console.log("senderInChatuserlist", senderInChatUserlist);
-          console.log("senderId", alert.note.sender);
-          if (senderInChatUserlist) {
-            notification.alert && triggerBadge();
-            setNotificationOpen(true);
-            setNotificationStatus("alert");
-            setNotificationTitle("Friend Request");
-            setNotificationDetail(alert);
-            setNotificationLink(null);
-          } else {
-            await updateContact(senderId);
-            {
+  useEffect(() => {
+    socket.on("alert-posted", async (alert: alertType) => {
+      console.log("alert-posted", alert);
+      const handleIncomingRequest = async () => {
+        if (alert.alertType === "friend-request") {
+          if (data.friend === "anyone" && alert.receivers[0] === account.uid) {
+            const senderId = alert.note?.sender;
+            const senderInChatUserlist = chatuserlist.find(
+              (user) => user._id === senderId
+            );
+            console.log("senderInChatuserlist", senderInChatUserlist);
+            console.log("senderId", alert.note.sender);
+            if (senderInChatUserlist) {
               notification.alert && triggerBadge();
               setNotificationOpen(true);
               setNotificationStatus("alert");
               setNotificationTitle("Friend Request");
               setNotificationDetail(alert);
               setNotificationLink(null);
+            } else {
+              await updateContact(senderId);
+              {
+                notification.alert && triggerBadge();
+                setNotificationOpen(true);
+                setNotificationStatus("alert");
+                setNotificationTitle("Friend Request");
+                setNotificationDetail(alert);
+                setNotificationLink(null);
+              }
             }
+          } else {
           }
-        } else {
-        }
-      } else if (
-        notification.alert &&
-        alert.alertType !== "chat" &&
-        alert.receivers.find((userid) => userid === account.uid)
-      ) {
-        triggerBadge();
-        setNotificationOpen(true);
-        setNotificationStatus("alert");
-        setNotificationTitle(`${alert.alertType}`);
-        setNotificationDetail(`${alert.note.detail}`);
-        setNotificationLink(null);
-      } else if (
-        notification.alert &&
-        alert.alertType === "chat" &&
-        alert.receivers.find((userid) => userid === account.uid)
-      ) {
-        triggerBadge();
-        dispatch(setdownState({ down: !scrollstate.down }));
-      }
-    };
-    handleIncomingRequest();
-  });
-
-  // Handle each updated alert incoming to user
-  socket.on("alert-updated", async (alert: alertType) => {
-    console.log("alert-updated", alert);
-    const handleIncomingUpdatedAlert = () => {
-      if (
-        alert.alertType === "friend-request" &&
-        (alert.note.sender === account.uid ||
-          alert.receivers[0] === account.uid)
-      ) {
-        {
-          if (notification.alert) {
-            triggerBadge();
-            setNotificationOpen(true);
-            setNotificationStatus("alert");
-            setNotificationTitle(`Friend request ${alert.note.status}`);
-            setNotificationDetail(`Friend request accepted`);
-            setNotificationLink(null);
-          }
-          if (
-            alert.note.sender === account.uid &&
-            alert.note.status === "accepted"
-          ) {
-            const senderInChatUserlist = chatuserlist.find(
-              (user) => user._id === alert.receivers[0]
-            );
-            const updatedFriendlist: userType[] = [
-              ...chatfriendlist,
-              senderInChatUserlist,
-            ];
-            dispatch(setFriendlist(updatedFriendlist));
-          }
-        }
-      } else {
-        if (
+        } else if (
           notification.alert &&
+          alert.alertType !== "chat" &&
           alert.receivers.find((userid) => userid === account.uid)
         ) {
           triggerBadge();
@@ -305,12 +255,76 @@ const ChatProvider = () => {
           setNotificationTitle(`${alert.alertType}`);
           setNotificationDetail(`${alert.note.detail}`);
           setNotificationLink(null);
-        } else {
+        } else if (
+          notification.alert &&
+          alert.alertType === "chat" &&
+          alert.receivers.find((userid) => userid === account.uid)
+        ) {
+          triggerBadge();
+          dispatch(setdownState({ down: !scrollstate.down }));
         }
-      }
+      };
+      handleIncomingRequest();
+    });
+    return () => {
+      socket.off("alert-posted");
     };
-    handleIncomingUpdatedAlert();
-  });
+  }, [alertbadge.trigger, chatuserlist, chatfriendlist]);
+
+  // Handle each updated alert incoming to user
+  useEffect(() => {
+    socket.on("alert-updated", async (alert: alertType) => {
+      console.log("alert-updated", alert);
+      const handleIncomingUpdatedAlert = () => {
+        if (
+          alert.alertType === "friend-request" &&
+          (alert.note.sender === account.uid ||
+            alert.receivers[0] === account.uid)
+        ) {
+          {
+            if (notification.alert) {
+              triggerBadge();
+              setNotificationOpen(true);
+              setNotificationStatus("alert");
+              setNotificationTitle(`Friend request ${alert.note.status}`);
+              setNotificationDetail(`Friend request accepted`);
+              setNotificationLink(null);
+            }
+            if (
+              alert.note.sender === account.uid &&
+              alert.note.status === "accepted"
+            ) {
+              const senderInChatUserlist = chatuserlist.find(
+                (user) => user._id === alert.receivers[0]
+              );
+              const updatedFriendlist: userType[] = [
+                ...chatfriendlist,
+                senderInChatUserlist,
+              ];
+              dispatch(setFriendlist(updatedFriendlist));
+            }
+          }
+        } else {
+          if (
+            notification.alert &&
+            alert.receivers.find((userid) => userid === account.uid)
+          ) {
+            triggerBadge();
+            setNotificationOpen(true);
+            setNotificationStatus("alert");
+            setNotificationTitle(`${alert.alertType}`);
+            setNotificationDetail(`${alert.note.detail}`);
+            setNotificationLink(null);
+          } else {
+          }
+        }
+      };
+      handleIncomingUpdatedAlert();
+    });
+    return () => {
+      socket.off("alert-updated");
+    };
+  }, [alertbadge.trigger, chatuserlist, chatfriendlist]);
 
   // receive request for  encryption key and generate/send encryption key to partner
   socket.on("ask-encryption-key", async (data: askEncryptionKeyType) => {
