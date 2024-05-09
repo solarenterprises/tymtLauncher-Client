@@ -640,9 +640,9 @@ const Chatroom = () => {
                                   ) : (
                                     <>
                                       <ThreeDots
-                                        height="25px"
+                                        height="23px"
                                         width={"40px"}
-                                        radius={5}
+                                        radius={4}
                                         color={`white`}
                                       />
                                     </>
@@ -710,9 +710,9 @@ const Chatroom = () => {
                                   ) : (
                                     <>
                                       <ThreeDots
-                                        height="25px"
+                                        height="23px"
                                         width={"40px"}
-                                        radius={5}
+                                        radius={4}
                                         color={`white`}
                                       />
                                     </>
