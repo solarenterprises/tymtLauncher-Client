@@ -76,7 +76,7 @@ const store = configureStore({
     encryption: encryptionReducer,
     machineId: machineIdReducer,
     socketHash: socketHashReducer,
-    chatmounted: chatmountedReducer
+    chatmounted: chatmountedReducer,
   },
 });
 

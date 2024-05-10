@@ -69,6 +69,8 @@ import {
   setMountedFalse,
   setMountedTrue,
 } from "../../features/chat/Chat-intercomSupportSlice";
+import { ThreeDots } from "react-loader-spinner";
+// import ScrollToBottom from "react-scroll-to-bottom";
 
 const theme = createTheme({
   palette: {
@@ -196,6 +198,12 @@ const Chatbox = ({ view, setView }: propsType) => {
     }
   };
 
+  useEffect(() => {
+    setPage(1);
+    setHasMore(true);
+    dispatch(setChatHistory({ messages: [] }));
+    setProcessedPages(new Set());
+  }, [currentpartner._id]);
   // When the scrolling up, this function fetches one page of history for each loading.
 
   const fetchMessages = async () => {
@@ -203,7 +211,7 @@ const Chatbox = ({ view, setView }: propsType) => {
 
     const query = {
       room_user_ids: [account.uid, currentpartner._id],
-      pagination: { page: page, pageSize: 7 },
+      pagination: { page: page, pageSize: 20 },
     };
     if (!processedPages.has(page)) {
       // Add the current page number to the set of processed pages
@@ -233,13 +241,6 @@ const Chatbox = ({ view, setView }: propsType) => {
 
   const debouncedFetchMessages = _.debounce(fetchMessages, 1000);
 
-  useEffect(() => {
-    setPage(1);
-    setHasMore(true);
-    dispatch(setChatHistory({ messages: [] }));
-    setProcessedPages(new Set());
-  }, [currentpartner._id]);
-
   const formatDateDifference = (date) => {
     const today: any = new Date(Date.now());
     const yesterday: any = new Date(Date.now());
@@ -264,25 +265,6 @@ const Chatbox = ({ view, setView }: propsType) => {
       return messageDate.toLocaleDateString("en-US", options);
     }
   };
-
-  const useChatScroll = (
-    shouldScrollDown: boolean,
-    currentpartnerid: string,
-    view: string
-  ) => {
-    const scrollRef = useRef<HTMLDivElement>();
-
-    useEffect(() => {
-      if (scrollRef.current) {
-        scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-        console.log("scrollTop", scrollRef.current.scrollTop);
-        console.log("scrollHeight", scrollRef.current.scrollHeight);
-      }
-    }, [shouldScrollDown, currentpartnerid, view]);
-    return scrollRef;
-  };
-
-  const scrollRef = useChatScroll(scrollstate.down, currentpartner._id, view);
 
   useEffect(() => {
     const decryptMessages = async () => {
@@ -311,11 +293,23 @@ const Chatbox = ({ view, setView }: propsType) => {
     if (view === "chatbox") {
       dispatch(setMountedTrue());
     }
-
     return () => {
       dispatch(setMountedFalse());
+      // dispatch(setChatHistory({ messages: [] }));
     };
   }, [dispatch, view]);
+
+  const scrollref = useRef<HTMLDivElement>(null);
+  const Scroll = () => {
+    const { offsetHeight, scrollHeight, scrollTop } =
+      scrollref.current as HTMLDivElement;
+    if (scrollHeight <= scrollTop + offsetHeight + 100) {
+      scrollref.current?.scrollTo(0, scrollHeight);
+    }
+  };
+  useEffect(() => {
+    if (scrollref.current) Scroll();
+  }, [sendMessage, currentpartner._id]);
 
   return (
     <>
@@ -330,15 +324,7 @@ const Chatbox = ({ view, setView }: propsType) => {
           >
             <Stack flexDirection={"row"} alignItems={"center"}>
               <Button className={classes.common_btn}>
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "center",
-                    textAlign: "center",
-                    alignItems: "center",
-                  }}
-                  onClick={() => setView("chatmain")}
-                >
+                <Box className={"backIcon"} onClick={() => setView("chatmain")}>
                   <img src={backIcon} />
                 </Box>
               </Button>
@@ -372,7 +358,13 @@ const Chatbox = ({ view, setView }: propsType) => {
                 right: 0,
                 cursor: "pointer",
               }}
-              onClick={() => navigate("/chat")}
+              onClick={() => {
+                navigate("/chat");
+                setPage(1);
+                setHasMore(true);
+                dispatch(setChatHistory({ messages: [] }));
+                setProcessedPages(new Set());
+              }}
             >
               <Box className={"center-align"}>
                 <img src={maximize} />
@@ -388,12 +380,12 @@ const Chatbox = ({ view, setView }: propsType) => {
           </Box>
 
           {/* Message inbox */}
-
           <Box
-            className={classes.scroll_bar_chatbox}
+            // className={classes.scroll_bar_chatbox}
+            className={"scroll_bar_chatbox"}
             display={"flex"}
             flexDirection={"column"}
-            ref={scrollRef}
+            ref={scrollref}
           >
             <Box sx={{ width: "100%", flex: "1 1 auto" }}></Box>
             <InfiniteScroll
@@ -402,6 +394,7 @@ const Chatbox = ({ view, setView }: propsType) => {
               hasMore={hasMore}
               isReverse={true}
               useWindow={false}
+              // className={"infinitescroll"}
             >
               {[...decryptedmessages].reverse()?.map((message, index) => {
                 const isSameDay = (date1, date2) => {
@@ -428,22 +421,39 @@ const Chatbox = ({ view, setView }: propsType) => {
                 const timeline = isFirstMessageOfDay()
                   ? formatDateDifference(message.createdAt)
                   : null;
+
+                const isSameSender = (id1, id2) => {
+                  return id1 === id2;
+                };
+
+                const detectLastMessageofStack = () => {
+
+                  const nextMessageSender = [
+                    ...chatHistoryStore.messages,
+                  ].reverse()[index + 1]?.sender_id;
+                  const currentMessageSender = [
+                    ...chatHistoryStore.messages,
+                  ].reverse()[index]?.sender_id;
+
+                  return !isSameSender(nextMessageSender, currentMessageSender);
+                };
+
+                const isLastMessageofStack = detectLastMessageofStack();
+
                 return (
                   <>
                     {/* Existing Box for rendering the message */}
                     <Box
+                      className={"bubblecontainer"}
                       key={`${
                         message.sender_id
                       }-${index}-${new Date().toISOString()}`}
-                      sx={{
-                        width: "100%",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "normal",
-                        wordWrap: "break-word",
-                        marginTop: "10px",
-                      }}
                     >
-                      {timeline && <OrLinechat timeline={timeline} />}
+                      {timeline &&
+                        message.message !==
+                          "Unable to decode message #tymt114#" && (
+                          <OrLinechat timeline={timeline} />
+                        )}
                       <Stack
                         flexDirection={"row"}
                         alignItems={"flex-end"}
@@ -464,45 +474,45 @@ const Chatbox = ({ view, setView }: propsType) => {
                                   {userStore.nickname}
                                 </Box> */}
                             <Box
-                              className={"fs-14-regular white"}
-                              sx={{
-                                // marginTop: "10px",
-                                padding: "10px",
-                                borderRadius: "15px",
-                                backgroundColor: "#58914e",
-                                overflow: "hidden",
-                                whiteSpace: "normal",
-                                wordWrap: "break-word",
-                                WebkitBoxOrient: "vertical",
-                                display: "-webkit-box",
-                                zIndex: 50,
-                                position: "relative",
-                              }}
+                              className={
+                                isLastMessageofStack
+                                  ? "fs-14-regular white bubble-lastmessage-unexpanded"
+                                  : "fs-14-regular white bubble"
+                              }
                             >
-                              {message.message.split("\n").map((line) => (
-                                <React.Fragment>
-                                  {line}
-                                  <br />
-                                </React.Fragment>
-                              ))}
-                              <Box
-                                className={"fs-12-light"}
-                                color={"#dee6dc"}
-                                sx={{
-                                  display: "block",
-                                  marginTop: "5px",
-                                  marginRight: "5px",
-                                  alignSelf: "flex-end",
-                                }}
-                              >
-                                {new Date(message.createdAt).toLocaleString(
-                                  "en-US",
-                                  {
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                  }
-                                )}
-                              </Box>
+                              {message.message !==
+                              "Unable to decode message #tymt114#" ? (
+                                <>
+                                  {message.message.split("\n").map((line) => (
+                                    <React.Fragment>
+                                      {line}
+                                      <br />
+                                    </React.Fragment>
+                                  ))}
+                                  <Box
+                                    className={"fs-14-light timestamp-inbubble"}
+                                    sx={{ alignSelf: "flex-end" }}
+                                    color={"rgba(11, 11, 11, 0.7)"}
+                                  >
+                                    {new Date(message.createdAt).toLocaleString(
+                                      "en-US",
+                                      {
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                      }
+                                    )}
+                                  </Box>
+                                </>
+                              ) : (
+                                <>
+                                  <ThreeDots
+                                    height="23px"
+                                    width={"40px"}
+                                    radius={4}
+                                    color={`white`}
+                                  />
+                                </>
+                              )}
                             </Box>
                           </>
                         )}
@@ -517,45 +527,45 @@ const Chatbox = ({ view, setView }: propsType) => {
                                   </Box>
                                 </Stack> */}
                             <Box
-                              className={"fs-14-regular white"}
-                              sx={{
-                                // marginTop: "10px",
-                                padding: "10px",
-                                borderRadius: "15px",
-                                backgroundColor: "#72916a",
-                                overflow: "hidden",
-                                whiteSpace: "normal",
-                                wordWrap: "break-word",
-                                WebkitBoxOrient: "vertical",
-                                display: "-webkit-box",
-                                zIndex: 50,
-                                position: "relative",
-                              }}
+                              className={
+                                isLastMessageofStack
+                                  ? "fs-14-regular white bubble-partner-lastmessage"
+                                  : "fs-14-regular white bubble-partner"
+                              }
                             >
-                              {message.message.split("\n").map((line) => (
-                                <React.Fragment>
-                                  {line}
-                                  <br />
-                                </React.Fragment>
-                              ))}
-                              <Box
-                                className={"fs-12-light"}
-                                color={"#dee6dc"}
-                                sx={{
-                                  display: "block",
-                                  marginTop: "5px",
-                                  marginRight: "5px",
-                                  alignSelf: "flex-end",
-                                }}
-                              >
-                                {new Date(message.createdAt).toLocaleString(
-                                  "en-US",
-                                  {
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                  }
-                                )}
-                              </Box>
+                              {message.message !==
+                              "Unable to decode message #tymt114#" ? (
+                                <>
+                                  {message.message.split("\n").map((line) => (
+                                    <React.Fragment>
+                                      {line}
+                                      <br />
+                                    </React.Fragment>
+                                  ))}
+                                  <Box
+                                    className={"fs-14-light timestamp-inbubble"}
+                                    sx={{ alignSelf: "flex-end" }}
+                                    color={"rgba(11, 11, 11, 0.7)"}
+                                  >
+                                    {new Date(message.createdAt).toLocaleString(
+                                      "en-US",
+                                      {
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                      }
+                                    )}
+                                  </Box>
+                                </>
+                              ) : (
+                                <>
+                                  <ThreeDots
+                                    height="23px"
+                                    width={"40px"}
+                                    radius={4}
+                                    color={`white`}
+                                  />
+                                </>
+                              )}
                             </Box>
                           </>
                         )}
