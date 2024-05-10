@@ -28,19 +28,19 @@ async fn get_data() -> impl Responder {
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
     ///// Socket & Http Server
-    tokio::spawn(async { run_websocket_server().await });
-    tokio::task::spawn_blocking(|| {
-        tokio::runtime::Builder
-            ::new_current_thread()
-            .enable_all()
-            .build()
-            .unwrap()
-            .block_on(async {
-                if let Err(e) = run_http_server().await {
-                    eprintln!("HTTP server failed: {}", e);
-                }
-            })
-    });
+    // tokio::spawn(async { run_websocket_server().await });
+    // tokio::task::spawn_blocking(|| {
+    //     tokio::runtime::Builder
+    //         ::new_current_thread()
+    //         .enable_all()
+    //         .build()
+    //         .unwrap()
+    //         .block_on(async {
+    //             if let Err(e) = run_http_server().await {
+    //                 eprintln!("HTTP server failed: {}", e);
+    //             }
+    //         })
+    // });
 
     ///// For SystemTray
     let showvisible = CustomMenuItem::new("showVisible".to_string(), "Show tymtLauncher");
@@ -769,60 +769,64 @@ async fn hide_transaction_window(app_handle: tauri::AppHandle) {
     }
 }
 
-async fn run_http_server() -> std::io::Result<()> {
-    let addr = "127.0.0.1:3331";
-    println!("Http server listening on: http://{}", addr);
-    HttpServer::new(|| { App::new().route("/data", web::get().to(get_data)) })
-        .bind(&addr)?
-        .run().await
-}
+// async fn run_http_server() -> std::io::Result<()> {
+//     let addr = "127.0.0.1:3331";
+//     println!("Http server listening on: http://{}", addr);
+//     HttpServer::new(|| { App::new().route("/data", web::get().to(get_data)) })
+//         .bind(&addr)?
+//         .run().await
+// }
 
-async fn run_websocket_server() {
-    let addr = "127.0.0.1:3330";
-    let try_socket = TcpListener::bind(&addr).await;
-    let listener = match try_socket {
-        Ok(listener) => listener,
-        Err(e) => {
-            eprintln!("Failed to bind to address {}: {}", addr, e);
-            return;
-        }
-    };
-    println!("WebSocket server listening on: ws://{}", addr);
+// async fn run_websocket_server() {
+//     let addr = "127.0.0.1:3330";
+//     let try_socket = TcpListener::bind(&addr).await;
+//     let listener = match try_socket {
+//         Ok(listener) => listener,
+//         Err(e) => {
+//             eprintln!("Failed to bind to address {}: {}", addr, e);
+//             return;
+//         }
+//     };
+//     println!("WebSocket server listening on: ws://{}", addr);
 
-    while let Ok((stream, _)) = listener.accept().await {
-        tokio::spawn(handle_connection(stream));
-    }
-}
+//     while let Ok((stream, _)) = listener.accept().await {
+//         tokio::spawn(handle_connection(stream));
+//     }
+// }
 
-async fn handle_connection(stream: tokio::net::TcpStream) {
-    let ws_stream = match accept_async(stream).await {
-        Ok(ws) => ws,
-        Err(e) => {
-            eprintln!("Error during WebSocket handshake: {}", e);
-            return;
-        }
-    };
+// async fn handle_connection(stream: tokio::net::TcpStream) {
+//     let ws_stream = match accept_async(stream).await {
+//         Ok(ws) => ws,
+//         Err(e) => {
+//             eprintln!("Error during WebSocket handshake: {}", e);
+//             return;
+//         }
+//     };
 
-    let (mut write, mut read) = ws_stream.split();
+//     let (mut write, mut read) = ws_stream.split();
 
-    while let Some(message) = read.next().await {
-        match message {
-            Ok(msg) => {
-                if let Ok(text) = msg.to_text() {
-                    println!("Received: {}", text);
+//     while let Some(message) = read.next().await {
+//         match message {
+//             Ok(msg) => {
+//                 if let Ok(text) = msg.to_text() {
+//                     println!("Received: {}", text);
 
-                    if let Ok(parsed) = serde_json::from_str::<Value>(&text) {
-                        println!("Parsed JSON data: {:?}", parsed);
-                    } else {
-                        eprintln!("Error parsing JSON data");
-                    }
-                }
-
-                write.send(msg).await.expect("Failed to send message");
-            }
-            Err(e) => {
-                eprintln!("Error reading message: {}", e);
-            }
-        }
-    }
-}
+//                     if let Ok(parsed) = serde_json::from_str::<Value>(&text) {
+//                         println!("Parsed JSON data: {:?}", parsed);
+//                         // write.send(msg.clone()).await.expect("Failed to send message");
+//                         let event_message =
+//                             format!("{{\"event\": \"update\", \"content\": \"{} updated\"}}", text);
+//                         let new_msg =
+//                             tokio_tungstenite::tungstenite::protocol::Message::text(event_message);
+//                         write.send(new_msg).await.expect("Failed to send event message");
+//                     } else {
+//                         eprintln!("Error parsing JSON data");
+//                     }
+//                 }
+//             }
+//             Err(e) => {
+//                 eprintln!("Error reading message: {}", e);
+//             }
+//         }
+//     }
+// }
