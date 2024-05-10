@@ -532,8 +532,6 @@ const Chatroom = () => {
                     };
 
                     const detectLastMessageofStack = () => {
-                      if (index === 0) return true;
-
                       const nextMessageSender = [
                         ...chatHistoryStore.messages,
                       ].reverse()[index + 1]?.sender_id;

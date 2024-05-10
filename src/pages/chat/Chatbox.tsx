@@ -427,7 +427,6 @@ const Chatbox = ({ view, setView }: propsType) => {
                 };
 
                 const detectLastMessageofStack = () => {
-                  if (index === 0) return true;
 
                   const nextMessageSender = [
                     ...chatHistoryStore.messages,

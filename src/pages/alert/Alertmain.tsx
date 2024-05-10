@@ -44,16 +44,18 @@ const Alertmain = () => {
     const unreadalerts: alertType[] = await fetchUnreadAlerts(account.uid);
     setUnreadCount(unreadalerts.length);
     setUnreadAlerts(unreadalerts);
-    if (unreadalerts.length > 0) {
-      dispatch(setBadgeStatus({ ...alertbadge, badge: true }));
-    }
-  }, [alertbadge.trigger, read]);
+  }, [alertbadge.trigger]);
 
   const getReadAlerts = useCallback(async () => {
     const readalerts: alertType[] = await fetchReadAlerts(account.uid);
     setReadCount(readalerts.length);
     setReadAlerts(readalerts);
-  }, [alertbadge.trigger, read]);
+  }, [alertbadge.trigger]);
+
+  const getAlerts = async () => {
+    await getUnreadAlerts();
+    await getReadAlerts();
+  };
 
   const updateAlert = async () => {
     const accessToken: string = await getaccessToken(
@@ -74,10 +76,12 @@ const Alertmain = () => {
   };
 
   useEffect(() => {
-    getUnreadAlerts();
-    getReadAlerts();
+    getAlerts();
+    if (unreadalerts.length > 0) {
+      dispatch(setBadgeStatus({ ...alertbadge, badge: true }));
+    }
     console.log("alertbadge trigger", alertbadge.trigger);
-  }, [getUnreadAlerts,getReadAlerts]);
+  }, [alertbadge.trigger]);
 
   return (
     <Box className={"alertmain-container"}>
