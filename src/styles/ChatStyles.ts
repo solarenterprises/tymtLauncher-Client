@@ -208,7 +208,7 @@ const ChatStyle = makeStyles({
     flexGrow: 1,
     overflowY: "auto",
     marginBottom: "0px",
-    height: "calc(100vh - 200px)",
+    // height: "calc(100vh - 200px)",
     paddingRight: "10px",
     scrollBehavior:"smooth",
     "&::-webkit-scrollbar": {

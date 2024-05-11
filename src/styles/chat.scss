@@ -350,9 +350,10 @@ $Main-Red: #ef4444;
 .scroll_bar_chatbox {
   width: 101%;
   flex-grow: 1;
-  overflow-y: auto;
+  overflow: auto;
   margin-bottom: 0px;
-  height: calc(100vh - 200px);
+  // height: calc(100vh - 200px);
+  height: 100%;
   padding-right: 10px;
   scroll-behavior: smooth;
   // justify-content: flex-end;

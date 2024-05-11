@@ -67,6 +67,8 @@ import {
 import { ThreeDots } from "react-loader-spinner";
 import { Chatdecrypt } from "../../lib/api/ChatEncrypt";
 // import ScrollToBottom from "react-scroll-to-bottom";
+// import { animateScroll } from "react-scroll";
+// import InfiniteScroll from "react-infinite-scroll-component";
 
 const theme = createTheme({
   palette: {
@@ -96,6 +98,7 @@ const Chatbox = ({ view, setView }: propsType) => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [page, setPage] = useState<number>(1);
   const [hasMore, setHasMore] = useState(true);
+  const [isLoading, setLoading] = useState<boolean>(false);
   // const [decryptedmessages, setDecryptedMessages] = useState<ChatMessageType[]>(
   //   []
   // );
@@ -192,17 +195,21 @@ const Chatbox = ({ view, setView }: propsType) => {
     }
   };
 
+  // is message loading
+
+
   useEffect(() => {
     setPage(1);
     setHasMore(true);
     dispatch(setChatHistory({ messages: [] }));
     setProcessedPages(new Set());
+    setLoading(false);
   }, [currentpartner._id]);
   // When the scrolling up, this function fetches one page of history for each loading.
 
   const fetchMessages = async () => {
+    setLoading(true);
     if (!hasMore) return;
-
     const query = {
       room_user_ids: [account.uid, currentpartner._id],
       pagination: { page: page, pageSize: 20 },
@@ -221,6 +228,7 @@ const Chatbox = ({ view, setView }: propsType) => {
                 messages: [...chatHistoryStore.messages, ...result.data],
               })
             );
+            setLoading(false);
             setPage(page + 1);
           } else {
             setHasMore(false);
@@ -298,29 +306,35 @@ const Chatbox = ({ view, setView }: propsType) => {
   }, [dispatch, view]);
 
   const scrollref = useRef<HTMLDivElement>(null);
-
   const Scroll = () => {
     const { offsetHeight, scrollHeight, scrollTop } =
       scrollref.current as HTMLDivElement;
     if (scrollHeight <= scrollTop + offsetHeight + 100) {
       scrollref.current?.scrollTo(0, scrollHeight);
+      console.log("toBottom when send/receive");
     }
   };
+  // const ScrollToBottom = () => {
+  //   if (scrollref.current) {
+  //     const { scrollHeight } = scrollref.current as HTMLDivElement;
+  //     scrollref.current.scrollTo(0, scrollHeight);
+  //   }
+  // };
   useEffect(() => {
     if (scrollref.current) Scroll();
   }, [sendMessage]);
 
-  // Function to scroll the chatbox to the bottom
-  const scrollToBottom = () => {
-    if (scrollref.current) {
-      scrollref.current.scrollTop = scrollref.current.scrollHeight;
-    }
-  };
-
-  // Scroll to bottom when component is mounted
   useEffect(() => {
-    scrollToBottom();
-  }, [currentpartner._id]);
+    if (
+      scrollref.current &&
+      isLoading == false &&
+      chatHistoryStore.messages.length < 21
+    ) {
+      scrollref.current.scrollTop = scrollref.current.scrollHeight;
+      console.log("scrollTop", scrollref.current.scrollTop);
+      console.log("scrollHeight", scrollref.current.scrollHeight);
+    }
+  }, [isLoading, currentpartner._id]);
 
   return (
     <>
@@ -397,15 +411,17 @@ const Chatbox = ({ view, setView }: propsType) => {
             display={"flex"}
             flexDirection={"column"}
             ref={scrollref}
+            id={"container"}
           >
             <Box sx={{ width: "100%", flex: "1 1 auto" }}></Box>
+
             <InfiniteScroll
-              // pageStart={0}
+              // pageStart={page}
+              initialLoad={true}
               loadMore={debouncedFetchMessages}
               hasMore={hasMore}
               isReverse={true}
               useWindow={false}
-              // className={"infinitescroll"}
             >
               {[...chatHistoryStore.messages]
                 .reverse()
@@ -597,6 +613,7 @@ const Chatbox = ({ view, setView }: propsType) => {
                   );
                 })}
             </InfiniteScroll>
+            <div id={"emptyblock"}></div>
           </Box>
 
           {/* Input field section */}

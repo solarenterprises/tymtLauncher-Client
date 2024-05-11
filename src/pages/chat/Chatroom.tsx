@@ -130,6 +130,7 @@ const Chatroom = () => {
   const [keyperuser, setKeyperUser] = useState<string>("");
   const [processedPages, setProcessedPages] = useState(new Set());
   const [screenexpanded, setScreenExpanded] = useState<boolean>(false);
+  const [isLoading, setLoading] = useState<boolean>(false);
   const userid: string = currentpartner._id;
   const existkey: string = useSelector((state) =>
     selectEncryptionKeyByUserId(state, userid)
@@ -237,9 +238,11 @@ const Chatroom = () => {
     setHasMore(true);
     dispatch(setChatHistory({ messages: [] }));
     setProcessedPages(new Set());
+    setLoading(false);
   }, [currentpartner._id]);
 
   const fetchMessages = async () => {
+    setLoading(true);
     if (!hasMore) return;
 
     const query = {
@@ -261,6 +264,7 @@ const Chatroom = () => {
               })
             );
             setPage(page + 1);
+            setLoading(false);
           } else {
             setHasMore(false);
           }
@@ -367,17 +371,17 @@ const Chatroom = () => {
     if (scrollref.current) Scroll();
   }, [sendMessage]);
 
-  // Function to scroll the chatbox to the bottom
-  const scrollToBottom = () => {
-    if (scrollref.current) {
-      scrollref.current.scrollTop = scrollref.current.scrollHeight;
-    }
-  };
-
-  // Scroll to bottom when component is mounted
   useEffect(() => {
-    scrollToBottom();
-  }, [currentpartner._id]);
+    if (
+      scrollref.current &&
+      isLoading == false &&
+      chatHistoryStore.messages.length < 21
+    ) {
+      scrollref.current.scrollTop = scrollref.current.scrollHeight;
+      console.log("scrollTop", scrollref.current.scrollTop);
+      console.log("scrollHeight", scrollref.current.scrollHeight);
+    }
+  }, [isLoading, currentpartner._id]);
 
   return (
     <>
@@ -486,7 +490,6 @@ const Chatroom = () => {
                   sx={{
                     backgroundColor: "#FFFFFF1A",
                     marginTop: "24px",
-                    marginBottom: "22px",
                   }}
                 />
               </Box>
@@ -494,12 +497,13 @@ const Chatroom = () => {
               {/* Message inbox */}
               <Box
                 // className={classes.scroll_bar_chatbox}
-                className={classes.scroll_bar_chatbox}
+                className={"scroll_bar_chatbox"}
                 ref={scrollref}
                 display={"flex"}
                 flexDirection={"column"}
               >
                 <Box sx={{ width: "100%", flex: "1 1 auto" }}></Box>
+
                 <InfiniteScroll
                   // pageStart={page}
                   loadMore={debouncedFetchMessages}
