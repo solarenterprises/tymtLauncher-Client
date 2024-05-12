@@ -79,7 +79,7 @@ const D53Modal = ({ open, setOpen }: props) => {
 
   useEffect(() => {
     const init = async () => {
-      const apiURL = `http://65.108.19.142:5000/`;
+      const apiURL = `https://serverlist.district53.io/`;
       const res: any = await tauriFetch(apiURL, {
         method: "GET",
         timeout: 30,
@@ -101,7 +101,7 @@ const D53Modal = ({ open, setOpen }: props) => {
       style={modalStyle}
       onClose={() => setOpen(false)}
       sx={{
-        backdropFilter: "blur(4px)",
+        backdropFilter: "blur(4px)", vc
       }}
     >
       <Box className="d53-modal-content oauth-modal">
