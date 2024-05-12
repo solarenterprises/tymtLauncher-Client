@@ -101,7 +101,7 @@ const D53Modal = ({ open, setOpen }: props) => {
       style={modalStyle}
       onClose={() => setOpen(false)}
       sx={{
-        backdropFilter: "blur(4px)", vc
+        backdropFilter: "blur(4px)",
       }}
     >
       <Box className="d53-modal-content oauth-modal">
