@@ -2,9 +2,11 @@ import { Modal, Box, Stack, Button } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import { propsBlockModalType } from "../../types/chatTypes";
 
-const BlockModal = (
-  { openBlockModal, setOpenBlockModal,roommode }: propsBlockModalType,
-) => {
+const BlockModal = ({
+  openBlockModal,
+  setOpenBlockModal,
+  roommode,
+}: propsBlockModalType) => {
   const { t } = useTranslation();
 
   return (

@@ -2,23 +2,11 @@ import { useEffect, useRef } from "react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { useTranslation } from "react-i18next";
 
-import {
-  Box,
-  Divider,
-  Button,
-  Stack,
-  TextField,
-  InputAdornment,
-  Popover,
-} from "@mui/material";
+import { Box, Divider, Button, Stack } from "@mui/material";
 
-import { ThemeProvider, createTheme } from "@mui/material/styles";
 import {
   ChatHistoryType,
-  // ChatMessageType,
-  // askEncryptionKeyType,
   deliverEncryptionKeyType,
   propsType,
   userType,
@@ -28,7 +16,6 @@ import { chatType } from "../../types/settingTypes";
 
 import { selectPartner } from "../../features/chat/Chat-currentPartnerSlice";
 import { getAccount } from "../../features/account/AccountSlice";
-import TextareaAutosize from "@mui/material/TextareaAutosize";
 import {
   getChatHistory,
   setChatHistory,
@@ -39,14 +26,12 @@ import {
   selectEncryptionKeyByUserId,
 } from "../../features/chat/Chat-encryptionkeySlice";
 
-import EmojiPicker, { SkinTones } from "emoji-picker-react";
 import maximize from "../../assets/chat/maximize.svg";
-import emotion from "../../assets/chat/emotion.svg";
-import send from "../../assets/chat/chatframe.svg";
 import backIcon from "../../assets/settings/back-icon.svg";
 import ChatStyle from "../../styles/ChatStyles";
 import Avatar from "../../components/home/Avatar";
 import OrLinechat from "../../components/chat/Orlinechat";
+import Chatinputfield from "../../components/chat/Chatinputfield";
 
 import "firebase/database";
 
@@ -56,9 +41,6 @@ import { useSocket } from "../../providers/SocketProvider";
 import { AppDispatch } from "../../store";
 import _ from "lodash";
 import InfiniteScroll from "react-infinite-scroller";
-// import { generateRandomString } from "../../features/chat/Chat-contactApi";
-// import { selectEncryptionKeyByUserId } from "../../features/chat/Chat-enryptionkeySlice";
-import { encrypt } from "../../lib/api/Encrypt";
 import { generateRandomString } from "../../features/chat/Chat-contactApi";
 import {
   setMountedFalse,
@@ -66,58 +48,26 @@ import {
 } from "../../features/chat/Chat-intercomSupportSlice";
 import { ThreeDots } from "react-loader-spinner";
 import { Chatdecrypt } from "../../lib/api/ChatEncrypt";
-// import ScrollToBottom from "react-scroll-to-bottom";
-// import { animateScroll } from "react-scroll";
-// import InfiniteScroll from "react-infinite-scroll-component";
-
-const theme = createTheme({
-  palette: {
-    primary: {
-      main: "#FF5733",
-    },
-    secondary: {
-      main: "#9e9e9e",
-      light: "#F5EBFF",
-      contrastText: "#47008F",
-    },
-  },
-});
 
 const Chatbox = ({ view, setView }: propsType) => {
+  const classes = ChatStyle();
+  const { socket } = useSocket();
+  const navigate = useNavigate();
+  const dispatch = useDispatch<AppDispatch>();
   const account: accountType = useSelector(getAccount);
   const currentpartner: userType = useSelector(selectPartner);
   const chatHistoryStore: ChatHistoryType = useSelector(getChatHistory);
   const data: chatType = useSelector(selectChat);
-  const navigate = useNavigate();
-  const dispatch = useDispatch<AppDispatch>();
-  const { t } = useTranslation();
-  const { socket } = useSocket();
-  const classes = ChatStyle();
-  const [value, setValue] = useState<string>("");
-  const [EmojiLibraryOpen, setIsEmojiLibraryOpen] = useState(false);
-  const [anchorEl, setAnchorEl] = useState(null);
-  const [page, setPage] = useState<number>(1);
-  const [hasMore, setHasMore] = useState(true);
-  const [isLoading, setLoading] = useState<boolean>(false);
-  const [keyperuser, setKeyperUser] = useState<string>("");
-  const [processedPages, setProcessedPages] = useState(new Set());
   const userid: string = currentpartner._id;
   const existkey: string = useSelector((state) =>
     selectEncryptionKeyByUserId(state, userid)
   );
-
-  const handleEmojiClick = (event: any) => {
-    setAnchorEl(event.currentTarget);
-    setIsEmojiLibraryOpen(true);
-  };
-
-  const handleCloseEmojiLibrary = () => {
-    setIsEmojiLibraryOpen(false);
-  };
-
-  const handleEmojiSelect = (emoji: any) => {
-    setValue(value + emoji.emoji);
-  };
+  const [value, setValue] = useState<string>("");
+  const [page, setPage] = useState<number>(1);
+  const [hasMore, setHasMore] = useState(true);
+  // const [isLoading, setLoading] = useState<boolean>(false);
+  const [keyperuser, setKeyperUser] = useState<string>("");
+  const [processedPages, setProcessedPages] = useState(new Set());
 
   // When currentpartner is changed ask encryption key to partner
 
@@ -137,74 +87,17 @@ const Chatbox = ({ view, setView }: propsType) => {
     }
   }, [currentpartner._id, socket]);
 
-  const sendMessage = async () => {
-    try {
-      if (value.trim() !== "") {
-        const encryptedvalue = await encrypt(value, keyperuser);
-        const message = {
-          sender_id: account.uid,
-          recipient_id: currentpartner._id,
-          // room_id: `room_${account.uid}_${currentpartner._id}`,
-          message: encryptedvalue,
-          createdAt: Date.now(),
-        };
-        socket.emit("post-message", JSON.stringify(message));
-        const data = {
-          alertType: "chat",
-          note: {
-            sender: `${account.uid}`,
-            message: encryptedvalue,
-          },
-          receivers: [currentpartner._id],
-        };
-        socket.emit("post-alert", JSON.stringify(data));
-        const updatedHistory = [message, ...chatHistoryStore.messages];
-        dispatch(
-          setChatHistory({
-            messages: updatedHistory,
-          })
-        );
-        setValue("");
-      }
-    } catch (err: any) {}
-  };
-
-  // actually enter the input and send the message
-
-  const handleEnter = async (e: any) => {
-    if (e.key === "Enter" && (e.ctrlKey || e.shiftKey)) {
-      e.preventDefault(); // Prevent the default action to avoid form submission
-
-      const cursorPosition = e.target.selectionStart;
-      const beforeText = value.substring(0, cursorPosition);
-      const afterText = value.substring(cursorPosition);
-      setValue(`${beforeText}\n${afterText}`);
-
-      setTimeout(() => {
-        e.target.selectionStart = e.target.selectionEnd = cursorPosition + 1;
-      }, 0);
-    } else if (e.key === "Enter") {
-      e.preventDefault();
-      if (existkey) {
-        await sendMessage();
-      } // Handle sending the message
-      setValue(""); // Reset input field
-    }
-  };
-
-  // is message loading
-
   useEffect(() => {
     setPage(1);
     setHasMore(true);
     dispatch(setChatHistory({ messages: [] }));
     setProcessedPages(new Set());
-    setLoading(false);
+    // setLoading(false);
   }, [currentpartner._id]);
   // When the scrolling up, this function fetches one page of history for each loading.
 
   const fetchMessages = async () => {
-    setLoading(true);
+    // setLoading(true);
     if (!hasMore) return;
     const query = {
       room_user_ids: [account.uid, currentpartner._id],
@@ -224,7 +117,7 @@ const Chatbox = ({ view, setView }: propsType) => {
                 messages: [...chatHistoryStore.messages, ...result.data],
               })
             );
-            setLoading(false);
+            // setLoading(false);
             setPage(page + 1);
           } else {
             setHasMore(false);
@@ -250,8 +143,6 @@ const Chatbox = ({ view, setView }: propsType) => {
     const options = { month: "long", day: "numeric" };
 
     const messageDate: any = new Date(date);
-    // const diffTime = today.getTime() - messageDate.getTime();
-    // const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
     if (messageDate.setHours(0, 0, 0, 0) === today.setHours(0, 0, 0, 0)) {
       return "Today";
@@ -289,19 +180,14 @@ const Chatbox = ({ view, setView }: propsType) => {
   };
 
   useEffect(() => {
-    if (scrollref.current) Scroll();
-  }, [sendMessage]);
+    if (scrollref.current && value === "") Scroll();
+  }, [value]);
 
   useEffect(() => {
-    if (
-      scrollref.current &&
-      isLoading == false &&
-      chatHistoryStore.messages.length < 41
-    ) {
+    if (scrollref.current && page < 3) {
       scrollref.current.scrollTop = scrollref.current.scrollHeight;
     }
-  }, [isLoading, currentpartner._id]);
-
+  }, [debouncedFetchMessages, currentpartner._id, page]);
 
   return (
     <>
@@ -356,7 +242,7 @@ const Chatbox = ({ view, setView }: propsType) => {
                 setHasMore(true);
                 dispatch(setChatHistory({ messages: [] }));
                 setProcessedPages(new Set());
-                setLoading(false);
+                // setLoading(false);
               }}
             >
               <Box className={"center-align"}>
@@ -385,7 +271,7 @@ const Chatbox = ({ view, setView }: propsType) => {
 
             <InfiniteScroll
               // pageStart={page}
-              initialLoad={true}
+              // initialLoad={false}
               loadMore={debouncedFetchMessages}
               hasMore={hasMore}
               isReverse={true}
@@ -467,12 +353,6 @@ const Chatbox = ({ view, setView }: propsType) => {
                         >
                           {message.sender_id === account.uid && (
                             <>
-                              {/* <Box
-                                  className={"fs-16 white"}
-                                  sx={{ marginLeft: "16px" }}
-                                >
-                                  {userStore.nickname}
-                                </Box> */}
                               <Box
                                 className={
                                   isLastMessageofStack
@@ -521,14 +401,6 @@ const Chatbox = ({ view, setView }: propsType) => {
                           )}
                           {message.sender_id !== account.uid && (
                             <>
-                              {/* <Stack>
-                                  <Box
-                                    className={"fs-16 white"}
-                                    sx={{ marginLeft: "16px" }}
-                                  >
-                                    {currentpartner.nickName}
-                                  </Box>
-                                </Stack> */}
                               <Box
                                 className={
                                   isLastMessageofStack
@@ -585,95 +457,11 @@ const Chatbox = ({ view, setView }: propsType) => {
           </Box>
 
           {/* Input field section */}
-          <Box sx={{ marginTop: "5px" }}>
-            <Divider
-              sx={{
-                backgroundColor: "#FFFFFF1A",
-                marginTop: "0px",
-                marginBottom: "15px",
-              }}
-            />
-            <ThemeProvider theme={theme}>
-              <TextField
-                className={classes.chat_input}
-                color="secondary"
-                value={value}
-                placeholder={t("cha-26_type-here")}
-                multiline
-                InputProps={{
-                  inputComponent: TextareaAutosize,
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <div style={{ width: 5 }} />{" "}
-                    </InputAdornment>
-                  ),
-                  endAdornment: (
-                    <InputAdornment position="start">
-                      <Button
-                        className={classes.emoji_button}
-                        onClick={handleEmojiClick}
-                      >
-                        <img
-                          src={emotion}
-                          style={{
-                            cursor: "pointer",
-                            display: "block",
-                          }}
-                        />
-                      </Button>
-
-                      <Button
-                        className="send_button"
-                        sx={{
-                          display: value ? "block" : "none",
-                        }}
-                        onClick={sendMessage}
-                      >
-                        <Box className={"center-align"}>
-                          <img src={send} />
-                        </Box>
-                      </Button>
-                    </InputAdornment>
-                  ),
-                  style: { color: "#FFFFFF" },
-                }}
-                onChange={(e) => {
-                  if (setValue) setValue(e.target.value);
-                }}
-                onKeyDown={(e: any) => {
-                  handleEnter(e);
-                }}
-              />
-            </ThemeProvider>
-            <Popover
-              open={EmojiLibraryOpen}
-              onClose={handleCloseEmojiLibrary}
-              anchorOrigin={{
-                vertical: "top",
-                horizontal: "center",
-              }}
-              anchorEl={anchorEl}
-              transformOrigin={{
-                vertical: "bottom",
-                horizontal: "left",
-              }}
-              slotProps={{
-                paper: {
-                  style: {
-                    backgroundColor: "transparent",
-                    boxShadow: "none",
-                  },
-                },
-              }}
-            >
-              <EmojiPicker
-                className={classes.emojipicker}
-                onEmojiClick={handleEmojiSelect}
-                defaultSkinTone={SkinTones.LIGHT}
-                autoFocusSearch={true}
-              />
-            </Popover>
-          </Box>
+          <Chatinputfield
+            value={value}
+            setValue={setValue}
+            keyperuser={keyperuser}
+          />
         </Box>
       )}
     </>

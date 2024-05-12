@@ -28,6 +28,43 @@ export interface propsRequestModalType {
   roommode: boolean;
 }
 
+export interface propsFRcontextmenuType {
+  value: string;
+  isClickedBlock: boolean;
+  isClickedDelete: boolean;
+  isClickedRequest: boolean;
+  setIsClickedBlock: (param: boolean) => void;
+  setOpenBlockModal: (param: boolean) => void;
+  setShowContextMenu: (param: boolean) => void;
+  setIsClickedDelete: (param: boolean) => void;
+  setOpenDeleteModal: (param: boolean) => void;
+  setOpenRequestModal: (param: boolean) => void;
+  setIsClickedRequest: (param: boolean) => void;
+  contextMenuPosition: contextmenupositionType;
+}
+
+export interface propsUserlistType {
+  user: userType;
+  index: number;
+  numberofunreadmessages: number;
+  setShowContextMenu: (param: boolean) => void;
+  setContextMenuPosition: (
+    contextMenuPosition: contextmenupositionType
+  ) => void;
+  setView: (panel: string) => void;
+}
+
+export interface contextmenupositionType {
+  x: number;
+  y: number;
+}
+
+export interface propsChatinputfieldType {
+  value: string;
+  keyperuser: string;
+  setValue: (value: string) => void;
+}
+
 export interface chatwindowType {
   mode: string;
 }

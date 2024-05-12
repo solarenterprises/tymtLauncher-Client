@@ -14,7 +14,6 @@ import { useTranslation } from "react-i18next";
 import nocontact from "../../assets/chat/nocontact.png";
 import settingicon from "../../assets/chat/settings.svg";
 import searchlg from "../../assets/searchlg.svg";
-import Avatar from "../../components/home/Avatar";
 import BlockModal from "../../components/chat/BlockModal";
 import DeleteModal from "../../components/chat/DeleteModal";
 import RequestModal from "../../components/chat/RequestModal";
@@ -24,8 +23,6 @@ import { useSocket } from "../../providers/SocketProvider";
 
 import { getUserlist } from "../../features/chat/Chat-userlistSlice";
 import { alertType, propsType, userType } from "../../types/chatTypes";
-import { setCurrentChatPartner } from "../../features/chat/Chat-currentPartnerSlice";
-import { selectPartner } from "../../features/chat/Chat-currentPartnerSlice";
 import { getMultiWallet } from "../../features/wallet/MultiWalletSlice";
 import { getNonCustodial } from "../../features/account/NonCustodialSlice";
 import { multiWalletType } from "../../types/walletTypes";
@@ -38,7 +35,6 @@ import {
 import { setUserList } from "../../features/chat/Chat-userlistSlice";
 import {
   getSelectedUser,
-  setSelectedUsertoDelete,
 } from "../../features/chat/Chat-selecteduserSlice";
 import { createContact } from "../../features/chat/Chat-contactApi";
 import { selecteduserType } from "../../types/chatTypes";
@@ -50,6 +46,8 @@ import { getAccount } from "../../features/account/AccountSlice";
 import { fetchUnreadAlerts } from "../../features/chat/Chat-alertApi";
 import { selectBadgeStatus } from "../../features/alert/AlertbadgeSlice";
 import { alertbadgeType } from "../../types/alertTypes";
+import FRcontextmenu from "../../components/chat/FRcontextmenu";
+import Userlist from "../../components/chat/Userlist";
 
 const ChatuserlistinRoom = ({ view, setView }: propsType) => {
   const { socket } = useSocket();
@@ -57,7 +55,6 @@ const ChatuserlistinRoom = ({ view, setView }: propsType) => {
   const { t } = useTranslation();
   const classes = ChatStyle();
   const chatuserlist: userType[] = useSelector(getUserlist);
-  const currentpartner: userType = useSelector(selectPartner);
   const [searchedresult, setSearchedresult] = useState<userType[]>([]);
   const account: accountType = useSelector(getAccount);
   const multiwallet: multiWalletType = useSelector(getMultiWallet);
@@ -114,28 +111,6 @@ const ChatuserlistinRoom = ({ view, setView }: propsType) => {
     socket.emit("post-alert", JSON.stringify(data));
     setOpenRequestModal(false);
     await updateContact(selectedusertoDelete.id);
-  };
-
-  /***Modals of Userlist ***/
-
-  const handleContextMenu = (e: any, id: string) => {
-    e.preventDefault(); // Prevent default browser context menu
-    setShowContextMenu(!showContextMenu);
-    setContextMenuPosition({ x: e.clientX, y: e.clientY });
-    e.stopPropagation();
-    dispatch(setSelectedUsertoDelete({ ...selectedusertoDelete, id: id }));
-
-    const handleClickOutsideContextMenu = (event) => {
-      if (
-        !event.target.closest(".context_menu_block") &&
-        !event.target.closest(".context_menu_delete")
-      ) {
-        setShowContextMenu(false);
-        document.removeEventListener("click", handleClickOutsideContextMenu);
-      }
-    };
-
-    document.addEventListener("click", handleClickOutsideContextMenu);
   };
 
   const updateContact = async (_id) => {
@@ -281,156 +256,32 @@ const ChatuserlistinRoom = ({ view, setView }: propsType) => {
                         : 0;
                     const numberofunreadmessages = count;
                     return (
-                      <Box key={index}>
-                        <Grid
-                          container
-                          sx={{
-                            height: "64px",
-                            flexDirection: "row",
-                            justifyContent: "left",
-                            alignItems: "center",
-                            padding: "12px 5px 12px 5px",
-                            borderRadius: "5px",
-                            backgroundColor:
-                              user._id === currentpartner._id
-                                ? "#52E1F21A"
-                                : "transparent",
-                            cursor: "pointer",
-                            "&:hover": {
-                              borderRadius: "5px",
-                              borderTopRightRadius: "5px",
-                              borderBottomRightRadius: "5px",
-                              backgroundColor: "#FFFFFF1A",
-                            },
-                            "&:active": {
-                              backgroundColor: "#52E1F21A",
-                            },
-                          }}
-                          onContextMenu={(e) => handleContextMenu(e, user._id)}
-                          onClick={() => {
-                            dispatch(
-                              setCurrentChatPartner({
-                                ...currentpartner,
-                                _id: user._id,
-                                nickName: user.nickName,
-                                avatar: user.avatar,
-                                lang: user.lang,
-                                sxpAddress: user.sxpAddress,
-                                onlineStatus: user.onlineStatus,
-                                notificationStatus: user.notificationStatus,
-                              })
-                            );
-                            updateContact(user._id);
-                          }}
-                        >
-                          <Avatar
-                            onlineStatus={user.onlineStatus}
-                            userid={user._id}
-                            size={40}
-                            status={user.notificationStatus}
-                          />
-                          <Stack
-                            flexDirection={"row"}
-                            alignItems={"center"}
-                            justifyContent={"space-between"}
-                            display={"flex"}
-                            sx={{ marginLeft: "25px", width: "320px" }}
-                          >
-                            <Box>
-                              <Stack
-                                direction={"column"}
-                                justifyContent={"flex-start"}
-                                spacing={1}
-                              >
-                                <Box className={"fs-16 white"}>
-                                  {user?.nickName}
-                                </Box>
-                                <Box className={"fs-12-light gray"}>
-                                  {user?.sxpAddress}
-                                </Box>
-                              </Stack>
-                            </Box>
-
-                            <Box
-                              className={"unread-dot fs-10-light"}
-                              sx={{
-                                display:
-                                  numberofunreadmessages > 0 ? "block" : "none",
-                              }}
-                            >
-                              {numberofunreadmessages}
-                            </Box>
-                          </Stack>
-                        </Grid>
-                      </Box>
+                      <Userlist
+                        user={user}
+                        index={index}
+                        numberofunreadmessages={numberofunreadmessages}
+                        setShowContextMenu={setShowContextMenu}
+                        setContextMenuPosition={setContextMenuPosition}
+                        setView={setView}
+                      />
                     );
                   }
                 )}
                 {showContextMenu && (
-                  <>
-                    <Box
-                      sx={{
-                        position: "fixed",
-                        top: contextMenuPosition.y,
-                        left: contextMenuPosition.x,
-                        display: "inline-flex",
-                        flexDirection: "column",
-                        alignItems: "flex-start",
-                        cursor: "pointer",
-                      }}
-                    >
-                      {searchvalue === "" ? (
-                        <>
-                          <Box
-                            className={"fs-16 white context_menu_block"}
-                            textAlign={"left"}
-                            sx={{
-                              backdropFilter: "blur(10px)",
-                            }}
-                            onClick={() => {
-                              setIsClickedBlock(!isClickedBlock),
-                                setOpenBlockModal(true),
-                                setShowContextMenu(false);
-                            }}
-                          >
-                            {t("cha-4_block")}
-                          </Box>
-
-                          <Box
-                            className={"fs-16 white context_menu_delete"}
-                            textAlign={"left"}
-                            sx={{
-                              backdropFilter: "blur(10px)",
-                            }}
-                            onClick={() => {
-                              setIsClickedDelete(!isClickedDelete),
-                                setOpenDeleteModal(true),
-                                setShowContextMenu(false);
-                            }}
-                          >
-                            {t("cha-5_delete-chat")}
-                          </Box>
-                        </>
-                      ) : (
-                        <>
-                          <Box
-                            className={"fs-16 white context_menu_friendrequest"}
-                            textAlign={"center"}
-                            sx={{
-                              backdropFilter: "blur(10px)",
-                            }}
-                            onClick={() => {
-                              setIsClickedRequest(!isClickedRequest),
-                                setOpenRequestModal(true),
-                                setShowContextMenu(false);
-                            }}
-                          >
-                            {t("cha-20_send-request")}
-                          </Box>
-                        </>
-                      )}
-                    </Box>
-                  </>
+                  <FRcontextmenu
+                    value={searchvalue}
+                    isClickedBlock={isClickedBlock}
+                    isClickedDelete={isClickedDelete}
+                    isClickedRequest={isClickedRequest}
+                    setIsClickedBlock={setIsClickedBlock}
+                    setOpenBlockModal={setOpenBlockModal}
+                    setShowContextMenu={setShowContextMenu}
+                    setIsClickedDelete={setIsClickedDelete}
+                    setOpenDeleteModal={setOpenDeleteModal}
+                    setOpenRequestModal={setOpenRequestModal}
+                    setIsClickedRequest={setIsClickedRequest}
+                    contextMenuPosition={contextMenuPosition}
+                  />
                 )}
                 <BlockModal
                   openBlockModal={openBlockModal}

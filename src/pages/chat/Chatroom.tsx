@@ -2,24 +2,11 @@ import { useSelector, useDispatch } from "react-redux";
 import { useCallback, useEffect, useRef } from "react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useTranslation } from "react-i18next";
-import TextareaAutosize from "@mui/material/TextareaAutosize";
-import {
-  Box,
-  Grid,
-  Divider,
-  Button,
-  Stack,
-  TextField,
-  InputAdornment,
-  Popover,
-} from "@mui/material";
+import React from "react";
 
+import { Box, Grid, Divider, Button, Stack } from "@mui/material";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
-import EmojiPicker, { SkinTones } from "emoji-picker-react";
 import ChatStyle from "../../styles/ChatStyles";
-import emotion from "../../assets/chat/emotion.svg";
-import send from "../../assets/chat/chatframe.svg";
 import x from "../../assets/chat/x.svg";
 import Avatar from "../../components/home/Avatar";
 import OrLinechat from "../../components/chat/Orlinechat";
@@ -48,6 +35,7 @@ import ChatSettinginRoom from "./ChatsettinginRoom";
 import ChatuserlistinRoom from "./ChatuserlistinRoom";
 import ChatfriendinRoom from "./Chatsetting-friendinRoom";
 import ChatMsginRoom from "./Chatsetting-MsginRoom";
+import Chatinputfield from "../../components/chat/Chatinputfield";
 
 /*** Firebase RDB reference ***/
 // import React from "react";
@@ -70,7 +58,7 @@ import ChatMsginRoom from "./Chatsetting-MsginRoom";
 
 import { useSocket } from "../../providers/SocketProvider";
 import { AppDispatch } from "../../store";
-import React from "react";
+
 import _ from "lodash";
 import InfiniteScroll from "react-infinite-scroller";
 import { selectNotification } from "../../features/settings/NotificationSlice";
@@ -79,7 +67,6 @@ import {
   addEncryptionKey,
   selectEncryptionKeyByUserId,
 } from "../../features/chat/Chat-encryptionkeySlice";
-import { encrypt } from "../../lib/api/Encrypt";
 import { generateRandomString } from "../../features/chat/Chat-contactApi";
 import {
   setMountedFalse,
@@ -112,18 +99,14 @@ const Chatroom = () => {
   const chatHistoryStore: ChatHistoryType = useSelector(getChatHistory);
   const chatuserlist: userType[] = useSelector(getUserlist);
   const notificationStore: notificationType = useSelector(selectNotification);
-  const { t } = useTranslation();
   const [panel, setPanel] = useState("chatroom-chatuserlist");
   const [value, setValue] = useState<string>("");
   const [showChat, setShowChat] = useState(false);
-  const [anchorEl, setAnchorEl] = useState(null);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const [isEmojiLibraryOpen, setIsEmojiLibraryOpen] = useState(false);
   const [keyperuser, setKeyperUser] = useState<string>("");
   const [processedPages, setProcessedPages] = useState(new Set());
   const [screenexpanded, setScreenExpanded] = useState<boolean>(false);
-  const [isLoading, setLoading] = useState<boolean>(false);
   const userid: string = currentpartner._id;
   const existkey: string = useSelector((state) =>
     selectEncryptionKeyByUserId(state, userid)
@@ -135,21 +118,6 @@ const Chatroom = () => {
     },
     [showChat]
   );
-
-  /// InputTextfield Emoji Type
-
-  const handleEmojiClick = (event: any) => {
-    setAnchorEl(event.currentTarget);
-    setIsEmojiLibraryOpen(true);
-  };
-
-  const handleCloseEmojiLibrary = () => {
-    setIsEmojiLibraryOpen(false);
-  };
-
-  const handleEmojiSelect = (emoji: any) => {
-    setValue(value + emoji.emoji);
-  };
 
   // When currentpartner is changed ask encryption key to partner
 
@@ -169,73 +137,14 @@ const Chatroom = () => {
     }
   }, [currentpartner._id, socket]);
 
-  ///// send message to firebase RDB
-
-  const sendMessage = async () => {
-    try {
-      if (value.trim() !== "") {
-        const encryptedvalue = await encrypt(value, keyperuser);
-        const message = {
-          sender_id: account.uid,
-          recipient_id: currentpartner._id,
-          // room_id: `room_${account.uid}_${currentpartner._id}`,
-          message: encryptedvalue,
-          createdAt: Date.now(),
-        };
-        socket.emit("post-message", JSON.stringify(message));
-        const data = {
-          alertType: "chat",
-          note: {
-            sender: `${account.uid}`,
-            message: encryptedvalue,
-          },
-          receivers: [currentpartner._id],
-        };
-        socket.emit("post-alert", JSON.stringify(data));
-        const updatedHistory = [message, ...chatHistoryStore.messages];
-        dispatch(
-          setChatHistory({
-            messages: updatedHistory,
-          })
-        );
-        setValue("");
-      }
-    } catch (err: any) {}
-  };
-
-  // actually enter the input and send the message
-
-  const handleEnterinRoom = async (e: any) => {
-    if (e.key === "Enter" && (e.ctrlKey || e.shiftKey)) {
-      e.preventDefault(); // Prevent the default action to avoid form submission
-
-      const cursorPosition = e.target.selectionStart;
-      const beforeText = value.substring(0, cursorPosition);
-      const afterText = value.substring(cursorPosition);
-      setValue(`${beforeText}\n${afterText}`);
-
-      setTimeout(() => {
-        e.target.selectionStart = e.target.selectionEnd = cursorPosition + 1;
-      }, 0);
-    } else if (e.key === "Enter") {
-      e.preventDefault();
-      if (existkey) {
-        await sendMessage();
-      } // Handle sending the message
-      setValue(""); // Reset input field
-    }
-  };
-
   useEffect(() => {
     setPage(1);
     setHasMore(true);
     dispatch(setChatHistory({ messages: [] }));
     setProcessedPages(new Set());
-    setLoading(false);
   }, [currentpartner._id]);
 
   const fetchMessages = async () => {
-    setLoading(true);
     if (!hasMore) return;
 
     const query = {
@@ -255,7 +164,6 @@ const Chatroom = () => {
               })
             );
             setPage(page + 1);
-            setLoading(false);
           } else {
             setHasMore(false);
           }
@@ -331,19 +239,16 @@ const Chatroom = () => {
       scrollref.current?.scrollTo(0, scrollHeight);
     }
   };
-  useEffect(() => {
-    if (scrollref.current) Scroll();
-  }, [sendMessage]);
 
   useEffect(() => {
-    if (
-      scrollref.current &&
-      isLoading == false &&
-      chatHistoryStore.messages.length < 41
-    ) {
+    if (scrollref.current && value === "") Scroll();
+  }, [value]);
+
+  useEffect(() => {
+    if (scrollref.current && page < 3) {
       scrollref.current.scrollTop = scrollref.current.scrollHeight;
     }
-  }, [isLoading, currentpartner._id]);
+  }, [debouncedFetchMessages, currentpartner._id, page]);
 
   return (
     <>
@@ -418,24 +323,6 @@ const Chatroom = () => {
                     {!chatuserlist[0] && <></>}
                   </Stack>
                   <Stack alignItems={"center"} flexDirection={"row"}>
-                    {/* <Button
-                      className={"common-btn"}
-                      onClick={() => {
-                        navigate(-1);
-                        setTimeout(() => {
-                          setShowChat(!showChat);
-                        }, 2000);
-                      }}
-                    >
-                      <Box className={"center-align"}>
-                        <img
-                          src={minimize}
-                          style={{
-                            cursor: "pointer",
-                          }}
-                        />
-                      </Box>
-                    </Button> */}
                     <Button
                       className={"common-btn"}
                       sx={{ cursor: "pointer", marginLeft: "10px" }}
@@ -468,6 +355,7 @@ const Chatroom = () => {
 
                 <InfiniteScroll
                   // pageStart={page}
+                  // initialLoad={false}
                   loadMore={debouncedFetchMessages}
                   hasMore={hasMore}
                   isReverse={true}
@@ -705,93 +593,11 @@ const Chatroom = () => {
                 </InfiniteScroll>
               </Box>
               {/* Input field section */}
-              <Box sx={{ marginTop: "5px", marginBottom: "0px" }}>
-                <Divider
-                  sx={{
-                    backgroundColor: "#FFFFFF1A",
-                    marginTop: "0px",
-                    marginBottom: "15px",
-                  }}
-                />
-                <TextField
-                  className={classes.chat_input}
-                  color="secondary"
-                  value={value}
-                  placeholder={t("cha-26_type-here")}
-                  multiline
-                  InputProps={{
-                    inputComponent: TextareaAutosize,
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <div style={{ width: 5 }} />{" "}
-                      </InputAdornment>
-                    ),
-                    endAdornment: (
-                      <InputAdornment position="start">
-                        <Button
-                          className={classes.emoji_button}
-                          onClick={handleEmojiClick}
-                        >
-                          <img
-                            src={emotion}
-                            style={{
-                              cursor: "pointer",
-                              display: "block",
-                            }}
-                          />
-                        </Button>
-
-                        <Button
-                          className="send_button"
-                          sx={{
-                            display: value ? "block" : "none",
-                          }}
-                          onClick={sendMessage}
-                        >
-                          <Box className={"center-align"}>
-                            <img src={send} />
-                          </Box>
-                        </Button>
-                      </InputAdornment>
-                    ),
-                    style: { color: "#FFFFFF" },
-                  }}
-                  onChange={(e) => {
-                    if (setValue) setValue(e.target.value);
-                  }}
-                  onKeyDown={(e: any) => {
-                    handleEnterinRoom(e);
-                  }}
-                />
-                <Popover
-                  open={isEmojiLibraryOpen}
-                  onClose={handleCloseEmojiLibrary}
-                  anchorOrigin={{
-                    vertical: "top",
-                    horizontal: "center",
-                  }}
-                  anchorEl={anchorEl}
-                  transformOrigin={{
-                    vertical: "bottom",
-                    horizontal: "left",
-                  }}
-                  slotProps={{
-                    paper: {
-                      style: {
-                        backgroundColor: "transparent",
-                        boxShadow: "none",
-                      },
-                    },
-                  }}
-                >
-                  <EmojiPicker
-                    className={classes.emojipicker}
-                    onEmojiClick={handleEmojiSelect}
-                    defaultSkinTone={SkinTones.LIGHT}
-                    autoFocusSearch={true}
-                  />
-                </Popover>
-              </Box>
+              <Chatinputfield
+                value={value}
+                setValue={setValue}
+                keyperuser={keyperuser}
+              />
             </Box>
           </Box>
           <Chatindex viewChat={showChat} setViewChat={setChat} />

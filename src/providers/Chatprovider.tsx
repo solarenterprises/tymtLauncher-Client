@@ -107,6 +107,7 @@ const ChatProvider = () => {
     ) => {
       if (message.recipient_id === account.uid) {
         if (data.message === "anyone") {
+          console.log("messagereception", data.message);
           if (!senderInChatUserlist) {
             const senderName = await getsenderName(message.sender_id);
             await updateContact(message.sender_id);
@@ -128,6 +129,7 @@ const ChatProvider = () => {
             }
           }
         } else if (data.message === "friend") {
+          console.log("messagereception", data.message);
           if (senderInChatFriendlist) {
             const senderName = senderInChatFriendlist.nickName;
             {
@@ -141,9 +143,10 @@ const ChatProvider = () => {
         } else {
         }
       } else {
+        console.log("messagereception", data.message);
       }
     },
-    []
+    [data.message]
   );
 
   const handleEncryptionKeyDelivery = (data) => {
