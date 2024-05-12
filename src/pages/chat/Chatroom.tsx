@@ -27,8 +27,6 @@ import OrLinechat from "../../components/chat/Orlinechat";
 import {
   userType,
   ChatHistoryType,
-  // ChatMessageType,
-  // askEncryptionKeyType,
   deliverEncryptionKeyType,
 } from "../../types/chatTypes";
 import { chatType, notificationType } from "../../types/settingTypes";
@@ -39,8 +37,6 @@ import {
 } from "../../types/accountTypes";
 import { getAccount } from "../../features/account/AccountSlice";
 import { selectPartner } from "../../features/chat/Chat-currentPartnerSlice";
-// import { getNonCustodial } from "../../features/account/NonCustodialSlice";
-// import { getCustodial } from "../../features/account/CustodialSlice";
 import {
   getChatHistory,
   setChatHistory,
@@ -124,9 +120,6 @@ const Chatroom = () => {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [isEmojiLibraryOpen, setIsEmojiLibraryOpen] = useState(false);
-  // const [decryptedmessages, setDecryptedMessages] = useState<ChatMessageType[]>(
-  //   []
-  // );
   const [keyperuser, setKeyperUser] = useState<string>("");
   const [processedPages, setProcessedPages] = useState(new Set());
   const [screenexpanded, setScreenExpanded] = useState<boolean>(false);
@@ -251,13 +244,11 @@ const Chatroom = () => {
     };
 
     if (!processedPages.has(page)) {
-      // Add the current page number to the set of processed pages
       setProcessedPages(new Set(processedPages.add(page)));
       socket.emit("get-messages-by-room", JSON.stringify(query));
       socket.on("messages-by-room", async (result) => {
         if (result && result.data.length > 0) {
           if (data.message === "anyone" || data.message === "friend") {
-            console.log("chathistory", chatHistoryStore.messages);
             dispatch(
               setChatHistory({
                 messages: [...chatHistoryStore.messages, ...result.data],
@@ -289,8 +280,6 @@ const Chatroom = () => {
     const options = { month: "long", day: "numeric" };
 
     const messageDate: any = new Date(date);
-    // const diffTime = today.getTime() - messageDate.getTime();
-    // const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
     if (messageDate.setHours(0, 0, 0, 0) === today.setHours(0, 0, 0, 0)) {
       return "Today";
@@ -303,30 +292,6 @@ const Chatroom = () => {
     }
   };
 
-  //decrypt every message displaying on chatroom
-
-  // useEffect(() => {
-  //   const decryptMessages = async () => {
-  //     const decryptedMessages = await Promise.all(
-  //       chatHistoryStore.messages.map(async (message) => {
-  //         const messagetodecrypt: string = message?.message;
-
-  //         const decryptedMessage: string = await decrypt(
-  //           messagetodecrypt,
-  //           keyperuser
-  //         );
-  //         return {
-  //           ...message,
-  //           message: decryptedMessage,
-  //         };
-  //       })
-  //     );
-  //     setDecryptedMessages(decryptedMessages);
-  //   };
-
-  //   decryptMessages();
-  // }, [chatHistoryStore.messages]);
-
   const decryptMessage = (encryptedmessage: string) => {
     return Chatdecrypt(encryptedmessage, keyperuser);
   };
@@ -337,7 +302,6 @@ const Chatroom = () => {
 
     return () => {
       dispatch(setMountedFalse());
-      // dispatch(setChatHistory({ messages: [] }));
     };
   }, [dispatch]);
 
@@ -375,11 +339,9 @@ const Chatroom = () => {
     if (
       scrollref.current &&
       isLoading == false &&
-      chatHistoryStore.messages.length < 21
+      chatHistoryStore.messages.length < 41
     ) {
       scrollref.current.scrollTop = scrollref.current.scrollHeight;
-      console.log("scrollTop", scrollref.current.scrollTop);
-      console.log("scrollHeight", scrollref.current.scrollHeight);
     }
   }, [isLoading, currentpartner._id]);
 

@@ -99,9 +99,6 @@ const Chatbox = ({ view, setView }: propsType) => {
   const [page, setPage] = useState<number>(1);
   const [hasMore, setHasMore] = useState(true);
   const [isLoading, setLoading] = useState<boolean>(false);
-  // const [decryptedmessages, setDecryptedMessages] = useState<ChatMessageType[]>(
-  //   []
-  // );
   const [keyperuser, setKeyperUser] = useState<string>("");
   const [processedPages, setProcessedPages] = useState(new Set());
   const userid: string = currentpartner._id;
@@ -197,7 +194,6 @@ const Chatbox = ({ view, setView }: propsType) => {
 
   // is message loading
 
-
   useEffect(() => {
     setPage(1);
     setHasMore(true);
@@ -268,40 +264,18 @@ const Chatbox = ({ view, setView }: propsType) => {
     }
   };
 
-  // useEffect(() => {
-  //   const decryptMessages = async () => {
-  //     const decryptedMessages = await Promise.all(
-  //       chatHistoryStore.messages.map(async (message) => {
-  //         const messagetodecrypt: string = message?.message;
-
-  //         const decryptedMessage: string = await decrypt(
-  //           messagetodecrypt,
-  //           keyperuser
-  //         );
-  //         return {
-  //           ...message,
-  //           message: decryptedMessage,
-  //         };
-  //       })
-  //     );
-  //     setDecryptedMessages(decryptedMessages);
-  //   };
-
-  //   decryptMessages();
-  // }, [chatHistoryStore.messages]);
-
   const decryptMessage = (encryptedmessage: string) => {
     return Chatdecrypt(encryptedmessage, keyperuser);
   };
 
   // Set mounted to true when chatbox is mounted
+
   useEffect(() => {
     if (view === "chatbox") {
       dispatch(setMountedTrue());
     }
     return () => {
       dispatch(setMountedFalse());
-      // dispatch(setChatHistory({ messages: [] }));
     };
   }, [dispatch, view]);
 
@@ -311,15 +285,9 @@ const Chatbox = ({ view, setView }: propsType) => {
       scrollref.current as HTMLDivElement;
     if (scrollHeight <= scrollTop + offsetHeight + 100) {
       scrollref.current?.scrollTo(0, scrollHeight);
-      console.log("toBottom when send/receive");
     }
   };
-  // const ScrollToBottom = () => {
-  //   if (scrollref.current) {
-  //     const { scrollHeight } = scrollref.current as HTMLDivElement;
-  //     scrollref.current.scrollTo(0, scrollHeight);
-  //   }
-  // };
+
   useEffect(() => {
     if (scrollref.current) Scroll();
   }, [sendMessage]);
@@ -328,13 +296,12 @@ const Chatbox = ({ view, setView }: propsType) => {
     if (
       scrollref.current &&
       isLoading == false &&
-      chatHistoryStore.messages.length < 21
+      chatHistoryStore.messages.length < 41
     ) {
       scrollref.current.scrollTop = scrollref.current.scrollHeight;
-      console.log("scrollTop", scrollref.current.scrollTop);
-      console.log("scrollHeight", scrollref.current.scrollHeight);
     }
   }, [isLoading, currentpartner._id]);
+
 
   return (
     <>
@@ -389,6 +356,7 @@ const Chatbox = ({ view, setView }: propsType) => {
                 setHasMore(true);
                 dispatch(setChatHistory({ messages: [] }));
                 setProcessedPages(new Set());
+                setLoading(false);
               }}
             >
               <Box className={"center-align"}>
