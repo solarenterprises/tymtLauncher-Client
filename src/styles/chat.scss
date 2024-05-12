@@ -227,7 +227,7 @@ $Main-Red: #ef4444;
 }
 
 .bubble {
-  padding: 10px 14px 10px 14px;
+  padding: 10px 14px 6px 14px;
   border-radius: 20px;
   background-color: #58914e;
   overflow: hidden;
@@ -244,7 +244,7 @@ $Main-Red: #ef4444;
 }
 
 .bubble-partner {
-  padding: 10px 14px 10px 14px;
+  padding: 10px 14px 6px 14px;
   border-radius: 20px;
   background-color: #72916a;
   overflow: hidden;
@@ -261,7 +261,7 @@ $Main-Red: #ef4444;
 }
 
 .bubble-partner-lastmessage {
-  padding: 10px 14px 10px 14px;
+  padding: 10px 14px 6px 14px;
   border-radius: 20px 20px 20px 0;
   background-color: #72916a;
   overflow: hidden;
@@ -278,7 +278,7 @@ $Main-Red: #ef4444;
 }
 
 .bubble-lastmessage-unexpanded {
-  padding: 10px 14px 10px 14px;
+  padding: 10px 14px 6px 14px;
   border-radius: 20px 20px 0 20px;
   background-color: #58914e;
   overflow: hidden;
@@ -295,7 +295,7 @@ $Main-Red: #ef4444;
 }
 
 .bubble-lastmessage-expanded {
-  padding: 10px 14px 10px 14px;
+  padding: 10px 14px 6px 14px;
   border-radius: 20px 20px 20px 0;
   background-color: #58914e;
   overflow: hidden;
@@ -350,12 +350,11 @@ $Main-Red: #ef4444;
 .scroll_bar_chatbox {
   width: 101%;
   flex-grow: 1;
-  overflow-y: auto;
+  overflow: auto;
   margin-bottom: 0px;
-  height: calc(100vh - 200px);
+  // height: calc(100vh - 200px);
+  height: 100%;
   padding-right: 10px;
-  display: flex;
-  flex-direction: column;
   scroll-behavior: smooth;
   // justify-content: flex-end;
   // scrollbar-width: none;

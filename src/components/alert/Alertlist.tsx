@@ -21,7 +21,6 @@ import {
 } from "../../features/chat/Chat-userlistSlice";
 import {
   askEncryptionKeyType,
-  scrollDownType,
   // deliverEncryptionKeyType,
   userType,
 } from "../../types/chatTypes";
@@ -51,10 +50,6 @@ import {
   selectPartner,
   setCurrentChatPartner,
 } from "../../features/chat/Chat-currentPartnerSlice";
-import {
-  getdownState,
-  setdownState,
-} from "../../features/chat/Chat-scrollDownSlice";
 import { ThreeDots } from "react-loader-spinner";
 
 const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
@@ -69,8 +64,6 @@ const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
   const multiwallet: multiWalletType = useSelector(getMultiWallet);
   const account: accountType = useSelector(getAccount);
   const userdata: userType[] = useSelector(selectPartner);
-  const scrollstate: scrollDownType = useSelector(getdownState);
-  const shouldScrollDown = scrollstate.down;
   const chatuserlist: userType[] = useSelector(getUserlist);
   const friendlist: userType[] = useSelector(getFriendlist);
   const senderUser = chatuserlist.find(
@@ -215,7 +208,6 @@ const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
                 notificationStatus: senderUser?.notificationStatus,
               })
             );
-            dispatch(setdownState({ down: !shouldScrollDown }));
           }
         }}
       >

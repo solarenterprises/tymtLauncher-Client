@@ -37,6 +37,7 @@ import encryptionReducer from "./features/chat/Chat-encryptionkeySlice";
 import machineIdReducer from "./features/account/MachineIdSlice";
 import socketHashReducer from "./features/chat/SocketHashSlice";
 import chatmountedReducer from "./features/chat/Chat-intercomSupportSlice";
+import chathistoryperUserReducer from "./features/chat/Chat-historyperUserSlice";
 
 const store = configureStore({
   reducer: {
@@ -77,6 +78,7 @@ const store = configureStore({
     machineId: machineIdReducer,
     socketHash: socketHashReducer,
     chatmounted: chatmountedReducer,
+    chathistoryperUser: chathistoryperUserReducer
   },
 });
 

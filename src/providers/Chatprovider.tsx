@@ -10,7 +10,6 @@ import {
   askEncryptionKeyType,
   deliverEncryptionKeyType,
   deliveredEncryptionKeyType,
-  scrollDownType,
   userType,
 } from "../types/chatTypes";
 import { accountType } from "../types/accountTypes";
@@ -55,11 +54,7 @@ import {
   addEncryptionKey,
   selectEncryptionKeyByUserId,
 } from "../features/chat/Chat-encryptionkeySlice";
-import {
-  getdownState,
-  setdownState,
-} from "../features/chat/Chat-scrollDownSlice";
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 // import { decrypt } from "../../lib/api/Encrypt";
 
 const ChatProvider = () => {
@@ -74,11 +69,11 @@ const ChatProvider = () => {
   const notification: notificationType = useSelector(selectNotification);
   const alertbadge: alertbadgeType = useSelector(selectBadgeStatus);
   const data: chatType = useSelector(selectChat);
-  const scrollstate: scrollDownType = useSelector(getdownState);
   const { socket } = useSocket();
-  const triggerBadge = () => {
+
+  const triggerBadge = useCallback(() => {
     dispatch(setBadgeStatus({ ...alertbadge, trigger: !alertbadge.trigger }));
-  };
+  }, [dispatch, alertbadge.trigger]);
 
   const {
     setNotificationStatus,
@@ -104,49 +99,52 @@ const ChatProvider = () => {
   //   );
   // };
 
-  const handleIncomingMessages = async (
-    message: ChatMessageType,
-    senderInChatUserlist: userType,
-    senderInChatFriendlist: userType
-  ) => {
-    if (message.recipient_id === account.uid) {
-      if (data.message === "anyone") {
-        if (!senderInChatUserlist) {
-          const senderName = await getsenderName(message.sender_id);
-          await updateContact(message.sender_id);
-          {
-            notification.alert && setNotificationOpen(true);
-            setNotificationStatus("message");
-            setNotificationTitle(senderName);
-            setNotificationDetail(message.message);
-            setNotificationLink(`/chat?senderId=${message.sender_id}`);
+  const handleIncomingMessages = useCallback(
+    async (
+      message: ChatMessageType,
+      senderInChatUserlist: userType,
+      senderInChatFriendlist: userType
+    ) => {
+      if (message.recipient_id === account.uid) {
+        if (data.message === "anyone") {
+          if (!senderInChatUserlist) {
+            const senderName = await getsenderName(message.sender_id);
+            await updateContact(message.sender_id);
+            {
+              notification.alert && setNotificationOpen(true);
+              setNotificationStatus("message");
+              setNotificationTitle(senderName);
+              setNotificationDetail(message.message);
+              setNotificationLink(`/chat?senderId=${message.sender_id}`);
+            }
+          } else {
+            const senderName = senderInChatUserlist.nickName;
+            {
+              notification.alert && setNotificationOpen(true);
+              setNotificationStatus("message");
+              setNotificationTitle(senderName);
+              setNotificationDetail(message.message);
+              setNotificationLink(`/chat?senderId=${message.sender_id}`);
+            }
+          }
+        } else if (data.message === "friend") {
+          if (senderInChatFriendlist) {
+            const senderName = senderInChatFriendlist.nickName;
+            {
+              notification.alert && setNotificationOpen(true);
+              setNotificationStatus("message");
+              setNotificationTitle(senderName);
+              setNotificationDetail(message.message);
+              setNotificationLink(`/chat?senderId=${message.sender_id}`);
+            }
           }
         } else {
-          const senderName = senderInChatUserlist.nickName;
-          {
-            notification.alert && setNotificationOpen(true);
-            setNotificationStatus("message");
-            setNotificationTitle(senderName);
-            setNotificationDetail(message.message);
-            setNotificationLink(`/chat?senderId=${message.sender_id}`);
-          }
         }
+      } else {
       }
-      if (data.message === "friend") {
-        if (senderInChatFriendlist) {
-          const senderName = senderInChatFriendlist.nickName;
-          {
-            notification.alert && setNotificationOpen(true);
-            setNotificationStatus("message");
-            setNotificationTitle(senderName);
-            setNotificationDetail(message.message);
-            setNotificationLink(`/chat?senderId=${message.sender_id}`);
-          }
-        }
-      }
-    } else {
-    }
-  };
+    },
+    []
+  );
 
   const handleEncryptionKeyDelivery = (data) => {
     const userid = data.sender_id;
@@ -189,11 +187,11 @@ const ChatProvider = () => {
     const senderInChatFriendlist = chatfriendlist.find(
       (user) => user._id === senderId
     );
-    console.log("message-posted", message);
     if (
       message.sender_id === currentpartner._id &&
       message.recipient_id === account.uid
     ) {
+      console.log("message reception", data.message);
       if (data.message === "anyone") {
         const updatedHistory = [message, ...chatHistoryStore.messages];
         dispatch(setChatHistory({ messages: updatedHistory }));
@@ -201,9 +199,11 @@ const ChatProvider = () => {
         console.log("senderInChatFriendlist", senderInChatFriendlist);
         const updatedHistory = [message, ...chatHistoryStore.messages];
         dispatch(setChatHistory({ messages: updatedHistory }));
+      } else {
       }
     } else {
     }
+
     handleIncomingMessages(
       message,
       senderInChatUserlist,
@@ -261,7 +261,6 @@ const ChatProvider = () => {
           alert.receivers.find((userid) => userid === account.uid)
         ) {
           triggerBadge();
-          dispatch(setdownState({ down: !scrollstate.down }));
         }
       };
       handleIncomingRequest();
@@ -269,7 +268,7 @@ const ChatProvider = () => {
     return () => {
       socket.off("alert-posted");
     };
-  }, [alertbadge.trigger, chatuserlist, chatfriendlist]);
+  }, [alertbadge.trigger]);
 
   // Handle each updated alert incoming to user
   useEffect(() => {

@@ -17,11 +17,10 @@ import {
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import {
   ChatHistoryType,
-  ChatMessageType,
+  // ChatMessageType,
   // askEncryptionKeyType,
   deliverEncryptionKeyType,
   propsType,
-  scrollDownType,
   userType,
 } from "../../types/chatTypes";
 import { accountType } from "../../types/accountTypes";
@@ -34,10 +33,6 @@ import {
   getChatHistory,
   setChatHistory,
 } from "../../features/chat/Chat-historySlice";
-import {
-  getdownState,
-  setdownState,
-} from "../../features/chat/Chat-scrollDownSlice";
 import { selectChat } from "../../features/settings/ChatSlice";
 import {
   addEncryptionKey,
@@ -63,14 +58,17 @@ import _ from "lodash";
 import InfiniteScroll from "react-infinite-scroller";
 // import { generateRandomString } from "../../features/chat/Chat-contactApi";
 // import { selectEncryptionKeyByUserId } from "../../features/chat/Chat-enryptionkeySlice";
-import { encrypt, decrypt } from "../../lib/api/Encrypt";
+import { encrypt } from "../../lib/api/Encrypt";
 import { generateRandomString } from "../../features/chat/Chat-contactApi";
 import {
   setMountedFalse,
   setMountedTrue,
 } from "../../features/chat/Chat-intercomSupportSlice";
 import { ThreeDots } from "react-loader-spinner";
+import { Chatdecrypt } from "../../lib/api/ChatEncrypt";
 // import ScrollToBottom from "react-scroll-to-bottom";
+// import { animateScroll } from "react-scroll";
+// import InfiniteScroll from "react-infinite-scroll-component";
 
 const theme = createTheme({
   palette: {
@@ -89,7 +87,6 @@ const Chatbox = ({ view, setView }: propsType) => {
   const account: accountType = useSelector(getAccount);
   const currentpartner: userType = useSelector(selectPartner);
   const chatHistoryStore: ChatHistoryType = useSelector(getChatHistory);
-  const scrollstate: scrollDownType = useSelector(getdownState);
   const data: chatType = useSelector(selectChat);
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
@@ -101,9 +98,7 @@ const Chatbox = ({ view, setView }: propsType) => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [page, setPage] = useState<number>(1);
   const [hasMore, setHasMore] = useState(true);
-  const [decryptedmessages, setDecryptedMessages] = useState<ChatMessageType[]>(
-    []
-  );
+  const [isLoading, setLoading] = useState<boolean>(false);
   const [keyperuser, setKeyperUser] = useState<string>("");
   const [processedPages, setProcessedPages] = useState(new Set());
   const userid: string = currentpartner._id;
@@ -170,7 +165,6 @@ const Chatbox = ({ view, setView }: propsType) => {
           })
         );
         setValue("");
-        dispatch(setdownState({ down: !scrollstate.down }));
       }
     } catch (err: any) {}
   };
@@ -198,17 +192,20 @@ const Chatbox = ({ view, setView }: propsType) => {
     }
   };
 
+  // is message loading
+
   useEffect(() => {
     setPage(1);
     setHasMore(true);
     dispatch(setChatHistory({ messages: [] }));
     setProcessedPages(new Set());
+    setLoading(false);
   }, [currentpartner._id]);
   // When the scrolling up, this function fetches one page of history for each loading.
 
   const fetchMessages = async () => {
+    setLoading(true);
     if (!hasMore) return;
-
     const query = {
       room_user_ids: [account.uid, currentpartner._id],
       pagination: { page: page, pageSize: 20 },
@@ -227,6 +224,7 @@ const Chatbox = ({ view, setView }: propsType) => {
                 messages: [...chatHistoryStore.messages, ...result.data],
               })
             );
+            setLoading(false);
             setPage(page + 1);
           } else {
             setHasMore(false);
@@ -266,36 +264,18 @@ const Chatbox = ({ view, setView }: propsType) => {
     }
   };
 
-  useEffect(() => {
-    const decryptMessages = async () => {
-      const decryptedMessages = await Promise.all(
-        chatHistoryStore.messages.map(async (message) => {
-          const messagetodecrypt: string = message?.message;
-
-          const decryptedMessage: string = await decrypt(
-            messagetodecrypt,
-            keyperuser
-          );
-          return {
-            ...message,
-            message: decryptedMessage,
-          };
-        })
-      );
-      setDecryptedMessages(decryptedMessages);
-    };
-
-    decryptMessages();
-  }, [chatHistoryStore.messages]);
+  const decryptMessage = (encryptedmessage: string) => {
+    return Chatdecrypt(encryptedmessage, keyperuser);
+  };
 
   // Set mounted to true when chatbox is mounted
+
   useEffect(() => {
     if (view === "chatbox") {
       dispatch(setMountedTrue());
     }
     return () => {
       dispatch(setMountedFalse());
-      // dispatch(setChatHistory({ messages: [] }));
     };
   }, [dispatch, view]);
 
@@ -307,9 +287,21 @@ const Chatbox = ({ view, setView }: propsType) => {
       scrollref.current?.scrollTo(0, scrollHeight);
     }
   };
+
   useEffect(() => {
     if (scrollref.current) Scroll();
-  }, [sendMessage, currentpartner._id]);
+  }, [sendMessage]);
+
+  useEffect(() => {
+    if (
+      scrollref.current &&
+      isLoading == false &&
+      chatHistoryStore.messages.length < 41
+    ) {
+      scrollref.current.scrollTop = scrollref.current.scrollHeight;
+    }
+  }, [isLoading, currentpartner._id]);
+
 
   return (
     <>
@@ -364,6 +356,7 @@ const Chatbox = ({ view, setView }: propsType) => {
                 setHasMore(true);
                 dispatch(setChatHistory({ messages: [] }));
                 setProcessedPages(new Set());
+                setLoading(false);
               }}
             >
               <Box className={"center-align"}>
@@ -386,140 +379,149 @@ const Chatbox = ({ view, setView }: propsType) => {
             display={"flex"}
             flexDirection={"column"}
             ref={scrollref}
+            id={"container"}
           >
             <Box sx={{ width: "100%", flex: "1 1 auto" }}></Box>
+
             <InfiniteScroll
-              // pageStart={0}
+              // pageStart={page}
+              initialLoad={true}
               loadMore={debouncedFetchMessages}
               hasMore={hasMore}
               isReverse={true}
               useWindow={false}
-              // className={"infinitescroll"}
             >
-              {[...decryptedmessages].reverse()?.map((message, index) => {
-                const isSameDay = (date1, date2) => {
+              {[...chatHistoryStore.messages]
+                .reverse()
+                ?.map((message, index) => {
+                  const isSameDay = (date1, date2) => {
+                    return (
+                      date1.getFullYear() === date2.getFullYear() &&
+                      date1.getMonth() === date2.getMonth() &&
+                      date1.getDate() === date2.getDate()
+                    );
+                  };
+
+                  const isFirstMessageOfDay = () => {
+                    if (index === 0) return true;
+
+                    const previousMessageDate = new Date(
+                      [...chatHistoryStore.messages].reverse()[
+                        index - 1
+                      ]?.createdAt
+                    );
+                    const currentMessageDate = new Date(message.createdAt);
+
+                    return !isSameDay(previousMessageDate, currentMessageDate);
+                  };
+
+                  const timeline = isFirstMessageOfDay()
+                    ? formatDateDifference(message.createdAt)
+                    : null;
+
+                  const isSameSender = (id1, id2) => {
+                    return id1 === id2;
+                  };
+
+                  const detectLastMessageofStack = () => {
+                    const nextMessageSender = [
+                      ...chatHistoryStore.messages,
+                    ].reverse()[index + 1]?.sender_id;
+                    const currentMessageSender = [
+                      ...chatHistoryStore.messages,
+                    ].reverse()[index]?.sender_id;
+
+                    return !isSameSender(
+                      nextMessageSender,
+                      currentMessageSender
+                    );
+                  };
+
+                  const isLastMessageofStack = detectLastMessageofStack();
+                  const decryptedmessage = decryptMessage(message.message);
+
                   return (
-                    date1.getFullYear() === date2.getFullYear() &&
-                    date1.getMonth() === date2.getMonth() &&
-                    date1.getDate() === date2.getDate()
-                  );
-                };
-
-                const isFirstMessageOfDay = () => {
-                  if (index === 0) return true;
-
-                  const previousMessageDate = new Date(
-                    [...chatHistoryStore.messages].reverse()[
-                      index - 1
-                    ]?.createdAt
-                  );
-                  const currentMessageDate = new Date(message.createdAt);
-
-                  return !isSameDay(previousMessageDate, currentMessageDate);
-                };
-
-                const timeline = isFirstMessageOfDay()
-                  ? formatDateDifference(message.createdAt)
-                  : null;
-
-                const isSameSender = (id1, id2) => {
-                  return id1 === id2;
-                };
-
-                const detectLastMessageofStack = () => {
-                  if (index === 0) return true;
-
-                  const nextMessageSender = [
-                    ...chatHistoryStore.messages,
-                  ].reverse()[index + 1]?.sender_id;
-                  const currentMessageSender = [
-                    ...chatHistoryStore.messages,
-                  ].reverse()[index]?.sender_id;
-
-                  return !isSameSender(nextMessageSender, currentMessageSender);
-                };
-
-                const isLastMessageofStack = detectLastMessageofStack();
-
-                return (
-                  <>
-                    {/* Existing Box for rendering the message */}
-                    <Box
-                      className={"bubblecontainer"}
-                      key={`${
-                        message.sender_id
-                      }-${index}-${new Date().toISOString()}`}
-                    >
-                      {timeline &&
-                        message.message !==
-                          "Unable to decode message #tymt114#" && (
-                          <OrLinechat timeline={timeline} />
-                        )}
-                      <Stack
-                        flexDirection={"row"}
-                        alignItems={"flex-end"}
-                        marginTop={"10px"}
-                        gap={"15px"}
-                        justifyContent={
-                          message.sender_id === account.uid
-                            ? "flex-end"
-                            : "flex-start"
-                        }
+                    <>
+                      {/* Existing Box for rendering the message */}
+                      <Box
+                        className={"bubblecontainer"}
+                        key={`${
+                          message.sender_id
+                        }-${index}-${new Date().toISOString()}`}
                       >
-                        {message.sender_id === account.uid && (
-                          <>
-                            {/* <Box
+                        {timeline &&
+                          decryptedmessage !==
+                            "Unable to decode message #tymt114#" && (
+                            <OrLinechat timeline={timeline} />
+                          )}
+                        <Stack
+                          flexDirection={"row"}
+                          alignItems={"flex-end"}
+                          marginTop={"10px"}
+                          gap={"15px"}
+                          justifyContent={
+                            message.sender_id === account.uid
+                              ? "flex-end"
+                              : "flex-start"
+                          }
+                        >
+                          {message.sender_id === account.uid && (
+                            <>
+                              {/* <Box
                                   className={"fs-16 white"}
                                   sx={{ marginLeft: "16px" }}
                                 >
                                   {userStore.nickname}
                                 </Box> */}
-                            <Box
-                              className={
-                                isLastMessageofStack
-                                  ? "fs-14-regular white bubble-lastmessage-unexpanded"
-                                  : "fs-14-regular white bubble"
-                              }
-                            >
-                              {message.message !==
-                              "Unable to decode message #tymt114#" ? (
-                                <>
-                                  {message.message.split("\n").map((line) => (
-                                    <React.Fragment>
-                                      {line}
-                                      <br />
-                                    </React.Fragment>
-                                  ))}
-                                  <Box
-                                    className={"fs-14-light timestamp-inbubble"}
-                                    sx={{ alignSelf: "flex-end" }}
-                                    color={"rgba(11, 11, 11, 0.7)"}
-                                  >
-                                    {new Date(message.createdAt).toLocaleString(
-                                      "en-US",
-                                      {
+                              <Box
+                                className={
+                                  isLastMessageofStack
+                                    ? "fs-14-regular white bubble-lastmessage-unexpanded"
+                                    : "fs-14-regular white bubble"
+                                }
+                              >
+                                {decryptedmessage !==
+                                "Unable to decode message #tymt114#" ? (
+                                  <>
+                                    {decryptedmessage
+                                      .split("\n")
+                                      .map((line) => (
+                                        <React.Fragment>
+                                          {line}
+                                          <br />
+                                        </React.Fragment>
+                                      ))}
+                                    <Box
+                                      className={
+                                        "fs-14-light timestamp-inbubble"
+                                      }
+                                      sx={{ alignSelf: "flex-end" }}
+                                      color={"rgba(11, 11, 11, 0.7)"}
+                                    >
+                                      {new Date(
+                                        message.createdAt
+                                      ).toLocaleString("en-US", {
                                         hour: "2-digit",
                                         minute: "2-digit",
-                                      }
-                                    )}
-                                  </Box>
-                                </>
-                              ) : (
-                                <>
-                                  <ThreeDots
-                                    height="23px"
-                                    width={"40px"}
-                                    radius={4}
-                                    color={`white`}
-                                  />
-                                </>
-                              )}
-                            </Box>
-                          </>
-                        )}
-                        {message.sender_id !== account.uid && (
-                          <>
-                            {/* <Stack>
+                                      })}
+                                    </Box>
+                                  </>
+                                ) : (
+                                  <>
+                                    <ThreeDots
+                                      height="23px"
+                                      width={"40px"}
+                                      radius={4}
+                                      color={`white`}
+                                    />
+                                  </>
+                                )}
+                              </Box>
+                            </>
+                          )}
+                          {message.sender_id !== account.uid && (
+                            <>
+                              {/* <Stack>
                                   <Box
                                     className={"fs-16 white"}
                                     sx={{ marginLeft: "16px" }}
@@ -527,55 +529,59 @@ const Chatbox = ({ view, setView }: propsType) => {
                                     {currentpartner.nickName}
                                   </Box>
                                 </Stack> */}
-                            <Box
-                              className={
-                                isLastMessageofStack
-                                  ? "fs-14-regular white bubble-partner-lastmessage"
-                                  : "fs-14-regular white bubble-partner"
-                              }
-                            >
-                              {message.message !==
-                              "Unable to decode message #tymt114#" ? (
-                                <>
-                                  {message.message.split("\n").map((line) => (
-                                    <React.Fragment>
-                                      {line}
-                                      <br />
-                                    </React.Fragment>
-                                  ))}
-                                  <Box
-                                    className={"fs-14-light timestamp-inbubble"}
-                                    sx={{ alignSelf: "flex-end" }}
-                                    color={"rgba(11, 11, 11, 0.7)"}
-                                  >
-                                    {new Date(message.createdAt).toLocaleString(
-                                      "en-US",
-                                      {
+                              <Box
+                                className={
+                                  isLastMessageofStack
+                                    ? "fs-14-regular white bubble-partner-lastmessage"
+                                    : "fs-14-regular white bubble-partner"
+                                }
+                              >
+                                {decryptedmessage !==
+                                "Unable to decode message #tymt114#" ? (
+                                  <>
+                                    {decryptedmessage
+                                      .split("\n")
+                                      .map((line) => (
+                                        <React.Fragment>
+                                          {line}
+                                          <br />
+                                        </React.Fragment>
+                                      ))}
+                                    <Box
+                                      className={
+                                        "fs-14-light timestamp-inbubble"
+                                      }
+                                      sx={{ alignSelf: "flex-end" }}
+                                      color={"rgba(11, 11, 11, 0.7)"}
+                                    >
+                                      {new Date(
+                                        message.createdAt
+                                      ).toLocaleString("en-US", {
                                         hour: "2-digit",
                                         minute: "2-digit",
-                                      }
-                                    )}
-                                  </Box>
-                                </>
-                              ) : (
-                                <>
-                                  <ThreeDots
-                                    height="23px"
-                                    width={"40px"}
-                                    radius={4}
-                                    color={`white`}
-                                  />
-                                </>
-                              )}
-                            </Box>
-                          </>
-                        )}
-                      </Stack>
-                    </Box>
-                  </>
-                );
-              })}
+                                      })}
+                                    </Box>
+                                  </>
+                                ) : (
+                                  <>
+                                    <ThreeDots
+                                      height="23px"
+                                      width={"40px"}
+                                      radius={4}
+                                      color={`white`}
+                                    />
+                                  </>
+                                )}
+                              </Box>
+                            </>
+                          )}
+                        </Stack>
+                      </Box>
+                    </>
+                  );
+                })}
             </InfiniteScroll>
+            <div id={"emptyblock"}></div>
           </Box>
 
           {/* Input field section */}

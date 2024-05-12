@@ -118,3 +118,7 @@ export interface fetchType {
   hasmore: boolean;
   processedPages: Object;
 }
+
+export interface chathistoryperUserStoreType {
+  history: Object;
+}
