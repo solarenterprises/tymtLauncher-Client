@@ -101,7 +101,7 @@ const D53Modal = ({ open, setOpen }: props) => {
       style={modalStyle}
       onClose={() => setOpen(false)}
       sx={{
-        backdropFilter: "blur(4px)", vc
+        backdropFilter: "blur(4px)",
       }}
     >
       <Box className="d53-modal-content oauth-modal">
@@ -172,7 +172,9 @@ const D53Modal = ({ open, setOpen }: props) => {
                           ? "#52E1F2"
                           : "#EF4444"
                       }
-                    >{`(${server.clients}/${server.clients_max}`}</Box>
+                    >{`(${server.clients ?? "0"}/${
+                      server.clients_max ?? "0"
+                    }`}</Box>
                     <Stack direction={"row"} alignItems={"center"}>
                       <Box
                         className={"fs-10-light"}

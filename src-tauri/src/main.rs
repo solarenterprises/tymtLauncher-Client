@@ -3,46 +3,16 @@
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 
-///// For SystemTray
+use std::sync::OnceLock;
 use tauri::{ CustomMenuItem, SystemTray, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem };
-use tokio::net::TcpListener;
-use tokio_tungstenite::accept_async;
-use futures_util::{ stream::StreamExt, sink::SinkExt };
-use serde_json::Value;
 use actix_web::{ web, App, HttpResponse, HttpServer, Responder };
-use serde::Serialize;
+use serde::{ Deserialize, Serialize };
+use tokio::time::{ sleep, Duration };
 
-#[derive(Serialize)]
-struct Response {
-    message: String,
-}
-
-async fn get_data() -> impl Responder {
-    println!("GET /data");
-    let response = Response {
-        message: "hello".to_string(),
-    };
-    HttpResponse::Ok().json(response)
-}
+static APPHANDLE: OnceLock<tauri::AppHandle> = OnceLock::new();
 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
-    ///// Socket & Http Server
-    // tokio::spawn(async { run_websocket_server().await });
-    // tokio::task::spawn_blocking(|| {
-    //     tokio::runtime::Builder
-    //         ::new_current_thread()
-    //         .enable_all()
-    //         .build()
-    //         .unwrap()
-    //         .block_on(async {
-    //             if let Err(e) = run_http_server().await {
-    //                 eprintln!("HTTP server failed: {}", e);
-    //             }
-    //         })
-    // });
-
-    ///// For SystemTray
     let showvisible = CustomMenuItem::new("showVisible".to_string(), "Show tymtLauncher");
     let fullscreen = CustomMenuItem::new("fullscreen".to_string(), "Full-screen Mode  (F11)");
     let games = CustomMenuItem::new("games".to_string(), "Games");
@@ -50,7 +20,6 @@ async fn main() -> std::io::Result<()> {
     let about = CustomMenuItem::new("about".to_string(), "About tymt");
     let signout = CustomMenuItem::new("signout".to_string(), "Sign Out");
     let quit = CustomMenuItem::new("quit".to_string(), "Quit");
-    // here `"quit".to_string()` defines the menu item id, and the second parameter is the menu item label.
     let disable_notifications = CustomMenuItem::new(
         "disable_notifications".to_string(),
         "Disable Notifications"
@@ -178,6 +147,81 @@ async fn main() -> std::io::Result<()> {
                     }
                 _ => {}
             }
+        })
+        .setup(|app| {
+            let app_handle = app.handle().clone();
+            _ = APPHANDLE.set(app_handle);
+
+            async fn hello() -> impl Responder {
+                APPHANDLE.get()
+                    .expect("APPHANDLE is available")
+                    .emit_all("games", "games")
+                    .expect("failed to emit event games");
+                HttpResponse::Ok().body("Hello world!")
+            }
+
+            #[derive(Deserialize, Serialize)]
+            struct MyJsonData {
+                a: i32,
+                b: i32,
+            }
+
+            async fn process_json(numbers: web::Json<MyJsonData>) -> HttpResponse {
+                let json_data = serde_json
+                    ::to_string(&numbers)
+                    .expect("Failed to serialize JSON data");
+
+                APPHANDLE.get()
+                    .expect("APPHANDLE is available")
+                    .emit_all("test-post-endpoint", json_data)
+                    .expect("failed to emit event test-post-endpoint");
+
+                let (tx, rx) = std::sync::mpsc::channel();
+
+                let response = APPHANDLE.get()
+                    .expect("APPHANDLE is available")
+                    .listen_global("res-test-post-endpoint", move |event| {
+                        let payload = event.payload().unwrap().to_string();
+                        println!("res-test-post-endpoint {}", payload);
+                        match tx.send(payload) {
+                            Ok(()) => {
+                                println!("Message sent successfully");
+                            }
+                            Err(err) => {
+                                println!("Error sending message: {:?}", err);
+                            }
+                        }
+                    });
+
+                match rx.recv() {
+                    Ok(received) => {
+                        println!("Received: {}", received);
+                        APPHANDLE.get().expect("APPHANDLE is available").unlisten(response);
+                        return HttpResponse::Ok().body(format!("Sum of a and b is: {}", received));
+                    }
+                    Err(err) => {
+                        println!("Error receiving message: {:?}", err);
+                        APPHANDLE.get().expect("APPHANDLE is available").unlisten(response);
+                        return HttpResponse::InternalServerError().finish();
+                    }
+                }
+            }
+
+            tauri::async_runtime::spawn(
+                HttpServer::new(move || {
+                    App::new()
+                        .route(
+                            "/game-request",
+                            web::get().to(move || hello())
+                        )
+                        .route("/test-post-endpoint", web::post().to(process_json))
+                })
+                    .bind(("127.0.0.1", 8081))
+                    .expect("Failed to bind address")
+                    .run()
+            );
+
+            Ok(())
         })
         .run(tauri::generate_context!())
         .expect("error while running tymtlauncher");
@@ -768,65 +812,3 @@ async fn hide_transaction_window(app_handle: tauri::AppHandle) {
         eprintln!("Window 'tymt_d53_transaction' not found");
     }
 }
-
-// async fn run_http_server() -> std::io::Result<()> {
-//     let addr = "127.0.0.1:3331";
-//     println!("Http server listening on: http://{}", addr);
-//     HttpServer::new(|| { App::new().route("/data", web::get().to(get_data)) })
-//         .bind(&addr)?
-//         .run().await
-// }
-
-// async fn run_websocket_server() {
-//     let addr = "127.0.0.1:3330";
-//     let try_socket = TcpListener::bind(&addr).await;
-//     let listener = match try_socket {
-//         Ok(listener) => listener,
-//         Err(e) => {
-//             eprintln!("Failed to bind to address {}: {}", addr, e);
-//             return;
-//         }
-//     };
-//     println!("WebSocket server listening on: ws://{}", addr);
-
-//     while let Ok((stream, _)) = listener.accept().await {
-//         tokio::spawn(handle_connection(stream));
-//     }
-// }
-
-// async fn handle_connection(stream: tokio::net::TcpStream) {
-//     let ws_stream = match accept_async(stream).await {
-//         Ok(ws) => ws,
-//         Err(e) => {
-//             eprintln!("Error during WebSocket handshake: {}", e);
-//             return;
-//         }
-//     };
-
-//     let (mut write, mut read) = ws_stream.split();
-
-//     while let Some(message) = read.next().await {
-//         match message {
-//             Ok(msg) => {
-//                 if let Ok(text) = msg.to_text() {
-//                     println!("Received: {}", text);
-
-//                     if let Ok(parsed) = serde_json::from_str::<Value>(&text) {
-//                         println!("Parsed JSON data: {:?}", parsed);
-//                         // write.send(msg.clone()).await.expect("Failed to send message");
-//                         let event_message =
-//                             format!("{{\"event\": \"update\", \"content\": \"{} updated\"}}", text);
-//                         let new_msg =
-//                             tokio_tungstenite::tungstenite::protocol::Message::text(event_message);
-//                         write.send(new_msg).await.expect("Failed to send event message");
-//                     } else {
-//                         eprintln!("Error parsing JSON data");
-//                     }
-//                 }
-//             }
-//             Err(e) => {
-//                 eprintln!("Error reading message: {}", e);
-//             }
-//         }
-//     }
-// }
