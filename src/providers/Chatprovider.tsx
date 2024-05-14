@@ -271,7 +271,7 @@ const ChatProvider = () => {
     return () => {
       socket.off("alert-posted");
     };
-  }, [alertbadge.trigger]);
+  }, [alertbadge.trigger, notification.alert]);
 
   // Handle each updated alert incoming to user
   useEffect(() => {
@@ -326,7 +326,7 @@ const ChatProvider = () => {
     return () => {
       socket.off("alert-updated");
     };
-  }, [alertbadge.trigger, chatuserlist, chatfriendlist]);
+  }, [alertbadge.trigger, chatuserlist, chatfriendlist, notification.alert]);
 
   // receive request for  encryption key and generate/send encryption key to partner
   socket.on("ask-encryption-key", async (data: askEncryptionKeyType) => {

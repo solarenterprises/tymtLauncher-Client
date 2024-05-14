@@ -27,6 +27,7 @@ export const deleteFile = async (params) => {
       },
     }
   );
+  console.log("accountid");
 
   if (Math.floor(response.status / 100) !== 2) {
     const result = await response.data.json();

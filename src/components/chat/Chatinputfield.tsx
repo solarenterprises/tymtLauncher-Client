@@ -9,7 +9,7 @@ import {
   IconButton,
   InputAdornment,
   Popover,
-  Stack,
+  // Stack,
   TextField,
 } from "@mui/material";
 import TextareaAutosize from "@mui/material/TextareaAutosize";
@@ -19,7 +19,7 @@ import ChatStyle from "../../styles/ChatStyles";
 import emotion from "../../assets/chat/emotion.svg";
 import send from "../../assets/chat/chatframe.svg";
 import AttachFileIcon from "@mui/icons-material/AttachFile";
-import DeleteIcon from "@mui/icons-material/Delete";
+// import DeleteIcon from "@mui/icons-material/Delete";
 
 import EmojiPicker, { SkinTones } from "emoji-picker-react";
 import { useSocket } from "../../providers/SocketProvider";
@@ -38,10 +38,11 @@ import {
 } from "../../features/chat/Chat-historySlice";
 import { encrypt } from "../../lib/api/Encrypt";
 import { selectEncryptionKeyByUserId } from "../../features/chat/Chat-encryptionkeySlice";
-import { UploadButton } from "@bytescale/upload-widget-react";
+import ComingModal from "../ComingModal";
+// import { UploadButton } from "@bytescale/upload-widget-react";
 // import { UploadDropzone } from "@bytescale/upload-widget-react";
-import { UrlBuilder } from "@bytescale/sdk";
-import { deleteFile } from "../../features/chat/Chat-assestApi";
+// import { UrlBuilder } from "@bytescale/sdk";
+// import { deleteFile } from "../../features/chat/Chat-assestApi";
 
 const theme = createTheme({
   palette: {
@@ -74,6 +75,7 @@ const Chatinputfield = ({
   );
   const [anchorEl, setAnchorEl] = useState(null);
   const [EmojiLibraryOpen, setIsEmojiLibraryOpen] = useState(false);
+  const [open, setOpen] = useState<boolean>(false);
 
   const handleEmojiClick = (event: any) => {
     setAnchorEl(event.currentTarget);
@@ -143,37 +145,37 @@ const Chatinputfield = ({
     }
   };
 
-  const options = {
-    apiKey: "free",
-    maxFileCount: 5,
-    showFinishButton: true,
-  };
+  // const options = {
+  //   apiKey: "free",
+  //   maxFileCount: 5,
+  //   showFinishButton: true,
+  // };
 
-  const [files, setFiles] = useState<any[]>([]);
+  // const [files, setFiles] = useState<any[]>([]);
 
-  const MyUploadButton = ({ setFiles }) => (
-    <UploadButton options={options} onComplete={setFiles}>
-      {({ onClick }) => (
-        <IconButton
-          sx={{
-            color: "var(--Basic-Light, #AFAFAF)",
-            transform: "rotate(45deg)",
-            padding: "4px",
-            "&:hover": {
-              transform: "rotate(45deg)",
-              backgroundColor: "#FFFFFF1A",
-            },
-            "&:active": {
-              backgroundColor: "#52E1F21A",
-            },
-          }}
-          onClick={onClick}
-        >
-          <AttachFileIcon />
-        </IconButton>
-      )}
-    </UploadButton>
-  );
+  // const MyUploadButton = ({ setFiles }) => (
+  //   <UploadButton options={options} onComplete={setFiles}>
+  //     {({ onClick }) => (
+  //       <IconButton
+  //         sx={{
+  //           color: "var(--Basic-Light, #AFAFAF)",
+  //           transform: "rotate(45deg)",
+  //           padding: "4px",
+  //           "&:hover": {
+  //             transform: "rotate(45deg)",
+  //             backgroundColor: "#FFFFFF1A",
+  //           },
+  //           "&:active": {
+  //             backgroundColor: "#52E1F21A",
+  //           },
+  //         }}
+  //         onClick={onClick}
+  //       >
+  //         <AttachFileIcon />
+  //       </IconButton>
+  //     )}
+  //   </UploadButton>
+  // );
 
   // const MyDropzone = ({ setFiles }) => (
   //   <UploadDropzone
@@ -187,73 +189,73 @@ const Chatinputfield = ({
   //   />
   // );
 
-  const MyUploadedFiles = ({ files }) => {
-    const handleDeleteFile = (filePath, accountId) => {
-      deleteFile({
-        accountId: accountId,
-        apiKey: "free",
-        querystring: {
-          filePath: filePath,
-        },
-      }).then(
-        () => {
-          // Remove the deleted file from the files array
-          const updatedFiles = files.filter(
-            (file) => file.filePath !== filePath
-          );
-          setFiles(updatedFiles);
-        },
-        (error) => console.error(error)
-      );
-    };
+  // const MyUploadedFiles = ({ files }) => {
+  //   const handleDeleteFile = (filePath, accountId) => {
+  //     deleteFile({
+  //       accountId: accountId,
+  //       apiKey: "free",
+  //       querystring: {
+  //         filePath: filePath,
+  //       },
+  //     }).then(
+  //       () => {
+  //         // Remove the deleted file from the files array
+  //         const updatedFiles = files.filter(
+  //           (file) => file.filePath !== filePath
+  //         );
+  //         setFiles(updatedFiles);
+  //       },
+  //       (error) => console.error(error)
+  //     );
+  //   };
 
-    return (
-      <>
-        {files.map((file) => {
-          // Save 'filePath' to your DB, and construct URLs using UrlBuilder:
-          const { filePath, accountId } = file;
-          // Build an image transformation URL for the uploaded file.
-          // Remove 'options' to get the URL to the original file:
-          const fileUrl = UrlBuilder.url({
-            filePath,
-            accountId,
-            options: {
-              transformation: "preset",
-              transformationPreset: "thumbnail",
-            },
-          });
-          return (
-            <Stack key={filePath} direction="row" alignItems={"center"}>
-              <Box className={"fs-12-light"}>
-                <a href={fileUrl} target="_blank" color="#FFFFFF1A">
-                  {fileUrl}
-                </a>
-              </Box>
-              <IconButton
-                sx={{
-                  color: "var(--Basic-Light, #AFAFAF)",
-                  padding: "4px",
-                  "&:hover": {
-                    backgroundColor: "#FFFFFF1A",
-                  },
-                  "&:active": {
-                    backgroundColor: "#52E1F21A",
-                  },
-                }}
-                onClick={() => handleDeleteFile(filePath, accountId)}
-              >
-                <DeleteIcon sx={{ width: "14px" }} />
-              </IconButton>
-            </Stack>
-          );
-        })}
-      </>
-    );
-  };
+  //   return (
+  //     <>
+  //       {files.map((file) => {
+  //         // Save 'filePath' to your DB, and construct URLs using UrlBuilder:
+  //         const { filePath, accountId } = file;
+  //         // Build an image transformation URL for the uploaded file.
+  //         // Remove 'options' to get the URL to the original file:
+  //         const fileUrl = UrlBuilder.url({
+  //           filePath,
+  //           accountId,
+  //           options: {
+  //             transformation: "preset",
+  //             transformationPreset: "thumbnail",
+  //           },
+  //         });
+  //         return (
+  //           <Stack key={filePath} direction="row" alignItems={"center"}>
+  //             <Box className={"fs-12-light"}>
+  //               <a href={fileUrl} target="_blank" color="#FFFFFF1A">
+  //                 {fileUrl}
+  //               </a>
+  //             </Box>
+  //             <IconButton
+  //               sx={{
+  //                 color: "var(--Basic-Light, #AFAFAF)",
+  //                 padding: "4px",
+  //                 "&:hover": {
+  //                   backgroundColor: "#FFFFFF1A",
+  //                 },
+  //                 "&:active": {
+  //                   backgroundColor: "#52E1F21A",
+  //                 },
+  //               }}
+  //               onClick={() => handleDeleteFile(filePath, accountId)}
+  //             >
+  //               <DeleteIcon sx={{ width: "1px" }} />
+  //             </IconButton>
+  //           </Stack>
+  //         );
+  //       })}
+  //     </>
+  //   );
+  // };
 
   return (
     <>
-      {files.length ? <MyUploadedFiles files={files} /> : <></>}
+      {/* {files.length ? <MyUploadedFiles files={files} /> : <></>} */}
       <Box sx={{ marginTop: "5px", marginBottom: "0px" }}>
         <Divider
           sx={{
@@ -274,7 +276,24 @@ const Chatinputfield = ({
               startAdornment: (
                 <InputAdornment position="start">
                   <div style={{ width: 5 }} />{" "}
-                  <MyUploadButton setFiles={setFiles} />
+                  {/* <MyUploadButton setFiles={setFiles} /> */}
+                  <IconButton
+                    sx={{
+                      color: "var(--Basic-Light, #AFAFAF)",
+                      transform: "rotate(45deg)",
+                      padding: "4px",
+                      "&:hover": {
+                        transform: "rotate(45deg)",
+                        backgroundColor: "#FFFFFF1A",
+                      },
+                      "&:active": {
+                        backgroundColor: "#52E1F21A",
+                      },
+                    }}
+                    onClick={() => setOpen(true)}
+                  >
+                    <AttachFileIcon />
+                  </IconButton>
                 </InputAdornment>
               ),
               endAdornment: (
@@ -344,6 +363,7 @@ const Chatinputfield = ({
           />
         </Popover>
       </Box>
+      <ComingModal open={open} setOpen={setOpen} />
     </>
   );
 };
