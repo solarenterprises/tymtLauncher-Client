@@ -210,7 +210,7 @@ const ChatStyle = makeStyles({
     marginBottom: "0px",
     // height: "calc(100vh - 200px)",
     paddingRight: "10px",
-    scrollBehavior:"smooth",
+    scrollBehavior: "smooth",
     "&::-webkit-scrollbar": {
       borderRadius: "100px",
       width: "5px",
@@ -235,14 +235,30 @@ const ChatStyle = makeStyles({
   userlist_container: {
     width: "455px",
     maxWidth: "455px",
-    // width: "33%",
-    height: "100%",
-    overflow: "scroll",
-    backgroundColor: "#071516",
-    whiteSpace: "nowrap",
-    overFlowX: "auth",
-    scrollbarWidth: "none",
-    position: "relative",
+    flexGrow: 1,
+    overflowY: "auto",
+    overflowX: "hidden",
+    marginBottom: "0px",
+    // paddingRight: "10px",
+    scrollBehavior: "smooth",
+    "&::-webkit-scrollbar": {
+      borderRadius: "100px",
+      width: "5px",
+      backgroundColor: "rgba(255, 255, 255, 0.05)",
+    },
+    "&::-webkit-scrollbar-track": {
+      cursor: "pointer",
+      borderRadius: "100px",
+      background:
+        "var(--bg-stroke-white-10-stroke-default, rgba(255, 255, 255, 0.10))",
+    },
+    "&::-webkit-scrollbar-thumb": {
+      borderRadius: "100px",
+      background: "#888",
+    },
+    "&::-webkit-scrollbar-thumb:hover": {
+      background: "#555",
+    },
   },
   userlist_btn: {
     height: "64px",

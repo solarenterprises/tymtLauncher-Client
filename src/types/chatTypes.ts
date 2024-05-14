@@ -46,6 +46,7 @@ export interface propsFRcontextmenuType {
 export interface propsUserlistType {
   user: userType;
   index: number;
+  feature: string;
   numberofunreadmessages: number;
   setShowContextMenu: (param: boolean) => void;
   setContextMenuPosition: (
@@ -63,6 +64,10 @@ export interface propsChatinputfieldType {
   value: string;
   keyperuser: string;
   setValue: (value: string) => void;
+}
+
+export interface propsUploadFilesType {
+  files: any[];
 }
 
 export interface chatwindowType {

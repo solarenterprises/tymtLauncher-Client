@@ -453,7 +453,6 @@ const Chatbox = ({ view, setView }: propsType) => {
                   );
                 })}
             </InfiniteScroll>
-            <div id={"emptyblock"}></div>
           </Box>
 
           {/* Input field section */}

@@ -279,6 +279,7 @@ const Chatmain = ({ view, setView }: propsType) => {
                         <Userlist
                           user={user}
                           index={index}
+                          feature={"chatbox"}
                           numberofunreadmessages={numberofunreadmessages}
                           setShowContextMenu={setShowContextMenu}
                           setContextMenuPosition={setContextMenuPosition}

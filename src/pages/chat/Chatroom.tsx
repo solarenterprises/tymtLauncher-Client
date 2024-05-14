@@ -297,7 +297,7 @@ const Chatroom = () => {
                   justifyContent={"space-between"}
                 >
                   <Stack alignItems={"center"} flexDirection={"row"}>
-                    {chatuserlist[0] && (
+                    {chatuserlist[0] && currentpartner && (
                       <>
                         <Avatar
                           onlineStatus={currentpartner.onlineStatus}
@@ -320,7 +320,7 @@ const Chatroom = () => {
                         </Stack>
                       </>
                     )}
-                    {!chatuserlist[0] && <></>}
+                    {(!chatuserlist[0] || currentpartner) && <></>}
                   </Stack>
                   <Stack alignItems={"center"} flexDirection={"row"}>
                     <Button

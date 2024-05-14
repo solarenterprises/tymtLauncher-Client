@@ -28,6 +28,7 @@ import {
 const Userlist = ({
   user,
   index,
+  feature,
   numberofunreadmessages,
   setShowContextMenu,
   setContextMenuPosition,
@@ -36,7 +37,7 @@ const Userlist = ({
   const selectedusertoDelete: selecteduserType = useSelector(getSelectedUser);
   const multiwallet: multiWalletType = useSelector(getMultiWallet);
   const nonCustodial: nonCustodialType = useSelector(getNonCustodial);
-  const userdata: userType[] = useSelector(selectPartner);
+  const currentpartner: userType = useSelector(selectPartner);
   const dispatch = useDispatch();
   const handleContextMenu = (e: any, id: string) => {
     e.preventDefault();
@@ -86,6 +87,10 @@ const Userlist = ({
           alignItems: "center",
           padding: "12px 5px 12px 5px",
           cursor: "pointer",
+          backgroundColor:
+            feature === "chatroom" && user._id === currentpartner._id
+              ? "#52E1F21A"
+              : "transparent",
           "&:hover": {
             borderRadius: "5px",
             borderTopRightRadius: "0",
@@ -100,7 +105,7 @@ const Userlist = ({
         onClick={() => {
           dispatch(
             setCurrentChatPartner({
-              ...userdata,
+              ...currentpartner,
               _id: user._id,
               nickName: user.nickName,
               avatar: user.avatar,
@@ -110,8 +115,10 @@ const Userlist = ({
               notificationStatus: user.notificationStatus,
             })
           );
-          setView("chatbox");
           updateContact(user._id);
+          if (feature === "chatbox") {
+            setView("chatbox");
+          }
         }}
       >
         <Avatar

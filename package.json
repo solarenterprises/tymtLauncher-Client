@@ -21,6 +21,8 @@
     "tauri": "tauri"
   },
   "dependencies": {
+    "@bytescale/sdk": "^3.39.0",
+    "@bytescale/upload-widget-react": "^4.19.0",
     "@emotion/react": "^11.11.4",
     "@emotion/styled": "^11.11.5",
     "@esbuild-plugins/node-globals-polyfill": "^0.2.3",
@@ -101,6 +103,7 @@
     "swiper": "^11.0.7",
     "tiny-secp256k1": "^2.2.3",
     "translate": "^3.0.0",
+    "uploader": "^3.48.3",
     "vite-plugin-node-polyfills": "^0.21.0",
     "wif": "^4.0.0",
     "yup": "^1.4.0"

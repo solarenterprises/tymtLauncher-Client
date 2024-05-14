@@ -33,9 +33,7 @@ import {
   receiveContactlist,
 } from "../../features/chat/Chat-contactApi";
 import { setUserList } from "../../features/chat/Chat-userlistSlice";
-import {
-  getSelectedUser,
-} from "../../features/chat/Chat-selecteduserSlice";
+import { getSelectedUser } from "../../features/chat/Chat-selecteduserSlice";
 import { createContact } from "../../features/chat/Chat-contactApi";
 import { selecteduserType } from "../../types/chatTypes";
 import { searchUsers } from "../../features/chat/Chat-contactApi";
@@ -142,6 +140,7 @@ const ChatuserlistinRoom = ({ view, setView }: propsType) => {
             padding: "16px 8px 16px 8px",
             flexDirection: "column",
             margin: "10px",
+            // position: "fixed",
           }}
         >
           <Box
@@ -259,6 +258,7 @@ const ChatuserlistinRoom = ({ view, setView }: propsType) => {
                       <Userlist
                         user={user}
                         index={index}
+                        feature={"chatroom"}
                         numberofunreadmessages={numberofunreadmessages}
                         setShowContextMenu={setShowContextMenu}
                         setContextMenuPosition={setContextMenuPosition}
