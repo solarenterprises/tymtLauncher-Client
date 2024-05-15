@@ -82,7 +82,7 @@
         "transparent": true,
         "decorations": false,
         "resizable": false,
-        "visible": true,
+        "visible": false,
         "width": 445,
         "height": 732,
         "x": 5,

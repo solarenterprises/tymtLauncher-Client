@@ -61,7 +61,8 @@ async fn main() -> std::io::Result<()> {
                 get_machine_id,
                 is_window_visible,
                 show_transaction_window,
-                hide_transaction_window
+                hide_transaction_window,
+                set_tray_items_enabled
             ]
         )
         .on_window_event(|event| {
@@ -345,7 +346,7 @@ async fn download_appimage_linux(
     };
 
     let content = response.bytes().await.unwrap();
-    file.write_all(content.as_ref());
+    let _ = file.write_all(content.as_ref());
     println!("download done");
 
     let status = Command::new("chmod")
@@ -399,11 +400,14 @@ async fn download_and_unzip(app_handle: tauri::AppHandle, url: String, target: S
         Ok(file) => file,
     };
     let content = response.bytes().await.unwrap();
-    file.write_all(content.as_ref());
+    let _ = file.write_all(content.as_ref());
 
     let final_location = app_dir.to_string() + &target;
     println!("{}", final_location);
-    zip_extensions::read::zip_extract(&PathBuf::from(path), &PathBuf::from(final_location.clone()));
+    let _ = zip_extensions::read::zip_extract(
+        &PathBuf::from(path),
+        &PathBuf::from(final_location.clone())
+    );
     println!("checking for folders");
 
     let count = fs::read_dir(final_location.clone()).unwrap().count();
@@ -411,15 +415,15 @@ async fn download_and_unzip(app_handle: tauri::AppHandle, url: String, target: S
     if count == 1 {
         for file in fs::read_dir(final_location.clone()).unwrap() {
             if fs::metadata(file.as_ref().unwrap().path()).unwrap().is_dir() {
-                copy_dir_all(file.as_ref().unwrap().path(), final_location.clone());
+                let _ = copy_dir_all(file.as_ref().unwrap().path(), final_location.clone());
                 fs::remove_dir_all(file.as_ref().unwrap().path()).unwrap();
             }
         }
     }
 
-    fs::remove_file(&path);
+    let _ = fs::remove_file(&path);
 
-    Command::new("chmod").args(["+x", &final_location]).spawn();
+    let _ = Command::new("chmod").args(["+x", &final_location]).spawn();
 
     println!("done");
     return true;
@@ -486,7 +490,10 @@ async fn download_and_unzip_windows(
 
     let final_location = app_dir.to_string() + &target;
     println!("{}", final_location);
-    zip_extensions::read::zip_extract(&PathBuf::from(path), &PathBuf::from(final_location.clone()));
+    let _ = zip_extensions::read::zip_extract(
+        &PathBuf::from(path),
+        &PathBuf::from(final_location.clone())
+    );
     println!("checking for folders");
 
     let count = fs::read_dir(final_location.clone()).unwrap().count();
@@ -494,15 +501,15 @@ async fn download_and_unzip_windows(
     if count == 1 {
         for file in fs::read_dir(final_location.clone()).unwrap() {
             if fs::metadata(file.as_ref().unwrap().path()).unwrap().is_dir() {
-                copy_dir_all(file.as_ref().unwrap().path(), final_location.clone());
+                let _ = copy_dir_all(file.as_ref().unwrap().path(), final_location.clone());
                 fs::remove_dir_all(file.as_ref().unwrap().path()).unwrap();
             }
         }
     }
 
-    fs::remove_file(&path);
+    let _ = fs::remove_file(&path);
 
-    Command::new("chmod").args(["+x", &final_location]).spawn();
+    let _ = Command::new("chmod").args(["+x", &final_location]).spawn();
 
     println!("done");
     return true;
@@ -572,7 +579,10 @@ async fn download_and_unzip_linux(
 
     let final_location = app_dir.to_string() + &target;
     println!("{}", final_location);
-    zip_extensions::read::zip_extract(&PathBuf::from(path), &PathBuf::from(final_location.clone()));
+    let _ = zip_extensions::read::zip_extract(
+        &PathBuf::from(path),
+        &PathBuf::from(final_location.clone())
+    );
     println!("checking for folders");
 
     let count = fs::read_dir(final_location.clone()).unwrap().count();
@@ -580,17 +590,17 @@ async fn download_and_unzip_linux(
     if count == 1 {
         for file in fs::read_dir(final_location.clone()).unwrap() {
             if fs::metadata(file.as_ref().unwrap().path()).unwrap().is_dir() {
-                copy_dir_all(file.as_ref().unwrap().path(), final_location.clone());
+                let _ = copy_dir_all(file.as_ref().unwrap().path(), final_location.clone());
                 fs::remove_dir_all(file.as_ref().unwrap().path()).unwrap();
             }
         }
     }
 
-    fs::remove_file(&path);
+    let _ = fs::remove_file(&path);
 
-    let mut exePath = app_dir.to_string() + &target + &exeLocation;
+    let exePath = app_dir.to_string() + &target + &exeLocation;
 
-    Command::new("chmod").args(["u+x", &exePath]).spawn();
+    let _ = Command::new("chmod").args(["u+x", &exePath]).spawn();
 
     println!("done");
     return true;
@@ -638,11 +648,14 @@ async fn download_and_unzip_macos(
         Ok(file) => file,
     };
     let content = response.bytes().await.unwrap();
-    file.write_all(content.as_ref());
+    let _ = file.write_all(content.as_ref());
 
     let final_location = app_dir.to_string() + &target;
     println!("{}", final_location);
-    zip_extensions::read::zip_extract(&PathBuf::from(path), &PathBuf::from(final_location.clone()));
+    let _ = zip_extensions::read::zip_extract(
+        &PathBuf::from(path),
+        &PathBuf::from(final_location.clone())
+    );
     println!("checking for folders");
 
     let count = fs::read_dir(final_location.clone()).unwrap().count();
@@ -650,17 +663,17 @@ async fn download_and_unzip_macos(
     if count == 1 {
         for file in fs::read_dir(final_location.clone()).unwrap() {
             if fs::metadata(file.as_ref().unwrap().path()).unwrap().is_dir() {
-                copy_dir_all(file.as_ref().unwrap().path(), final_location.clone());
+                let _ = copy_dir_all(file.as_ref().unwrap().path(), final_location.clone());
                 fs::remove_dir_all(file.as_ref().unwrap().path()).unwrap();
             }
         }
     }
 
-    fs::remove_file(&path);
+    let _ = fs::remove_file(&path);
 
     let exePath = app_dir.to_string() + &target + &exeLocation;
 
-    Command::new("chmod").args(["+x", &exePath]).spawn();
+    let _ = Command::new("chmod").args(["+x", &exePath]).spawn();
 
     println!("done");
     return true;
@@ -731,7 +744,7 @@ async fn download_and_untarbz2_macos(
         .expect("failed to unzip");
 
     // Remove tar.bz2
-    fs::remove_file(&path);
+    let _ = fs::remove_file(&path);
 
     let exePath = app_dir.to_string() + &target + &exeLocation;
 
@@ -862,15 +875,18 @@ async fn show_transaction_window(app_handle: tauri::AppHandle) {
         eprintln!("Window 'tymtLauncher' not found");
     }
 
-    let tray_handle = app_handle.tray_handle();
-    tray_handle.get_item(&"showVisible".to_string()).set_enabled(false);
-    tray_handle.get_item(&"fullscreen".to_string()).set_enabled(false);
-    tray_handle.get_item(&"games".to_string()).set_enabled(false);
-    tray_handle.get_item(&"wallet".to_string()).set_enabled(false);
-    tray_handle.get_item(&"about".to_string()).set_enabled(false);
-    tray_handle.get_item(&"signout".to_string()).set_enabled(false);
-    tray_handle.get_item(&"quit".to_string()).set_enabled(false);
-    tray_handle.get_item(&"disable_notifications".to_string()).set_enabled(false);
+    let item_ids = vec![
+        "showVisible".to_string(),
+        "fullscreen".to_string(),
+        "games".to_string(),
+        "wallet".to_string(),
+        "about".to_string(),
+        "signout".to_string(),
+        "quit".to_string(),
+        "disable_notifications".to_string()
+    ];
+    let enabled = false;
+    set_tray_items_enabled(app_handle, item_ids, enabled).await
 }
 
 #[tauri::command]
@@ -891,13 +907,28 @@ async fn hide_transaction_window(app_handle: tauri::AppHandle) {
         eprintln!("Window 'tymtLauncher' not found");
     }
 
+    let item_ids = vec![
+        "showVisible".to_string(),
+        "fullscreen".to_string(),
+        "games".to_string(),
+        "wallet".to_string(),
+        "about".to_string(),
+        "signout".to_string(),
+        "quit".to_string(),
+        "disable_notifications".to_string()
+    ];
+    let enabled = true;
+    set_tray_items_enabled(app_handle, item_ids, enabled).await
+}
+
+#[tauri::command]
+async fn set_tray_items_enabled(
+    app_handle: tauri::AppHandle,
+    item_ids: Vec<String>,
+    enabled: bool
+) {
     let tray_handle = app_handle.tray_handle();
-    tray_handle.get_item(&"showVisible".to_string()).set_enabled(true);
-    tray_handle.get_item(&"fullscreen".to_string()).set_enabled(true);
-    tray_handle.get_item(&"games".to_string()).set_enabled(true);
-    tray_handle.get_item(&"wallet".to_string()).set_enabled(true);
-    tray_handle.get_item(&"about".to_string()).set_enabled(true);
-    tray_handle.get_item(&"signout".to_string()).set_enabled(true);
-    tray_handle.get_item(&"quit".to_string()).set_enabled(true);
-    tray_handle.get_item(&"disable_notifications".to_string()).set_enabled(true);
+    for item_id in item_ids {
+        let _ = tray_handle.get_item(&item_id).set_enabled(enabled);
+    }
 }
