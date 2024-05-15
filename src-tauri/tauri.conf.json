@@ -10,6 +10,7 @@
     "productName": "tymtLauncher",
     "version": "2.0.2"
   },
+
   "tauri": {
     "allowlist": {
       "all": true,
@@ -87,7 +88,8 @@
         "x": 5,
         "y": 5,
         "additionalBrowserArgs": "--disable-web-security",
-        "alwaysOnTop": true
+        "alwaysOnTop": true,
+        "focus": true
       }
     ],
     "systemTray": {
@@ -112,6 +114,7 @@
       "category": "Game",
       "shortDescription": "A multi-chain game launcher and an environment for creating and publishing games",
       "longDescription": "tymt is a multi-chain game launcher and an environment for creating and publishing games. \n tymt is a gaming environment and platform, built using the Solar Core blockchain solutions, enabling a new world of game economy - empowering Developers and Publishers!"
-    }
+    },
+    "macOSPrivateApi": true
   }
 }

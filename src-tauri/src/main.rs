@@ -7,7 +7,6 @@ use std::sync::OnceLock;
 use tauri::{ CustomMenuItem, SystemTray, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem };
 use actix_web::{ web, App, HttpResponse, HttpServer, Responder };
 use serde::{ Deserialize, Serialize };
-use tokio::time::{ sleep, Duration };
 
 static APPHANDLE: OnceLock<tauri::AppHandle> = OnceLock::new();
 
@@ -207,6 +206,59 @@ async fn main() -> std::io::Result<()> {
                 }
             }
 
+            #[derive(Deserialize, Serialize)]
+            struct GetAccountReqType {
+                chain: String, // solar, evm, bitcoin, solana
+            }
+            async fn get_account(request_param: web::Json<GetAccountReqType>) -> HttpResponse {
+                println!("-------> POST /get-account");
+
+                show_transaction_window(APPHANDLE.get().unwrap().clone()).await;
+
+                let json_data = serde_json
+                    ::to_string(&request_param)
+                    .expect("Failed to serialize JSON data");
+                println!("{}", json_data);
+
+                APPHANDLE.get()
+                    .expect("APPHANDLE is available")
+                    .emit_all("POST-/get-account", json_data)
+                    .expect("failed to emit event POST /get-account");
+
+                let (tx, rx) = std::sync::mpsc::channel();
+
+                let response = APPHANDLE.get()
+                    .expect("APPHANDLE is available")
+                    .listen_global("res-POST-/get-account", move |event| {
+                        let payload = event.payload().unwrap().to_string();
+                        println!("!!!----> res POST /get-account");
+                        println!("{}", payload);
+                        match tx.send(payload) {
+                            Ok(()) => {
+                                // println!("Message sent successfully");
+                            }
+                            Err(err) => {
+                                println!("Error sending message: {:?}", err);
+                            }
+                        }
+                    });
+
+                match rx.recv() {
+                    Ok(received) => {
+                        // println!("Received: {}", received);
+                        let mut res: Vec<String> = Vec::new();
+                        res.push(received.to_string());
+                        APPHANDLE.get().expect("APPHANDLE is available").unlisten(response);
+                        return HttpResponse::Ok().json(res);
+                    }
+                    Err(err) => {
+                        println!("Error receiving message: {:?}", err);
+                        APPHANDLE.get().expect("APPHANDLE is available").unlisten(response);
+                        return HttpResponse::InternalServerError().finish();
+                    }
+                }
+            }
+
             tauri::async_runtime::spawn(
                 HttpServer::new(move || {
                     App::new()
@@ -215,6 +267,7 @@ async fn main() -> std::io::Result<()> {
                             web::get().to(move || hello())
                         )
                         .route("/test-post-endpoint", web::post().to(process_json))
+                        .route("/get-account", web::post().to(get_account))
                 })
                     .bind(("127.0.0.1", 8081))
                     .expect("Failed to bind address")
@@ -800,6 +853,24 @@ async fn show_transaction_window(app_handle: tauri::AppHandle) {
     } else {
         eprintln!("Window 'tymt_d53_transaction' not found");
     }
+
+    if let Some(window_to_hide) = app_handle.get_window("tymtLauncher") {
+        if let Err(e) = window_to_hide.hide() {
+            eprintln!("Failed to hide window 'tymtLauncher': {}", e);
+        }
+    } else {
+        eprintln!("Window 'tymtLauncher' not found");
+    }
+
+    let tray_handle = app_handle.tray_handle();
+    tray_handle.get_item(&"showVisible".to_string()).set_enabled(false);
+    tray_handle.get_item(&"fullscreen".to_string()).set_enabled(false);
+    tray_handle.get_item(&"games".to_string()).set_enabled(false);
+    tray_handle.get_item(&"wallet".to_string()).set_enabled(false);
+    tray_handle.get_item(&"about".to_string()).set_enabled(false);
+    tray_handle.get_item(&"signout".to_string()).set_enabled(false);
+    tray_handle.get_item(&"quit".to_string()).set_enabled(false);
+    tray_handle.get_item(&"disable_notifications".to_string()).set_enabled(false);
 }
 
 #[tauri::command]
@@ -811,4 +882,22 @@ async fn hide_transaction_window(app_handle: tauri::AppHandle) {
     } else {
         eprintln!("Window 'tymt_d53_transaction' not found");
     }
+
+    if let Some(window_to_hide) = app_handle.get_window("tymtLauncher") {
+        if let Err(e) = window_to_hide.show() {
+            eprintln!("Failed to show window 'tymtLauncher': {}", e);
+        }
+    } else {
+        eprintln!("Window 'tymtLauncher' not found");
+    }
+
+    let tray_handle = app_handle.tray_handle();
+    tray_handle.get_item(&"showVisible".to_string()).set_enabled(true);
+    tray_handle.get_item(&"fullscreen".to_string()).set_enabled(true);
+    tray_handle.get_item(&"games".to_string()).set_enabled(true);
+    tray_handle.get_item(&"wallet".to_string()).set_enabled(true);
+    tray_handle.get_item(&"about".to_string()).set_enabled(true);
+    tray_handle.get_item(&"signout".to_string()).set_enabled(true);
+    tray_handle.get_item(&"quit".to_string()).set_enabled(true);
+    tray_handle.get_item(&"disable_notifications".to_string()).set_enabled(true);
 }
