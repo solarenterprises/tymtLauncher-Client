@@ -15,6 +15,7 @@ import { languageType } from "../../types/settingTypes";
 import { getCurrency, setCurrency } from "../../features/wallet/CurrencySlice";
 import { ICurrency } from "../../types/walletTypes";
 import { AppDispatch } from "../../store";
+import { emit } from "@tauri-apps/api/event";
 
 const Language = ({ view, setView }: propsType) => {
   const dispatch = useDispatch<AppDispatch>();
@@ -29,6 +30,7 @@ const Language = ({ view, setView }: propsType) => {
   const setLang = useCallback(
     (lang: string) => {
       dispatch(setLanguage({ ...language, language: lang }));
+      emit("language-changed", lang);
     },
     [language]
   );
