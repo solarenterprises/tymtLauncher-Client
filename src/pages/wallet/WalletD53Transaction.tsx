@@ -1,6 +1,7 @@
 import {
   Box,
   Button,
+  CircularProgress,
   InputAdornment,
   Stack,
   TextField,
@@ -21,8 +22,12 @@ import {
   selectNotification,
   setNotification,
 } from "../../features/settings/NotificationSlice";
-import { notificationType, walletType } from "../../types/settingTypes";
-import { ICurrency, multiWalletType } from "../../types/walletTypes";
+import {
+  languageType,
+  notificationType,
+  walletType,
+} from "../../types/settingTypes";
+import { IChain, ICurrency, multiWalletType } from "../../types/walletTypes";
 import { getMultiWallet } from "../../features/wallet/MultiWalletSlice";
 import { invoke } from "@tauri-apps/api/tauri";
 import InputText from "../../components/account/InputText";
@@ -40,22 +45,38 @@ import SettingStyle from "../../styles/SettingStyle";
 import { ISendTransactionReq } from "../../types/eventParamTypes";
 import { emit, listen } from "@tauri-apps/api/event";
 import TransactionProviderAPI from "../../lib/api/TransactionProviderAPI";
+import { getChain } from "../../features/wallet/ChainSlice";
+import { selectLanguage } from "../../features/settings/LanguageSlice";
 
 const WalletD53Transaction = () => {
-  const { t } = useTranslation();
+  const {
+    t,
+    i18n: { changeLanguage },
+  } = useTranslation();
   const dispatch = useDispatch<AppDispatch>();
   const notificationStore: notificationType = useSelector(selectNotification);
   const multiWalletStore: multiWalletType = useSelector(getMultiWallet);
   const nonCustodialStore: nonCustodialType = useSelector(getNonCustodial);
   const currencyStore: ICurrency = useSelector(getCurrency);
   const walletStore: walletType = useSelector(selectWallet);
+  const chainStore: IChain = useSelector(getChain);
+  const langStore: languageType = useSelector(selectLanguage);
   const reserve: number = currencyStore.data[currencyStore.current] as number;
+  const price: Number =
+    chainStore.currentToken === "chain" || chainStore.currentToken === ""
+      ? chainStore.chain.price ?? 0
+      : chainStore.tokens.find(
+          (token) => token.symbol === chainStore.currentToken
+        ).price ?? 0;
   const symbol: string = currencySymbols[currencyStore.current];
   const classname = SettingStyle();
   const [copied, setCopied] = useState<boolean>(false);
   const [chain, setChain] = useState<string>("");
   const [to, setTo] = useState<string>("");
   const [amount, setAmount] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
+  const [expired, setExpired] = useState<boolean>(true);
+  const [timeLeft, setTimeLeft] = useState<number>(0);
 
   const formik = useFormik({
     initialValues: {
@@ -79,28 +100,62 @@ const WalletD53Transaction = () => {
             nonCustodialStore.password
         ),
     }),
-    onSubmit: async () => {
-      console.log("onSubmit");
-      let res = await TransactionProviderAPI.sendTransaction(
+    onSubmit: () => {
+      handleApproveClick();
+    },
+  });
+
+  const handleApproveClick = async () => {
+    setLoading(true);
+    let res: any;
+    try {
+      res = await TransactionProviderAPI.sendTransaction(
         chain,
         to,
         amount,
         formik.values.password,
         walletStore.fee
       );
-      emit("res-POST-/send-transaction", res);
-      setTo("");
-      setAmount("");
-      setChain("");
-      invoke("hide_transaction_window");
-    },
-  });
+    } catch (err) {
+      console.error("Failed to TransactionProviderAPI.sendTransaction: ", err);
+      res = {
+        status: "failed",
+        title: "Send SXP",
+        message: err.toString(),
+      };
+    }
+    emit("res-POST-/send-transaction", res);
+    setTo("");
+    setAmount("");
+    setChain("");
+    invoke("hide_transaction_window");
+    setLoading(false);
+    setExpired(true);
+  };
+
+  const handleRejectClick = async () => {
+    let res = {
+      status: "failed",
+      title: "Send SXP",
+      message: "Request rejected",
+    };
+    emit("res-POST-/send-transaction", res);
+    setTo("");
+    setAmount("");
+    setChain("");
+    invoke("hide_transaction_window");
+    setExpired(true);
+  };
 
   const getShortAddr: (_: string) => string = (_wallet: string) => {
     return (
       _wallet.substring(0, 10) + "..." + _wallet.substring(_wallet.length - 10)
     );
   };
+
+  useEffect(() => {
+    changeLanguage(langStore.language);
+  }, [langStore.language]);
 
   useEffect(() => {
     dispatch(setMountedTrue());
@@ -141,13 +196,37 @@ const WalletD53Transaction = () => {
         setChain(chain);
         setTo(to);
         setAmount(amount);
+        setExpired(false);
+        setTimeLeft(30);
       }
     );
+    const unlisten_language_changed = listen("language-changed", (event) => {
+      changeLanguage(event.payload as string);
+    });
 
     return () => {
       unlisten_send_transaction.then((unlistenFn) => unlistenFn());
+      unlisten_language_changed.then((unlistenFn) => unlistenFn());
     };
   }, []);
+
+  useEffect(() => {
+    if (!expired) {
+      const intervalId = setInterval(() => {
+        setTimeLeft((prevTimeLeft) => prevTimeLeft - 1);
+      }, 1 * 1e3);
+
+      const timeoutId = setTimeout(() => {
+        setExpired(true);
+        handleRejectClick();
+      }, 30 * 1e3);
+
+      return () => {
+        clearInterval(intervalId);
+        clearTimeout(timeoutId);
+      };
+    }
+  }, [expired]);
 
   return (
     <Stack
@@ -223,9 +302,7 @@ const WalletD53Transaction = () => {
             src={close}
             width={"24px"}
             height={"24px"}
-            onClick={() => {
-              invoke("hide_transaction_window");
-            }}
+            onClick={handleRejectClick}
             sx={{
               cursor: "pointer",
             }}
@@ -239,9 +316,9 @@ const WalletD53Transaction = () => {
             background: "rgb(16, 30, 30)",
           }}
         >
-          <Box
-            className={"fs-24-regular white t-center"}
-          >{`Transaction request`}</Box>
+          <Box className={"fs-24-regular white t-center"}>
+            {t("wal-61_tx-request")}
+          </Box>
           <Stack
             sx={{
               padding: "24px 16px",
@@ -268,7 +345,9 @@ const WalletD53Transaction = () => {
               alignItems={"center"}
               justifyContent={"space-between"}
             >
-              <Box className={"fs-16-regular light"}>{`Recipient`}</Box>
+              <Box className={"fs-16-regular light"}>
+                {t("wal-62_recipient")}
+              </Box>
 
               <Tooltip
                 placement="bottom"
@@ -285,7 +364,7 @@ const WalletD53Transaction = () => {
                   >
                     <Box className="fs-12-regular white">
                       {!copied && to}
-                      {copied && "Copied to clipboard"}
+                      {copied && t("wal-66_copied-to-clipboard")}
                     </Box>
                   </Stack>
                 }
@@ -315,7 +394,7 @@ const WalletD53Transaction = () => {
               </Tooltip>
             </Stack>
             <Stack direction={"row"} justifyContent={"space-between"}>
-              <Box className={"fs-16-regular light"}>{`Amount`}</Box>
+              <Box className={"fs-16-regular light"}>{t("wal-63_amount")}</Box>
               <Stack>
                 <Box
                   className={"fs-16-regular white t-right"}
@@ -328,7 +407,9 @@ const WalletD53Transaction = () => {
                 >{`${amount} SXP`}</Box>
                 <Box
                   className={"fs-14-regular light t-right"}
-                >{`${symbol} ${reserve}`}</Box>
+                >{`${symbol} ${numeral(
+                  Number(amount) * Number(price) * Number(reserve)
+                ).format("0,0.000")}`}</Box>
               </Stack>
             </Stack>
           </Stack>
@@ -343,7 +424,9 @@ const WalletD53Transaction = () => {
               backdropFilter: "blur(50px)",
             }}
           >
-            <Box className={"fs-16-regular light"}>{`Gas fee:`}</Box>
+            <Box className={"fs-16-regular light"}>{`${t(
+              "wal-64_gas-fee"
+            )}:`}</Box>
             <Stack direction={"row"} alignItems={"center"} gap={"4px"}>
               <TextField
                 type="text"
@@ -396,30 +479,42 @@ const WalletD53Transaction = () => {
               fullWidth
               type="submit"
               disabled={
-                formik.errors.password || Number(walletStore.fee) < 0
+                formik.errors.password ||
+                Number(walletStore.fee) < 0 ||
+                loading ||
+                !formik.touched.password
                   ? true
                   : false
               }
               className="red-button"
             >
-              <Box className={"fs-16-regular"}>{`Approve`}</Box>
+              {!loading && (
+                <Box className={"fs-16-regular"}>{t("wal-34_approve")}</Box>
+              )}
+              {loading && (
+                <CircularProgress
+                  sx={{
+                    color: "#F5EBFF",
+                  }}
+                />
+              )}
             </Button>
             <Button
               fullWidth
-              onClick={() => {
-                setTo("");
-                setAmount("");
-                setChain("");
-                invoke("hide_transaction_window");
-              }}
+              onClick={handleRejectClick}
               disabled={
-                formik.errors.password || Number(walletStore.fee) < 0
+                formik.errors.password ||
+                Number(walletStore.fee) < 0 ||
+                loading ||
+                !formik.touched.password
                   ? true
                   : false
               }
               className="red-border-button"
             >
-              <Box className={"fs-16-regular"}>{`Reject`}</Box>
+              <Box className={"fs-16-regular"}>{`${t(
+                "wal-65_reject"
+              )} (${timeLeft} s)`}</Box>
             </Button>
           </Stack>
         </Stack>

@@ -7,6 +7,8 @@ use std::sync::OnceLock;
 use tauri::{ CustomMenuItem, SystemTray, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem };
 use actix_web::{ web, App, HttpResponse, HttpServer, Responder };
 use serde::{ Deserialize, Serialize };
+use dotenv::dotenv;
+use std::env;
 
 static APPHANDLE: OnceLock<tauri::AppHandle> = OnceLock::new();
 
@@ -360,6 +362,14 @@ async fn main() -> std::io::Result<()> {
                 }
             }
 
+            dotenv().ok();
+            let port_str = env
+                ::var("VITE_APP_LOCAL_SERVER_PORT")
+                .expect("VITE_APP_LOCAL_SERVER_PORT must be set");
+            let port: u16 = port_str
+                .parse()
+                .expect("VITE_APP_LOCAL_SERVER_PORT must be a valid u16");
+
             tauri::async_runtime::spawn(
                 HttpServer::new(move || {
                     App::new()
@@ -372,7 +382,7 @@ async fn main() -> std::io::Result<()> {
                         .route("/get-balance", web::post().to(get_balance))
                         .route("/send-transaction", web::post().to(send_transaction))
                 })
-                    .bind(("127.0.0.1", 8081))
+                    .bind(("127.0.0.1", port))
                     .expect("Failed to bind address")
                     .run()
             );

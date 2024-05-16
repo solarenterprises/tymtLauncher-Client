@@ -73,7 +73,6 @@ export default class TransactionProviderAPI {
     password: string,
     fee: string
   ) => {
-    console.log("API entered");
     const nonCustodialStore: nonCustodialType = JSON.parse(
       tymtStorage.get(`nonCustodial`)
     );
@@ -94,7 +93,6 @@ export default class TransactionProviderAPI {
     let res;
     switch (chain) {
       case "solar":
-        console.log("solar");
         res = await tymtCore.Blockchains.solar.wallet.sendTransaction(
           passphrase,
           tx
