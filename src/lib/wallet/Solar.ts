@@ -259,7 +259,7 @@ export class Solar implements IWallet {
             return {
               status: "success",
               title: "Send SXP",
-              message: "Successfully sent",
+              message: `Transaction ID: ${res.data.data.accept[0]}`,
             };
           } else {
             return {
@@ -319,7 +319,7 @@ export class Solar implements IWallet {
             return {
               status: "success",
               title: "Send SXP",
-              message: "Successfully sent",
+              message: `Transaction ID: ${res.data.data.accept[0]}`,
             };
           } else {
             return {

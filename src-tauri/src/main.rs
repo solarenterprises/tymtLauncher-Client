@@ -214,8 +214,6 @@ async fn main() -> std::io::Result<()> {
             async fn get_account(request_param: web::Json<GetAccountReqType>) -> HttpResponse {
                 println!("-------> POST /get-account");
 
-                show_transaction_window(APPHANDLE.get().unwrap().clone()).await;
-
                 let json_data = serde_json
                     ::to_string(&request_param)
                     .expect("Failed to serialize JSON data");
@@ -247,10 +245,112 @@ async fn main() -> std::io::Result<()> {
                 match rx.recv() {
                     Ok(received) => {
                         // println!("Received: {}", received);
-                        let mut res: Vec<String> = Vec::new();
-                        res.push(received.to_string());
                         APPHANDLE.get().expect("APPHANDLE is available").unlisten(response);
-                        return HttpResponse::Ok().json(res);
+                        return HttpResponse::Ok().body(received);
+                    }
+                    Err(err) => {
+                        println!("Error receiving message: {:?}", err);
+                        APPHANDLE.get().expect("APPHANDLE is available").unlisten(response);
+                        return HttpResponse::InternalServerError().finish();
+                    }
+                }
+            }
+
+            #[derive(Deserialize, Serialize)]
+            struct GetBalanceReqType {
+                chain: String, // solar, bitcoin, solana, ethereum, polygon, avalanche, arbitrum, binance, optimism
+                address: String,
+            }
+            async fn get_balance(request_param: web::Json<GetBalanceReqType>) -> HttpResponse {
+                println!("-------> POST /get-balance");
+
+                let json_data = serde_json
+                    ::to_string(&request_param)
+                    .expect("Failed to serialize JSON data");
+                println!("{}", json_data);
+
+                APPHANDLE.get()
+                    .expect("APPHANDLE is available")
+                    .emit_all("POST-/get-balance", json_data)
+                    .expect("failed to emit event POST /get-balance");
+
+                let (tx, rx) = std::sync::mpsc::channel();
+
+                let response = APPHANDLE.get()
+                    .expect("APPHANDLE is available")
+                    .listen_global("res-POST-/get-balance", move |event| {
+                        let payload = event.payload().unwrap().to_string();
+                        println!("!!!----> res POST /get-balance");
+                        println!("{}", payload);
+                        match tx.send(payload) {
+                            Ok(()) => {
+                                // println!("Message sent successfully");
+                            }
+                            Err(err) => {
+                                println!("Error sending message: {:?}", err);
+                            }
+                        }
+                    });
+
+                match rx.recv() {
+                    Ok(received) => {
+                        APPHANDLE.get().expect("APPHANDLE is available").unlisten(response);
+                        return HttpResponse::Ok().json(received);
+                    }
+                    Err(err) => {
+                        println!("Error receiving message: {:?}", err);
+                        APPHANDLE.get().expect("APPHANDLE is available").unlisten(response);
+                        return HttpResponse::InternalServerError().finish();
+                    }
+                }
+            }
+
+            #[derive(Deserialize, Serialize)]
+            struct SendTransactionReqType {
+                chain: String, // solar, bitcoin, solana, ethereum, polygon, avalanche, arbitrum, binance, optimism
+                to: String,
+                amount: String,
+            }
+            async fn send_transaction(
+                request_param: web::Json<SendTransactionReqType>
+            ) -> HttpResponse {
+                println!("-------> POST /send-transaction");
+
+                show_transaction_window(APPHANDLE.get().unwrap().clone()).await;
+
+                let json_data = serde_json
+                    ::to_string(&request_param)
+                    .expect("Failed to serialize JSON data");
+                println!("{}", json_data);
+
+                APPHANDLE.get()
+                    .expect("APPHANDLE is available")
+                    .emit_all("POST-/send-transaction", json_data)
+                    .expect("failed to emit event POST /send-transaction");
+
+                let (tx, rx) = std::sync::mpsc::channel();
+
+                let response = APPHANDLE.get()
+                    .expect("APPHANDLE is available")
+                    .listen_global("res-POST-/send-transaction", move |event| {
+                        let payload = event.payload().unwrap().to_string();
+                        println!("!!!----> res POST /send-transaction");
+                        println!("{}", payload);
+                        match tx.send(payload) {
+                            Ok(()) => {
+                                // println!("Message sent successfully");
+                            }
+                            Err(err) => {
+                                println!("Error sending message: {:?}", err);
+                            }
+                        }
+                    });
+
+                match rx.recv() {
+                    Ok(received) => {
+                        // println!("Received: {}", received);
+                        APPHANDLE.get().expect("APPHANDLE is available").unlisten(response);
+                        return HttpResponse::Ok().body(received);
                     }
                     Err(err) => {
                         println!("Error receiving message: {:?}", err);
@@ -269,6 +369,8 @@ async fn main() -> std::io::Result<()> {
                         )
                         .route("/test-post-endpoint", web::post().to(process_json))
                         .route("/get-account", web::post().to(get_account))
+                        .route("/get-balance", web::post().to(get_balance))
+                        .route("/send-transaction", web::post().to(send_transaction))
                 })
                     .bind(("127.0.0.1", 8081))
                     .expect("Failed to bind address")

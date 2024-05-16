@@ -37,6 +37,9 @@ import { currencySymbols } from "../../consts/currency";
 import numeral from "numeral";
 import { selectWallet, setWallet } from "../../features/settings/WalletSlice";
 import SettingStyle from "../../styles/SettingStyle";
+import { ISendTransactionReq } from "../../types/eventParamTypes";
+import { emit, listen } from "@tauri-apps/api/event";
+import TransactionProviderAPI from "../../lib/api/TransactionProviderAPI";
 
 const WalletD53Transaction = () => {
   const { t } = useTranslation();
@@ -50,11 +53,13 @@ const WalletD53Transaction = () => {
   const symbol: string = currencySymbols[currencyStore.current];
   const classname = SettingStyle();
   const [copied, setCopied] = useState<boolean>(false);
+  const [chain, setChain] = useState<string>("");
+  const [to, setTo] = useState<string>("");
+  const [amount, setAmount] = useState<string>("");
 
   const formik = useFormik({
     initialValues: {
       password: "",
-      fee: "",
     },
     validationSchema: Yup.object({
       password: Yup.string()
@@ -73,11 +78,22 @@ const WalletD53Transaction = () => {
             createKeccakHash("keccak256").update(value).digest("hex") ===
             nonCustodialStore.password
         ),
-      fee: Yup.string()
-        .required(t("cca-63_required"))
-        .test("checks", "", (value) => Number(value) > 0),
     }),
-    onSubmit: () => {},
+    onSubmit: async () => {
+      console.log("onSubmit");
+      let res = await TransactionProviderAPI.sendTransaction(
+        chain,
+        to,
+        amount,
+        formik.values.password,
+        walletStore.fee
+      );
+      emit("res-POST-/send-transaction", res);
+      setTo("");
+      setAmount("");
+      setChain("");
+      invoke("hide_transaction_window");
+    },
   });
 
   const getShortAddr: (_: string) => string = (_wallet: string) => {
@@ -113,6 +129,25 @@ const WalletD53Transaction = () => {
       }, 1000);
     }
   }, [copied]);
+
+  useEffect(() => {
+    const unlisten_send_transaction = listen(
+      "POST-/send-transaction",
+      async (event) => {
+        const json_data: ISendTransactionReq = JSON.parse(
+          event.payload as string
+        );
+        const { chain, to, amount } = json_data;
+        setChain(chain);
+        setTo(to);
+        setAmount(amount);
+      }
+    );
+
+    return () => {
+      unlisten_send_transaction.then((unlistenFn) => unlistenFn());
+    };
+  }, []);
 
   return (
     <Stack
@@ -249,7 +284,7 @@ const WalletD53Transaction = () => {
                     }}
                   >
                     <Box className="fs-12-regular white">
-                      {!copied && multiWalletStore.Solar.chain.wallet}
+                      {!copied && to}
                       {copied && "Copied to clipboard"}
                     </Box>
                   </Stack>
@@ -275,7 +310,7 @@ const WalletD53Transaction = () => {
                     cursor: "pointer",
                   }}
                 >
-                  {getShortAddr(multiWalletStore.Solar.chain.wallet)}
+                  {getShortAddr(to)}
                 </Box>
               </Tooltip>
             </Stack>
@@ -290,7 +325,7 @@ const WalletD53Transaction = () => {
                   sx={{
                     cursor: "pointer",
                   }}
-                >{`12 SXP`}</Box>
+                >{`${amount} SXP`}</Box>
                 <Box
                   className={"fs-14-regular light t-right"}
                 >{`${symbol} ${reserve}`}</Box>
@@ -360,7 +395,11 @@ const WalletD53Transaction = () => {
             <Button
               fullWidth
               type="submit"
-              disabled={formik.errors.password ? true : false}
+              disabled={
+                formik.errors.password || Number(walletStore.fee) < 0
+                  ? true
+                  : false
+              }
               className="red-button"
             >
               <Box className={"fs-16-regular"}>{`Approve`}</Box>
@@ -368,8 +407,16 @@ const WalletD53Transaction = () => {
             <Button
               fullWidth
               onClick={() => {
+                setTo("");
+                setAmount("");
+                setChain("");
                 invoke("hide_transaction_window");
               }}
+              disabled={
+                formik.errors.password || Number(walletStore.fee) < 0
+                  ? true
+                  : false
+              }
               className="red-border-button"
             >
               <Box className={"fs-16-regular"}>{`Reject`}</Box>
