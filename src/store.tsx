@@ -42,10 +42,16 @@ import machineIdReducer from "./features/account/MachineIdSlice";
 import socketHashReducer from "./features/chat/SocketHashSlice";
 import chatmountedReducer from "./features/chat/Chat-intercomSupportSlice";
 
-const notificationActionTypes = ["notification/setNotification"];
+const blacklistActionTypes = [
+  "notification/setNotification",
+  "intercomsupport/setChatMounted",
+  "intercomsupport/setMountedTrue",
+  "intercomsupport/setMountedFalse",
+  // Add other notification actions if there are more
+];
 
 const stateSyncConfig = {
-  blacklist: notificationActionTypes,
+  blacklist: blacklistActionTypes,
 };
 
 const stateSyncMiddleware = createStateSyncMiddleware(stateSyncConfig);

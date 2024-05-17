@@ -30,7 +30,6 @@ import {
 import { ICurrency, multiWalletType } from "../../types/walletTypes";
 import { getMultiWallet } from "../../features/wallet/MultiWalletSlice";
 import { invoke } from "@tauri-apps/api/tauri";
-import InputText from "../../components/account/InputText";
 import { useTranslation } from "react-i18next";
 import { useFormik } from "formik";
 import * as Yup from "yup";
@@ -46,6 +45,7 @@ import { ISendTransactionReq } from "../../types/eventParamTypes";
 import { emit, listen } from "@tauri-apps/api/event";
 import TransactionProviderAPI from "../../lib/api/TransactionProviderAPI";
 import { selectLanguage } from "../../features/settings/LanguageSlice";
+import InputPasswordNoTooltip from "../../components/account/InputPasswordNoTooltip";
 
 const WalletD53Transaction = () => {
   const {
@@ -186,6 +186,13 @@ const WalletD53Transaction = () => {
         const json_data: ISendTransactionReq = JSON.parse(
           event.payload as string
         );
+        let isValid: boolean = await TransactionProviderAPI.validateTransaction(
+          json_data
+        );
+        if (!isValid) {
+          invoke("hide_transaction_window");
+          return;
+        }
         const { chain, to, amount } = json_data;
         setChain(chain);
         setTo(to);
@@ -460,10 +467,9 @@ const WalletD53Transaction = () => {
               />
             </Stack>
           </Stack>
-          <InputText
+          <InputPasswordNoTooltip
             id="non-custodial-login"
             label={t("ncl-4_your-password")}
-            type="password"
             name="password"
             value={formik.values.password}
             onChange={formik.handleChange}

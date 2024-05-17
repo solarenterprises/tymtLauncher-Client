@@ -7,8 +7,15 @@ use std::sync::OnceLock;
 use tauri::{ CustomMenuItem, SystemTray, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem };
 use actix_web::{ web, App, HttpResponse, HttpServer, Responder };
 use serde::{ Deserialize, Serialize };
-use dotenv::dotenv;
-use std::env;
+use std::fs::File;
+use std::io::prelude::*;
+use std::path::{ Path, PathBuf };
+use std::process::Command;
+use std::{ fs, io };
+use tauri::Manager;
+use machineid_rs::{ IdBuilder, Encryption, HWIDComponent };
+// use dotenv::dotenv;
+// use std::env;
 
 static APPHANDLE: OnceLock<tauri::AppHandle> = OnceLock::new();
 
@@ -168,47 +175,6 @@ async fn main() -> std::io::Result<()> {
                 b: i32,
             }
 
-            async fn process_json(numbers: web::Json<MyJsonData>) -> HttpResponse {
-                let json_data = serde_json
-                    ::to_string(&numbers)
-                    .expect("Failed to serialize JSON data");
-
-                APPHANDLE.get()
-                    .expect("APPHANDLE is available")
-                    .emit_all("test-post-endpoint", json_data)
-                    .expect("failed to emit event test-post-endpoint");
-
-                let (tx, rx) = std::sync::mpsc::channel();
-
-                let response = APPHANDLE.get()
-                    .expect("APPHANDLE is available")
-                    .listen_global("res-test-post-endpoint", move |event| {
-                        let payload = event.payload().unwrap().to_string();
-                        println!("res-test-post-endpoint {}", payload);
-                        match tx.send(payload) {
-                            Ok(()) => {
-                                println!("Message sent successfully");
-                            }
-                            Err(err) => {
-                                println!("Error sending message: {:?}", err);
-                            }
-                        }
-                    });
-
-                match rx.recv() {
-                    Ok(received) => {
-                        println!("Received: {}", received);
-                        APPHANDLE.get().expect("APPHANDLE is available").unlisten(response);
-                        return HttpResponse::Ok().body(format!("Sum of a and b is: {}", received));
-                    }
-                    Err(err) => {
-                        println!("Error receiving message: {:?}", err);
-                        APPHANDLE.get().expect("APPHANDLE is available").unlisten(response);
-                        return HttpResponse::InternalServerError().finish();
-                    }
-                }
-            }
-
             #[derive(Deserialize, Serialize)]
             struct GetAccountReqType {
                 chain: String, // solar, evm, bitcoin, solana
@@ -362,13 +328,14 @@ async fn main() -> std::io::Result<()> {
                 }
             }
 
-            dotenv().ok();
-            let port_str = env
-                ::var("VITE_APP_LOCAL_SERVER_PORT")
-                .expect("VITE_APP_LOCAL_SERVER_PORT must be set");
-            let port: u16 = port_str
-                .parse()
-                .expect("VITE_APP_LOCAL_SERVER_PORT must be a valid u16");
+            // dotenv().ok();
+            // let port_str = dotenv
+            //     ::var("VITE_APP_LOCAL_SERVER_PORT")
+            //     .expect("VITE_APP_LOCAL_SERVER_PORT must be set");
+            // let port: u16 = port_str
+            //     .parse()
+            //     .expect("VITE_APP_LOCAL_SERVER_PORT must be a valid u16");
+            // println!("port {}", port);
 
             tauri::async_runtime::spawn(
                 HttpServer::new(move || {
@@ -377,12 +344,11 @@ async fn main() -> std::io::Result<()> {
                             "/game-request",
                             web::get().to(move || hello())
                         )
-                        .route("/test-post-endpoint", web::post().to(process_json))
                         .route("/get-account", web::post().to(get_account))
                         .route("/get-balance", web::post().to(get_balance))
                         .route("/send-transaction", web::post().to(send_transaction))
                 })
-                    .bind(("127.0.0.1", port))
+                    .bind(("127.0.0.1", 3331))
                     .expect("Failed to bind address")
                     .run()
             );
@@ -394,16 +360,6 @@ async fn main() -> std::io::Result<()> {
 
     Ok(())
 }
-
-// use std::os::unix::fs::PermissionsExt;
-use std::fs::File;
-use std::io::prelude::*;
-use std::path::Path;
-use std::path::PathBuf;
-use std::process::Command;
-use std::{ fs, io };
-use tauri::Manager;
-use machineid_rs::{ IdBuilder, Encryption, HWIDComponent };
 
 fn copy_dir_all(src: impl AsRef<Path>, dst: impl AsRef<Path>) -> io::Result<()> {
     fs::create_dir_all(&dst)?;

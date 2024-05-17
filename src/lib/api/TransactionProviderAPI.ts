@@ -1,6 +1,12 @@
+import { emit } from "@tauri-apps/api/event";
 import { IRecipient } from "../../features/wallet/CryptoApi";
 import { nonCustodialType } from "../../types/accountTypes";
-import { IGetAccountReq, IGetBalanceReq } from "../../types/eventParamTypes";
+import {
+  IGetAccountReq,
+  IGetBalanceReq,
+  ISendTransactionReq,
+} from "../../types/eventParamTypes";
+import { walletType } from "../../types/settingTypes";
 import { multiWalletType } from "../../types/walletTypes";
 import tymtCore from "../core/tymtCore";
 import tymtStorage from "../Storage";
@@ -16,7 +22,12 @@ export default class TransactionProviderAPI {
       case "solar":
         res = multiWalletStore.Solar.chain.wallet;
         break;
-      case "evm":
+      case "ethereum" ||
+        "polygon" ||
+        "binance" ||
+        "avalanche" ||
+        "arbitrum" ||
+        "optimism":
         res = multiWalletStore.Ethereum.chain.wallet;
         break;
       case "bitcoin":
@@ -65,7 +76,158 @@ export default class TransactionProviderAPI {
     return bal;
   };
 
-  // currently only for Solar Blockchain
+  static validateTransaction = async (json_data: ISendTransactionReq) => {
+    let noti: any;
+    try {
+      const res0: boolean = await this.validateTymtAccount();
+      if (!res0) {
+        noti = {
+          status: "failed",
+          title: "Send SXP",
+          message: "No tymtLauncher Account",
+        };
+        emit("res-POST-/send-transaction", noti);
+        return false;
+      }
+      const res1: boolean = await this.validateTransactionTo(json_data);
+      if (!res1) {
+        noti = {
+          status: "failed",
+          title: "Send SXP",
+          message: "Invalid recipient",
+        };
+        emit("res-POST-/send-transaction", noti);
+        return false;
+      }
+      const res2: boolean = await this.validateTransactionAmount(json_data);
+      if (!res2) {
+        noti = {
+          status: "failed",
+          title: "Send SXP",
+          message: "Insufficient balance",
+        };
+        emit("res-POST-/send-transaction", noti);
+        return false;
+      }
+    } catch (err) {
+      console.error("TransactionProviderAPI.validateTransaction failed: ", err);
+      noti = {
+        status: "failed",
+        title: "Send SXP",
+        message: err.toString(),
+      };
+      emit("res-POST-/send-transaction", noti);
+      return false;
+    }
+    return true;
+  };
+
+  private static validateTymtAccount = async () => {
+    const nonCustodialStore: nonCustodialType = JSON.parse(
+      tymtStorage.get(`nonCustodial`)
+    );
+    if (
+      nonCustodialStore.mnemonic === "" ||
+      nonCustodialStore.password === ""
+    ) {
+      return false;
+    }
+    return true;
+  };
+
+  private static validateTransactionTo = async (
+    json_data: ISendTransactionReq
+  ) => {
+    const { to, chain } = json_data;
+    let res: boolean;
+    switch (chain) {
+      case "solar":
+        res = tymtCore.Blockchains.solar.wallet.validateAddress(to);
+        break;
+      case "ethereum" ||
+        "polygon" ||
+        "binance" ||
+        "avalanche" ||
+        "arbitrum" ||
+        "optimism":
+        res = tymtCore.Blockchains.eth.wallet.validateAddress(to);
+        break;
+      case "bitcoin":
+        res = tymtCore.Blockchains.btc.wallet.validateAddress(to);
+        break;
+      case "solana":
+        res = tymtCore.Blockchains.solana.wallet.validateAddress(to);
+        break;
+    }
+    return res;
+  };
+
+  // check if balance >= amount-to-be-sent + gas fee
+  private static validateTransactionAmount = async (
+    json_data: ISendTransactionReq
+  ) => {
+    const { amount, chain } = json_data;
+    const multiWalletStore: multiWalletType = JSON.parse(
+      tymtStorage.get(`multiWallet`)
+    );
+    const walletStore: walletType = JSON.parse(tymtStorage.get(`wallet`));
+    const feeInUSD = Number(walletStore.fee) as number;
+    let address: string = "";
+    let bal: number = 0;
+    let price: number = 0;
+    switch (chain) {
+      case "solar":
+        address = multiWalletStore.Solar.chain.wallet;
+        bal = await tymtCore.Blockchains.solar.wallet.getBalance(address);
+        price = multiWalletStore.Solar.chain.price as number; // SXP price in USD
+        break;
+      case "ethereum":
+        address = multiWalletStore.Ethereum.chain.wallet;
+        bal = await tymtCore.Blockchains.eth.wallet.getBalance(address);
+        price = multiWalletStore.Ethereum.chain.price as number;
+        break;
+      case "binance":
+        address = multiWalletStore.Binance.chain.wallet;
+        bal = await tymtCore.Blockchains.bsc.wallet.getBalance(address);
+        price = multiWalletStore.Binance.chain.price as number;
+        break;
+      case "polygon":
+        address = multiWalletStore.Polygon.chain.wallet;
+        bal = await tymtCore.Blockchains.polygon.wallet.getBalance(address);
+        price = multiWalletStore.Polygon.chain.price as number;
+        break;
+      case "arbitrum":
+        address = multiWalletStore.Arbitrum.chain.wallet;
+        bal = await tymtCore.Blockchains.arbitrum.wallet.getBalance(address);
+        price = multiWalletStore.Arbitrum.chain.price as number;
+        break;
+      case "avalanche":
+        address = multiWalletStore.Avalanche.chain.wallet;
+        bal = await tymtCore.Blockchains.avalanche.wallet.getBalance(address);
+        price = multiWalletStore.Avalanche.chain.price as number;
+        break;
+      case "optimism":
+        address = multiWalletStore.Optimism.chain.wallet;
+        bal = await tymtCore.Blockchains.op.wallet.getBalance(address);
+        price = multiWalletStore.Optimism.chain.price as number;
+        break;
+      case "bitcoin":
+        address = multiWalletStore.Bitcoin.chain.wallet;
+        bal = await tymtCore.Blockchains.btc.wallet.getBalance(address);
+        price = multiWalletStore.Bitcoin.chain.price as number;
+        break;
+      case "solana":
+        address = multiWalletStore.Solana.chain.wallet;
+        bal = await tymtCore.Blockchains.solana.wallet.getBalance(address);
+        price = multiWalletStore.Solana.chain.price as number;
+        break;
+    }
+    let feeInToken: number = feeInUSD / price;
+    let res = bal >= (Number(amount) as number) + feeInToken;
+    return res;
+  };
+
+  // currently tested only for Solar Blockchain
   static sendTransaction = async (
     chain: string,
     to: string,
@@ -73,6 +235,7 @@ export default class TransactionProviderAPI {
     password: string,
     fee: string
   ) => {
+    let res: any;
     const nonCustodialStore: nonCustodialType = JSON.parse(
       tymtStorage.get(`nonCustodial`)
     );
@@ -90,7 +253,6 @@ export default class TransactionProviderAPI {
       recipients: recipients,
       fee: fee,
     };
-    let res;
     switch (chain) {
       case "solar":
         res = await tymtCore.Blockchains.solar.wallet.sendTransaction(

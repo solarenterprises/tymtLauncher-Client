@@ -41,7 +41,7 @@ import Store from "./pages/main/Store";
 import Library from "./pages/main/Library";
 import GameOverview from "./components/store/Gameoverview";
 
-import Wallet from "./pages/wallet";
+import Wallet from "./pages/wallet/index";
 import WalletSendSXP from "./pages/wallet/WalletSendSXP";
 import WalletVote from "./pages/wallet/WalletVote";
 import WalletBuyCrypto from "./pages/wallet/WalletBuyCrypto";
