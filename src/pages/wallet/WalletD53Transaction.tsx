@@ -27,7 +27,7 @@ import {
   notificationType,
   walletType,
 } from "../../types/settingTypes";
-import { IChain, ICurrency, multiWalletType } from "../../types/walletTypes";
+import { ICurrency, multiWalletType } from "../../types/walletTypes";
 import { getMultiWallet } from "../../features/wallet/MultiWalletSlice";
 import { invoke } from "@tauri-apps/api/tauri";
 import InputText from "../../components/account/InputText";
@@ -45,7 +45,6 @@ import SettingStyle from "../../styles/SettingStyle";
 import { ISendTransactionReq } from "../../types/eventParamTypes";
 import { emit, listen } from "@tauri-apps/api/event";
 import TransactionProviderAPI from "../../lib/api/TransactionProviderAPI";
-import { getChain } from "../../features/wallet/ChainSlice";
 import { selectLanguage } from "../../features/settings/LanguageSlice";
 
 const WalletD53Transaction = () => {
@@ -59,15 +58,9 @@ const WalletD53Transaction = () => {
   const nonCustodialStore: nonCustodialType = useSelector(getNonCustodial);
   const currencyStore: ICurrency = useSelector(getCurrency);
   const walletStore: walletType = useSelector(selectWallet);
-  const chainStore: IChain = useSelector(getChain);
   const langStore: languageType = useSelector(selectLanguage);
   const reserve: number = currencyStore.data[currencyStore.current] as number;
-  const price: Number =
-    chainStore.currentToken === "chain" || chainStore.currentToken === ""
-      ? chainStore.chain.price ?? 0
-      : chainStore.tokens.find(
-          (token) => token.symbol === chainStore.currentToken
-        ).price ?? 0;
+  const price: Number = multiWalletStore.Solar.chain.price;
   const symbol: string = currencySymbols[currencyStore.current];
   const classname = SettingStyle();
   const [copied, setCopied] = useState<boolean>(false);
@@ -77,6 +70,7 @@ const WalletD53Transaction = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [expired, setExpired] = useState<boolean>(true);
   const [timeLeft, setTimeLeft] = useState<number>(0);
+  const [lastActivity, setLastActivity] = useState(Date.now());
 
   const formik = useFormik({
     initialValues: {
@@ -200,33 +194,37 @@ const WalletD53Transaction = () => {
         setTimeLeft(30);
       }
     );
-    const unlisten_language_changed = listen("language-changed", (event) => {
-      changeLanguage(event.payload as string);
-    });
 
     return () => {
       unlisten_send_transaction.then((unlistenFn) => unlistenFn());
-      unlisten_language_changed.then((unlistenFn) => unlistenFn());
     };
   }, []);
 
   useEffect(() => {
     if (!expired) {
-      const intervalId = setInterval(() => {
-        setTimeLeft((prevTimeLeft) => prevTimeLeft - 1);
+      let checkActivityIntervalId = setInterval(() => {
+        if (Date.now() - lastActivity >= 5 * 1e3) {
+          setTimeLeft((prevTimeLeft) => prevTimeLeft - 1);
+        } else {
+          setTimeLeft(30);
+        }
       }, 1 * 1e3);
 
-      const timeoutId = setTimeout(() => {
-        setExpired(true);
-        handleRejectClick();
-      }, 30 * 1e3);
-
       return () => {
-        clearInterval(intervalId);
-        clearTimeout(timeoutId);
+        clearInterval(checkActivityIntervalId);
       };
     }
-  }, [expired]);
+  }, [expired, lastActivity]);
+
+  useEffect(() => {
+    if (timeLeft < 0) {
+      handleRejectClick();
+    }
+  }, [timeLeft]);
+
+  useEffect(() => {
+    setLastActivity(Date.now());
+  }, [formik.values.password, walletStore.fee]);
 
   return (
     <Stack
