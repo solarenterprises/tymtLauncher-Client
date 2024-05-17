@@ -13,6 +13,7 @@ export interface INotification {
   status: "failed" | "success" | "warning" | "alert" | "message";
   title: string;
   message: string;
+  transactionId?: string;
 }
 
 export const sendCoinAsync = createAsyncThunk("coin/send", sendCoin);
