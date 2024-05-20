@@ -37,6 +37,18 @@
   }
 }
 
+.d53-modal-content {
+  max-width: 600px;
+  border-radius: 16px;
+  border: 3px solid #ffffff33;
+  background: #8080804d;
+  background-blend-mode: luminosity;
+  backdrop-filter: blur(10px);
+  &:focus-visible {
+    outline: none;
+  }
+}
+
 .action-btn {
   border-radius: 16px;
   border: 1px solid #ef4444;

@@ -15,7 +15,6 @@ import District53intro from "../../components/home/District53intro";
 import RecentlyAddedD53 from "../../components/home/RecentlyAdded-D53";
 import UpdateModal from "../../components/home/UpdateModeal";
 
-
 import { getAccount } from "../../features/account/AccountSlice";
 import { getTymt } from "../../features/account/TymtSlice";
 

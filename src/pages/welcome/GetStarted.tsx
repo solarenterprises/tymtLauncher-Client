@@ -42,8 +42,6 @@ const GetStarted = () => {
   } = useTranslation();
   const languageStore: languageType = useSelector(selectLanguage);
 
- 
-
   useEffect(() => {
     changeLanguage(languageStore.language);
   }, [changeLanguage, languageStore.language]);
@@ -150,7 +148,7 @@ const GetStarted = () => {
                   <Grid item xs={12} mt={"40px"}>
                     <AccountNextButton
                       text={t("wc-9_get-started")}
-                      onClick={async () => {
+                      onClick={() => {
                         navigate("/start");
                       }}
                     />

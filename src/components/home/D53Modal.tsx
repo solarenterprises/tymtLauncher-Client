@@ -1,16 +1,10 @@
 import { useEffect, useState } from "react";
-// import axios from "axios";
-
 import { Box, Stack, Modal, Button } from "@mui/material";
-
 import closeIcon from "../../assets/settings/x-icon.svg";
-
 import { runGame } from "../../lib/api/Downloads";
 import { useTranslation } from "react-i18next";
 import InputText from "../account/InputText";
-
 import { useNotification } from "../../providers/NotificationProvider";
-
 import { fetch as tauriFetch, ResponseType } from "@tauri-apps/api/http";
 
 interface props {
@@ -85,7 +79,7 @@ const D53Modal = ({ open, setOpen }: props) => {
 
   useEffect(() => {
     const init = async () => {
-      const apiURL = `http://65.108.19.142:5000/`;
+      const apiURL = `https://serverlist.district53.io/`;
       const res: any = await tauriFetch(apiURL, {
         method: "GET",
         timeout: 30,
@@ -102,61 +96,66 @@ const D53Modal = ({ open, setOpen }: props) => {
   }, []);
 
   return (
-    <>
-      <Modal
-        open={open}
-        style={modalStyle}
-        onClose={() => setOpen(false)}
-        sx={{
-          backdropFilter: "blur(4px)",
-        }}
-      >
-        <Box className="modal-content oauth-modal">
-          <img
-            src={closeIcon}
-            alt="close icon"
-            className="close-icon"
-            onClick={() => setOpen(false)}
+    <Modal
+      open={open}
+      style={modalStyle}
+      onClose={() => setOpen(false)}
+      sx={{
+        backdropFilter: "blur(4px)",
+      }}
+    >
+      <Box className="d53-modal-content oauth-modal">
+        <img
+          src={closeIcon}
+          alt="close icon"
+          className="close-icon"
+          onClick={() => setOpen(false)}
+        />
+        <Stack
+          direction={"column"}
+          justifyContent={"center"}
+          alignItems={"center"}
+          textAlign={"center"}
+        >
+          <InputText
+            id="server"
+            label={"server"}
+            type="text"
+            name="server"
+            value={serverIp}
+            setValue={setServerIp}
+            error={validateIPv4Address(serverIp)}
           />
-          <Stack
-            direction={"column"}
-            justifyContent={"center"}
-            alignItems={"center"}
-            textAlign={"center"}
-          >
-            <InputText
-              id="server"
-              label={"server"}
-              type="text"
-              name="server"
-              value={serverIp}
-              setValue={setServerIp}
-              error={validateIPv4Address(serverIp)}
-            />
-            {validateIPv4Address(serverIp) && (
-              <Box
-                className={"fs-16-regular red t-left"}
-                mb={"16px"}
+          {validateIPv4Address(serverIp) && (
+            <Box
+              className={"fs-16-regular red t-left"}
+              mb={"16px"}
+              sx={{
+                width: "100%",
+              }}
+            >
+              {"Invalid IP address format"}
+            </Box>
+          )}
+          {serverList.map((server) =>
+            server.visible ? (
+              <Button
+                fullWidth
+                onClick={() => setServerIp(server.ip)}
                 sx={{
-                  width: "100%",
+                  textTransform: "none",
+                  border: "1px solid #FFFFFF33",
+                  borderRadius: "0px",
+                  marginTop: "-1px",
+                  filter: server.status !== "online" ? "grayscale(100%)" : null,
                 }}
+                disabled={server.status !== "online"}
               >
-                {"Invalid IP address format"}
-              </Box>
-            )}
-            {serverList.map((server) =>
-              server.visible ? (
-                <Button
-                  fullWidth
-                  onClick={() => setServerIp(server.ip)}
-                  sx={{
-                    border: "1px solid #FFFFFF33",
-                    borderRadius: "0px",
-                    marginTop: "-1px",
-                    filter:
-                      server.status !== "online" ? "grayscale(100%)" : null,
-                  }}
-                  disabled={server.status !== "online"}
+                <Stack
+                  direction={"row"}
+                  width={"100%"}
+                  gap={"4px"}
+                  alignItems={"center"}
                 >
                   <Box
                     className={
@@ -164,28 +163,56 @@ const D53Modal = ({ open, setOpen }: props) => {
                         ? "fs-16-regular white"
                         : "fs-16-regular red"
                     }
-                  >{`${server.display_name} ${server.clients}/${server.clients_max}`}</Box>
-                </Button>
-              ) : (
-                <></>
-              )
-            )}
-            <Button
-              fullWidth
-              onClick={handlePlayClick}
-              className="red-button"
-              sx={{
-                mt: "8px",
-              }}
-            >
-              <Box className={"fs-16-regular white"}>
-                {t("hom-7_play-game")}
-              </Box>
-            </Button>
-          </Stack>
-        </Box>
-      </Modal>
-    </>
+                  >{`${server.display_name}`}</Box>
+                  <Stack direction={"row"} alignItems={"center"} gap={"4px"}>
+                    <Box
+                      className={"fs-12-regular"}
+                      color={
+                        server.clients < server.clients_max
+                          ? "#52E1F2"
+                          : "#EF4444"
+                      }
+                    >{`(${server.clients ?? "0"}/${
+                      server.clients_max ?? "0"
+                    }`}</Box>
+                    <Stack direction={"row"} alignItems={"center"}>
+                      <Box
+                        className={"fs-10-light"}
+                        color={
+                          server.clients < server.clients_max
+                            ? "#52E1F2"
+                            : "#EF4444"
+                        }
+                      >{`Joined`}</Box>
+                      <Box
+                        className={"fs-12-regular"}
+                        color={
+                          server.clients < server.clients_max
+                            ? "#52E1F2"
+                            : "#EF4444"
+                        }
+                      >{`)`}</Box>
+                    </Stack>
+                  </Stack>
+                </Stack>
+              </Button>
+            ) : (
+              <></>
+            )
+          )}
+          <Button
+            fullWidth
+            onClick={handlePlayClick}
+            className="red-button"
+            sx={{
+              mt: "16px",
+            }}
+          >
+            <Box className={"fs-16-regular white"}>{t("hom-7_play-game")}</Box>
+          </Button>
+        </Stack>
+      </Box>
+    </Modal>
   );
 };
 

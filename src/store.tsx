@@ -1,4 +1,8 @@
 import { configureStore } from "@reduxjs/toolkit";
+import {
+  createStateSyncMiddleware,
+  initMessageListener,
+} from "redux-state-sync";
 
 import languageReducer from "./features/settings/LanguageSlice";
 import notificationReducer from "./features/settings/NotificationSlice";
@@ -38,6 +42,21 @@ import machineIdReducer from "./features/account/MachineIdSlice";
 import socketHashReducer from "./features/chat/SocketHashSlice";
 import chatmountedReducer from "./features/chat/Chat-intercomSupportSlice";
 import chathistoryperUserReducer from "./features/chat/Chat-historyperUserSlice";
+
+const blacklistActionTypes = [
+  "notification/setNotification",
+  "intercomsupport/setChatMounted",
+  "intercomsupport/setMountedTrue",
+  "intercomsupport/setMountedFalse",
+  // Add other notification actions if there are more
+];
+
+const stateSyncConfig = {
+  blacklist: blacklistActionTypes,
+};
+
+const stateSyncMiddleware = createStateSyncMiddleware(stateSyncConfig);
+// const stateSyncMiddleware = createStateSyncMiddleware();
 
 const store = configureStore({
   reducer: {
@@ -80,7 +99,10 @@ const store = configureStore({
     chatmounted: chatmountedReducer,
     chathistoryperUser: chathistoryperUserReducer
   },
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware().concat(stateSyncMiddleware),
 });
 
+initMessageListener(store);
 export type AppDispatch = typeof store.dispatch;
 export default store;

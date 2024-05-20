@@ -3,11 +3,24 @@
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 
-///// For SystemTray
+use std::sync::OnceLock;
 use tauri::{ CustomMenuItem, SystemTray, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem };
+use actix_web::{ web, App, HttpResponse, HttpServer, Responder };
+use serde::{ Deserialize, Serialize };
+use std::fs::File;
+use std::io::prelude::*;
+use std::path::{ Path, PathBuf };
+use std::process::Command;
+use std::{ fs, io };
+use tauri::Manager;
+use machineid_rs::{ IdBuilder, Encryption, HWIDComponent };
+// use dotenv::dotenv;
+// use std::env;
 
-fn main() {
-    ///// For SystemTray
+static APPHANDLE: OnceLock<tauri::AppHandle> = OnceLock::new();
+
+#[tokio::main]
+async fn main() -> std::io::Result<()> {
     let showvisible = CustomMenuItem::new("showVisible".to_string(), "Show tymtLauncher");
     let fullscreen = CustomMenuItem::new("fullscreen".to_string(), "Full-screen Mode  (F11)");
     let games = CustomMenuItem::new("games".to_string(), "Games");
@@ -15,7 +28,6 @@ fn main() {
     let about = CustomMenuItem::new("about".to_string(), "About tymt");
     let signout = CustomMenuItem::new("signout".to_string(), "Sign Out");
     let quit = CustomMenuItem::new("quit".to_string(), "Quit");
-    // here `"quit".to_string()` defines the menu item id, and the second parameter is the menu item label.
     let disable_notifications = CustomMenuItem::new(
         "disable_notifications".to_string(),
         "Disable Notifications"
@@ -56,7 +68,10 @@ fn main() {
                 run_command,
                 open_directory,
                 get_machine_id,
-                is_window_visible
+                is_window_visible,
+                show_transaction_window,
+                hide_transaction_window,
+                set_tray_items_enabled
             ]
         )
         .on_window_event(|event| {
@@ -142,19 +157,193 @@ fn main() {
                 _ => {}
             }
         })
+        .setup(|app| {
+            let app_handle = app.handle().clone();
+            _ = APPHANDLE.set(app_handle);
+
+            #[derive(Deserialize, Serialize)]
+            struct GetAccountReqType {
+                chain: String, // solar, evm, bitcoin, solana
+            }
+            async fn get_account(request_param: web::Json<GetAccountReqType>) -> HttpResponse {
+                println!("-------> POST /get-account");
+
+                let json_data = serde_json
+                    ::to_string(&request_param)
+                    .expect("Failed to serialize JSON data");
+                println!("{}", json_data);
+
+                APPHANDLE.get()
+                    .expect("APPHANDLE is available")
+                    .emit_all("POST-/get-account", json_data)
+                    .expect("failed to emit event POST /get-account");
+
+                let (tx, rx) = std::sync::mpsc::channel();
+
+                let response = APPHANDLE.get()
+                    .expect("APPHANDLE is available")
+                    .listen_global("res-POST-/get-account", move |event| {
+                        let payload = event.payload().unwrap().to_string();
+                        println!("!!!----> res POST /get-account");
+                        println!("{}", payload);
+                        match tx.send(payload) {
+                            Ok(()) => {
+                                // println!("Message sent successfully");
+                            }
+                            Err(err) => {
+                                println!("Error sending message: {:?}", err);
+                            }
+                        }
+                    });
+
+                match rx.recv() {
+                    Ok(received) => {
+                        // println!("Received: {}", received);
+                        APPHANDLE.get().expect("APPHANDLE is available").unlisten(response);
+                        return HttpResponse::Ok().body(received);
+                    }
+                    Err(err) => {
+                        println!("Error receiving message: {:?}", err);
+                        APPHANDLE.get().expect("APPHANDLE is available").unlisten(response);
+                        return HttpResponse::InternalServerError().finish();
+                    }
+                }
+            }
+
+            #[derive(Deserialize, Serialize)]
+            struct GetBalanceReqType {
+                chain: String, // solar, bitcoin, solana, ethereum, polygon, avalanche, arbitrum, binance, optimism
+                address: String,
+            }
+            async fn get_balance(request_param: web::Json<GetBalanceReqType>) -> HttpResponse {
+                println!("-------> POST /get-balance");
+
+                let json_data = serde_json
+                    ::to_string(&request_param)
+                    .expect("Failed to serialize JSON data");
+                println!("{}", json_data);
+
+                APPHANDLE.get()
+                    .expect("APPHANDLE is available")
+                    .emit_all("POST-/get-balance", json_data)
+                    .expect("failed to emit event POST /get-balance");
+
+                let (tx, rx) = std::sync::mpsc::channel();
+
+                let response = APPHANDLE.get()
+                    .expect("APPHANDLE is available")
+                    .listen_global("res-POST-/get-balance", move |event| {
+                        let payload = event.payload().unwrap().to_string();
+                        println!("!!!----> res POST /get-balance");
+                        println!("{}", payload);
+                        match tx.send(payload) {
+                            Ok(()) => {
+                                // println!("Message sent successfully");
+                            }
+                            Err(err) => {
+                                println!("Error sending message: {:?}", err);
+                            }
+                        }
+                    });
+
+                match rx.recv() {
+                    Ok(received) => {
+                        APPHANDLE.get().expect("APPHANDLE is available").unlisten(response);
+                        return HttpResponse::Ok().json(received);
+                    }
+                    Err(err) => {
+                        println!("Error receiving message: {:?}", err);
+                        APPHANDLE.get().expect("APPHANDLE is available").unlisten(response);
+                        return HttpResponse::InternalServerError().finish();
+                    }
+                }
+            }
+
+            #[derive(Deserialize, Serialize)]
+            struct SendTransactionReqType {
+                chain: String, // solar, bitcoin, solana, ethereum, polygon, avalanche, arbitrum, binance, optimism
+                to: String,
+                amount: String,
+                note: String,
+                memo: Option<String>,
+            }
+            async fn send_transaction(
+                request_param: web::Json<SendTransactionReqType>
+            ) -> HttpResponse {
+                println!("-------> POST /send-transaction");
+
+                show_transaction_window(APPHANDLE.get().unwrap().clone()).await;
+
+                let json_data = serde_json
+                    ::to_string(&request_param)
+                    .expect("Failed to serialize JSON data");
+                println!("{}", json_data);
+
+                APPHANDLE.get()
+                    .expect("APPHANDLE is available")
+                    .emit_all("POST-/send-transaction", json_data)
+                    .expect("failed to emit event POST /send-transaction");
+
+                let (tx, rx) = std::sync::mpsc::channel();
+
+                let response = APPHANDLE.get()
+                    .expect("APPHANDLE is available")
+                    .listen_global("res-POST-/send-transaction", move |event| {
+                        let payload = event.payload().unwrap().to_string();
+                        println!("!!!----> res POST /send-transaction");
+                        println!("{}", payload);
+                        match tx.send(payload) {
+                            Ok(()) => {
+                                // println!("Message sent successfully");
+                            }
+                            Err(err) => {
+                                println!("Error sending message: {:?}", err);
+                            }
+                        }
+                    });
+
+                match rx.recv() {
+                    Ok(received) => {
+                        // println!("Received: {}", received);
+                        APPHANDLE.get().expect("APPHANDLE is available").unlisten(response);
+                        return HttpResponse::Ok().body(received);
+                    }
+                    Err(err) => {
+                        println!("Error receiving message: {:?}", err);
+                        APPHANDLE.get().expect("APPHANDLE is available").unlisten(response);
+                        return HttpResponse::InternalServerError().finish();
+                    }
+                }
+            }
+
+            // dotenv().ok();
+            // let port_str = dotenv
+            //     ::var("VITE_APP_LOCAL_SERVER_PORT")
+            //     .expect("VITE_APP_LOCAL_SERVER_PORT must be set");
+            // let port: u16 = port_str
+            //     .parse()
+            //     .expect("VITE_APP_LOCAL_SERVER_PORT must be a valid u16");
+            // println!("port {}", port);
+
+            tauri::async_runtime::spawn(
+                HttpServer::new(move || {
+                    App::new()
+                        .route("/get-account", web::post().to(get_account))
+                        .route("/get-balance", web::post().to(get_balance))
+                        .route("/send-transaction", web::post().to(send_transaction))
+                })
+                    .bind(("127.0.0.1", 3331))
+                    .expect("Failed to bind address")
+                    .run()
+            );
+
+            Ok(())
+        })
         .run(tauri::generate_context!())
         .expect("error while running tymtlauncher");
-}
 
-// use std::os::unix::fs::PermissionsExt;
-use std::fs::File;
-use std::io::prelude::*;
-use std::path::Path;
-use std::path::PathBuf;
-use std::process::Command;
-use std::{ fs, io };
-use tauri::Manager;
-use machineid_rs::{ IdBuilder, Encryption, HWIDComponent };
+    Ok(())
+}
 
 fn copy_dir_all(src: impl AsRef<Path>, dst: impl AsRef<Path>) -> io::Result<()> {
     fs::create_dir_all(&dst)?;
@@ -209,7 +398,7 @@ async fn download_appimage_linux(
     };
 
     let content = response.bytes().await.unwrap();
-    file.write_all(content.as_ref());
+    let _ = file.write_all(content.as_ref());
     println!("download done");
 
     let status = Command::new("chmod")
@@ -263,11 +452,14 @@ async fn download_and_unzip(app_handle: tauri::AppHandle, url: String, target: S
         Ok(file) => file,
     };
     let content = response.bytes().await.unwrap();
-    file.write_all(content.as_ref());
+    let _ = file.write_all(content.as_ref());
 
     let final_location = app_dir.to_string() + &target;
     println!("{}", final_location);
-    zip_extensions::read::zip_extract(&PathBuf::from(path), &PathBuf::from(final_location.clone()));
+    let _ = zip_extensions::read::zip_extract(
+        &PathBuf::from(path),
+        &PathBuf::from(final_location.clone())
+    );
     println!("checking for folders");
 
     let count = fs::read_dir(final_location.clone()).unwrap().count();
@@ -275,15 +467,15 @@ async fn download_and_unzip(app_handle: tauri::AppHandle, url: String, target: S
     if count == 1 {
         for file in fs::read_dir(final_location.clone()).unwrap() {
             if fs::metadata(file.as_ref().unwrap().path()).unwrap().is_dir() {
-                copy_dir_all(file.as_ref().unwrap().path(), final_location.clone());
+                let _ = copy_dir_all(file.as_ref().unwrap().path(), final_location.clone());
                 fs::remove_dir_all(file.as_ref().unwrap().path()).unwrap();
             }
         }
     }
 
-    fs::remove_file(&path);
+    let _ = fs::remove_file(&path);
 
-    Command::new("chmod").args(["+x", &final_location]).spawn();
+    let _ = Command::new("chmod").args(["+x", &final_location]).spawn();
 
     println!("done");
     return true;
@@ -350,7 +542,10 @@ async fn download_and_unzip_windows(
 
     let final_location = app_dir.to_string() + &target;
     println!("{}", final_location);
-    zip_extensions::read::zip_extract(&PathBuf::from(path), &PathBuf::from(final_location.clone()));
+    let _ = zip_extensions::read::zip_extract(
+        &PathBuf::from(path),
+        &PathBuf::from(final_location.clone())
+    );
     println!("checking for folders");
 
     let count = fs::read_dir(final_location.clone()).unwrap().count();
@@ -358,15 +553,15 @@ async fn download_and_unzip_windows(
     if count == 1 {
         for file in fs::read_dir(final_location.clone()).unwrap() {
             if fs::metadata(file.as_ref().unwrap().path()).unwrap().is_dir() {
-                copy_dir_all(file.as_ref().unwrap().path(), final_location.clone());
+                let _ = copy_dir_all(file.as_ref().unwrap().path(), final_location.clone());
                 fs::remove_dir_all(file.as_ref().unwrap().path()).unwrap();
             }
         }
     }
 
-    fs::remove_file(&path);
+    let _ = fs::remove_file(&path);
 
-    Command::new("chmod").args(["+x", &final_location]).spawn();
+    let _ = Command::new("chmod").args(["+x", &final_location]).spawn();
 
     println!("done");
     return true;
@@ -436,7 +631,10 @@ async fn download_and_unzip_linux(
 
     let final_location = app_dir.to_string() + &target;
     println!("{}", final_location);
-    zip_extensions::read::zip_extract(&PathBuf::from(path), &PathBuf::from(final_location.clone()));
+    let _ = zip_extensions::read::zip_extract(
+        &PathBuf::from(path),
+        &PathBuf::from(final_location.clone())
+    );
     println!("checking for folders");
 
     let count = fs::read_dir(final_location.clone()).unwrap().count();
@@ -444,17 +642,17 @@ async fn download_and_unzip_linux(
     if count == 1 {
         for file in fs::read_dir(final_location.clone()).unwrap() {
             if fs::metadata(file.as_ref().unwrap().path()).unwrap().is_dir() {
-                copy_dir_all(file.as_ref().unwrap().path(), final_location.clone());
+                let _ = copy_dir_all(file.as_ref().unwrap().path(), final_location.clone());
                 fs::remove_dir_all(file.as_ref().unwrap().path()).unwrap();
             }
         }
     }
 
-    fs::remove_file(&path);
+    let _ = fs::remove_file(&path);
 
-    let mut exePath = app_dir.to_string() + &target + &exeLocation;
+    let exePath = app_dir.to_string() + &target + &exeLocation;
 
-    Command::new("chmod").args(["u+x", &exePath]).spawn();
+    let _ = Command::new("chmod").args(["u+x", &exePath]).spawn();
 
     println!("done");
     return true;
@@ -502,11 +700,14 @@ async fn download_and_unzip_macos(
         Ok(file) => file,
     };
     let content = response.bytes().await.unwrap();
-    file.write_all(content.as_ref());
+    let _ = file.write_all(content.as_ref());
 
     let final_location = app_dir.to_string() + &target;
     println!("{}", final_location);
-    zip_extensions::read::zip_extract(&PathBuf::from(path), &PathBuf::from(final_location.clone()));
+    let _ = zip_extensions::read::zip_extract(
+        &PathBuf::from(path),
+        &PathBuf::from(final_location.clone())
+    );
     println!("checking for folders");
 
     let count = fs::read_dir(final_location.clone()).unwrap().count();
@@ -514,17 +715,17 @@ async fn download_and_unzip_macos(
     if count == 1 {
         for file in fs::read_dir(final_location.clone()).unwrap() {
             if fs::metadata(file.as_ref().unwrap().path()).unwrap().is_dir() {
-                copy_dir_all(file.as_ref().unwrap().path(), final_location.clone());
+                let _ = copy_dir_all(file.as_ref().unwrap().path(), final_location.clone());
                 fs::remove_dir_all(file.as_ref().unwrap().path()).unwrap();
             }
         }
     }
 
-    fs::remove_file(&path);
+    let _ = fs::remove_file(&path);
 
     let exePath = app_dir.to_string() + &target + &exeLocation;
 
-    Command::new("chmod").args(["+x", &exePath]).spawn();
+    let _ = Command::new("chmod").args(["+x", &exePath]).spawn();
 
     println!("done");
     return true;
@@ -595,7 +796,7 @@ async fn download_and_untarbz2_macos(
         .expect("failed to unzip");
 
     // Remove tar.bz2
-    fs::remove_file(&path);
+    let _ = fs::remove_file(&path);
 
     let exePath = app_dir.to_string() + &target + &exeLocation;
 
@@ -706,4 +907,80 @@ fn get_machine_id() -> Result<String, String> {
 #[tauri::command]
 fn is_window_visible(window: tauri::Window) -> bool {
     window.is_visible().unwrap_or(false)
+}
+
+#[tauri::command]
+async fn show_transaction_window(app_handle: tauri::AppHandle) {
+    if let Some(window) = app_handle.get_window("tymt_d53_transaction") {
+        if let Err(e) = window.show() {
+            eprintln!("Failed to show window: {}", e);
+        }
+    } else {
+        eprintln!("Window 'tymt_d53_transaction' not found");
+    }
+
+    if let Some(window_to_hide) = app_handle.get_window("tymtLauncher") {
+        if let Err(e) = window_to_hide.hide() {
+            eprintln!("Failed to hide window 'tymtLauncher': {}", e);
+        }
+    } else {
+        eprintln!("Window 'tymtLauncher' not found");
+    }
+
+    let item_ids = vec![
+        "showVisible".to_string(),
+        "fullscreen".to_string(),
+        "games".to_string(),
+        "wallet".to_string(),
+        "about".to_string(),
+        "signout".to_string(),
+        "quit".to_string(),
+        "disable_notifications".to_string()
+    ];
+    let enabled = false;
+    set_tray_items_enabled(app_handle, item_ids, enabled).await
+}
+
+#[tauri::command]
+async fn hide_transaction_window(app_handle: tauri::AppHandle) {
+    if let Some(window) = app_handle.get_window("tymt_d53_transaction") {
+        if let Err(e) = window.hide() {
+            eprintln!("Failed to hide window: {}", e);
+        }
+    } else {
+        eprintln!("Window 'tymt_d53_transaction' not found");
+    }
+
+    if let Some(window_to_hide) = app_handle.get_window("tymtLauncher") {
+        if let Err(e) = window_to_hide.show() {
+            eprintln!("Failed to show window 'tymtLauncher': {}", e);
+        }
+    } else {
+        eprintln!("Window 'tymtLauncher' not found");
+    }
+
+    let item_ids = vec![
+        "showVisible".to_string(),
+        "fullscreen".to_string(),
+        "games".to_string(),
+        "wallet".to_string(),
+        "about".to_string(),
+        "signout".to_string(),
+        "quit".to_string(),
+        "disable_notifications".to_string()
+    ];
+    let enabled = true;
+    set_tray_items_enabled(app_handle, item_ids, enabled).await
+}
+
+#[tauri::command]
+async fn set_tray_items_enabled(
+    app_handle: tauri::AppHandle,
+    item_ids: Vec<String>,
+    enabled: bool
+) {
+    let tray_handle = app_handle.tray_handle();
+    for item_id in item_ids {
+        let _ = tray_handle.get_item(&item_id).set_enabled(enabled);
+    }
 }
