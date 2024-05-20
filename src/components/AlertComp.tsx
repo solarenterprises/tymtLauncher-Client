@@ -22,14 +22,10 @@ import {
   selectPartner,
   setCurrentChatPartner,
 } from "../features/chat/Chat-currentPartnerSlice";
-import { scrollDownType, userType } from "../types/chatTypes";
+import {  userType } from "../types/chatTypes";
 import { accountType, nonCustodialType } from "../types/accountTypes";
 import { multiWalletType } from "../types/walletTypes";
 
-import {
-  getdownState,
-  setdownState,
-} from "../features/chat/Chat-scrollDownSlice";
 import {
   getFriendlist,
   setFriendlist,
@@ -64,12 +60,10 @@ const AlertComp = ({
   const searchParams = new URLSearchParams(link?.split("?")[1]);
   const userdata: userType[] = useSelector(selectPartner);
   const chatuserlist: userType[] = useSelector(getUserlist);
-  const scrollstate: scrollDownType = useSelector(getdownState);
   const friendlist: userType[] = useSelector(getFriendlist);
   const account: accountType = useSelector(getAccount);
   const nonCustodial: nonCustodialType = useSelector(getNonCustodial);
   const multiwallet: multiWalletType = useSelector(getMultiWallet);
-  const shouldScrollDown = scrollstate.down;
   const [border, setBorder] = useState("");
   const [bg, setBg] = useState("");
   const [logo, setLogo] = useState<any>();
@@ -190,7 +184,6 @@ const AlertComp = ({
                 notificationStatus: senderUser?.notificationStatus,
               })
             );
-            dispatch(setdownState({ down: !shouldScrollDown }));
           }
         }}
       >

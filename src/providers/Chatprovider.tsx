@@ -10,7 +10,6 @@ import {
   askEncryptionKeyType,
   deliverEncryptionKeyType,
   deliveredEncryptionKeyType,
-  scrollDownType,
   userType,
 } from "../types/chatTypes";
 import { accountType } from "../types/accountTypes";
@@ -55,10 +54,6 @@ import {
   addEncryptionKey,
   selectEncryptionKeyByUserId,
 } from "../features/chat/Chat-encryptionkeySlice";
-import {
-  getdownState,
-  setdownState,
-} from "../features/chat/Chat-scrollDownSlice";
 import { useCallback, useEffect } from "react";
 // import { decrypt } from "../../lib/api/Encrypt";
 
@@ -74,7 +69,6 @@ const ChatProvider = () => {
   const notification: notificationType = useSelector(selectNotification);
   const alertbadge: alertbadgeType = useSelector(selectBadgeStatus);
   const data: chatType = useSelector(selectChat);
-  const scrollstate: scrollDownType = useSelector(getdownState);
   const { socket } = useSocket();
 
   const triggerBadge = useCallback(() => {
@@ -113,6 +107,7 @@ const ChatProvider = () => {
     ) => {
       if (message.recipient_id === account.uid) {
         if (data.message === "anyone") {
+          console.log("messagereception", data.message);
           if (!senderInChatUserlist) {
             const senderName = await getsenderName(message.sender_id);
             await updateContact(message.sender_id);
@@ -133,8 +128,8 @@ const ChatProvider = () => {
               setNotificationLink(`/chat?senderId=${message.sender_id}`);
             }
           }
-        }
-        if (data.message === "friend") {
+        } else if (data.message === "friend") {
+          console.log("messagereception", data.message);
           if (senderInChatFriendlist) {
             const senderName = senderInChatFriendlist.nickName;
             {
@@ -145,11 +140,13 @@ const ChatProvider = () => {
               setNotificationLink(`/chat?senderId=${message.sender_id}`);
             }
           }
+        } else {
         }
       } else {
+        console.log("messagereception", data.message);
       }
     },
-    []
+    [data.message]
   );
 
   const handleEncryptionKeyDelivery = (data) => {
@@ -197,6 +194,7 @@ const ChatProvider = () => {
       message.sender_id === currentpartner._id &&
       message.recipient_id === account.uid
     ) {
+      console.log("message reception", data.message);
       if (data.message === "anyone") {
         const updatedHistory = [message, ...chatHistoryStore.messages];
         dispatch(setChatHistory({ messages: updatedHistory }));
@@ -204,6 +202,7 @@ const ChatProvider = () => {
         console.log("senderInChatFriendlist", senderInChatFriendlist);
         const updatedHistory = [message, ...chatHistoryStore.messages];
         dispatch(setChatHistory({ messages: updatedHistory }));
+      } else {
       }
     } else {
     }
@@ -265,7 +264,6 @@ const ChatProvider = () => {
           alert.receivers.find((userid) => userid === account.uid)
         ) {
           triggerBadge();
-          dispatch(setdownState({ down: !scrollstate.down }));
         }
       };
       handleIncomingRequest();
