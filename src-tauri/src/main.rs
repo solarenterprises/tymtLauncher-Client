@@ -161,20 +161,6 @@ async fn main() -> std::io::Result<()> {
             let app_handle = app.handle().clone();
             _ = APPHANDLE.set(app_handle);
 
-            async fn hello() -> impl Responder {
-                APPHANDLE.get()
-                    .expect("APPHANDLE is available")
-                    .emit_all("games", "games")
-                    .expect("failed to emit event games");
-                HttpResponse::Ok().body("Hello world!")
-            }
-
-            #[derive(Deserialize, Serialize)]
-            struct MyJsonData {
-                a: i32,
-                b: i32,
-            }
-
             #[derive(Deserialize, Serialize)]
             struct GetAccountReqType {
                 chain: String, // solar, evm, bitcoin, solana
@@ -278,6 +264,8 @@ async fn main() -> std::io::Result<()> {
                 chain: String, // solar, bitcoin, solana, ethereum, polygon, avalanche, arbitrum, binance, optimism
                 to: String,
                 amount: String,
+                note: String,
+                memo: String,
             }
             async fn send_transaction(
                 request_param: web::Json<SendTransactionReqType>
@@ -340,10 +328,6 @@ async fn main() -> std::io::Result<()> {
             tauri::async_runtime::spawn(
                 HttpServer::new(move || {
                     App::new()
-                        .route(
-                            "/game-request",
-                            web::get().to(move || hello())
-                        )
                         .route("/get-account", web::post().to(get_account))
                         .route("/get-balance", web::post().to(get_balance))
                         .route("/send-transaction", web::post().to(send_transaction))

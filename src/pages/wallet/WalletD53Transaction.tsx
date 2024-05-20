@@ -67,6 +67,8 @@ const WalletD53Transaction = () => {
   const [chain, setChain] = useState<string>("");
   const [to, setTo] = useState<string>("");
   const [amount, setAmount] = useState<string>("");
+  const [note, setNote] = useState<string>("");
+  const [memo, setMemo] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const [expired, setExpired] = useState<boolean>(true);
   const [timeLeft, setTimeLeft] = useState<number>(0);
@@ -107,6 +109,7 @@ const WalletD53Transaction = () => {
         chain,
         to,
         amount,
+        memo,
         formik.values.password,
         walletStore.fee
       );
@@ -122,6 +125,8 @@ const WalletD53Transaction = () => {
     setTo("");
     setAmount("");
     setChain("");
+    setNote("");
+    setMemo("");
     invoke("hide_transaction_window");
     setLoading(false);
     setExpired(true);
@@ -137,6 +142,8 @@ const WalletD53Transaction = () => {
     setTo("");
     setAmount("");
     setChain("");
+    setNote("");
+    setMemo("");
     invoke("hide_transaction_window");
     setExpired(true);
   };
@@ -193,10 +200,12 @@ const WalletD53Transaction = () => {
           invoke("hide_transaction_window");
           return;
         }
-        const { chain, to, amount } = json_data;
+        const { chain, to, amount, note, memo } = json_data;
         setChain(chain);
         setTo(to);
         setAmount(amount);
+        setNote(note);
+        setMemo(memo);
         setExpired(false);
         setTimeLeft(30);
       }
@@ -337,9 +346,7 @@ const WalletD53Transaction = () => {
               <Box component={"img"} src={d53} width={"60px"} height={"40px"} />
               <Box className={"fs-20-regular white"}>{`D53 Metaverse`}</Box>
             </Stack>
-            <Box
-              className={"fs-16-regular white"}
-            >{`"Text Transaction explanation 1 paragraph"`}</Box>
+            <Box className={"fs-16-regular white"}>{note}</Box>
             <Stack
               sx={{
                 borderTop: "1px solid rgba(255, 255, 255, 0.10)",
@@ -350,10 +357,17 @@ const WalletD53Transaction = () => {
               alignItems={"center"}
               justifyContent={"space-between"}
             >
+              <Box className={"fs-16-regular light"}>{t("wal-69_memo")}</Box>
+              <Box className={"fs-16-regular white t-right"}>{memo}</Box>
+            </Stack>
+            <Stack
+              direction={"row"}
+              alignItems={"center"}
+              justifyContent={"space-between"}
+            >
               <Box className={"fs-16-regular light"}>
                 {t("wal-62_recipient")}
               </Box>
-
               <Tooltip
                 placement="bottom"
                 title={
@@ -465,6 +479,31 @@ const WalletD53Transaction = () => {
                 }}
                 className={classname.input}
               />
+            </Stack>
+          </Stack>
+          <Stack direction={"row"} justifyContent={"space-between"}>
+            <Box className={"fs-16-regular light"}>
+              {t("wal-67_total-spend")}
+            </Box>
+            <Stack>
+              <Box className={"fs-16-regular white t-right"}>{`${numeral(
+                (Number(amount) as number) +
+                  (Number(walletStore.fee) as number) /
+                    (Number(multiWalletStore.Solar.chain.price) as number)
+              ).format("0,0.0000")} SXP`}</Box>
+            </Stack>
+          </Stack>
+          <Stack direction={"row"} justifyContent={"space-between"}>
+            <Box className={"fs-16-regular light"}>{t("wal-68_balance")}</Box>
+            <Stack>
+              <Box className={"fs-16-regular white t-right"}>{`${numeral(
+                Number(multiWalletStore.Solar.chain.balance) as number
+              ).format("0,0.0000")} SXP -> ${numeral(
+                (Number(multiWalletStore.Solar.chain.balance) as number) -
+                  ((Number(amount) as number) +
+                    (Number(walletStore.fee) as number) /
+                      (Number(multiWalletStore.Solar.chain.price) as number))
+              ).format("0,0.0000")} SXP`}</Box>
             </Stack>
           </Stack>
           <InputPasswordNoTooltip

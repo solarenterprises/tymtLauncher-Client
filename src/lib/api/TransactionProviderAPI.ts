@@ -232,6 +232,7 @@ export default class TransactionProviderAPI {
     chain: string,
     to: string,
     amount: string,
+    memo: string,
     password: string,
     fee: string
   ) => {
@@ -252,6 +253,7 @@ export default class TransactionProviderAPI {
     const tx = {
       recipients: recipients,
       fee: fee,
+      vendorField: memo,
     };
     switch (chain) {
       case "solar":

@@ -11,4 +11,6 @@ export interface ISendTransactionReq {
   chain: string;
   to: string;
   amount: string;
+  note: string;
+  memo: string;
 }

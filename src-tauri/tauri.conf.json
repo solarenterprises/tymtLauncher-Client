@@ -84,7 +84,7 @@
         "resizable": false,
         "visible": false,
         "width": 445,
-        "height": 732,
+        "height": 1080,
         "x": 5,
         "y": 5,
         "additionalBrowserArgs": "--disable-web-security",
