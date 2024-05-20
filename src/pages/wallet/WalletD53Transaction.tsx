@@ -130,6 +130,7 @@ const WalletD53Transaction = () => {
     invoke("hide_transaction_window");
     setLoading(false);
     setExpired(true);
+    setTimeLeft(60);
   };
 
   const handleRejectClick = async () => {
@@ -146,6 +147,7 @@ const WalletD53Transaction = () => {
     setMemo("");
     invoke("hide_transaction_window");
     setExpired(true);
+    setTimeLeft(60);
   };
 
   const getShortAddr: (_: string) => string = (_wallet: string) => {
@@ -205,9 +207,9 @@ const WalletD53Transaction = () => {
         setTo(to);
         setAmount(amount);
         setNote(note);
-        setMemo(memo);
+        setMemo(memo ?? "");
         setExpired(false);
-        setTimeLeft(30);
+        setTimeLeft(60);
       }
     );
 
@@ -222,7 +224,7 @@ const WalletD53Transaction = () => {
         if (Date.now() - lastActivity >= 5 * 1e3) {
           setTimeLeft((prevTimeLeft) => prevTimeLeft - 1);
         } else {
-          setTimeLeft(30);
+          setTimeLeft(60);
         }
       }, 1 * 1e3);
 
@@ -358,9 +360,7 @@ const WalletD53Transaction = () => {
               justifyContent={"space-between"}
             >
               <Box className={"fs-16-regular light"}>{t("wal-69_memo")}</Box>
-              <Box
-                className={"fs-16-regular white t-right"}
-              >{memo}</Box>
+              <Box className={"fs-16-regular white t-right"}>{memo}</Box>
             </Stack>
             <Stack
               direction={"row"}
