@@ -358,7 +358,9 @@ const WalletD53Transaction = () => {
               justifyContent={"space-between"}
             >
               <Box className={"fs-16-regular light"}>{t("wal-69_memo")}</Box>
-              <Box className={"fs-16-regular white t-right"}>{memo}</Box>
+              <Box
+                className={"fs-16-regular white t-right"}
+              >{memo}</Box>
             </Stack>
             <Stack
               direction={"row"}
