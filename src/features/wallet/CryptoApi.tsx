@@ -22,6 +22,7 @@ export interface ISendCoinData {
   passphrase: string;
   fee: string;
   recipients: IRecipient[];
+  vendorField?: string;
 }
 
 export interface ISendCoin {
@@ -69,6 +70,32 @@ export const sendCoin = async ({ chain, data }: ISendCoin): Promise<any> => {
       tokenAddress: selectedToken.address,
     };
     const res = await ERC20.sendERCTransaction(passphrase, rpc_url, cointx);
+    return res;
+  }
+};
+
+export const sendCoinAPI = async ({ chain, data }: ISendCoin): Promise<any> => {
+  const nonCustodialStore = JSON.parse(await tymtStorage.get(`nonCustodial`));
+  const rpc_url = getRPCUrl(chain);
+  const passphrase = await decrypt(nonCustodialStore.mnemonic, data.passphrase);
+  // SXP, BTC, SOL is treated in WalletD53Transaction.tsx/handleApproveClick
+  if (chain.currentToken === "chain" || chain.currentToken == "") {
+    const chaintx = { recipients: data.recipients, fee: data.fee };
+    const res = await ERC20.sendTransactionAPI(passphrase, rpc_url, chaintx);
+    return res;
+  } else {
+    let selectedToken;
+    chain.tokens.map((token) => {
+      if (token.symbol == chain.currentToken) {
+        selectedToken = token;
+      }
+    });
+    const cointx = {
+      recipients: data.recipients,
+      fee: data.fee,
+      tokenAddress: selectedToken.address,
+    };
+    const res = await ERC20.sendERCTransactionAPI(passphrase, rpc_url, cointx);
     return res;
   }
 };

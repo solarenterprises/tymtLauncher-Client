@@ -229,6 +229,102 @@ class Bitcoin implements IWallet {
     }
   }
 
+  static async sendTransactionAPI(
+    passphrase: string,
+    tx: { recipients: IRecipient[]; fee: string; vendorField?: string }
+  ) {
+    if (tx.recipients.length) {
+      try {
+        const seed = await mnemonicToSeed(passphrase);
+        const bip32 = BIP32Factory(ecc);
+        const network =
+          net_name === "mainnet" ? networks.bitcoin : networks.testnet;
+        const root = bip32.fromSeed(seed, network);
+        const account = root.derivePath(
+          net_name === "mainnet" ? "m/84'/0'/0'/0/0" : "m/44'/1'/0'/0/0"
+        );
+        const psbt = new Psbt({ network });
+
+        const myAddress = payments.p2wpkh({
+          pubkey: account.publicKey,
+          network,
+        }).address;
+        const utxos = await Bitcoin.getUTXOs(myAddress ?? "");
+
+        utxos.forEach((utxo) => {
+          psbt.addInput({
+            hash: utxo.txid,
+            index: utxo.vout,
+            witnessUtxo: {
+              script: Buffer.from(utxo.hex, "hex"),
+              value: utxo.amount,
+            },
+          });
+        });
+
+        tx.recipients.forEach((recipient) => {
+          psbt.addOutput({
+            address: recipient.address,
+            value: (Number(recipient.amount) *
+              10 ** Number(recipient.tokenDecimals)) as number,
+          });
+        });
+
+        // Transaction fee calculation
+        const multiWalletStore: multiWalletType = JSON.parse(
+          await tymtStorage.get(`multiWallet`)
+        );
+        const btcPriceUSD = multiWalletStore.Bitcoin.chain.price;
+        const feeSat = ((Number(tx.fee) / Number(btcPriceUSD)) * 1e8) as number;
+        const sumUTXOSat = utxos.reduce(
+          (total, utxo) => total + utxo.amount,
+          0
+        );
+        if (feeSat >= sumUTXOSat) {
+          const noti: INotification = {
+            status: "failed",
+            title: "Send BTC",
+            message: "Insufficient BTC balance for fee!",
+          };
+          return noti;
+        }
+        const changeSat = sumUTXOSat - feeSat;
+        psbt.addOutput({
+          address: multiWalletStore.Bitcoin.chain.wallet,
+          value: changeSat as number,
+        });
+        // ~Transaction fee calculation
+
+        for (let i = 0; i < utxos.length; i++) {
+          psbt.signInput(i, account);
+        }
+
+        psbt.finalizeAllInputs();
+
+        const rawHexTransaction = psbt.extractTransaction().toHex();
+
+        const response = await Bitcoin.broadcastTransaction(rawHexTransaction);
+        console.log("response", response);
+
+        const noti: INotification = {
+          status: "success",
+          title: "Send BTC",
+          message: "Transaction is sent out.",
+          transactionId: response, // not tested
+        };
+        return noti;
+      } catch (err) {
+        console.error("Failed to send BTC transaction", err);
+        const noti: INotification = {
+          status: "failed",
+          title: "Send BTC",
+          message: err.toString(),
+        };
+        return noti;
+      }
+    }
+  }
+
   static async broadcastTransaction(txHex: string): Promise<any> {
     try {
       const networkUrl =

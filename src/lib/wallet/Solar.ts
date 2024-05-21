@@ -336,6 +336,144 @@ export class Solar implements IWallet {
     }
   }
 
+  static async sendTransactionAPI(
+    passphrase: string,
+    tx: { recipients: IRecipient[]; fee: string; vendorField?: string }, // fee in USD
+    secondPassphrase?: string
+  ) {
+    const addr = await Solar.getAddress(passphrase);
+    let nonce: number = await Solar.getCurrentNonce(addr);
+    if (tx.recipients.length > 0) {
+      if (tx.recipients.length > 1) {
+        Managers.configManager.setFromPreset(
+          net_name === "mainnet" ? "mainnet" : "testnet"
+        );
+        let transaction = Transactions.BuilderFactory.transfer();
+        tx.recipients.map((recipient) => {
+          transaction.addTransfer(
+            recipient.address,
+            Big(recipient.amount)
+              .times(10 ** 8)
+              .toFixed(0)
+          );
+        });
+
+        const multiWalletStore: multiWalletType = JSON.parse(
+          await tymtStorage.get(`multiWallet`)
+        );
+        const sxpPriceUSD = multiWalletStore.Solar.chain.price;
+        let itransaction = transaction
+          .fee(
+            Big(tx.fee)
+              .times((10 ** 8 / Number(sxpPriceUSD)) as number)
+              .toFixed(0)
+          )
+          .nonce((nonce + 1).toString());
+
+        if (tx.vendorField && tx.vendorField.length > 0) {
+          itransaction = itransaction.memo(tx.vendorField);
+        }
+        let txJson = itransaction.sign(passphrase);
+
+        if (secondPassphrase?.length) {
+          txJson = itransaction.secondSign(secondPassphrase);
+        }
+
+        let iTxJson = txJson.build().toJson();
+        console.log("sending start");
+        let res = await SolarAPI.addTxToQueue(
+          JSON.stringify({ transactions: [iTxJson] }),
+          solar_api_url ?? ""
+        );
+        console.log("sending res", res);
+        if (res.status !== 200) {
+          return {
+            status: "failed",
+            title: "Send SXP",
+            message: "Request failed",
+          };
+        } else {
+          if (res.data.errors === undefined) {
+            return {
+              status: "success",
+              title: "Send SXP",
+              message: `Transaction is sent out.`,
+              transactionId: res.data.data.accept[0],
+            };
+          } else {
+            return {
+              status: "failed",
+              title: "Send SXP",
+              message: res.data.errors[res.data.data.invalid[0]]
+                .message as string,
+            };
+          }
+        }
+      } else {
+        Managers.configManager.setFromPreset(
+          net_name === "mainnet" ? "mainnet" : "testnet"
+        );
+        let transaction = Transactions.BuilderFactory.transfer()
+          .recipientId(tx.recipients[0].address)
+          .version(3)
+          .amount(
+            Big(tx.recipients[0].amount)
+              .times(10 ** 8)
+              .toFixed(0)
+          );
+        const multiWalletStore: multiWalletType = JSON.parse(
+          await tymtStorage.get(`multiWallet`)
+        );
+        const sxpPriceUSD = multiWalletStore.Solar.chain.price;
+        let itransaction = transaction
+          .fee(
+            Big(tx.fee)
+              .times((10 ** 8 / Number(sxpPriceUSD)) as number)
+              .toFixed(0)
+          )
+          .nonce((nonce + 1).toString());
+        if (tx.vendorField && tx.vendorField.length > 0) {
+          itransaction = itransaction.memo(tx.vendorField);
+        }
+
+        let txJson = itransaction.sign(passphrase);
+
+        if (secondPassphrase && secondPassphrase.length > 0) {
+          txJson = itransaction.secondSign(secondPassphrase);
+        }
+
+        let res = await SolarAPI.addTxToQueue(
+          JSON.stringify({ transactions: [txJson.build().toJson()] }),
+          solar_api_url ?? ""
+        );
+
+        if (res.status !== 200) {
+          return {
+            status: "failed",
+            title: "Send SXP",
+            message: "Request failed",
+          };
+        } else {
+          if (res.data.errors === undefined) {
+            return {
+              status: "success",
+              title: "Send SXP",
+              message: `Transaction is sent out.`,
+              transactionId: res.data.data.accept[0],
+            };
+          } else {
+            return {
+              status: "failed",
+              title: "Send SXP",
+              message: res.data.errors[res.data.data.invalid[0]]
+                .message as string,
+            };
+          }
+        }
+      }
+    }
+  }
+
   static getCurrentNonce(address: string) {
     return new Promise<number>((resolve, reject) => {
       (async () => {

@@ -22,12 +22,12 @@ export default class TransactionProviderAPI {
       case "solar":
         res = multiWalletStore.Solar.chain.wallet;
         break;
-      case "ethereum" ||
-        "polygon" ||
-        "binance" ||
-        "avalanche" ||
-        "arbitrum" ||
-        "optimism":
+      case "ethereum":
+      case "polygon":
+      case "binance":
+      case "avalanche":
+      case "arbitrum":
+      case "optimism":
         res = multiWalletStore.Ethereum.chain.wallet;
         break;
       case "bitcoin":
@@ -50,27 +50,35 @@ export default class TransactionProviderAPI {
         break;
       case "bitcoin":
         bal = await tymtCore.Blockchains.btc.wallet.getBalance(address);
+        bal *= 1e8; // BTC decimal
         break;
       case "solana":
         bal = await tymtCore.Blockchains.solana.wallet.getBalance(address);
+        bal *= 1e9; // SOL decimal
         break;
       case "ethereum":
         bal = await tymtCore.Blockchains.eth.wallet.getBalance(address);
+        bal *= 1e9 * 1e9; // ETH decimal
         break;
       case "binance":
         bal = await tymtCore.Blockchains.bsc.wallet.getBalance(address);
+        bal *= 1e9 * 1e9; // BNB decimal
         break;
       case "polygon":
         bal = await tymtCore.Blockchains.polygon.wallet.getBalance(address);
+        bal *= 1e9 * 1e9;
         break;
       case "arbitrum":
         bal = await tymtCore.Blockchains.arbitrum.wallet.getBalance(address);
+        bal *= 1e9 * 1e9;
         break;
       case "avalanche":
         bal = await tymtCore.Blockchains.avalanche.wallet.getBalance(address);
+        bal *= 1e9 * 1e9;
         break;
       case "optimism":
         bal = await tymtCore.Blockchains.op.wallet.getBalance(address);
+        bal *= 1e9 * 1e9;
         break;
     }
     return bal;
@@ -144,12 +152,12 @@ export default class TransactionProviderAPI {
       case "solar":
         res = tymtCore.Blockchains.solar.wallet.validateAddress(to);
         break;
-      case "ethereum" ||
-        "polygon" ||
-        "binance" ||
-        "avalanche" ||
-        "arbitrum" ||
-        "optimism":
+      case "ethereum":
+      case "polygon":
+      case "binance":
+      case "avalanche":
+      case "arbitrum":
+      case "optimism":
         res = tymtCore.Blockchains.eth.wallet.validateAddress(to);
         break;
       case "bitcoin":
@@ -257,59 +265,24 @@ export default class TransactionProviderAPI {
     };
     switch (chain) {
       case "solar":
-        res = await tymtCore.Blockchains.solar.wallet.sendTransaction(
+        res = await tymtCore.Blockchains.solar.wallet.sendTransactionAPI(
           passphrase,
           tx
         );
         break;
       case "bitcoin":
-        res = await tymtCore.Blockchains.btc.wallet.sendTransaction(
+        res = await tymtCore.Blockchains.btc.wallet.sendTransactionAPI(
           passphrase,
           tx
         );
         break;
       case "solana":
-        res = await tymtCore.Blockchains.solana.wallet.sendTransaction(
+        res = await tymtCore.Blockchains.solana.wallet.sendTransactionAPI(
           passphrase,
           tx
         );
         break;
-      case "ethereum":
-        res = await tymtCore.Blockchains.eth.wallet.sendTransaction(
-          passphrase,
-          tx
-        );
-        break;
-      case "binance":
-        res = await tymtCore.Blockchains.bsc.wallet.sendTransaction(
-          passphrase,
-          tx
-        );
-        break;
-      case "polygon":
-        res = await tymtCore.Blockchains.polygon.wallet.sendTransaction(
-          passphrase,
-          tx
-        );
-        break;
-      case "arbitrum":
-        res = await tymtCore.Blockchains.arbitrum.wallet.sendTransaction(
-          passphrase,
-          tx
-        );
-        break;
-      case "avalanche":
-        res = await tymtCore.Blockchains.avalanche.wallet.sendTransaction(
-          passphrase,
-          tx
-        );
-        break;
-      case "optimism":
-        res = await tymtCore.Blockchains.op.wallet.sendTransaction(
-          passphrase,
-          tx
-        );
-        break;
+      // EVM chains are treated in CryptoApi.tsx/sendCoinAPI
     }
     return res;
   };
