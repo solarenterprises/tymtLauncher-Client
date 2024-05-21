@@ -10,7 +10,7 @@ import {
 import tymt from "../../assets/main/newlogohead.png";
 import close from "../../assets/settings/x-icon.svg";
 import d53 from "../../lib/game/district 53/logo.png";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch } from "../../store";
 import {
@@ -88,6 +88,12 @@ const WalletD53Transaction = () => {
   const [timeLeft, setTimeLeft] = useState<number>(0);
   const [lastActivity, setLastActivity] = useState(Date.now());
   const [icon, setIcon] = useState<string>("");
+  const multiWalletRef = useRef(multiWalletStore);
+
+  useEffect(() => {
+    console.log("State changed:", multiWalletStore);
+    multiWalletRef.current = multiWalletStore;
+  }, [multiWalletStore]);
 
   const formik = useFormik({
     initialValues: {
@@ -200,54 +206,76 @@ const WalletD53Transaction = () => {
   };
 
   const switchChain = async (chain: string) => {
-    console.log(multiWalletStore.Binance);
+    const currentMultiWalletStore = multiWalletRef.current;
+    console.log(currentMultiWalletStore.Binance);
     switch (chain) {
       case "solar":
         dispatch(
-          setChainAsync({ ...multiWalletStore.Solar, currentToken: "chain" })
+          setChainAsync({
+            ...currentMultiWalletStore.Solar,
+            currentToken: "chain",
+          })
         );
         setIcon(chainIconMap.get(chainEnum.solar));
         break;
       case "bitcoin":
         dispatch(
-          setChainAsync({ ...multiWalletStore.Bitcoin, currentToken: "chain" })
+          setChainAsync({
+            ...currentMultiWalletStore.Bitcoin,
+            currentToken: "chain",
+          })
         );
         setIcon(chainIconMap.get(chainEnum.bitcoin));
         break;
       case "solana":
         dispatch(
-          setChainAsync({ ...multiWalletStore.Solana, currentToken: "chain" })
+          setChainAsync({
+            ...currentMultiWalletStore.Solana,
+            currentToken: "chain",
+          })
         );
         setIcon(chainIconMap.get(chainEnum.solana));
         break;
       case "ethereum":
         dispatch(
-          setChainAsync({ ...multiWalletStore.Ethereum, currentToken: "chain" })
+          setChainAsync({
+            ...currentMultiWalletStore.Ethereum,
+            currentToken: "chain",
+          })
         );
         setIcon(chainIconMap.get(chainEnum.ethereum));
         break;
       case "binance":
         dispatch(
-          setChainAsync({ ...multiWalletStore.Binance, currentToken: "chain" })
+          setChainAsync({
+            ...currentMultiWalletStore.Binance,
+            currentToken: "chain",
+          })
         );
         setIcon(chainIconMap.get(chainEnum.binance));
         break;
       case "polygon":
         dispatch(
-          setChainAsync({ ...multiWalletStore.Polygon, currentToken: "chain" })
+          setChainAsync({
+            ...currentMultiWalletStore.Polygon,
+            currentToken: "chain",
+          })
         );
         setIcon(chainIconMap.get(chainEnum.polygon));
         break;
       case "arbitrum":
         dispatch(
-          setChainAsync({ ...multiWalletStore.Arbitrum, currentToken: "chain" })
+          setChainAsync({
+            ...currentMultiWalletStore.Arbitrum,
+            currentToken: "chain",
+          })
         );
         setIcon(chainIconMap.get(chainEnum.arbitrumone));
         break;
       case "avalanche":
         dispatch(
           setChainAsync({
-            ...multiWalletStore.Avalanche,
+            ...currentMultiWalletStore.Avalanche,
             currentToken: "chain",
           })
         );
@@ -255,7 +283,10 @@ const WalletD53Transaction = () => {
         break;
       case "optimism":
         dispatch(
-          setChainAsync({ ...multiWalletStore.Optimism, currentToken: "chain" })
+          setChainAsync({
+            ...currentMultiWalletStore.Optimism,
+            currentToken: "chain",
+          })
         );
         setIcon(chainIconMap.get(chainEnum.optimism));
         break;
@@ -607,9 +638,21 @@ const WalletD53Transaction = () => {
           <Stack direction={"row"} justifyContent={"space-between"}>
             <Box className={"fs-16-regular light"}>{t("wal-68_balance")}</Box>
             <Stack>
-              <Box className={"fs-16-regular white t-right"}>{`${numeral(
-                Number(chainStore.chain.balance) as number
-              ).format("0,0.0000")} ${chainStore.chain.symbol} -> ${numeral(
+              <Box
+                className={"fs-16-regular t-right"}
+                sx={{
+                  color:
+                    (Number(chainStore.chain.balance) as number) -
+                      ((Number(amount) as number) +
+                        (Number(walletStore.fee) as number) /
+                          (Number(chainStore.chain.price) as number)) <
+                    0
+                      ? "#EF4444"
+                      : "#FFFFFF",
+                }}
+              >{`${numeral(Number(chainStore.chain.balance) as number).format(
+                "0,0.0000"
+              )} ${chainStore.chain.symbol} -> ${numeral(
                 (Number(chainStore.chain.balance) as number) -
                   ((Number(amount) as number) +
                     (Number(walletStore.fee) as number) /
@@ -636,7 +679,12 @@ const WalletD53Transaction = () => {
                 formik.errors.password ||
                 Number(walletStore.fee) < 0 ||
                 loading ||
-                !formik.touched.password
+                !formik.touched.password ||
+                (Number(chainStore.chain.balance) as number) -
+                  ((Number(amount) as number) +
+                    (Number(walletStore.fee) as number) /
+                      (Number(chainStore.chain.price) as number)) <
+                  0
                   ? true
                   : false
               }
@@ -660,7 +708,12 @@ const WalletD53Transaction = () => {
                 formik.errors.password ||
                 Number(walletStore.fee) < 0 ||
                 loading ||
-                !formik.touched.password
+                !formik.touched.password ||
+                (Number(chainStore.chain.balance) as number) -
+                  ((Number(amount) as number) +
+                    (Number(walletStore.fee) as number) /
+                      (Number(chainStore.chain.price) as number)) <
+                  0
                   ? true
                   : false
               }

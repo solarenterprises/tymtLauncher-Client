@@ -140,6 +140,7 @@ const ConfirmInformation = () => {
           setNotificationLink(null);
         }
       } else if (accountStore.mode === loginEnum.import) {
+        dispatch(setMultiWallet(tempMultiWallet));
         try {
           const _mnemonic = await encrypt(
             tempNonCustodialStore.mnemonic.toString(),
@@ -185,7 +186,6 @@ const ConfirmInformation = () => {
               password: "",
             })
           );
-          dispatch(setMultiWallet(tempMultiWallet));
           setLoading(true);
           const userExist = await AuthAPI.getUserBySolarAddress(
             tempMultiWallet.Solar.chain.wallet
@@ -272,6 +272,7 @@ const ConfirmInformation = () => {
         }
       } else if (accountStore.mode === loginEnum.reset) {
         try {
+          dispatch(setMultiWallet(tempMultiWallet));
           const _mnemonic = await encrypt(
             tempNonCustodialStore.mnemonic.toString(),
             tempNonCustodialStore.password.toString()
@@ -316,7 +317,7 @@ const ConfirmInformation = () => {
               password: "",
             })
           );
-          dispatch(setMultiWallet(tempMultiWallet));
+
           setLoading(true);
           const userExist = await AuthAPI.getUserBySolarAddress(
             tempMultiWallet.Solar.chain.wallet
@@ -403,6 +404,7 @@ const ConfirmInformation = () => {
         }
       } else if (accountStore.mode === loginEnum.signup) {
         try {
+          dispatch(setMultiWallet(tempMultiWallet));
           const _mnemonic = await encrypt(
             tempNonCustodialStore.mnemonic.toString(),
             tempNonCustodialStore.password.toString()
@@ -447,7 +449,6 @@ const ConfirmInformation = () => {
               password: "",
             })
           );
-          dispatch(setMultiWallet(tempMultiWallet));
           setLoading(true);
           const res = await AuthAPI.nonCustodySignup(
             {

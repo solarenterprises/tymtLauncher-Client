@@ -232,6 +232,7 @@ export default class TransactionProviderAPI {
     }
     let feeInToken: number = feeInUSD / price;
     let res = bal >= (Number(amount) as number) + feeInToken;
+    console.log(bal, amount, feeInToken, feeInUSD, price);
     return res;
   };
 

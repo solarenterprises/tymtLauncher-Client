@@ -8,7 +8,7 @@ const init: walletType = {
   hidde: false,
   currency: "USD",
   status: "minimum",
-  fee: "0.0",
+  fee: "0.0183",
 };
 
 const loadData: () => walletType = () => {

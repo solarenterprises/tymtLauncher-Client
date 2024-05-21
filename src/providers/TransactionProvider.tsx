@@ -32,12 +32,14 @@ const TransactionProvider = () => {
       nonCustodialStore.mnemonic !== "" &&
       nonCustodialStore.password !== ""
     ) {
+      console.log("nonCustodialStore.mnemonic or password has been changed!");
       dispatch(
         refreshBalancesAsync({
           _multiWalletStore: multiWalletStore,
           _accountStore: accountStore,
         })
       ).then(() => {
+        console.log("refreshed BalancesAsync");
         dispatch(refreshCurrencyAsync()).then(() => {});
       });
     }
