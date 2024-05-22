@@ -7,7 +7,11 @@ import {
   ISendTransactionReq,
 } from "../../types/eventParamTypes";
 import { walletType } from "../../types/settingTypes";
-import { multiWalletType } from "../../types/walletTypes";
+import {
+  chainEnum,
+  chainIconMap,
+  multiWalletType,
+} from "../../types/walletTypes";
 import tymtCore from "../core/tymtCore";
 import tymtStorage from "../Storage";
 import { decrypt } from "./Encrypt";
@@ -284,6 +288,74 @@ export default class TransactionProviderAPI {
         );
         break;
       // EVM chains are treated in CryptoApi.tsx/sendCoinAPI
+    }
+    return res;
+  };
+
+  static getChainIcon = (chain: string) => {
+    let res: string;
+    switch (chain) {
+      case "ethereum":
+        res = chainIconMap.get(chainEnum.ethereum);
+        break;
+      case "binance":
+        res = chainIconMap.get(chainEnum.binance);
+        break;
+      case "polygon":
+        res = chainIconMap.get(chainEnum.polygon);
+        break;
+      case "arbitrum":
+        res = chainIconMap.get(chainEnum.arbitrumone);
+        break;
+      case "avalanche":
+        res = chainIconMap.get(chainEnum.avalanche);
+        break;
+      case "optimism":
+        res = chainIconMap.get(chainEnum.optimism);
+        break;
+      case "solar":
+        res = chainIconMap.get(chainEnum.solar);
+        break;
+      case "bitcoin":
+        res = chainIconMap.get(chainEnum.bitcoin);
+        break;
+      case "solana":
+        res = chainIconMap.get(chainEnum.solana);
+        break;
+    }
+    return res;
+  };
+
+  static getChainName = (chain: string) => {
+    let res: string;
+    switch (chain) {
+      case "ethereum":
+        res = "Ethereum";
+        break;
+      case "binance":
+        res = "Binance";
+        break;
+      case "polygon":
+        res = "Polygon";
+        break;
+      case "arbitrum":
+        res = "Arbitrum";
+        break;
+      case "avalanche":
+        res = "Avalanche C-Chain";
+        break;
+      case "optimism":
+        res = "Optimism";
+        break;
+      case "solar":
+        res = "Solar Blockchain";
+        break;
+      case "bitcoin":
+        res = "Bitcoin";
+        break;
+      case "solana":
+        res = "Solana";
+        break;
     }
     return res;
   };

@@ -58,6 +58,8 @@ import {
 } from "../../features/wallet/CryptoSlice";
 import { IRecipient, ISendCoin } from "../../features/wallet/CryptoApi";
 import Loading from "../../components/Loading";
+import SwitchChainModal from "../../components/wallet/SwitchChainModal";
+import { appWindow, LogicalSize } from "@tauri-apps/api/window";
 
 const WalletD53Transaction = () => {
   const {
@@ -89,6 +91,16 @@ const WalletD53Transaction = () => {
   const [lastActivity, setLastActivity] = useState(Date.now());
   const [icon, setIcon] = useState<string>("");
   const multiWalletRef = useRef(multiWalletStore);
+  const [switchChainModalOpen, setSwitchChainModalOpen] =
+    useState<boolean>(false);
+  const componentRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (componentRef.current) {
+      const height = componentRef.current.offsetHeight;
+      appWindow.setSize(new LogicalSize(445, height));
+    }
+  }, [note, memo, icon, amount, to, chain]);
 
   useEffect(() => {
     console.log("State changed:", multiWalletStore);
@@ -180,6 +192,7 @@ const WalletD53Transaction = () => {
     setLoading(false);
     setExpired(true);
     setTimeLeft(60);
+    setSwitchChainModalOpen(false);
   };
 
   const handleRejectClick = async () => {
@@ -197,6 +210,7 @@ const WalletD53Transaction = () => {
     invoke("hide_transaction_window");
     setExpired(true);
     setTimeLeft(60);
+    setSwitchChainModalOpen(false);
   };
 
   const getShortAddr: (_: string) => string = (_wallet: string) => {
@@ -207,7 +221,6 @@ const WalletD53Transaction = () => {
 
   const switchChain = async (chain: string) => {
     const currentMultiWalletStore = multiWalletRef.current;
-    console.log(currentMultiWalletStore.Binance);
     switch (chain) {
       case "solar":
         dispatch(
@@ -340,9 +353,17 @@ const WalletD53Transaction = () => {
           invoke("hide_transaction_window");
           return;
         }
-        const { chain, to, amount, note, memo } = json_data;
-        await switchChain(chain);
-        setChain(chain);
+        const { chain: chain_data, to, amount, note, memo } = json_data;
+        // await switchChain(chain);
+        if (
+          chainStore.chain.logo !==
+          TransactionProviderAPI.getChainIcon(chain_data)
+        ) {
+          setSwitchChainModalOpen(true);
+        } else {
+          switchChain(chain_data);
+        }
+        setChain(chain_data);
         setTo(to);
         setAmount(amount);
         setNote(note);
@@ -386,6 +407,7 @@ const WalletD53Transaction = () => {
 
   return (
     <Stack
+      ref={componentRef}
       width={"440px"}
       sx={{
         borderRadius: "16px",
@@ -418,7 +440,6 @@ const WalletD53Transaction = () => {
                 }}
               >
                 <Box className="fs-12-regular white">
-                  {/* {multiWalletStore.Solar.chain.wallet} */}
                   {chainStore.chain.wallet}
                 </Box>
               </Stack>
@@ -450,7 +471,6 @@ const WalletD53Transaction = () => {
                 height={"16px"}
               />
               <Box className={"fs-16-regular white"}>
-                {/* {getShortAddr(multiWalletStore.Solar.chain.wallet)} */}
                 {getShortAddr(chainStore.chain.wallet)}
               </Box>
             </Stack>
@@ -727,6 +747,13 @@ const WalletD53Transaction = () => {
         </Stack>
       </form>
       {blur && <Loading />}
+      <SwitchChainModal
+        open={switchChainModalOpen}
+        setOpen={setSwitchChainModalOpen}
+        handleRejectClick={handleRejectClick}
+        switchChain={() => switchChain(chain)}
+        chain={chain}
+      />
     </Stack>
   );
 };
