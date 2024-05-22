@@ -29,6 +29,8 @@ import {
 import {
   IChain,
   ICurrency,
+  INative,
+  IToken,
   chainEnum,
   chainIconMap,
   multiWalletType,
@@ -75,7 +77,6 @@ const WalletD53Transaction = () => {
   const langStore: languageType = useSelector(selectLanguage);
   const chainStore: IChain = useSelector(getChain);
   const reserve: number = currencyStore.data[currencyStore.current] as number;
-  const price: Number = chainStore.chain.price;
   const symbol: string = currencySymbols[currencyStore.current];
   const classname = SettingStyle();
   const [copied, setCopied] = useState<boolean>(false);
@@ -84,13 +85,16 @@ const WalletD53Transaction = () => {
   const [amount, setAmount] = useState<string>("");
   const [note, setNote] = useState<string>("");
   const [memo, setMemo] = useState<string>("");
+  const [token, setToken] = useState<IToken | INative | undefined>(undefined);
   const [loading, setLoading] = useState<boolean>(false);
   const [blur, setBlur] = useState<boolean>(false);
   const [expired, setExpired] = useState<boolean>(true);
   const [timeLeft, setTimeLeft] = useState<number>(0);
   const [lastActivity, setLastActivity] = useState(Date.now());
   const [icon, setIcon] = useState<string>("");
+  const [jsonData, setJsonData] = useState<ISendTransactionReq>();
   const multiWalletRef = useRef(multiWalletStore);
+  const chainStoreRef = useRef(chainStore);
   const [switchChainModalOpen, setSwitchChainModalOpen] =
     useState<boolean>(false);
   const componentRef = useRef<HTMLDivElement>(null);
@@ -103,9 +107,12 @@ const WalletD53Transaction = () => {
   }, [note, memo, icon, amount, to, chain]);
 
   useEffect(() => {
-    console.log("State changed:", multiWalletStore);
     multiWalletRef.current = multiWalletStore;
   }, [multiWalletStore]);
+
+  useEffect(() => {
+    chainStoreRef.current = chainStore;
+  }, [chainStore]);
 
   const formik = useFormik({
     initialValues: {
@@ -169,7 +176,7 @@ const WalletD53Transaction = () => {
         dispatch(sendCoinAPIAsync(temp)).then((action) => {
           if (action.type.endsWith("/fulfilled")) {
             res = action.payload as INotification;
-            res.title = `Send ${chainStore.chain.symbol}`;
+            res.title = `Send ${chainStore.currentToken}`;
             emit("res-POST-/send-transaction", res);
           }
         });
@@ -188,6 +195,7 @@ const WalletD53Transaction = () => {
     setChain("");
     setNote("");
     setMemo("");
+    setToken(undefined);
     invoke("hide_transaction_window");
     setLoading(false);
     setExpired(true);
@@ -207,6 +215,7 @@ const WalletD53Transaction = () => {
     setChain("");
     setNote("");
     setMemo("");
+    setToken(undefined);
     invoke("hide_transaction_window");
     setExpired(true);
     setTimeLeft(60);
@@ -219,14 +228,16 @@ const WalletD53Transaction = () => {
     );
   };
 
-  const switchChain = async (chain: string) => {
+  const switchChain = async (json_data: ISendTransactionReq) => {
+    const newCurrentToken = await TransactionProviderAPI.getToken(json_data);
+    const isNativeToken = await TransactionProviderAPI.isNativeToken(json_data);
     const currentMultiWalletStore = multiWalletRef.current;
-    switch (chain) {
+    switch (json_data.chain) {
       case "solar":
         dispatch(
           setChainAsync({
             ...currentMultiWalletStore.Solar,
-            currentToken: "chain",
+            currentToken: isNativeToken ? "chain" : newCurrentToken.symbol,
           })
         );
         setIcon(chainIconMap.get(chainEnum.solar));
@@ -235,7 +246,7 @@ const WalletD53Transaction = () => {
         dispatch(
           setChainAsync({
             ...currentMultiWalletStore.Bitcoin,
-            currentToken: "chain",
+            currentToken: isNativeToken ? "chain" : newCurrentToken.symbol,
           })
         );
         setIcon(chainIconMap.get(chainEnum.bitcoin));
@@ -244,7 +255,7 @@ const WalletD53Transaction = () => {
         dispatch(
           setChainAsync({
             ...currentMultiWalletStore.Solana,
-            currentToken: "chain",
+            currentToken: isNativeToken ? "chain" : newCurrentToken.symbol,
           })
         );
         setIcon(chainIconMap.get(chainEnum.solana));
@@ -253,7 +264,7 @@ const WalletD53Transaction = () => {
         dispatch(
           setChainAsync({
             ...currentMultiWalletStore.Ethereum,
-            currentToken: "chain",
+            currentToken: isNativeToken ? "chain" : newCurrentToken.symbol,
           })
         );
         setIcon(chainIconMap.get(chainEnum.ethereum));
@@ -262,7 +273,7 @@ const WalletD53Transaction = () => {
         dispatch(
           setChainAsync({
             ...currentMultiWalletStore.Binance,
-            currentToken: "chain",
+            currentToken: isNativeToken ? "chain" : newCurrentToken.symbol,
           })
         );
         setIcon(chainIconMap.get(chainEnum.binance));
@@ -271,7 +282,7 @@ const WalletD53Transaction = () => {
         dispatch(
           setChainAsync({
             ...currentMultiWalletStore.Polygon,
-            currentToken: "chain",
+            currentToken: isNativeToken ? "chain" : newCurrentToken.symbol,
           })
         );
         setIcon(chainIconMap.get(chainEnum.polygon));
@@ -280,7 +291,7 @@ const WalletD53Transaction = () => {
         dispatch(
           setChainAsync({
             ...currentMultiWalletStore.Arbitrum,
-            currentToken: "chain",
+            currentToken: isNativeToken ? "chain" : newCurrentToken.symbol,
           })
         );
         setIcon(chainIconMap.get(chainEnum.arbitrumone));
@@ -289,7 +300,7 @@ const WalletD53Transaction = () => {
         dispatch(
           setChainAsync({
             ...currentMultiWalletStore.Avalanche,
-            currentToken: "chain",
+            currentToken: isNativeToken ? "chain" : newCurrentToken.symbol,
           })
         );
         setIcon(chainIconMap.get(chainEnum.avalanche));
@@ -298,7 +309,7 @@ const WalletD53Transaction = () => {
         dispatch(
           setChainAsync({
             ...currentMultiWalletStore.Optimism,
-            currentToken: "chain",
+            currentToken: isNativeToken ? "chain" : newCurrentToken.symbol,
           })
         );
         setIcon(chainIconMap.get(chainEnum.optimism));
@@ -346,6 +357,7 @@ const WalletD53Transaction = () => {
         const json_data: ISendTransactionReq = JSON.parse(
           event.payload as string
         );
+        setJsonData(json_data);
         let isValid: boolean = await TransactionProviderAPI.validateTransaction(
           json_data
         );
@@ -353,21 +365,25 @@ const WalletD53Transaction = () => {
           invoke("hide_transaction_window");
           return;
         }
-        const { chain: chain_data, to, amount, note, memo } = json_data;
         // await switchChain(chain);
         if (
-          chainStore.chain.logo !==
-          TransactionProviderAPI.getChainIcon(chain_data)
+          chainStoreRef.current.chain.name !==
+          TransactionProviderAPI.getChainName(json_data.chain)
         ) {
+          console.log(
+            chainStore.chain.name,
+            TransactionProviderAPI.getChainName(json_data.chain)
+          );
           setSwitchChainModalOpen(true);
         } else {
-          switchChain(chain_data);
+          switchChain(json_data);
         }
-        setChain(chain_data);
-        setTo(to);
-        setAmount(amount);
-        setNote(note);
-        setMemo(memo ?? "");
+        setChain(json_data.chain);
+        setTo(json_data.to);
+        setAmount(json_data.amount);
+        setNote(json_data.note);
+        setMemo(json_data.memo ?? "");
+        setToken(await TransactionProviderAPI.getToken(json_data));
         setExpired(false);
         setTimeLeft(60);
         setBlur(false);
@@ -576,21 +592,29 @@ const WalletD53Transaction = () => {
             </Stack>
             <Stack direction={"row"} justifyContent={"space-between"}>
               <Box className={"fs-16-regular light"}>{t("wal-63_amount")}</Box>
-              <Stack>
+              <Stack direction={"row"} gap={"10px"} alignItems={"center"}>
+                <Stack>
+                  <Box
+                    className={"fs-16-regular white t-right"}
+                    onClick={() => {
+                      navigator.clipboard.writeText(amount);
+                    }}
+                    sx={{
+                      cursor: "pointer",
+                    }}
+                  >{`${amount} ${token?.symbol ?? ""}`}</Box>
+                  <Box
+                    className={"fs-14-regular light t-right"}
+                  >{`${symbol} ${numeral(
+                    Number(amount) * Number(token?.price ?? 0) * Number(reserve)
+                  ).format("0,0.000")}`}</Box>
+                </Stack>
                 <Box
-                  className={"fs-16-regular white t-right"}
-                  onClick={() => {
-                    navigator.clipboard.writeText(amount);
-                  }}
-                  sx={{
-                    cursor: "pointer",
-                  }}
-                >{`${amount} ${chainStore.chain.symbol}`}</Box>
-                <Box
-                  className={"fs-14-regular light t-right"}
-                >{`${symbol} ${numeral(
-                  Number(amount) * Number(price) * Number(reserve)
-                ).format("0,0.000")}`}</Box>
+                  component={"img"}
+                  src={token?.logo ?? chainStore.chain.logo ?? ""}
+                  width={"30px"}
+                  height={"30px"}
+                />
               </Stack>
             </Stack>
           </Stack>
@@ -651,8 +675,8 @@ const WalletD53Transaction = () => {
               <Box className={"fs-16-regular white t-right"}>{`${numeral(
                 (Number(amount) as number) +
                   (Number(walletStore.fee) as number) /
-                    (Number(chainStore.chain.price) as number)
-              ).format("0,0.0000")} ${chainStore.chain.symbol}`}</Box>
+                    (Number(token?.price ?? 0) as number)
+              ).format("0,0.0000")} ${token?.symbol ?? ""}`}</Box>
             </Stack>
           </Stack>
           <Stack direction={"row"} justifyContent={"space-between"}>
@@ -662,22 +686,22 @@ const WalletD53Transaction = () => {
                 className={"fs-16-regular t-right"}
                 sx={{
                   color:
-                    (Number(chainStore.chain.balance) as number) -
+                    (Number(token?.balance ?? 0) as number) -
                       ((Number(amount) as number) +
                         (Number(walletStore.fee) as number) /
-                          (Number(chainStore.chain.price) as number)) <
+                          (Number(token?.price ?? 0) as number)) <
                     0
                       ? "#EF4444"
                       : "#FFFFFF",
                 }}
-              >{`${numeral(Number(chainStore.chain.balance) as number).format(
+              >{`${numeral(Number(token?.balance ?? 0) as number).format(
                 "0,0.0000"
-              )} ${chainStore.chain.symbol} -> ${numeral(
-                (Number(chainStore.chain.balance) as number) -
+              )} ${token?.symbol ?? ""} -> ${numeral(
+                (Number(token?.balance ?? 0) as number) -
                   ((Number(amount) as number) +
                     (Number(walletStore.fee) as number) /
-                      (Number(chainStore.chain.price) as number))
-              ).format("0,0.0000")} ${chainStore.chain.symbol}`}</Box>
+                      (Number(token?.price ?? 0) as number))
+              ).format("0,0.0000")} ${token?.symbol ?? ""}`}</Box>
             </Stack>
           </Stack>
           <InputPasswordNoTooltip
@@ -700,10 +724,10 @@ const WalletD53Transaction = () => {
                 Number(walletStore.fee) < 0 ||
                 loading ||
                 !formik.touched.password ||
-                (Number(chainStore.chain.balance) as number) -
+                (Number(token?.balance ?? 0) as number) -
                   ((Number(amount) as number) +
                     (Number(walletStore.fee) as number) /
-                      (Number(chainStore.chain.price) as number)) <
+                      (Number(token?.price ?? 0) as number)) <
                   0
                   ? true
                   : false
@@ -729,10 +753,10 @@ const WalletD53Transaction = () => {
                 Number(walletStore.fee) < 0 ||
                 loading ||
                 !formik.touched.password ||
-                (Number(chainStore.chain.balance) as number) -
+                (Number(token?.balance ?? 0) as number) -
                   ((Number(amount) as number) +
                     (Number(walletStore.fee) as number) /
-                      (Number(chainStore.chain.price) as number)) <
+                      (Number(token?.price ?? 0) as number)) <
                   0
                   ? true
                   : false
@@ -751,7 +775,7 @@ const WalletD53Transaction = () => {
         open={switchChainModalOpen}
         setOpen={setSwitchChainModalOpen}
         handleRejectClick={handleRejectClick}
-        switchChain={() => switchChain(chain)}
+        switchChain={() => switchChain(jsonData)}
         chain={chain}
       />
     </Stack>

@@ -151,7 +151,7 @@ const SwitchChainModal = ({
             }}
           >
             {!loading && (
-              <Box className={"fs-16-regular"}>{t("wal-70_switch-chain")}</Box>
+              <Box className={"fs-16-regular"}>{t("wal-70_switch-network")}</Box>
             )}
             {loading && (
               <CircularProgress

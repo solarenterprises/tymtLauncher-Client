@@ -13,4 +13,5 @@ export interface ISendTransactionReq {
   amount: string;
   note: string;
   memo?: string;
+  token?: string;
 }

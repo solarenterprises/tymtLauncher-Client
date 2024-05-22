@@ -206,8 +206,8 @@ class ERC20 {
     if (tx.recipients.length < 1) {
       const noti: INotification = {
         status: "failed",
-        title: await translateString("No Recipients"),
-        message: await translateString("Please add recipients."),
+        title: "Send EVM",
+        message: "Please add recipients.",
       };
       return noti;
     }

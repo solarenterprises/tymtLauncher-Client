@@ -51,6 +51,7 @@ class Avalanche implements IWallet {
     addr: string,
     tokens: IToken[]
   ): Promise<IGetTokenBalanceRes[]> {
+    if (net_name === "testnet") return [];
     try {
       let result: IGetTokenBalanceRes[] = [];
       for (let i = 0; i < tokens.length; i++) {

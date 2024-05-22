@@ -266,6 +266,7 @@ async fn main() -> std::io::Result<()> {
                 amount: String,
                 note: String,
                 memo: Option<String>,
+                token: Option<String>,
             }
             async fn send_transaction(
                 request_param: web::Json<SendTransactionReqType>

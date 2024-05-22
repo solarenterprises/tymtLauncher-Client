@@ -79,6 +79,7 @@ export const avax_api_url =
   import.meta.env.VITE_APP_NETWORK_NAME === "mainnet"
     ? import.meta.env.VITE_APP_MAINNET_AVAX_URL
     : import.meta.env.VITE_APP_TESTNET_AVAX_URL;
+    
 export const avax_rpc_url =
   import.meta.env.VITE_APP_NETWORK_NAME === "mainnet"
     ? import.meta.env.VITE_APP_MAINNET_AVAX_PROVIDER
