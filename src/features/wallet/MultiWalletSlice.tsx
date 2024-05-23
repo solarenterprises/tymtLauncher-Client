@@ -65,12 +65,18 @@ export const multiWalletSlice = createSlice({
       .addCase(
         refreshBalancesAsync.fulfilled,
         (state, action: PayloadAction<any>) => {
-          state.data = { ...state.data, ...action.payload };
+          console.log(
+            "refreshBalancesAsync.fulfilled_action.payload",
+            action.payload
+          );
+          state.data = action.payload;
+          console.log("refreshBalancesAsync.fulfilled_state.data", state.data);
           tymtStorage.set(`multiWallet`, JSON.stringify(state.data));
           state.status = "succeeded";
         }
       )
       .addCase(refreshBalancesAsync.rejected, (state) => {
+        console.log("refreshBalancesAsync.rejected", state.data);
         state.status = "failed";
       });
   },

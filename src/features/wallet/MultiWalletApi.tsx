@@ -592,6 +592,7 @@ export const refreshBalances = async ({ _multiWalletStore, _accountStore }) => {
   const solar_native = Number(res[29]);
   const bitcoin_native = Number(res[30]);
   const solana_native = Number(res[31]);
+
   const result = {
     Ethereum: {
       chain: {
@@ -961,6 +962,5 @@ export const refreshBalances = async ({ _multiWalletStore, _accountStore }) => {
       currentToken: "chain",
     },
   };
-
   return result;
 };
