@@ -4,10 +4,8 @@ import { type } from "@tauri-apps/api/os";
 import { invoke } from "@tauri-apps/api/tauri";
 import { open } from "@tauri-apps/api/shell";
 import Games from "../game/Game";
-
-import tymtStorage from "../Storage";
-import { tymt_version } from "../../configs";
-import { ID53Password, multiWalletType } from "../../types/walletTypes";
+import { local_server_port, tymt_version } from "../../configs";
+import { IToken } from "../../types/accountTypes";
 
 export async function downloadAppImageLinux(url: string, targetDir: string) {
   return invoke("download_appimage_linux", {
@@ -203,26 +201,21 @@ export async function runGame(game_key: string, serverIp?: string) {
       }
       const d53_server = d53_ip.split(":")[0];
       const d53_port = d53_ip.split(":")[1];
-      const multiWalletStore: multiWalletType = JSON.parse(
-        await tymtStorage.get(`multiWallet`)
-      );
-      const d53PasswordStore: ID53Password = JSON.parse(
-        await tymtStorage.get(`d53Password`)
-      );
-      const sxpAddr = multiWalletStore.Solar.chain.wallet;
-      const password = d53PasswordStore.password;
+      const tokenStore: IToken = JSON.parse(sessionStorage.getItem(`token`));
+      const token = tokenStore.token;
+      const launcherUrl = `http://localhost:${local_server_port}`;
       switch (platform) {
         case "Linux":
           switch (Games[game_key].executables.linux.type) {
             case "appimage":
-              url += ` --appimage-extract-and-run --address ${d53_server} --port ${d53_port} --name ${sxpAddr} --password ${password} --go`;
+              url += ` --appimage-extract-and-run --address ${d53_server} --port ${d53_port} --launcher_url ${launcherUrl} --token ${token} --go`;
               break;
             case "zip":
               break;
           }
           break;
         case "Windows_NT":
-          url += ` --address ${d53_server} --port ${d53_port} --name ${sxpAddr} --password ${password} --go`;
+          url += ` --address ${d53_server} --port ${d53_port} --launcher_url ${launcherUrl} --token ${token} --go`;
           break;
         case "Darwin":
           break;

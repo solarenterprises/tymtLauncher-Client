@@ -147,10 +147,7 @@ const WalletD53Transaction = () => {
     try {
       if (chain === "solar" || chain === "bitcoin" || chain === "solana") {
         res = await TransactionProviderAPI.sendTransaction(
-          chain,
-          to,
-          amount,
-          memo,
+          jsonData,
           formik.values.password,
           walletStore.fee
         );
@@ -379,8 +376,14 @@ const WalletD53Transaction = () => {
           switchChain(json_data);
         }
         setChain(json_data.chain);
-        setTo(json_data.to);
-        setAmount(json_data.amount);
+        setTo(json_data.transfer[0].to);
+        const totalAmount: number = json_data.transfer.reduce(
+          (sum, transfer) => {
+            return (sum + Number(transfer.amount)) as number;
+          },
+          0
+        );
+        setAmount(numeral(totalAmount).format("0,0.00"));
         setNote(json_data.note);
         setMemo(json_data.memo ?? "");
         setToken(await TransactionProviderAPI.getToken(json_data));

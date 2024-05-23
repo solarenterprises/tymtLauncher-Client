@@ -162,35 +162,44 @@ export default class TransactionProviderAPI {
   private static validateTransactionTo = async (
     json_data: ISendTransactionReq
   ) => {
-    const { to, chain } = json_data;
     let res: boolean;
-    switch (chain) {
-      case "solar":
-        res = tymtCore.Blockchains.solar.wallet.validateAddress(to);
-        break;
-      case "ethereum":
-      case "polygon":
-      case "binance":
-      case "avalanche":
-      case "arbitrum":
-      case "optimism":
-        res = tymtCore.Blockchains.eth.wallet.validateAddress(to);
-        break;
-      case "bitcoin":
-        res = tymtCore.Blockchains.btc.wallet.validateAddress(to);
-        break;
-      case "solana":
-        res = tymtCore.Blockchains.solana.wallet.validateAddress(to);
-        break;
+    for (let i = 0; i < json_data.transfer.length; i++) {
+      switch (json_data.chain) {
+        case "solar":
+          res = tymtCore.Blockchains.solar.wallet.validateAddress(
+            json_data.transfer[i].to
+          );
+          break;
+        case "ethereum":
+        case "polygon":
+        case "binance":
+        case "avalanche":
+        case "arbitrum":
+        case "optimism":
+          res = tymtCore.Blockchains.eth.wallet.validateAddress(
+            json_data.transfer[i].to
+          );
+          break;
+        case "bitcoin":
+          res = tymtCore.Blockchains.btc.wallet.validateAddress(
+            json_data.transfer[i].to
+          );
+          break;
+        case "solana":
+          res = tymtCore.Blockchains.solana.wallet.validateAddress(
+            json_data.transfer[i].to
+          );
+          break;
+      }
+      if (!res) return false;
     }
-    return res;
+    return true;
   };
 
   // check if balance >= amount-to-be-sent + gas fee
   private static validateTransactionAmount = async (
     json_data: ISendTransactionReq
   ) => {
-    const { amount, chain } = json_data;
     const multiWalletStore: multiWalletType = JSON.parse(
       tymtStorage.get(`multiWallet`)
     );
@@ -198,10 +207,13 @@ export default class TransactionProviderAPI {
     const feeInUSD = Number(walletStore.fee) as number;
     const currentToken = await this.getToken(json_data);
     const isNativeToken = await this.isNativeToken(json_data);
+    const totalAmount: number = json_data.transfer.reduce((sum, transfer) => {
+      return (sum + Number(transfer.amount)) as number;
+    }, 0);
     let address: string = "";
     let bal: number = 0;
     let price: number = currentToken.price as number; // Token price in USD
-    switch (chain) {
+    switch (json_data.chain) {
       case "solar":
         address = multiWalletStore.Solar.chain.wallet;
         bal = await tymtCore.Blockchains.solar.wallet.getBalance(address);
@@ -279,8 +291,8 @@ export default class TransactionProviderAPI {
         break;
     }
     let feeInToken: number = feeInUSD / price;
-    let res = bal >= (Number(amount) as number) + feeInToken;
-    console.log(bal, amount, feeInToken, feeInUSD, price);
+    let res = bal >= totalAmount + feeInToken;
+    console.log(bal, totalAmount, feeInToken, feeInUSD, price);
     return res;
   };
 
@@ -394,10 +406,7 @@ export default class TransactionProviderAPI {
   };
   // currently tested only for Solar Blockchain
   static sendTransaction = async (
-    chain: string,
-    to: string,
-    amount: string,
-    memo: string,
+    jsonData: ISendTransactionReq,
     password: string,
     fee: string
   ) => {
@@ -409,18 +418,19 @@ export default class TransactionProviderAPI {
       nonCustodialStore.mnemonic,
       password
     );
-    const recipients: IRecipient[] = [
-      {
-        address: to,
-        amount: amount,
-      },
-    ];
+    const recipients: IRecipient[] = [];
+    for (let i = 0; i < recipients.length; i++) {
+      recipients.push({
+        address: jsonData.transfer[i].to,
+        amount: jsonData.transfer[i].amount,
+      });
+    }
     const tx = {
       recipients: recipients,
       fee: fee,
-      vendorField: memo,
+      vendorField: jsonData.memo,
     };
-    switch (chain) {
+    switch (jsonData.chain) {
       case "solar":
         res = await tymtCore.Blockchains.solar.wallet.sendTransactionAPI(
           passphrase,

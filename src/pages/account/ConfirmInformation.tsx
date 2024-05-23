@@ -36,6 +36,7 @@ import {
   walletEnum,
   nonCustodialType,
   custodialType,
+  IMnemonic,
 } from "../../types/accountTypes";
 import {
   getMultiWallet,
@@ -62,6 +63,10 @@ import {
   setSocketHash,
 } from "../../features/chat/SocketHashSlice";
 import { ISocketHash } from "../../types/chatTypes";
+import tymtCore from "../../lib/core/tymtCore";
+import { setToken } from "../../features/account/TokenSlice";
+import { INonCustodyBeforeSignInReq } from "../../types/AuthAPITypes";
+import { getMnemonic } from "../../features/account/MnemonicSlice";
 
 const ConfirmInformation = () => {
   const navigate = useNavigate();
@@ -81,6 +86,7 @@ const ConfirmInformation = () => {
   const d53PasswordStore: ID53Password = useSelector(getD53Password);
   const socketHashStore: ISocketHash = useSelector(getSocketHash);
   const [loading, setLoading] = useState<boolean>(false);
+  const mnemonicStore: IMnemonic = useSelector(getMnemonic);
 
   const {
     setNotificationStatus,
@@ -117,8 +123,24 @@ const ConfirmInformation = () => {
     } else if (accountStore.wallet === walletEnum.noncustodial) {
       if (accountStore.mode === loginEnum.login) {
         try {
+          const body0: INonCustodyBeforeSignInReq = {
+            sxpAddress: multiWalletStore.Solar.chain.wallet,
+          };
+          const res0 = await AuthAPI.nonCustodyBeforeSignin(body0);
+          const salt = res0?.data?.salt;
+          const token = tymtCore.Blockchains.solar.wallet.signMessage(
+            salt,
+            mnemonicStore.mnemonic
+          );
+          dispatch(
+            setToken({
+              salt: salt,
+              token: token,
+            })
+          );
           const res = await AuthAPI.nonCustodySignin({
             sxpAddress: multiWalletStore.Solar.chain.wallet,
+            token: token,
           });
           dispatch(
             setAccount({
@@ -152,6 +174,10 @@ const ConfirmInformation = () => {
           const _nickname = tempNonCustodialStore.nickname;
           const _avatar = tempNonCustodialStore.avatar;
           const _length = tempNonCustodialStore.mnemonicLength;
+          const _publicKey: string =
+            await tymtCore.Blockchains.solar.wallet.getPublicKey(
+              tempNonCustodialStore.mnemonic
+            );
           dispatch(
             setNonCustodial({
               ...nonCustodialStore,
@@ -243,6 +269,7 @@ const ConfirmInformation = () => {
                   },
                 ],
                 sxpAddress: tempMultiWallet.Solar.chain.wallet,
+                publicKey: _publicKey,
               },
               "/auth/non-custody/signup"
             );
@@ -283,6 +310,10 @@ const ConfirmInformation = () => {
           const _nickname = tempNonCustodialStore.nickname;
           const _avatar = tempNonCustodialStore.avatar;
           const _length = tempNonCustodialStore.mnemonicLength;
+          const _publicKey: string =
+            await tymtCore.Blockchains.solar.wallet.getPublicKey(
+              tempNonCustodialStore.mnemonic
+            );
           dispatch(
             setNonCustodial({
               ...nonCustodialStore,
@@ -375,6 +406,7 @@ const ConfirmInformation = () => {
                   },
                 ],
                 sxpAddress: tempMultiWallet.Solar.chain.wallet,
+                publicKey: _publicKey,
               },
               "/auth/non-custody/signup"
             );
@@ -415,6 +447,10 @@ const ConfirmInformation = () => {
           const _nickname = tempNonCustodialStore.nickname;
           const _avatar = tempNonCustodialStore.avatar;
           const _length = tempNonCustodialStore.mnemonicLength;
+          const _publicKey: string =
+            await tymtCore.Blockchains.solar.wallet.getPublicKey(
+              tempNonCustodialStore.mnemonic
+            );
           dispatch(
             setNonCustodial({
               ...nonCustodialStore,
@@ -502,6 +538,7 @@ const ConfirmInformation = () => {
                 },
               ],
               sxpAddress: tempMultiWallet.Solar.chain.wallet,
+              publicKey: _publicKey,
             },
             "/auth/non-custody/signup"
           );

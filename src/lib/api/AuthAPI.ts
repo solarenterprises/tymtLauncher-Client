@@ -1,6 +1,7 @@
 import axios, { AxiosResponse } from "axios";
 
 import { tymt_backend_url } from "../../configs/index";
+import { INonCustodyBeforeSignInReq } from "../../types/AuthAPITypes";
 
 class AuthAPI {
   static async nonCustodySignup(
@@ -24,6 +25,15 @@ class AuthAPI {
   static async nonCustodySignin(body: any): Promise<AxiosResponse<any, any>> {
     return await axios.post(
       `${tymt_backend_url}/auth/non-custody/signin`,
+      body
+    );
+  }
+
+  static async nonCustodyBeforeSignin(
+    body: INonCustodyBeforeSignInReq
+  ): Promise<AxiosResponse<any, any>> {
+    return await axios.post(
+      `${tymt_backend_url}/auth/non-cusotdy/beforesignin`,
       body
     );
   }

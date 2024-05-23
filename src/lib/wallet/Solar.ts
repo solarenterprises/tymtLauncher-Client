@@ -1,4 +1,9 @@
-import { Managers, Identities, Transactions } from "@solar-network/crypto";
+import {
+  Managers,
+  Identities,
+  Transactions,
+  Crypto,
+} from "@solar-network/crypto";
 import { generateMnemonic } from "bip39";
 import { IWallet } from "./IWallet";
 import Big from "big.js";
@@ -37,6 +42,14 @@ export class Solar implements IWallet {
     );
 
     return Identities.Address.fromPassphrase(mnemonic.normalize("NFD"));
+  }
+
+  static async getPublicKey(mnemonic: string): Promise<string> {
+    Managers.configManager.setFromPreset(
+      net_name === "mainnet" ? "mainnet" : "testnet"
+    );
+
+    return Identities.PublicKey.fromPassphrase(mnemonic.normalize("NFD"));
   }
 
   async getCurrentBalance(): Promise<number> {
@@ -520,5 +533,17 @@ export class Solar implements IWallet {
     );
     return res;
   }
+
+  static signMessage = (message: string, mnemonic: string) => {
+    return Crypto.Message.sign(message, mnemonic.normalize("NFD"));
+  };
+
+  static verifyMessage = (
+    message: string,
+    publicKey: string,
+    signature: string
+  ) => {
+    return Crypto.Message.verify({ message, publicKey, signature });
+  };
 }
 export default Solar;

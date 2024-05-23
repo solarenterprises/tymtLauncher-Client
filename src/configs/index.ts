@@ -79,7 +79,7 @@ export const avax_api_url =
   import.meta.env.VITE_APP_NETWORK_NAME === "mainnet"
     ? import.meta.env.VITE_APP_MAINNET_AVAX_URL
     : import.meta.env.VITE_APP_TESTNET_AVAX_URL;
-    
+
 export const avax_rpc_url =
   import.meta.env.VITE_APP_NETWORK_NAME === "mainnet"
     ? import.meta.env.VITE_APP_MAINNET_AVAX_PROVIDER
@@ -133,5 +133,7 @@ export const pol_scan_path =
     : import.meta.env.VITE_APP_TESTNET_POL_SCAN;
 
 export const socket_backend_url = import.meta.env.VITE_APP_SOCKET_BACKEND_URL;
+
+export const local_server_port = import.meta.env.VITE_APP_LOCAL_SERVER_PORT;
 
 export const tymt_version = import.meta.env.VITE_APP_TYMT_VERSION;

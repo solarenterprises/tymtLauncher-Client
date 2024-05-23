@@ -42,6 +42,8 @@ import machineIdReducer from "./features/account/MachineIdSlice";
 import socketHashReducer from "./features/chat/SocketHashSlice";
 import chatmountedReducer from "./features/chat/Chat-intercomSupportSlice";
 import chathistoryperUserReducer from "./features/chat/Chat-historyperUserSlice";
+import mnemonicReducer from "./features/account/MnemonicSlice";
+import tokenReducer from "./features/account/TokenSlice";
 
 const blacklistActionTypes = [
   "notification/setNotification",
@@ -97,7 +99,9 @@ const store = configureStore({
     machineId: machineIdReducer,
     socketHash: socketHashReducer,
     chatmounted: chatmountedReducer,
-    chathistoryperUser: chathistoryperUserReducer
+    chathistoryperUser: chathistoryperUserReducer,
+    mnemonic: mnemonicReducer,
+    token: tokenReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(stateSyncMiddleware),
