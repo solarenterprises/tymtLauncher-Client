@@ -2,7 +2,12 @@ import { IWallet } from "./IWallet";
 import { ethers } from "ethers";
 import * as ethereumjsWallet from "ethereumjs-wallet";
 import * as bip39 from "bip39";
-import { eth_api_url, eth_api_key, eth_rpc_url } from "../../configs/index";
+import {
+  eth_api_url,
+  eth_api_key,
+  eth_rpc_url,
+  net_name,
+} from "../../configs/index";
 import { IToken, IGetTokenBalanceRes } from "../../types/walletTypes";
 import { validate } from "multicoin-address-validator";
 
@@ -61,18 +66,25 @@ class Ethereum implements IWallet {
     try {
       let result: IGetTokenBalanceRes[] = [];
       for (let i = 0; i < tokens.length; i++) {
-        result.push({
-          cmc: tokens[i].cmc,
-          balance:
-            ((
-              await (
-                await fetch(
-                  `${eth_api_url}?module=account&action=tokenbalance&contractaddress=${tokens[i].address}&address=${addr}&tag=latest&apikey=${eth_api_key}`
-                )
-              ).json()
-            ).result as number) /
-            10 ** (tokens[i].decimals as number),
-        });
+        if (net_name === "testnet") {
+          result.push({
+            cmc: tokens[i].cmc,
+            balance: 0,
+          });
+        } else {
+          result.push({
+            cmc: tokens[i].cmc,
+            balance:
+              ((
+                await (
+                  await fetch(
+                    `${eth_api_url}?module=account&action=tokenbalance&contractaddress=${tokens[i].address}&address=${addr}&tag=latest&apikey=${eth_api_key}`
+                  )
+                ).json()
+              ).result as number) /
+              10 ** (tokens[i].decimals as number),
+          });
+        }
       }
       return result;
     } catch (err) {

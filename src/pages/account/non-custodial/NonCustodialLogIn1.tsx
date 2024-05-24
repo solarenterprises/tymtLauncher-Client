@@ -32,6 +32,8 @@ import {
   nonCustodialType,
 } from "../../../types/accountTypes";
 import { getNonCustodial } from "../../../features/account/NonCustodialSlice";
+import { decrypt } from "../../../lib/api/Encrypt";
+import { setMnemonic } from "../../../features/account/MnemonicSlice";
 
 const NonCustodialLogIn1 = () => {
   const navigate = useNavigate();
@@ -62,7 +64,12 @@ const NonCustodialLogIn1 = () => {
             nonCustodialStore.password
         ),
     }),
-    onSubmit: () => {
+    onSubmit: async () => {
+      const mnemonic = await decrypt(
+        nonCustodialStore.mnemonic,
+        formik.values.password
+      );
+      dispatch(setMnemonic({ mnemonic: mnemonic }));
       navigate("/confirm-information");
     },
   });

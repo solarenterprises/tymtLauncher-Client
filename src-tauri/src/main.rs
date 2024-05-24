@@ -5,8 +5,9 @@
 
 use std::sync::OnceLock;
 use tauri::{ CustomMenuItem, SystemTray, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem };
-use actix_web::{ web, App, HttpResponse, HttpServer, Responder };
+use actix_web::{ web, App, HttpResponse, HttpServer };
 use serde::{ Deserialize, Serialize };
+use serde_json::Value;
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::{ Path, PathBuf };
@@ -14,6 +15,7 @@ use std::process::Command;
 use std::{ fs, io };
 use tauri::Manager;
 use machineid_rs::{ IdBuilder, Encryption, HWIDComponent };
+use reqwest::{ header, Client };
 // use dotenv::dotenv;
 // use std::env;
 
@@ -161,12 +163,55 @@ async fn main() -> std::io::Result<()> {
             let app_handle = app.handle().clone();
             _ = APPHANDLE.set(app_handle);
 
+            async fn validate_token(token: String) -> bool {
+                APPHANDLE.get()
+                    .expect("APPHANDLE is available")
+                    .emit_all("validate-token", token)
+                    .expect("failed to emit event validate-token");
+
+                let (tx, rx) = std::sync::mpsc::channel();
+
+                let response = APPHANDLE.get()
+                    .expect("APPHANDLE is available")
+                    .listen_global("res-validate-token", move |event| {
+                        let payload = event.payload().unwrap().to_string();
+                        match tx.send(payload) {
+                            Ok(()) => {
+                                // println!("Message sent successfully");
+                            }
+                            Err(err) => {
+                                println!("Error sending message: {:?}", err);
+                            }
+                        }
+                    });
+
+                match rx.recv() {
+                    Ok(received) => {
+                        // println!("Received: {}", received);
+                        APPHANDLE.get().expect("APPHANDLE is available").unlisten(response);
+                        return received == "true";
+                    }
+                    Err(err) => {
+                        println!("Error receiving message: {:?}", err);
+                        APPHANDLE.get().expect("APPHANDLE is available").unlisten(response);
+                        return false;
+                    }
+                }
+            }
+
             #[derive(Deserialize, Serialize)]
             struct GetAccountReqType {
                 chain: String, // solar, evm, bitcoin, solana
+                launcher_token: String,
             }
             async fn get_account(request_param: web::Json<GetAccountReqType>) -> HttpResponse {
                 println!("-------> POST /get-account");
+
+                let is_valid_token = validate_token(request_param.launcher_token.clone()).await;
+                if !is_valid_token {
+                    println!("Invalid token");
+                    return HttpResponse::InternalServerError().body("Invalid token");
+                }
 
                 let json_data = serde_json
                     ::to_string(&request_param)
@@ -214,9 +259,16 @@ async fn main() -> std::io::Result<()> {
             struct GetBalanceReqType {
                 chain: String, // solar, bitcoin, solana, ethereum, polygon, avalanche, arbitrum, binance, optimism
                 address: String,
+                launcher_token: String,
             }
             async fn get_balance(request_param: web::Json<GetBalanceReqType>) -> HttpResponse {
                 println!("-------> POST /get-balance");
+
+                let is_valid_token = validate_token(request_param.launcher_token.clone()).await;
+                if !is_valid_token {
+                    println!("Invalid token");
+                    return HttpResponse::InternalServerError().body("Invalid token");
+                }
 
                 let json_data = serde_json
                     ::to_string(&request_param)
@@ -259,18 +311,40 @@ async fn main() -> std::io::Result<()> {
                 }
             }
 
+            #[derive(Serialize, Deserialize)]
+            struct Transfer {
+                to: String,
+                amount: String,
+            }
             #[derive(Deserialize, Serialize)]
             struct SendTransactionReqType {
                 chain: String, // solar, bitcoin, solana, ethereum, polygon, avalanche, arbitrum, binance, optimism
-                to: String,
-                amount: String,
+                transfer: Vec<Transfer>,
                 note: String,
                 memo: Option<String>,
+                token: Option<String>,
+                launcher_token: String,
             }
             async fn send_transaction(
                 request_param: web::Json<SendTransactionReqType>
             ) -> HttpResponse {
                 println!("-------> POST /send-transaction");
+
+                let is_valid_token = validate_token(request_param.launcher_token.clone()).await;
+                if !is_valid_token {
+                    println!("Invalid token");
+                    return HttpResponse::InternalServerError().body("Invalid token");
+                }
+
+                if request_param.transfer.len() > 1 && request_param.chain != "solar" {
+                    println!("Invalid batch transfer {}", request_param.chain);
+                    return HttpResponse::BadRequest().body(
+                        format!(
+                            "Batch transfer is not enabled for now on {} chain",
+                            request_param.chain
+                        )
+                    );
+                }
 
                 show_transaction_window(APPHANDLE.get().unwrap().clone()).await;
 
@@ -316,6 +390,103 @@ async fn main() -> std::io::Result<()> {
                 }
             }
 
+            async fn request_new_order(
+                request_param: web::Json<SendTransactionReqType>
+            ) -> HttpResponse {
+                println!("-------> POST /request-new-order");
+
+                let is_valid_token = validate_token(request_param.launcher_token.clone()).await;
+                if !is_valid_token {
+                    println!("Invalid token");
+                    return HttpResponse::InternalServerError().body("Invalid token");
+                }
+
+                if request_param.transfer.len() > 1 && request_param.chain != "solar" {
+                    println!("Invalid batch transfer {}", request_param.chain);
+                    return HttpResponse::BadRequest().body(
+                        format!(
+                            "Batch transfer is not enabled for now on {} chain",
+                            request_param.chain
+                        )
+                    );
+                }
+
+                let client = Client::new();
+
+                match
+                    client
+                        .post("https://dev.tymt.com/api/orders/request-new-order")
+                        .header(header::CONTENT_TYPE, "application/json")
+                        .body(serde_json::to_string(&request_param.into_inner()).unwrap())
+                        .send().await
+                {
+                    Ok(response) => {
+                        match response.text().await {
+                            Ok(json) => {
+                                println!("!!!----> POST /request-new-order");
+                                println!("{}", json);
+                                HttpResponse::Ok().body(json)
+                            }
+                            Err(err) => {
+                                eprintln!("Failed to parse response as JSON: {:?}", err);
+                                HttpResponse::InternalServerError().body(
+                                    "Failed to parse response as JSON"
+                                )
+                            }
+                        }
+                    }
+                    Err(err) => {
+                        eprintln!("Failed to send request: {:?}", err);
+                        HttpResponse::InternalServerError().body("Failed to send request")
+                    }
+                }
+            }
+
+            #[derive(Deserialize, Serialize)]
+            struct ExecuteOrderReqType {
+                id: String,
+                launcher_token: String,
+            }
+            async fn execute_order(request_param: web::Json<ExecuteOrderReqType>) -> HttpResponse {
+                println!("-------> POST /execute-order");
+
+                let is_valid_token = validate_token(request_param.launcher_token.clone()).await;
+                if !is_valid_token {
+                    println!("Invalid token");
+                    return HttpResponse::InternalServerError().body("Invalid token");
+                }
+
+                let client = Client::new();
+
+                match
+                    client
+                        .get(format!("https://dev.tymt.com/api/orders/orders/{}", request_param.id))
+                        .send().await
+                {
+                    Ok(response) => {
+                        match response.text().await {
+                            Ok(json) => {
+                                let parsed_struct: SendTransactionReqType = serde_json
+                                    ::from_str(&json)
+                                    .unwrap();
+                                let json_struct = web::Json(parsed_struct);
+                                send_transaction(json_struct).await
+                            }
+                            Err(err) => {
+                                eprintln!("Failed to parse response as JSON: {:?}", err);
+                                HttpResponse::InternalServerError().body(
+                                    "Failed to parse response as JSON"
+                                )
+                            }
+                        }
+                    }
+                    Err(err) => {
+                        eprintln!("Failed to send request: {:?}", err);
+                        HttpResponse::InternalServerError().body("Failed to send request")
+                    }
+                }
+            }
+
             // dotenv().ok();
             // let port_str = dotenv
             //     ::var("VITE_APP_LOCAL_SERVER_PORT")
@@ -331,6 +502,8 @@ async fn main() -> std::io::Result<()> {
                         .route("/get-account", web::post().to(get_account))
                         .route("/get-balance", web::post().to(get_balance))
                         .route("/send-transaction", web::post().to(send_transaction))
+                        .route("/request-new-order", web::post().to(request_new_order))
+                        .route("/execute-order", web::post().to(execute_order))
                 })
                     .bind(("127.0.0.1", 3331))
                     .expect("Failed to bind address")

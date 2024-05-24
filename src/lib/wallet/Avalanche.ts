@@ -64,12 +64,19 @@ class Avalanche implements IWallet {
           tokenAbi,
           customProvider
         );
-        result.push({
-          cmc: tokens[i].cmc,
-          balance:
-            parseFloat(await tokenContract.balanceOf(addr)) /
-            10 ** (tokens[i].decimals as number),
-        });
+        if (net_name === "testnet") {
+          result.push({
+            cmc: tokens[i].cmc,
+            balance: 0,
+          });
+        } else {
+          result.push({
+            cmc: tokens[i].cmc,
+            balance:
+              parseFloat(await tokenContract.balanceOf(addr)) /
+              10 ** (tokens[i].decimals as number),
+          });
+        }
       }
       return result;
     } catch (err) {

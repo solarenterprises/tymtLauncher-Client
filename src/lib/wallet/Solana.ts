@@ -208,6 +208,87 @@ class Solana implements IWallet {
       }
     }
   }
+
+  static async sendTransactionAPI(
+    passphrase: string,
+    tx: { recipients: IRecipient[]; fee: string; vendorField?: string }
+  ) {
+    if (tx.recipients.length > 0) {
+      try {
+        const keypair = await Solana.getKeyPair(passphrase);
+        let trx = new Transaction();
+        tx.recipients.map((recipient) => {
+          const toPbKey = new PublicKey(recipient.address);
+          trx.add(
+            SystemProgram.transfer({
+              fromPubkey: keypair.publicKey,
+              toPubkey: toPbKey,
+              lamports: (Number(recipient.amount) * LAMPORTS_PER_SOL) as number,
+            })
+          );
+        });
+
+        const apiURL = "https://api.mainnet-beta.solana.com";
+        const bodyContent1 = {
+          jsonrpc: "2.0",
+          id: 1,
+          method: "getLatestBlockhash",
+          params: [
+            {
+              commitment: "finalized",
+            },
+          ],
+        };
+        const body1 = Body.json(bodyContent1);
+        const response1: any = await tauriFetch(apiURL, {
+          method: "POST",
+          timeout: 30,
+          body: body1,
+          responseType: ResponseType.JSON,
+        });
+        console.log(response1);
+        const recentBlockhash = response1?.data?.result?.value?.blockhash;
+
+        console.log("recentBlockhash: ", recentBlockhash);
+        trx.recentBlockhash = recentBlockhash;
+        trx.sign(keypair);
+        const rawTx = trx.serialize();
+        const rawTxString = bs58.encode(rawTx);
+        console.log("rawTx: ", rawTxString);
+
+        const bodyContent2 = {
+          jsonrpc: "2.0",
+          id: 1,
+          method: "sendTransaction",
+          params: [rawTxString],
+        };
+        const body2 = Body.json(bodyContent2);
+        const response2: any = await tauriFetch(apiURL, {
+          method: "POST",
+          timeout: 30,
+          body: body2,
+          responseType: ResponseType.JSON,
+        });
+        console.log(response2);
+
+        const noti: INotification = {
+          status: "success",
+          title: "Send SOL",
+          message: "Transaction is sent out.",
+          transactionId: response2?.data?.result,
+        };
+        return noti;
+      } catch (err) {
+        console.error("Failed to send SOL transaction: ", err);
+        const noti: INotification = {
+          status: "failed",
+          title: "Send SOL",
+          message: err.toString(),
+        };
+        return noti;
+      }
+    }
+  }
 }
 
 export default Solana;

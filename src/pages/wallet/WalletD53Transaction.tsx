@@ -8,10 +8,9 @@ import {
   Tooltip,
 } from "@mui/material";
 import tymt from "../../assets/main/newlogohead.png";
-import solar from "../../assets/chains/solar.svg";
 import close from "../../assets/settings/x-icon.svg";
 import d53 from "../../lib/game/district 53/logo.png";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch } from "../../store";
 import {
@@ -27,7 +26,15 @@ import {
   notificationType,
   walletType,
 } from "../../types/settingTypes";
-import { ICurrency, multiWalletType } from "../../types/walletTypes";
+import {
+  IChain,
+  ICurrency,
+  INative,
+  IToken,
+  chainEnum,
+  chainIconMap,
+  multiWalletType,
+} from "../../types/walletTypes";
 import { getMultiWallet } from "../../features/wallet/MultiWalletSlice";
 import { invoke } from "@tauri-apps/api/tauri";
 import { useTranslation } from "react-i18next";
@@ -46,6 +53,15 @@ import { emit, listen } from "@tauri-apps/api/event";
 import TransactionProviderAPI from "../../lib/api/TransactionProviderAPI";
 import { selectLanguage } from "../../features/settings/LanguageSlice";
 import InputPasswordNoTooltip from "../../components/account/InputPasswordNoTooltip";
+import { getChain, setChainAsync } from "../../features/wallet/ChainSlice";
+import {
+  INotification,
+  sendCoinAPIAsync,
+} from "../../features/wallet/CryptoSlice";
+import { IRecipient, ISendCoin } from "../../features/wallet/CryptoApi";
+import Loading from "../../components/Loading";
+import SwitchChainModal from "../../components/wallet/SwitchChainModal";
+import { appWindow, LogicalSize } from "@tauri-apps/api/window";
 
 const WalletD53Transaction = () => {
   const {
@@ -59,8 +75,8 @@ const WalletD53Transaction = () => {
   const currencyStore: ICurrency = useSelector(getCurrency);
   const walletStore: walletType = useSelector(selectWallet);
   const langStore: languageType = useSelector(selectLanguage);
+  const chainStore: IChain = useSelector(getChain);
   const reserve: number = currencyStore.data[currencyStore.current] as number;
-  const price: Number = multiWalletStore.Solar.chain.price;
   const symbol: string = currencySymbols[currencyStore.current];
   const classname = SettingStyle();
   const [copied, setCopied] = useState<boolean>(false);
@@ -69,10 +85,34 @@ const WalletD53Transaction = () => {
   const [amount, setAmount] = useState<string>("");
   const [note, setNote] = useState<string>("");
   const [memo, setMemo] = useState<string>("");
+  const [token, setToken] = useState<IToken | INative | undefined>(undefined);
   const [loading, setLoading] = useState<boolean>(false);
+  const [blur, setBlur] = useState<boolean>(false);
   const [expired, setExpired] = useState<boolean>(true);
   const [timeLeft, setTimeLeft] = useState<number>(0);
   const [lastActivity, setLastActivity] = useState(Date.now());
+  const [icon, setIcon] = useState<string>("");
+  const [jsonData, setJsonData] = useState<ISendTransactionReq>();
+  const multiWalletRef = useRef(multiWalletStore);
+  const chainStoreRef = useRef(chainStore);
+  const [switchChainModalOpen, setSwitchChainModalOpen] =
+    useState<boolean>(false);
+  const componentRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (componentRef.current) {
+      const height = componentRef.current.offsetHeight;
+      appWindow.setSize(new LogicalSize(445, height));
+    }
+  }, [note, memo, icon, amount, to, chain]);
+
+  useEffect(() => {
+    multiWalletRef.current = multiWalletStore;
+  }, [multiWalletStore]);
+
+  useEffect(() => {
+    chainStoreRef.current = chainStore;
+  }, [chainStore]);
 
   const formik = useFormik({
     initialValues: {
@@ -103,40 +143,67 @@ const WalletD53Transaction = () => {
 
   const handleApproveClick = async () => {
     setLoading(true);
-    let res: any;
+    let res: INotification;
     try {
-      res = await TransactionProviderAPI.sendTransaction(
-        chain,
-        to,
-        amount,
-        memo,
-        formik.values.password,
-        walletStore.fee
-      );
+      if (chain === "solar" || chain === "bitcoin" || chain === "solana") {
+        res = await TransactionProviderAPI.sendTransaction(
+          jsonData,
+          formik.values.password,
+          walletStore.fee
+        );
+        emit("res-POST-/send-transaction", res);
+      } else {
+        // EVM chains
+        const recipients: IRecipient[] = [
+          {
+            address: to,
+            amount: amount,
+          },
+        ];
+        const tx = {
+          passphrase: formik.values.password,
+          recipients: recipients,
+          fee: walletStore.fee,
+          vendorField: memo,
+        };
+        const temp: ISendCoin = {
+          chain: chainStore,
+          data: tx,
+        };
+        dispatch(sendCoinAPIAsync(temp)).then((action) => {
+          if (action.type.endsWith("/fulfilled")) {
+            res = action.payload as INotification;
+            res.title = `Send ${chainStore.currentToken}`;
+            emit("res-POST-/send-transaction", res);
+          }
+        });
+      }
     } catch (err) {
       console.error("Failed to TransactionProviderAPI.sendTransaction: ", err);
       res = {
         status: "failed",
-        title: "Send SXP",
+        title: `Send ${chainStore.chain.symbol}`,
         message: err.toString(),
       };
+      emit("res-POST-/send-transaction", res);
     }
-    emit("res-POST-/send-transaction", res);
     setTo("");
     setAmount("");
     setChain("");
     setNote("");
     setMemo("");
+    setToken(undefined);
     invoke("hide_transaction_window");
     setLoading(false);
     setExpired(true);
     setTimeLeft(60);
+    setSwitchChainModalOpen(false);
   };
 
   const handleRejectClick = async () => {
     let res = {
       status: "failed",
-      title: "Send SXP",
+      title: `Send ${chainStore.chain.symbol}`,
       message: "Request rejected",
     };
     emit("res-POST-/send-transaction", res);
@@ -145,15 +212,106 @@ const WalletD53Transaction = () => {
     setChain("");
     setNote("");
     setMemo("");
+    setToken(undefined);
     invoke("hide_transaction_window");
     setExpired(true);
     setTimeLeft(60);
+    setSwitchChainModalOpen(false);
   };
 
   const getShortAddr: (_: string) => string = (_wallet: string) => {
     return (
       _wallet.substring(0, 10) + "..." + _wallet.substring(_wallet.length - 10)
     );
+  };
+
+  const switchChain = async (json_data: ISendTransactionReq) => {
+    const newCurrentToken = await TransactionProviderAPI.getToken(json_data);
+    const isNativeToken = await TransactionProviderAPI.isNativeToken(json_data);
+    const currentMultiWalletStore = multiWalletRef.current;
+    switch (json_data.chain) {
+      case "solar":
+        dispatch(
+          setChainAsync({
+            ...currentMultiWalletStore.Solar,
+            currentToken: isNativeToken ? "chain" : newCurrentToken.symbol,
+          })
+        );
+        setIcon(chainIconMap.get(chainEnum.solar));
+        break;
+      case "bitcoin":
+        dispatch(
+          setChainAsync({
+            ...currentMultiWalletStore.Bitcoin,
+            currentToken: isNativeToken ? "chain" : newCurrentToken.symbol,
+          })
+        );
+        setIcon(chainIconMap.get(chainEnum.bitcoin));
+        break;
+      case "solana":
+        dispatch(
+          setChainAsync({
+            ...currentMultiWalletStore.Solana,
+            currentToken: isNativeToken ? "chain" : newCurrentToken.symbol,
+          })
+        );
+        setIcon(chainIconMap.get(chainEnum.solana));
+        break;
+      case "ethereum":
+        dispatch(
+          setChainAsync({
+            ...currentMultiWalletStore.Ethereum,
+            currentToken: isNativeToken ? "chain" : newCurrentToken.symbol,
+          })
+        );
+        setIcon(chainIconMap.get(chainEnum.ethereum));
+        break;
+      case "binance":
+        dispatch(
+          setChainAsync({
+            ...currentMultiWalletStore.Binance,
+            currentToken: isNativeToken ? "chain" : newCurrentToken.symbol,
+          })
+        );
+        setIcon(chainIconMap.get(chainEnum.binance));
+        break;
+      case "polygon":
+        dispatch(
+          setChainAsync({
+            ...currentMultiWalletStore.Polygon,
+            currentToken: isNativeToken ? "chain" : newCurrentToken.symbol,
+          })
+        );
+        setIcon(chainIconMap.get(chainEnum.polygon));
+        break;
+      case "arbitrum":
+        dispatch(
+          setChainAsync({
+            ...currentMultiWalletStore.Arbitrum,
+            currentToken: isNativeToken ? "chain" : newCurrentToken.symbol,
+          })
+        );
+        setIcon(chainIconMap.get(chainEnum.arbitrumone));
+        break;
+      case "avalanche":
+        dispatch(
+          setChainAsync({
+            ...currentMultiWalletStore.Avalanche,
+            currentToken: isNativeToken ? "chain" : newCurrentToken.symbol,
+          })
+        );
+        setIcon(chainIconMap.get(chainEnum.avalanche));
+        break;
+      case "optimism":
+        dispatch(
+          setChainAsync({
+            ...currentMultiWalletStore.Optimism,
+            currentToken: isNativeToken ? "chain" : newCurrentToken.symbol,
+          })
+        );
+        setIcon(chainIconMap.get(chainEnum.optimism));
+        break;
+    }
   };
 
   useEffect(() => {
@@ -192,9 +350,11 @@ const WalletD53Transaction = () => {
     const unlisten_send_transaction = listen(
       "POST-/send-transaction",
       async (event) => {
+        setBlur(true);
         const json_data: ISendTransactionReq = JSON.parse(
           event.payload as string
         );
+        setJsonData(json_data);
         let isValid: boolean = await TransactionProviderAPI.validateTransaction(
           json_data
         );
@@ -202,14 +362,34 @@ const WalletD53Transaction = () => {
           invoke("hide_transaction_window");
           return;
         }
-        const { chain, to, amount, note, memo } = json_data;
-        setChain(chain);
-        setTo(to);
-        setAmount(amount);
-        setNote(note);
-        setMemo(memo ?? "");
+        // await switchChain(chain);
+        if (
+          chainStoreRef.current.chain.name !==
+          TransactionProviderAPI.getChainName(json_data.chain)
+        ) {
+          console.log(
+            chainStore.chain.name,
+            TransactionProviderAPI.getChainName(json_data.chain)
+          );
+          setSwitchChainModalOpen(true);
+        } else {
+          switchChain(json_data);
+        }
+        setChain(json_data.chain);
+        setTo(json_data.transfer[0].to);
+        const totalAmount: number = json_data.transfer.reduce(
+          (sum, transfer) => {
+            return (sum + Number(transfer.amount)) as number;
+          },
+          0
+        );
+        setAmount(numeral(totalAmount).format("0,0.00"));
+        setNote(json_data.note);
+        setMemo(json_data.memo ?? "");
+        setToken(await TransactionProviderAPI.getToken(json_data));
         setExpired(false);
         setTimeLeft(60);
+        setBlur(false);
       }
     );
 
@@ -246,6 +426,7 @@ const WalletD53Transaction = () => {
 
   return (
     <Stack
+      ref={componentRef}
       width={"440px"}
       sx={{
         borderRadius: "16px",
@@ -278,7 +459,7 @@ const WalletD53Transaction = () => {
                 }}
               >
                 <Box className="fs-12-regular white">
-                  {multiWalletStore.Solar.chain.wallet}
+                  {chainStore.chain.wallet}
                 </Box>
               </Stack>
             }
@@ -304,12 +485,12 @@ const WalletD53Transaction = () => {
             >
               <Box
                 component={"img"}
-                src={solar}
+                src={icon}
                 width={"16px"}
                 height={"16px"}
               />
               <Box className={"fs-16-regular white"}>
-                {getShortAddr(multiWalletStore.Solar.chain.wallet)}
+                {getShortAddr(chainStore.chain.wallet)}
               </Box>
             </Stack>
           </Tooltip>
@@ -401,9 +582,7 @@ const WalletD53Transaction = () => {
                 <Box
                   className={"fs-16-regular white"}
                   onClick={() => {
-                    navigator.clipboard.writeText(
-                      multiWalletStore.Solar.chain.wallet
-                    );
+                    navigator.clipboard.writeText(chainStore.chain.wallet);
                     setCopied(true);
                   }}
                   sx={{
@@ -416,21 +595,29 @@ const WalletD53Transaction = () => {
             </Stack>
             <Stack direction={"row"} justifyContent={"space-between"}>
               <Box className={"fs-16-regular light"}>{t("wal-63_amount")}</Box>
-              <Stack>
+              <Stack direction={"row"} gap={"10px"} alignItems={"center"}>
+                <Stack>
+                  <Box
+                    className={"fs-16-regular white t-right"}
+                    onClick={() => {
+                      navigator.clipboard.writeText(amount);
+                    }}
+                    sx={{
+                      cursor: "pointer",
+                    }}
+                  >{`${amount} ${token?.symbol ?? ""}`}</Box>
+                  <Box
+                    className={"fs-14-regular light t-right"}
+                  >{`${symbol} ${numeral(
+                    Number(amount) * Number(token?.price ?? 0) * Number(reserve)
+                  ).format("0,0.000")}`}</Box>
+                </Stack>
                 <Box
-                  className={"fs-16-regular white t-right"}
-                  onClick={() => {
-                    navigator.clipboard.writeText("12");
-                  }}
-                  sx={{
-                    cursor: "pointer",
-                  }}
-                >{`${amount} SXP`}</Box>
-                <Box
-                  className={"fs-14-regular light t-right"}
-                >{`${symbol} ${numeral(
-                  Number(amount) * Number(price) * Number(reserve)
-                ).format("0,0.000")}`}</Box>
+                  component={"img"}
+                  src={token?.logo ?? chainStore.chain.logo ?? ""}
+                  width={"30px"}
+                  height={"30px"}
+                />
               </Stack>
             </Stack>
           </Stack>
@@ -491,21 +678,33 @@ const WalletD53Transaction = () => {
               <Box className={"fs-16-regular white t-right"}>{`${numeral(
                 (Number(amount) as number) +
                   (Number(walletStore.fee) as number) /
-                    (Number(multiWalletStore.Solar.chain.price) as number)
-              ).format("0,0.0000")} SXP`}</Box>
+                    (Number(token?.price ?? 0) as number)
+              ).format("0,0.0000")} ${token?.symbol ?? ""}`}</Box>
             </Stack>
           </Stack>
           <Stack direction={"row"} justifyContent={"space-between"}>
             <Box className={"fs-16-regular light"}>{t("wal-68_balance")}</Box>
             <Stack>
-              <Box className={"fs-16-regular white t-right"}>{`${numeral(
-                Number(multiWalletStore.Solar.chain.balance) as number
-              ).format("0,0.0000")} SXP -> ${numeral(
-                (Number(multiWalletStore.Solar.chain.balance) as number) -
+              <Box
+                className={"fs-16-regular t-right"}
+                sx={{
+                  color:
+                    (Number(token?.balance ?? 0) as number) -
+                      ((Number(amount) as number) +
+                        (Number(walletStore.fee) as number) /
+                          (Number(token?.price ?? 0) as number)) <
+                    0
+                      ? "#EF4444"
+                      : "#FFFFFF",
+                }}
+              >{`${numeral(Number(token?.balance ?? 0) as number).format(
+                "0,0.0000"
+              )} ${token?.symbol ?? ""} -> ${numeral(
+                (Number(token?.balance ?? 0) as number) -
                   ((Number(amount) as number) +
                     (Number(walletStore.fee) as number) /
-                      (Number(multiWalletStore.Solar.chain.price) as number))
-              ).format("0,0.0000")} SXP`}</Box>
+                      (Number(token?.price ?? 0) as number))
+              ).format("0,0.0000")} ${token?.symbol ?? ""}`}</Box>
             </Stack>
           </Stack>
           <InputPasswordNoTooltip
@@ -527,7 +726,12 @@ const WalletD53Transaction = () => {
                 formik.errors.password ||
                 Number(walletStore.fee) < 0 ||
                 loading ||
-                !formik.touched.password
+                !formik.touched.password ||
+                (Number(token?.balance ?? 0) as number) -
+                  ((Number(amount) as number) +
+                    (Number(walletStore.fee) as number) /
+                      (Number(token?.price ?? 0) as number)) <
+                  0
                   ? true
                   : false
               }
@@ -551,7 +755,12 @@ const WalletD53Transaction = () => {
                 formik.errors.password ||
                 Number(walletStore.fee) < 0 ||
                 loading ||
-                !formik.touched.password
+                !formik.touched.password ||
+                (Number(token?.balance ?? 0) as number) -
+                  ((Number(amount) as number) +
+                    (Number(walletStore.fee) as number) /
+                      (Number(token?.price ?? 0) as number)) <
+                  0
                   ? true
                   : false
               }
@@ -564,6 +773,14 @@ const WalletD53Transaction = () => {
           </Stack>
         </Stack>
       </form>
+      {blur && <Loading />}
+      <SwitchChainModal
+        open={switchChainModalOpen}
+        setOpen={setSwitchChainModalOpen}
+        handleRejectClick={handleRejectClick}
+        switchChain={() => switchChain(jsonData)}
+        chain={chain}
+      />
     </Stack>
   );
 };

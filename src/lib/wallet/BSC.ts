@@ -2,7 +2,7 @@ import { IWallet } from "./IWallet";
 import { ethers } from "ethers";
 import * as ethereumjsWallet from "ethereumjs-wallet";
 import * as bip39 from "bip39";
-import { bsc_api_key, bsc_api_url, bsc_rpc_url } from "../../configs";
+import { bsc_api_key, bsc_api_url, bsc_rpc_url, net_name } from "../../configs";
 import { ERC20ABI } from "../../abis/ERC20API";
 import { IToken, IGetTokenBalanceRes } from "../../types/walletTypes";
 
@@ -68,18 +68,25 @@ class BSC implements IWallet {
     try {
       let result: IGetTokenBalanceRes[] = [];
       for (let i = 0; i < tokens.length; i++) {
-        result.push({
-          cmc: tokens[i].cmc,
-          balance:
-            ((
-              await (
-                await fetch(
-                  `${bsc_api_url}?module=account&action=tokenbalance&contractAddress=${tokens[i].address}&address=${addr}&apikey=${bsc_api_key}`
-                )
-              ).json()
-            ).result as number) /
-            10 ** (tokens[i].decimals as number),
-        });
+        if (net_name === "testnet") {
+          result.push({
+            cmc: tokens[i].cmc,
+            balance: 0,
+          });
+        } else {
+          result.push({
+            cmc: tokens[i].cmc,
+            balance:
+              ((
+                await (
+                  await fetch(
+                    `${bsc_api_url}?module=account&action=tokenbalance&contractAddress=${tokens[i].address}&address=${addr}&apikey=${bsc_api_key}`
+                  )
+                ).json()
+              ).result as number) /
+              10 ** (tokens[i].decimals as number),
+          });
+        }
       }
       return result;
     } catch (err) {

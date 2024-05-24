@@ -70,3 +70,12 @@ export interface ITymt {
 export interface IMachineId {
   machineId: string;
 }
+
+export interface IMnemonic {
+  mnemonic: string;
+}
+
+export interface IToken {
+  salt: string;
+  token: string;
+}

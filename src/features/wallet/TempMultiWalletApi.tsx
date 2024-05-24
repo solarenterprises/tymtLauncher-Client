@@ -9,6 +9,7 @@ import {
 } from "@solar-network/crypto/dist/crypto/index.js";
 
 import tymtStorage from "../../lib/Storage";
+import { chainEnum, chainIconMap } from "../../types/walletTypes";
 
 interface MnemonicPayload {
   mnemonic: string;
@@ -65,7 +66,7 @@ export const getTempAddressesFromMnemonic = async (
         name: "Ethereum",
         key: "ethereum",
         decimals: 18,
-        logo: "https://raw.githubusercontent.com/blockchain/coin-definitions/master/extensions/blockchains/ethereum/info/logo.png",
+        logo: chainIconMap.get(chainEnum.ethereum),
         website: "https://ethereum.org/",
         chainId: 1,
         wallet: ethereumAddr,
@@ -120,7 +121,7 @@ export const getTempAddressesFromMnemonic = async (
         name: "Binance",
         key: "smartchain",
         decimals: 18,
-        logo: "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/smartchain/info/logo.png",
+        logo: chainIconMap.get(chainEnum.binance),
         website: null,
         chainId: 56,
         wallet: bscAddr,
@@ -163,7 +164,7 @@ export const getTempAddressesFromMnemonic = async (
         name: "Polygon",
         key: "polygon",
         decimals: 18,
-        logo: "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/polygon/info/logo.png",
+        logo: chainIconMap.get(chainEnum.polygon),
         website: "https://polygon.technology/solutions/polygon-pos/",
         chainId: 137,
         wallet: polygonAddr,
@@ -218,7 +219,7 @@ export const getTempAddressesFromMnemonic = async (
         name: "Avalanche C-Chain",
         key: "avalanchec",
         decimals: 18,
-        logo: "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/avalanchec/info/logo.png",
+        logo: chainIconMap.get(chainEnum.avalanche),
         website: "http://avax.network",
         chainId: 43114,
         wallet: avalancheAddr,
@@ -249,7 +250,7 @@ export const getTempAddressesFromMnemonic = async (
         name: "Arbitrum One",
         key: "arbitrum",
         decimals: 18,
-        logo: "https://cryptologos.cc/logos/arbitrum-arb-logo.png?v=029",
+        logo: chainIconMap.get(chainEnum.arbitrumone),
         website: "https://offchainlabs.com",
         chainId: 42161,
         wallet: arbitrumAddr,
@@ -304,7 +305,7 @@ export const getTempAddressesFromMnemonic = async (
         name: "Optimism",
         key: "optimism",
         decimals: 18,
-        logo: "https://cryptologos.cc/logos/optimism-ethereum-op-logo.png?v=029",
+        logo: chainIconMap.get(chainEnum.optimism),
         website: "https://www.optimism.io/",
         chainId: 10,
         wallet: optimismAddr,

@@ -22,6 +22,8 @@ import { getAccount, setAccount } from "../../features/account/AccountSlice";
 
 import { loginEnum, walletEnum, accountType } from "../../types/accountTypes";
 import ComingModal from "../../components/ComingModal";
+import { setToken } from "../../features/account/TokenSlice";
+import { setMnemonic } from "../../features/account/MnemonicSlice";
 
 const Start = () => {
   const navigate = useNavigate();
@@ -30,6 +32,7 @@ const Start = () => {
   const accountStore: accountType = useSelector(getAccount);
   const [coming, setComing] = useState<boolean>(false);
 
+  // set all sensitive variables as empty Sign out here
   useEffect(() => {
     dispatch(
       setAccount({
@@ -39,6 +42,8 @@ const Start = () => {
         isLoggedIn: false,
       })
     );
+    dispatch(setToken({ salt: "", token: "" }));
+    dispatch(setMnemonic({ mnemonic: "" }));
   }, []);
 
   const handleBackClick = () => {

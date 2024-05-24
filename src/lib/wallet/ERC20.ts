@@ -89,6 +89,7 @@ class ERC20 {
         status: "success",
         title: await translateString("Success"),
         message: await translateString("Successfully Transferred!"),
+        transactionId: response[0].hash,
       };
       return noti;
     } catch (err) {
@@ -98,6 +99,54 @@ class ERC20 {
         status: "failed",
         title: await translateString("Failed"),
         message: translated,
+      };
+      return noti;
+    }
+  }
+
+  static async sendTransactionAPI(
+    passphrase: string,
+    rpc_url: string,
+    tx: { recipients: IRecipient[]; fee: string; vendorField?: string }
+  ) {
+    console.log("RPC_URL", rpc_url);
+    console.log("passphrase", passphrase);
+    if (tx.recipients.length < 1) {
+      const noti: INotification = {
+        status: "failed",
+        title: "Send EVM",
+        message: "Please add recipients.",
+      };
+      return noti;
+    }
+    try {
+      const privateKey = await ERC20.getPrivateKeyFromMnemonic(passphrase);
+      console.log("privateKey", privateKey);
+      const response = await Promise.all(
+        tx.recipients.map((recipient) => {
+          return multichainWallet.transfer({
+            recipientAddress: recipient.address,
+            amount: Number(recipient.amount),
+            network: "ethereum",
+            rpcUrl: rpc_url,
+            privateKey: privateKey,
+          });
+        })
+      );
+      console.log("Response of send EVM native token transaction: ", response);
+      const noti: INotification = {
+        status: "success",
+        title: "Send EVM",
+        message: "Transaction is sent out.",
+        transactionId: response[0].hash,
+      };
+      return noti;
+    } catch (err) {
+      console.error("Failed to send EVM native token transaction: ", err);
+      const noti: INotification = {
+        status: "failed",
+        title: "Send EVM",
+        message: err.toString(),
       };
       return noti;
     }
@@ -144,6 +193,52 @@ class ERC20 {
         status: "failed",
         title: await translateString("Failed"),
         message: translated,
+      };
+      return noti;
+    }
+  }
+
+  static async sendERCTransactionAPI(
+    passphrase: string,
+    rpc_url: string,
+    tx: { recipients: IRecipient[]; fee: string; vendorField?: string }
+  ) {
+    if (tx.recipients.length < 1) {
+      const noti: INotification = {
+        status: "failed",
+        title: "Send EVM",
+        message: "Please add recipients.",
+      };
+      return noti;
+    }
+    try {
+      const privateKey = await ERC20.getPrivateKeyFromMnemonic(passphrase);
+      const response = await Promise.all(
+        tx.recipients.map((recipient) => {
+          return multichainWallet.transfer({
+            recipientAddress: recipient.address,
+            amount: Number(recipient.amount),
+            network: "ethereum",
+            rpcUrl: rpc_url,
+            privateKey: privateKey,
+            tokenAddress: recipient.tokenAddr,
+          });
+        })
+      );
+      console.log("Response of send EVM native token transaction: ", response);
+      const noti: INotification = {
+        status: "success",
+        title: "Send EVM",
+        message: "Transaction is sent out.",
+        transactionId: response[0].hash,
+      };
+      return noti;
+    } catch (err) {
+      console.error("Failed to send EVM native token transaction: ", err);
+      const noti: INotification = {
+        status: "failed",
+        title: "Send EVM",
+        message: err.toString(),
       };
       return noti;
     }
