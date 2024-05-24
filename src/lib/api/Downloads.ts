@@ -208,14 +208,14 @@ export async function runGame(game_key: string, serverIp?: string) {
         case "Linux":
           switch (Games[game_key].executables.linux.type) {
             case "appimage":
-              url += ` --appimage-extract-and-run --address ${d53_server} --port ${d53_port} --launcher_url ${launcherUrl} --token ${token} --go`;
+              url += ` --appimage-extract-and-run --address ${d53_server} --port ${d53_port} --launcher_url ${launcherUrl} --launcher_token ${token} --go`;
               break;
             case "zip":
               break;
           }
           break;
         case "Windows_NT":
-          url += ` --address ${d53_server} --port ${d53_port} --launcher_url ${launcherUrl} --token ${token} --go`;
+          url += ` --address ${d53_server} --port ${d53_port} --launcher_url ${launcherUrl} --launcher_token ${token} --go`;
           break;
         case "Darwin":
           break;

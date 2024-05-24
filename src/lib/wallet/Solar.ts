@@ -535,7 +535,7 @@ export class Solar implements IWallet {
   }
 
   static signMessage = (message: string, mnemonic: string) => {
-    return Crypto.Message.sign(message, mnemonic.normalize("NFD"));
+    return Crypto.Message.sign(message, mnemonic.normalize("NFD")).signature;
   };
 
   static verifyMessage = (

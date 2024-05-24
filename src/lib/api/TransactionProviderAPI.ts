@@ -419,7 +419,7 @@ export default class TransactionProviderAPI {
       password
     );
     const recipients: IRecipient[] = [];
-    for (let i = 0; i < recipients.length; i++) {
+    for (let i = 0; i < jsonData.transfer.length; i++) {
       recipients.push({
         address: jsonData.transfer[i].to,
         amount: jsonData.transfer[i].amount,

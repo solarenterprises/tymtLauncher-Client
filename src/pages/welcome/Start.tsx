@@ -32,7 +32,7 @@ const Start = () => {
   const accountStore: accountType = useSelector(getAccount);
   const [coming, setComing] = useState<boolean>(false);
 
-  // set all related variables as Sign out here
+  // set all sensitive variables as empty Sign out here
   useEffect(() => {
     dispatch(
       setAccount({

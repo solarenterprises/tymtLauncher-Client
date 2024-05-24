@@ -210,7 +210,7 @@ async fn main() -> std::io::Result<()> {
                 let is_valid_token = validate_token(request_param.launcher_token.clone()).await;
                 if !is_valid_token {
                     println!("Invalid token");
-                    return HttpResponse::InternalServerError().finish();
+                    return HttpResponse::InternalServerError().body("Invalid token");
                 }
 
                 let json_data = serde_json
@@ -267,7 +267,7 @@ async fn main() -> std::io::Result<()> {
                 let is_valid_token = validate_token(request_param.launcher_token.clone()).await;
                 if !is_valid_token {
                     println!("Invalid token");
-                    return HttpResponse::InternalServerError().finish();
+                    return HttpResponse::InternalServerError().body("Invalid token");
                 }
 
                 let json_data = serde_json
@@ -333,7 +333,17 @@ async fn main() -> std::io::Result<()> {
                 let is_valid_token = validate_token(request_param.launcher_token.clone()).await;
                 if !is_valid_token {
                     println!("Invalid token");
-                    return HttpResponse::InternalServerError().finish();
+                    return HttpResponse::InternalServerError().body("Invalid token");
+                }
+
+                if request_param.transfer.len() > 1 && request_param.chain != "solar" {
+                    println!("Invalid batch transfer {}", request_param.chain);
+                    return HttpResponse::BadRequest().body(
+                        format!(
+                            "Batch transfer is not enabled for now on {} chain",
+                            request_param.chain
+                        )
+                    );
                 }
 
                 show_transaction_window(APPHANDLE.get().unwrap().clone()).await;
@@ -388,7 +398,17 @@ async fn main() -> std::io::Result<()> {
                 let is_valid_token = validate_token(request_param.launcher_token.clone()).await;
                 if !is_valid_token {
                     println!("Invalid token");
-                    return HttpResponse::InternalServerError().finish();
+                    return HttpResponse::InternalServerError().body("Invalid token");
+                }
+
+                if request_param.transfer.len() > 1 && request_param.chain != "solar" {
+                    println!("Invalid batch transfer {}", request_param.chain);
+                    return HttpResponse::BadRequest().body(
+                        format!(
+                            "Batch transfer is not enabled for now on {} chain",
+                            request_param.chain
+                        )
+                    );
                 }
 
                 let client = Client::new();
@@ -433,7 +453,7 @@ async fn main() -> std::io::Result<()> {
                 let is_valid_token = validate_token(request_param.launcher_token.clone()).await;
                 if !is_valid_token {
                     println!("Invalid token");
-                    return HttpResponse::InternalServerError().finish();
+                    return HttpResponse::InternalServerError().body("Invalid token");
                 }
 
                 let client = Client::new();
