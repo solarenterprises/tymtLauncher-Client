@@ -33,7 +33,7 @@ class AuthAPI {
     body: INonCustodyBeforeSignInReq
   ): Promise<AxiosResponse<any, any>> {
     return await axios.post(
-      `${tymt_backend_url}/auth/non-cusotdy/beforesignin`,
+      `${tymt_backend_url}/auth/non-custody/before-signin`,
       body
     );
   }

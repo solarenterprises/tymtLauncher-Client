@@ -4,15 +4,9 @@ import { useEffect } from "react";
 import { emit } from "@tauri-apps/api/event";
 import { IGetAccountReq, IGetBalanceReq } from "../types/eventParamTypes";
 import TransactionProviderAPI from "../lib/api/TransactionProviderAPI";
-import {
-  IMnemonic,
-  IToken,
-  accountType,
-  nonCustodialType,
-} from "../types/accountTypes";
+import { IMnemonic, ISaltToken, nonCustodialType } from "../types/accountTypes";
 import { useDispatch, useSelector } from "react-redux";
 import { getNonCustodial } from "../features/account/NonCustodialSlice";
-import { getAccount } from "../features/account/AccountSlice";
 import { AppDispatch } from "../store";
 import {
   getMultiWallet,
@@ -23,17 +17,16 @@ import { IChain, multiWalletType } from "../types/walletTypes";
 import { getChain } from "../features/wallet/ChainSlice";
 import { walletType } from "../types/settingTypes";
 import { selectWallet, setWallet } from "../features/settings/WalletSlice";
-import { getToken } from "../features/account/TokenSlice";
+import { getSaltToken } from "../features/account/SaltTokenSlice";
 import tymtCore from "../lib/core/tymtCore";
 import { getMnemonic } from "../features/account/MnemonicSlice";
 
 const TransactionProvider = () => {
   const nonCustodialStore: nonCustodialType = useSelector(getNonCustodial);
   const multiWalletStore: multiWalletType = useSelector(getMultiWallet);
-  const accountStore: accountType = useSelector(getAccount);
   const chainStore: IChain = useSelector(getChain);
   const walletStore: walletType = useSelector(selectWallet);
-  const tokenStore: IToken = useSelector(getToken);
+  const saltTokenStore: ISaltToken = useSelector(getSaltToken);
   const mnemonicStore: IMnemonic = useSelector(getMnemonic);
   const dispatch = useDispatch<AppDispatch>();
 
@@ -46,7 +39,6 @@ const TransactionProvider = () => {
       dispatch(
         refreshBalancesAsync({
           _multiWalletStore: multiWalletStore,
-          _accountStore: accountStore,
         })
       ).then(() => {
         console.log("refreshed BalancesAsync");
@@ -99,7 +91,7 @@ const TransactionProvider = () => {
           mnemonicStore.mnemonic
         );
       const res: boolean = tymtCore.Blockchains.solar.wallet.verifyMessage(
-        tokenStore.salt,
+        saltTokenStore.salt,
         publicKey,
         token
       );

@@ -10,7 +10,11 @@ import {
 } from "@solar-network/crypto/dist/crypto/index.js";
 
 import tymtStorage from "../../lib/Storage";
-import { chainEnum, chainIconMap } from "../../types/walletTypes";
+import {
+  chainEnum,
+  chainIconMap,
+  multiWalletType,
+} from "../../types/walletTypes";
 
 interface MnemonicPayload {
   mnemonic: string;
@@ -397,7 +401,11 @@ export const getAddressesFromMnemonic = async (payload: MnemonicPayload) => {
   };
 };
 
-export const refreshBalances = async ({ _multiWalletStore, _accountStore }) => {
+export const refreshBalances = async ({
+  _multiWalletStore,
+}: {
+  _multiWalletStore: multiWalletType;
+}) => {
   const solarAddr = _multiWalletStore.Solar.chain.wallet;
   const binanceAddr = _multiWalletStore.Binance.chain.wallet;
   const ethereumAddr = _multiWalletStore.Ethereum.chain.wallet;
@@ -408,74 +416,23 @@ export const refreshBalances = async ({ _multiWalletStore, _accountStore }) => {
   const bitcoinAddr = _multiWalletStore.Bitcoin.chain.wallet;
   const solanaAddr = _multiWalletStore.Solana.chain.wallet;
 
-  const ethereum_value_p = PriceAPI.getTokenPrice(
-    _accountStore.accessToken,
-    "ethereum"
-  );
-  const weth_value_p = PriceAPI.getTokenPrice(
-    _accountStore.accessToken,
-    "wrapped-ether-mantle-bridge"
-  );
-  const tether_value_p = PriceAPI.getTokenPrice(
-    _accountStore.accessToken,
-    "tether"
-  );
-  const usdcoin_value_p = PriceAPI.getTokenPrice(
-    _accountStore.accessToken,
-    "usd-coin"
-  );
-  const binancecoin_value_p = PriceAPI.getTokenPrice(
-    _accountStore.accessToken,
-    "binancecoin"
-  );
-  const wbnb_value_p = PriceAPI.getTokenPrice(
-    _accountStore.accessToken,
-    "wbnb"
-  );
-  const binanceusd_value_p = PriceAPI.getTokenPrice(
-    _accountStore.accessToken,
-    "binance-usd"
-  );
-  const maticnetwork_value_p = PriceAPI.getTokenPrice(
-    _accountStore.accessToken,
-    "matic-network"
-  );
-  const wmatic_value_p = PriceAPI.getTokenPrice(
-    _accountStore.accessToken,
-    "wmatic"
-  );
-  const maticaaveusdc_value_p = PriceAPI.getTokenPrice(
-    _accountStore.accessToken,
-    "matic-aave-usdc"
-  );
-  const avalanche2_value_p = PriceAPI.getTokenPrice(
-    _accountStore.accessToken,
-    "avalanche-2"
-  );
-  const arbitrum_value_p = PriceAPI.getTokenPrice(
-    _accountStore.accessToken,
-    "arbitrum"
-  );
-  const usdd_value_p = PriceAPI.getTokenPrice(
-    _accountStore.accessToken,
-    "usdd"
-  );
-  const optimism_value_p = PriceAPI.getTokenPrice(
-    _accountStore.accessToken,
-    "optimism"
-  );
-  const solar_value_p = PriceAPI.getTokenPrice(
-    _accountStore.accessToken,
-    "swipe"
-  );
-  const bitcoin_value_p = PriceAPI.getTokenPrice(
-    _accountStore.accessToken,
-    "bitcoin"
-  );
-  const solana_value_p = PriceAPI.getTokenPrice(
-    _accountStore.accessToken,
-    "solana"
-  );
+  const ethereum_value_p = PriceAPI.getTokenPrice("ethereum");
+  const weth_value_p = PriceAPI.getTokenPrice("wrapped-ether-mantle-bridge");
+  const tether_value_p = PriceAPI.getTokenPrice("tether");
+  const usdcoin_value_p = PriceAPI.getTokenPrice("usd-coin");
+  const binancecoin_value_p = PriceAPI.getTokenPrice("binancecoin");
+  const wbnb_value_p = PriceAPI.getTokenPrice("wbnb");
+  const binanceusd_value_p = PriceAPI.getTokenPrice("binance-usd");
+  const maticnetwork_value_p = PriceAPI.getTokenPrice("matic-network");
+  const wmatic_value_p = PriceAPI.getTokenPrice("wmatic");
+  const maticaaveusdc_value_p = PriceAPI.getTokenPrice("matic-aave-usdc");
+  const avalanche2_value_p = PriceAPI.getTokenPrice("avalanche-2");
+  const arbitrum_value_p = PriceAPI.getTokenPrice("arbitrum");
+  const usdd_value_p = PriceAPI.getTokenPrice("usdd");
+  const optimism_value_p = PriceAPI.getTokenPrice("optimism");
+  const solar_value_p = PriceAPI.getTokenPrice("swipe");
+  const bitcoin_value_p = PriceAPI.getTokenPrice("bitcoin");
+  const solana_value_p = PriceAPI.getTokenPrice("solana");
 
   const ethereum_bal_p = tymtCore.Blockchains.eth.wallet.getTokenBalance(
     ethereumAddr,

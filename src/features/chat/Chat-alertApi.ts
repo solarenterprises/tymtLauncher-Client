@@ -1,5 +1,6 @@
 import axios from "axios";
 import { tymt_backend_url } from "../../configs";
+import { ISaltToken } from "../../types/accountTypes";
 
 export const fetchUnreadAlerts = async (userid: string) => {
   try {
@@ -10,8 +11,7 @@ export const fetchUnreadAlerts = async (userid: string) => {
       return res.data.result;
     } else {
     }
-  } catch (err) {
-  }
+  } catch (err) {}
 };
 
 export const fetchReadAlerts = async (userid: string) => {
@@ -39,17 +39,17 @@ export const fetchCountUnreadAlerts = async (userid: string) => {
       return res.data.count;
     } else {
     }
-  } catch (err) {
-  }
+  } catch (err) {}
 };
-
 
 export const updateAlertReadstatus = async (
   alert_id: string,
-  userid: string,
-  accessToken: string
+  userid: string
 ) => {
   try {
+    const saltTokenStore: ISaltToken = JSON.parse(
+      sessionStorage.getItem(`saltToken`)
+    );
     const res = await axios.put(
       `${tymt_backend_url}/alerts/add-reader/${alert_id}`,
       {
@@ -57,7 +57,7 @@ export const updateAlertReadstatus = async (
       },
       {
         headers: {
-          Authorization: `Bearer ${accessToken}`,
+          "x-token": saltTokenStore.token,
           "Content-Type": "application/json",
         },
       }
@@ -74,10 +74,12 @@ export const updateAlertReadstatus = async (
 
 export const approveFriendRequest = async (
   alert_id: string,
-  userid: string,
-  accessToken: string
+  userid: string
 ) => {
   try {
+    const saltTokenStore: ISaltToken = JSON.parse(
+      sessionStorage.getItem(`saltToken`)
+    );
     const res = await axios.put(
       `${tymt_backend_url}/alerts/${alert_id}`,
       {
@@ -87,7 +89,7 @@ export const approveFriendRequest = async (
       },
       {
         headers: {
-          Authorization: `Bearer ${accessToken}`,
+          "x-token": saltTokenStore.token,
           "Content-Type": "application/json",
         },
       }
@@ -104,10 +106,12 @@ export const approveFriendRequest = async (
 
 export const declineFriendRequest = async (
   alert_id: string,
-  userid: string,
-  accessToken: string
+  userid: string
 ) => {
   try {
+    const saltTokenStore: ISaltToken = JSON.parse(
+      sessionStorage.getItem(`saltToken`)
+    );
     const res = await axios.put(
       `${tymt_backend_url}/alerts/${alert_id}`,
       {
@@ -117,7 +121,7 @@ export const declineFriendRequest = async (
       },
       {
         headers: {
-          Authorization: `Bearer ${accessToken}`,
+          "x-token": saltTokenStore.token,
           "Content-Type": "application/json",
         },
       }
@@ -131,31 +135,3 @@ export const declineFriendRequest = async (
     console.log("Decline FR failed");
   }
 };
-
-// export const updateAlertReadstatusperUser = async (
-//   alert_id: string,
-//   userid: string,
-//   accessToken: string
-// ) => {
-//   try {
-//     const res = await axios.put(
-//       `${tymt_backend_url}/alerts/${alert_id}`,
-//       {
-//         reader: `${userid}`,
-//       },
-//       {
-//         headers: {
-//           Authorization: `Bearer ${accessToken}`,
-//           "Content-Type": "application/json",
-//         },
-//       }
-//     );
-//     if (res.status === 200) {
-//       console.log("update alert status success");
-//     } else {
-//       console.log("update alert status failed");
-//     }
-//   } catch (err) {
-//     console.log("update alert status failed");
-//   }
-// };

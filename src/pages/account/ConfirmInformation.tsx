@@ -64,7 +64,7 @@ import {
 } from "../../features/chat/SocketHashSlice";
 import { ISocketHash } from "../../types/chatTypes";
 import tymtCore from "../../lib/core/tymtCore";
-import { setToken } from "../../features/account/TokenSlice";
+import { setSaltToken } from "../../features/account/SaltTokenSlice";
 import { INonCustodyBeforeSignInReq } from "../../types/AuthAPITypes";
 import { getMnemonic } from "../../features/account/MnemonicSlice";
 
@@ -123,8 +123,19 @@ const ConfirmInformation = () => {
     } else if (accountStore.wallet === walletEnum.noncustodial) {
       if (accountStore.mode === loginEnum.login) {
         try {
+          const publicKey: string =
+            await tymtCore.Blockchains.solar.wallet.getPublicKey(
+              mnemonicStore.mnemonic
+            );
+          const signature: string =
+            tymtCore.Blockchains.solar.wallet.signMessage(
+              "tymt",
+              mnemonicStore.mnemonic
+            );
           const body0: INonCustodyBeforeSignInReq = {
             sxpAddress: multiWalletStore.Solar.chain.wallet,
+            publicKey: publicKey,
+            signature: signature,
           };
           const res0 = await AuthAPI.nonCustodyBeforeSignin(body0);
           const salt = res0?.data?.salt;
@@ -132,8 +143,13 @@ const ConfirmInformation = () => {
             salt,
             mnemonicStore.mnemonic
           );
+          const _testToken = tymtCore.Blockchains.solar.wallet.signMessage(
+            "Vj5zPFiq8hKj9t52I7HT=xY~BOZX*O)^",
+            mnemonicStore.mnemonic
+          );
+          console.log("_testToken", _testToken);
           dispatch(
-            setToken({
+            setSaltToken({
               salt: salt,
               token: token,
             })
@@ -142,11 +158,11 @@ const ConfirmInformation = () => {
             sxpAddress: multiWalletStore.Solar.chain.wallet,
             token: token,
           });
+          console.log("SignInRes", res);
           dispatch(
             setAccount({
               ...accountStore,
-              accessToken: res.data.accessToken,
-              isLoggedIn: true,
+              isLoggedIn: true, // ??? res?.data?.valid
             })
           );
           const data = multiWalletStore.Solar;

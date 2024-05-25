@@ -43,7 +43,7 @@ import socketHashReducer from "./features/chat/SocketHashSlice";
 import chatmountedReducer from "./features/chat/Chat-intercomSupportSlice";
 import chathistoryperUserReducer from "./features/chat/Chat-historyperUserSlice";
 import mnemonicReducer from "./features/account/MnemonicSlice";
-import tokenReducer from "./features/account/TokenSlice";
+import saltTokenReducer from "./features/account/SaltTokenSlice";
 
 const blacklistActionTypes = [
   "notification/setNotification",
@@ -101,7 +101,7 @@ const store = configureStore({
     chatmounted: chatmountedReducer,
     chathistoryperUser: chathistoryperUserReducer,
     mnemonic: mnemonicReducer,
-    token: tokenReducer,
+    saltToken: saltTokenReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(stateSyncMiddleware),

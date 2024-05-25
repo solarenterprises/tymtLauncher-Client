@@ -1,15 +1,17 @@
 import axios, { AxiosResponse } from "axios";
 
 import { tymt_backend_url } from "../../configs/index";
+import { ISaltToken } from "../../types/accountTypes";
 
 class PriceAPI {
-  static async getTokenPrices(
-    accessToken: string
-  ): Promise<AxiosResponse<any, any>> {
+  static async getTokenPrices(): Promise<AxiosResponse<any, any>> {
     try {
+      const saltTokenStore: ISaltToken = JSON.parse(
+        sessionStorage.getItem(`saltToken`)
+      );
       const result = await axios.get(`${tymt_backend_url}/token-prices`, {
         headers: {
-          Authorization: `Bearer ${accessToken}`,
+          "x-token": saltTokenStore.token,
         },
       });
       return result.data.result.data;
@@ -18,16 +20,16 @@ class PriceAPI {
     }
   }
 
-  static async getTokenPrice(
-    accessToken: string,
-    cmc: string
-  ): Promise<AxiosResponse<any, any>> {
+  static async getTokenPrice(cmc: string): Promise<AxiosResponse<any, any>> {
     try {
+      const saltTokenStore: ISaltToken = JSON.parse(
+        sessionStorage.getItem(`saltToken`)
+      );
       const result = await axios.get(
         `${tymt_backend_url}/token-prices/latest-token-price-by-cmc/${cmc}`,
         {
           headers: {
-            Authorization: `Bearer ${accessToken}`,
+            "x-token": saltTokenStore.token,
           },
         }
       );

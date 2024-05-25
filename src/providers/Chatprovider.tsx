@@ -1,8 +1,5 @@
 import { Outlet } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-
-import { nonCustodialType } from "../types/accountTypes";
-import { multiWalletType } from "../types/walletTypes";
 import {
   ChatHistoryType,
   ChatMessageType,
@@ -20,10 +17,7 @@ import {
   generateRandomString,
   getsenderName,
 } from "../features/chat/Chat-contactApi";
-import { getNonCustodial } from "../features/account/NonCustodialSlice";
-import { getMultiWallet } from "../features/wallet/MultiWalletSlice";
 import {
-  getaccessToken,
   createContact,
   receiveContactlist,
 } from "../features/chat/Chat-contactApi";
@@ -60,8 +54,6 @@ import { useCallback, useEffect } from "react";
 const ChatProvider = () => {
   const dispatch = useDispatch();
   const account: accountType = useSelector(getAccount);
-  const nonCustodial: nonCustodialType = useSelector(getNonCustodial);
-  const multiwallet: multiWalletType = useSelector(getMultiWallet);
   const chatHistoryStore: ChatHistoryType = useSelector(getChatHistory);
   const currentpartner: userType = useSelector(selectPartner);
   const chatuserlist: userType[] = useSelector(getUserlist);
@@ -84,12 +76,8 @@ const ChatProvider = () => {
   } = useNotification();
 
   const updateContact = async (_id) => {
-    const accessToken: string = await getaccessToken(
-      multiwallet.Solar.chain.wallet,
-      nonCustodial.password
-    );
-    await createContact(_id, accessToken);
-    const contacts: userType[] = await receiveContactlist(accessToken);
+    await createContact(_id);
+    const contacts: userType[] = await receiveContactlist();
     dispatch(setUserList(contacts));
   };
 

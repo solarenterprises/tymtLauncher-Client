@@ -108,10 +108,6 @@ export interface ChatMsgType {
   to: string;
 }
 
-export interface accesstokenType {
-  accesstoken: string;
-}
-
 export interface selecteduserType {
   id: string;
 }

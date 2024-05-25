@@ -2,14 +2,10 @@ import { Box, Button, Stack } from "@mui/material";
 import { useCallback, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
-
 import unreaddot from "../../assets/alert/unreaddot.svg";
 import readdot from "../../assets/alert/readdot.svg";
 import AlertList from "../../components/alert/Alertlist";
-
-import { accountType, nonCustodialType } from "../../types/accountTypes";
-
-// import { featchCountUnreadAlert } from "../../features/chat/Chat-alertApi";
+import { accountType } from "../../types/accountTypes";
 import { getAccount } from "../../features/account/AccountSlice";
 import {
   fetchReadAlerts,
@@ -17,10 +13,6 @@ import {
   updateAlertReadstatus,
 } from "../../features/chat/Chat-alertApi";
 import { alertType } from "../../types/chatTypes";
-import { getaccessToken } from "../../features/chat/Chat-contactApi";
-import { multiWalletType } from "../../types/walletTypes";
-import { getMultiWallet } from "../../features/wallet/MultiWalletSlice";
-import { getNonCustodial } from "../../features/account/NonCustodialSlice";
 import { alertbadgeType } from "../../types/alertTypes";
 import {
   selectBadgeStatus,
@@ -32,8 +24,6 @@ const Alertmain = () => {
   const { t } = useTranslation();
   const account: accountType = useSelector(getAccount);
   const alertbadge: alertbadgeType = useSelector(selectBadgeStatus);
-  const multiwallet: multiWalletType = useSelector(getMultiWallet);
-  const nonCustodial: nonCustodialType = useSelector(getNonCustodial);
   const [unreadcount, setUnreadCount] = useState<number>(0);
   const [readcount, setReadCount] = useState<number>(0);
   const [unreadalerts, setUnreadAlerts] = useState<alertType[]>([]);
@@ -58,20 +48,12 @@ const Alertmain = () => {
   };
 
   const updateAlert = async () => {
-    const accessToken: string = await getaccessToken(
-      multiwallet.Solar.chain.wallet,
-      nonCustodial.password
-    );
-
     for (const alert of unreadalerts) {
-      await updateAlertReadstatus(alert._id, account.uid, accessToken);
+      await updateAlertReadstatus(alert._id, account.uid);
     }
-
     await getUnreadAlerts();
     await getReadAlerts();
     dispatch(setBadgeStatus({ ...alertbadge, badge: false }));
-
-    console.log("accesstoken", accessToken);
     console.log("userid", account.uid);
   };
 

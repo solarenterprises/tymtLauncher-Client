@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-
 import { propsAlertListType } from "../../types/alertTypes";
 import failedIcon from "../../assets/alert/failed-icon.svg";
 import successIcon from "../../assets/alert/success-icon.svg";
@@ -12,9 +11,7 @@ import alertIcon from "../../assets/alert/alert-icon.png";
 import messageIcon from "../../assets/alert/message-icon.svg";
 import unreaddot from "../../assets/alert/unreaddot.svg";
 import readdot from "../../assets/alert/readdot.svg";
-
 import Avatar from "../home/Avatar";
-
 import {
   getUserlist,
   setUserList,
@@ -28,18 +25,13 @@ import {
   getFriendlist,
   setFriendlist,
 } from "../../features/chat/Chat-friendlistSlice";
-import { getNonCustodial } from "../../features/account/NonCustodialSlice";
-import { getMultiWallet } from "../../features/wallet/MultiWalletSlice";
-
 import { useSocket } from "../../providers/SocketProvider";
 import {
   createContact,
   // generateRandomString,
-  getaccessToken,
   receiveContactlist,
 } from "../../features/chat/Chat-contactApi";
-import { accountType, nonCustodialType } from "../../types/accountTypes";
-import { multiWalletType } from "../../types/walletTypes";
+import { accountType } from "../../types/accountTypes";
 import {
   // addEncryptionKey,
   selectEncryptionKeyByUserId,
@@ -60,8 +52,6 @@ const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
   const [logo, setLogo] = useState<any>();
   const [keyperuser, setKeyperUser] = useState<string>("");
   const [decryptedmessage, setDecryptedMessage] = useState<string>("");
-  const nonCustodial: nonCustodialType = useSelector(getNonCustodial);
-  const multiwallet: multiWalletType = useSelector(getMultiWallet);
   const account: accountType = useSelector(getAccount);
   const userdata: userType[] = useSelector(selectPartner);
   const chatuserlist: userType[] = useSelector(getUserlist);
@@ -78,7 +68,6 @@ const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
     if (title === "chat") {
       if (existkey) {
         setKeyperUser(existkey);
-        // console.log("alertlist chatkey-->", existkey);
       } else {
         const userid = detail.note?.sender;
         const askdata: askEncryptionKeyType = {
@@ -136,12 +125,8 @@ const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
   };
 
   const updateContact = async (_id) => {
-    const accessToken: string = await getaccessToken(
-      multiwallet.Solar.chain.wallet,
-      nonCustodial.password
-    );
-    await createContact(_id, accessToken);
-    const contacts: userType[] = await receiveContactlist(accessToken);
+    await createContact(_id);
+    const contacts: userType[] = await receiveContactlist();
     dispatch(setUserList(contacts));
   };
 

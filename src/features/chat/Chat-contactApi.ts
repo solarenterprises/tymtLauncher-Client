@@ -1,6 +1,7 @@
 import axios from "axios";
 import tymtCore from "../../lib/core/tymtCore";
 import { tymt_backend_url } from "../../configs";
+import { ISaltToken } from "../../types/accountTypes";
 
 export const searchUsers = async (nameorsxp: string) => {
   try {
@@ -25,14 +26,17 @@ export interface contactinterface {
   contact: string;
 }
 
-export const createContact = async (_id: string, accessToken: string) => {
+export const createContact = async (_id: string) => {
   try {
+    const saltTokenStore: ISaltToken = JSON.parse(
+      sessionStorage.getItem(`saltToken`)
+    );
     const contact: contactinterface = {
       contact: _id,
     };
     const res = await axios.post(`${tymt_backend_url}/users/contact`, contact, {
       headers: {
-        Authorization: `Bearer ${accessToken}`,
+        "x-token": saltTokenStore.token,
         "Content-Type": "application/json",
       },
     });
@@ -43,11 +47,14 @@ export const createContact = async (_id: string, accessToken: string) => {
   } catch (err) {}
 };
 
-export const deleteContact = async (_id: string, accessToken: string) => {
+export const deleteContact = async (_id: string) => {
   try {
+    const saltTokenStore: ISaltToken = JSON.parse(
+      sessionStorage.getItem(`saltToken`)
+    );
     const res = await axios.delete(`${tymt_backend_url}/users/contact`, {
       headers: {
-        Authorization: `Bearer ${accessToken}`,
+        "x-token": saltTokenStore.token,
         "Content-Type": "application/json",
       },
       data: {
@@ -65,11 +72,14 @@ export const deleteContact = async (_id: string, accessToken: string) => {
   }
 };
 
-export const receiveContactlist = async (accessToken: string) => {
+export const receiveContactlist = async () => {
   try {
+    const saltTokenStore: ISaltToken = JSON.parse(
+      sessionStorage.getItem(`saltToken`)
+    );
     const res = await axios.get(`${tymt_backend_url}/users/contact/list`, {
       headers: {
-        Authorization: `Bearer ${accessToken}`,
+        "x-token": saltTokenStore.token,
         "Content-Type": "application/json",
       },
     });
@@ -89,29 +99,17 @@ export interface accessinterface {
   password: string;
 }
 
-export const getaccessToken = async (sxpAddress: string, password: string) => {
-  try {
-    const accessrequest: accessinterface = {
-      sxpAddress: sxpAddress,
-      password: password,
-    };
-    const res = await axios.post(
-      `${tymt_backend_url}/auth/non-custody/signin`,
-      accessrequest
-    );
-    if (res.status === 200) {
-      return res.data.accessToken;
-    } else {
-      console.log("failed");
-    }
-  } catch (err) {
-    console.log("Not catched");
-  }
-};
-
 export const getsenderName = async (userid: string) => {
   try {
-    const res = await axios.get(`${tymt_backend_url}/users/${userid}`);
+    const saltTokenStore: ISaltToken = JSON.parse(
+      sessionStorage.getItem(`saltToken`)
+    );
+    const res = await axios.get(`${tymt_backend_url}/users/${userid}`, {
+      headers: {
+        "x-token": saltTokenStore.token,
+        "Content-Type": "application/json",
+      },
+    });
     if (res.status === 200) {
       console.log("getcontactlist success");
       return res.data.result.data.nickName;
@@ -123,13 +121,16 @@ export const getsenderName = async (userid: string) => {
   }
 };
 
-export const getUserAvatar = async (userid: string, accessToken: string) => {
+export const getUserAvatar = async (userid: string) => {
   try {
+    const saltTokenStore: ISaltToken = JSON.parse(
+      sessionStorage.getItem(`saltToken`)
+    );
     const res = await axios.get(
       `${tymt_backend_url}/users/get-avatar/${userid}`,
       {
         headers: {
-          Authorization: `Bearer ${accessToken}`,
+          "x-token": saltTokenStore.token,
           "Content-Type": "application/json",
         },
       }
@@ -146,7 +147,15 @@ export const getUserAvatar = async (userid: string, accessToken: string) => {
 
 export const getUsernotificationStatus = async (userid: string) => {
   try {
-    const res = await axios.get(`${tymt_backend_url}/users/${userid}`);
+    const saltTokenStore: ISaltToken = JSON.parse(
+      sessionStorage.getItem(`saltToken`)
+    );
+    const res = await axios.get(`${tymt_backend_url}/users/${userid}`, {
+      headers: {
+        "x-token": saltTokenStore.token,
+        "Content-Type": "application/json",
+      },
+    });
     if (res.status === 200) {
       return res.data.result.data.notificationStatus;
     } else {
@@ -159,10 +168,12 @@ export const getUsernotificationStatus = async (userid: string) => {
 
 export const updateUsernotificationStatus = async (
   userid: string,
-  notificationStatus: boolean,
-  accessToken: string
+  notificationStatus: boolean
 ) => {
   try {
+    const saltToken: ISaltToken = JSON.parse(
+      sessionStorage.getItem(`saltToken`)
+    );
     const res = await axios.put(
       `${tymt_backend_url}/users/${userid}`,
       {
@@ -170,7 +181,7 @@ export const updateUsernotificationStatus = async (
       },
       {
         headers: {
-          Authorization: `Bearer ${accessToken}`,
+          "x-token": saltToken.token,
           "Content-Type": "application/json",
         },
       }
@@ -183,9 +194,10 @@ export const updateUsernotificationStatus = async (
   } catch (err) {}
 };
 
-export const generateRandomString = (length:number) =>  {
-  let result = '';
-  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_!#~$%^&*()-=+';
+export const generateRandomString = (length: number) => {
+  let result = "";
+  const characters =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_!#~$%^&*()-=+";
   const charactersLength = characters.length;
   let counter = 0;
   while (counter < length) {
@@ -193,5 +205,4 @@ export const generateRandomString = (length:number) =>  {
     counter += 1;
   }
   return result;
-}
-
+};

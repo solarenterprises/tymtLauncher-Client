@@ -10,20 +10,15 @@ import {
   InputAdornment,
   Grid,
   Button,
-  // Modal,
 } from "@mui/material";
 import { debounce } from "lodash";
-
 import ChatStyle from "../../styles/ChatStyles";
-
 import searchlg from "../../assets/searchlg.svg";
 import settingicon from "../../assets/chat/settings.svg";
 import nocontact from "../../assets/chat/nocontact.png";
-// import Avatar from "../../components/home/Avatar";
 import BlockModal from "../../components/chat/BlockModal";
 import DeleteModal from "../../components/chat/DeleteModal";
 import RequestModal from "../../components/chat/RequestModal";
-
 import { useSocket } from "../../providers/SocketProvider";
 import {
   alertType,
@@ -31,8 +26,7 @@ import {
   selecteduserType,
   userType,
 } from "../../types/chatTypes";
-import { accountType, nonCustodialType } from "../../types/accountTypes";
-import { multiWalletType } from "../../types/walletTypes";
+import { accountType } from "../../types/accountTypes";
 import {
   getUserlist,
   setUserList,
@@ -40,16 +34,10 @@ import {
 import {
   createContact,
   deleteContact,
-  getaccessToken,
   receiveContactlist,
   searchUsers,
 } from "../../features/chat/Chat-contactApi";
-import { getNonCustodial } from "../../features/account/NonCustodialSlice";
-import { getMultiWallet } from "../../features/wallet/MultiWalletSlice";
-import {
-  getSelectedUser,
-  // setSelectedUsertoDelete,
-} from "../../features/chat/Chat-selecteduserSlice";
+import { getSelectedUser } from "../../features/chat/Chat-selecteduserSlice";
 import { setChatHistory } from "../../features/chat/Chat-historySlice";
 import { getAccount } from "../../features/account/AccountSlice";
 import { fetchUnreadAlerts } from "../../features/chat/Chat-alertApi";
@@ -78,8 +66,6 @@ const Chatmain = ({ view, setView }: propsType) => {
   const { t } = useTranslation();
   const [value, setValue] = useState<string>("");
   const chatuserlist: userType[] = useSelector(getUserlist);
-  const nonCustodial: nonCustodialType = useSelector(getNonCustodial);
-  const multiwallet: multiWalletType = useSelector(getMultiWallet);
   const selectedusertoDelete: selecteduserType = useSelector(getSelectedUser);
   const account: accountType = useSelector(getAccount);
   const alertbadge: alertbadgeType = useSelector(selectBadgeStatus);
@@ -98,13 +84,9 @@ const Chatmain = ({ view, setView }: propsType) => {
   const [unreadalerts, setUnreadAlerts] = useState<alertType[]>([]);
 
   const deleteSelectedUser = async () => {
-    const accessToken: string = await getaccessToken(
-      multiwallet.Solar.chain.wallet,
-      nonCustodial.password
-    );
-    await deleteContact(selectedusertoDelete.id, accessToken);
+    await deleteContact(selectedusertoDelete.id);
     setOpenDeleteModal(false);
-    const contacts: userType[] = await receiveContactlist(accessToken);
+    const contacts: userType[] = await receiveContactlist();
     dispatch(setUserList(contacts));
     dispatch(setChatHistory({ messages: [] }));
   };
@@ -132,12 +114,8 @@ const Chatmain = ({ view, setView }: propsType) => {
   };
 
   const updateContact = async (_id) => {
-    const accessToken: string = await getaccessToken(
-      multiwallet.Solar.chain.wallet,
-      nonCustodial.password
-    );
-    await createContact(_id, accessToken);
-    const contacts: userType[] = await receiveContactlist(accessToken);
+    await createContact(_id);
+    const contacts: userType[] = await receiveContactlist();
     dispatch(setUserList(contacts));
   };
 

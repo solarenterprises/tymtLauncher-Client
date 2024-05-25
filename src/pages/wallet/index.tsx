@@ -24,8 +24,6 @@ import { AppDispatch } from "../../store";
 import { formatBalance } from "../../lib/helper";
 import Loading from "../../components/Loading";
 import ComingModal from "../../components/ComingModal";
-import { accountType } from "../../types/accountTypes";
-import { getAccount } from "../../features/account/AccountSlice";
 import {
   getCurrency,
   refreshCurrencyAsync,
@@ -61,7 +59,6 @@ const Wallet = () => {
   const wallets: multiWalletType = useSelector(getMultiWallet);
   const walletStore: walletType = useSelector(selectWallet);
   const chain: IChain = useSelector(getChain);
-  const accountStore: accountType = useSelector(getAccount);
   const currencyStore: ICurrency = useSelector(getCurrency);
   const [currentChain, setCurrentChain] = useState(chain.currentToken);
   const [value, setValue] = useState(0);
@@ -92,7 +89,6 @@ const Wallet = () => {
       dispatch(
         refreshBalancesAsync({
           _multiWalletStore: wallets,
-          _accountStore: accountStore,
         })
       ).then(() => {
         dispatch(refreshCurrencyAsync()).then(() => {
@@ -121,7 +117,6 @@ const Wallet = () => {
     dispatch(
       refreshBalancesAsync({
         _multiWalletStore: wallets,
-        _accountStore: accountStore,
       })
     ).then(() => {
       dispatch(refreshCurrencyAsync()).then(() => {
@@ -153,7 +148,6 @@ const Wallet = () => {
     dispatch(
       refreshBalancesAsync({
         _multiWalletStore: wallets,
-        _accountStore: accountStore,
       })
     ).then(() => {
       dispatch(refreshCurrencyAsync()).then(() => {});

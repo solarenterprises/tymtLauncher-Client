@@ -22,7 +22,7 @@ import { getAccount, setAccount } from "../../features/account/AccountSlice";
 
 import { loginEnum, walletEnum, accountType } from "../../types/accountTypes";
 import ComingModal from "../../components/ComingModal";
-import { setToken } from "../../features/account/TokenSlice";
+import { setSaltToken } from "../../features/account/SaltTokenSlice";
 import { setMnemonic } from "../../features/account/MnemonicSlice";
 
 const Start = () => {
@@ -38,11 +38,10 @@ const Start = () => {
       setAccount({
         ...accountStore,
         mode: loginEnum.login,
-        accessToken: "",
         isLoggedIn: false,
       })
     );
-    dispatch(setToken({ salt: "", token: "" }));
+    dispatch(setSaltToken({ salt: "", token: "" }));
     dispatch(setMnemonic({ mnemonic: "" }));
   }, []);
 

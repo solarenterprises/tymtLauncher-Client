@@ -239,7 +239,6 @@ const WalletSendSXP = () => {
             dispatch(
               refreshBalancesAsync({
                 _multiWalletStore: multiWalletStore,
-                _accountStore: accountStore,
               })
             ).then(() => {
               dispatch(refreshCurrencyAsync()).then(() => {

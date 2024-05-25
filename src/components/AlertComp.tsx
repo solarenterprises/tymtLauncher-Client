@@ -14,7 +14,6 @@ import alertIcon from "../assets/alert/alert-icon.png";
 import messageIcon from "../assets/alert/message-icon.svg";
 import closeIcon from "../assets/settings/x-icon.svg";
 import Avatar from "./home/Avatar";
-
 import { propsAlertTypes } from "../types/commonTypes";
 import { getUserlist } from "../features/chat/Chat-userlistSlice";
 import { notification_duration } from "../configs";
@@ -22,10 +21,8 @@ import {
   selectPartner,
   setCurrentChatPartner,
 } from "../features/chat/Chat-currentPartnerSlice";
-import {  userType } from "../types/chatTypes";
-import { accountType, nonCustodialType } from "../types/accountTypes";
-import { multiWalletType } from "../types/walletTypes";
-
+import { userType } from "../types/chatTypes";
+import { accountType } from "../types/accountTypes";
 import {
   getFriendlist,
   setFriendlist,
@@ -35,9 +32,6 @@ import {
   declineFriendRequest,
 } from "../features/chat/Chat-alertApi";
 import { getAccount } from "../features/account/AccountSlice";
-import { getaccessToken } from "../features/chat/Chat-contactApi";
-import { getNonCustodial } from "../features/account/NonCustodialSlice";
-import { getMultiWallet } from "../features/wallet/MultiWalletSlice";
 import { selectEncryptionKeyByUserId } from "../features/chat/Chat-encryptionkeySlice";
 import { decrypt } from "../lib/api/Encrypt";
 
@@ -62,8 +56,6 @@ const AlertComp = ({
   const chatuserlist: userType[] = useSelector(getUserlist);
   const friendlist: userType[] = useSelector(getFriendlist);
   const account: accountType = useSelector(getAccount);
-  const nonCustodial: nonCustodialType = useSelector(getNonCustodial);
-  const multiwallet: multiWalletType = useSelector(getMultiWallet);
   const [border, setBorder] = useState("");
   const [bg, setBg] = useState("");
   const [logo, setLogo] = useState<any>();
@@ -98,18 +90,10 @@ const AlertComp = ({
     console.log("friendlist", friendlist);
   };
   const approveFR = async () => {
-    const accessToken: string = await getaccessToken(
-      multiwallet.Solar.chain.wallet,
-      nonCustodial.password
-    );
-    await approveFriendRequest(detail._id, account.uid, accessToken);
+    await approveFriendRequest(detail._id, account.uid);
   };
   const declineFR = async () => {
-    const accessToken: string = await getaccessToken(
-      multiwallet.Solar.chain.wallet,
-      nonCustodial.password
-    );
-    await declineFriendRequest(detail._id, account.uid, accessToken);
+    await declineFriendRequest(detail._id, account.uid);
   };
   useEffect(() => {
     if (status == "failed") {

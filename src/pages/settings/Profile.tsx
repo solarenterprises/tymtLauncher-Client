@@ -61,11 +61,7 @@ const Profile = ({ view, setView }: propsType) => {
       account.wallet === walletEnum.noncustodial
         ? dispatch(setNonCustodial({ ...nonCustodial, nickname: nickname }))
         : dispatch(setCustodial({ ...custodial, nickname: nickname }));
-      const res = await updateUserNickname(
-        account.uid,
-        nickname,
-        account.accessToken
-      );
+      const res = await updateUserNickname(account.uid, nickname);
       console.log(res.data, "updateUserNickName");
       setNotificationStatus("success");
       setNotificationTitle(t("alt-1_nickname-saved"));
@@ -94,7 +90,7 @@ const Profile = ({ view, setView }: propsType) => {
     const file = fileInput.files ? fileInput.files[0] : null;
     const formData = new FormData();
     formData.append("file", file);
-    fileUpload(formData, account.accessToken)
+    fileUpload(formData)
       .then((res) => {
         dispatch(
           setAccount({
@@ -171,7 +167,9 @@ const Profile = ({ view, setView }: propsType) => {
                     onlineStatus={true}
                     userid={account.uid}
                     size={92}
-                    status={!notificationStore.alert ? "donotdisturb" : "online"}
+                    status={
+                      !notificationStore.alert ? "donotdisturb" : "online"
+                    }
                   />
                 </Box>
                 <Box className="fs-h5 white">{t("set-68_change-avatar")}</Box>

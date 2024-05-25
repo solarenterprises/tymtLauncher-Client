@@ -39,11 +39,7 @@ const ChatSetting = ({ view, setView }: propsType) => {
 
   const putUserStatus = async () => {
     try {
-      await updateUsernotificationStatus(
-        account.uid,
-        notificationStore.alert,
-        account.accessToken
-      );
+      await updateUsernotificationStatus(account.uid, notificationStore.alert);
       dispatch(
         setNotification({
           ...notificationStore,

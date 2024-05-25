@@ -3,7 +3,6 @@ import { useDispatch, useSelector } from "react-redux";
 import Avatar from "../home/Avatar";
 import {
   createContact,
-  getaccessToken,
   receiveContactlist,
 } from "../../features/chat/Chat-contactApi";
 import { setUserList } from "../../features/chat/Chat-userlistSlice";
@@ -12,14 +11,10 @@ import {
   selecteduserType,
   userType,
 } from "../../types/chatTypes";
-import { multiWalletType } from "../../types/walletTypes";
-import { nonCustodialType } from "../../types/accountTypes";
 import {
   getSelectedUser,
   setSelectedUsertoDelete,
 } from "../../features/chat/Chat-selecteduserSlice";
-import { getMultiWallet } from "../../features/wallet/MultiWalletSlice";
-import { getNonCustodial } from "../../features/account/NonCustodialSlice";
 import {
   selectPartner,
   setCurrentChatPartner,
@@ -34,8 +29,6 @@ const Userlist = ({
   setView,
 }: propsUserlistType) => {
   const selectedusertoDelete: selecteduserType = useSelector(getSelectedUser);
-  const multiwallet: multiWalletType = useSelector(getMultiWallet);
-  const nonCustodial: nonCustodialType = useSelector(getNonCustodial);
   const userdata: userType[] = useSelector(selectPartner);
   const dispatch = useDispatch();
   const handleContextMenu = (e: any, id: string) => {
@@ -63,12 +56,8 @@ const Userlist = ({
   };
 
   const updateContact = async (_id) => {
-    const accessToken: string = await getaccessToken(
-      multiwallet.Solar.chain.wallet,
-      nonCustodial.password
-    );
-    await createContact(_id, accessToken);
-    const contacts: userType[] = await receiveContactlist(accessToken);
+    await createContact(_id);
+    const contacts: userType[] = await receiveContactlist();
     dispatch(setUserList(contacts));
   };
 

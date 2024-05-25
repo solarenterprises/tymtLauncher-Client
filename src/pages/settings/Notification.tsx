@@ -25,11 +25,7 @@ const Notification = ({ view, setView }: propsType) => {
 
   const putUserStatus = async () => {
     try {
-      await updateUsernotificationStatus(
-        accountStore.uid,
-        data.alert,
-        accountStore.accessToken
-      );
+      await updateUsernotificationStatus(accountStore.uid, data.alert);
     } catch (err) {
       console.log(err);
     }

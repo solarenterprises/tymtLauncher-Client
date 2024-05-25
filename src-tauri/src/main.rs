@@ -5,9 +5,8 @@
 
 use std::sync::OnceLock;
 use tauri::{ CustomMenuItem, SystemTray, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem };
-use actix_web::{ web, App, HttpResponse, HttpServer };
+use actix_web::{ web, App, HttpRequest, HttpResponse, HttpServer };
 use serde::{ Deserialize, Serialize };
-use serde_json::Value;
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::{ Path, PathBuf };
@@ -202,12 +201,16 @@ async fn main() -> std::io::Result<()> {
             #[derive(Deserialize, Serialize)]
             struct GetAccountReqType {
                 chain: String, // solar, evm, bitcoin, solana
-                launcher_token: String,
             }
-            async fn get_account(request_param: web::Json<GetAccountReqType>) -> HttpResponse {
+            async fn get_account(
+                request: HttpRequest,
+                request_param: web::Json<GetAccountReqType>
+            ) -> HttpResponse {
                 println!("-------> POST /get-account");
 
-                let is_valid_token = validate_token(request_param.launcher_token.clone()).await;
+                let is_valid_token = validate_token(
+                    request.headers().get("x-token").unwrap().to_str().unwrap().to_string()
+                ).await;
                 if !is_valid_token {
                     println!("Invalid token");
                     return HttpResponse::InternalServerError().body("Invalid token");
@@ -259,12 +262,16 @@ async fn main() -> std::io::Result<()> {
             struct GetBalanceReqType {
                 chain: String, // solar, bitcoin, solana, ethereum, polygon, avalanche, arbitrum, binance, optimism
                 address: String,
-                launcher_token: String,
             }
-            async fn get_balance(request_param: web::Json<GetBalanceReqType>) -> HttpResponse {
+            async fn get_balance(
+                request: HttpRequest,
+                request_param: web::Json<GetBalanceReqType>
+            ) -> HttpResponse {
                 println!("-------> POST /get-balance");
 
-                let is_valid_token = validate_token(request_param.launcher_token.clone()).await;
+                let is_valid_token = validate_token(
+                    request.headers().get("x-token").unwrap().to_str().unwrap().to_string()
+                ).await;
                 if !is_valid_token {
                     println!("Invalid token");
                     return HttpResponse::InternalServerError().body("Invalid token");
@@ -323,18 +330,11 @@ async fn main() -> std::io::Result<()> {
                 note: String,
                 memo: Option<String>,
                 token: Option<String>,
-                launcher_token: String,
             }
             async fn send_transaction(
                 request_param: web::Json<SendTransactionReqType>
             ) -> HttpResponse {
                 println!("-------> POST /send-transaction");
-
-                let is_valid_token = validate_token(request_param.launcher_token.clone()).await;
-                if !is_valid_token {
-                    println!("Invalid token");
-                    return HttpResponse::InternalServerError().body("Invalid token");
-                }
 
                 if request_param.transfer.len() > 1 && request_param.chain != "solar" {
                     println!("Invalid batch transfer {}", request_param.chain);
@@ -391,11 +391,14 @@ async fn main() -> std::io::Result<()> {
             }
 
             async fn request_new_order(
+                request: HttpRequest,
                 request_param: web::Json<SendTransactionReqType>
             ) -> HttpResponse {
                 println!("-------> POST /request-new-order");
 
-                let is_valid_token = validate_token(request_param.launcher_token.clone()).await;
+                let is_valid_token = validate_token(
+                    request.headers().get("x-token").unwrap().to_str().unwrap().to_string()
+                ).await;
                 if !is_valid_token {
                     println!("Invalid token");
                     return HttpResponse::InternalServerError().body("Invalid token");
@@ -445,12 +448,16 @@ async fn main() -> std::io::Result<()> {
             #[derive(Deserialize, Serialize)]
             struct ExecuteOrderReqType {
                 id: String,
-                launcher_token: String,
             }
-            async fn execute_order(request_param: web::Json<ExecuteOrderReqType>) -> HttpResponse {
+            async fn execute_order(
+                request: HttpRequest,
+                request_param: web::Json<ExecuteOrderReqType>
+            ) -> HttpResponse {
                 println!("-------> POST /execute-order");
 
-                let is_valid_token = validate_token(request_param.launcher_token.clone()).await;
+                let is_valid_token = validate_token(
+                    request.headers().get("x-token").unwrap().to_str().unwrap().to_string()
+                ).await;
                 if !is_valid_token {
                     println!("Invalid token");
                     return HttpResponse::InternalServerError().body("Invalid token");
@@ -501,7 +508,7 @@ async fn main() -> std::io::Result<()> {
                     App::new()
                         .route("/get-account", web::post().to(get_account))
                         .route("/get-balance", web::post().to(get_balance))
-                        .route("/send-transaction", web::post().to(send_transaction))
+                        // .route("/send-transaction", web::post().to(send_transaction))
                         .route("/request-new-order", web::post().to(request_new_order))
                         .route("/execute-order", web::post().to(execute_order))
                 })

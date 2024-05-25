@@ -1,5 +1,6 @@
 import { tymt_backend_url } from "../../configs";
 import axios from "axios";
+import { ISaltToken } from "../../types/accountTypes";
 
 export interface alertrequestinterface {
   alertType: string;
@@ -9,21 +10,23 @@ export interface alertrequestinterface {
 
 export const sendFriendRequest = async (
   receivers: string[],
-  accessToken: string,
-  senderId:string
+  senderId: string
 ) => {
   try {
+    const saltTokenStore: ISaltToken = JSON.parse(
+      sessionStorage.getItem(`saltToken`)
+    );
     const alertrequest: alertrequestinterface = {
       alertType: "friend-request",
       note: {
         sender: `${senderId}`,
-        status:"pending"
+        status: "pending",
       },
-      receivers: receivers
+      receivers: receivers,
     };
     const res = await axios.post(`${tymt_backend_url}/alerts`, alertrequest, {
       headers: {
-        Authorization: `Bearer ${accessToken}`,
+        "x-token": saltTokenStore.token,
         "Content-Type": "application/json",
       },
     });

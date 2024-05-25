@@ -5,7 +5,7 @@ import { invoke } from "@tauri-apps/api/tauri";
 import { open } from "@tauri-apps/api/shell";
 import Games from "../game/Game";
 import { local_server_port, tymt_version } from "../../configs";
-import { IToken } from "../../types/accountTypes";
+import { ISaltToken } from "../../types/accountTypes";
 
 export async function downloadAppImageLinux(url: string, targetDir: string) {
   return invoke("download_appimage_linux", {
@@ -201,8 +201,10 @@ export async function runGame(game_key: string, serverIp?: string) {
       }
       const d53_server = d53_ip.split(":")[0];
       const d53_port = d53_ip.split(":")[1];
-      const tokenStore: IToken = JSON.parse(sessionStorage.getItem(`token`));
-      const token = tokenStore.token;
+      const saltTokenStore: ISaltToken = JSON.parse(
+        sessionStorage.getItem(`saltToken`)
+      );
+      const token = saltTokenStore.token;
       const launcherUrl = `http://localhost:${local_server_port}`;
       switch (platform) {
         case "Linux":
