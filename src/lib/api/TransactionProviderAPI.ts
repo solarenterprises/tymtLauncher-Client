@@ -1,6 +1,11 @@
 import { emit } from "@tauri-apps/api/event";
+import { Body, fetch as tauriFetch, ResponseType } from "@tauri-apps/api/http";
 import { IRecipient } from "../../features/wallet/CryptoApi";
-import { nonCustodialType } from "../../types/accountTypes";
+import {
+  ISaltToken,
+  accountType,
+  nonCustodialType,
+} from "../../types/accountTypes";
 import {
   IGetAccountReq,
   IGetBalanceReq,
@@ -17,6 +22,7 @@ import {
 import tymtCore from "../core/tymtCore";
 import tymtStorage from "../Storage";
 import { decrypt } from "./Encrypt";
+import { tymt_backend_url } from "../../configs";
 
 export default class TransactionProviderAPI {
   static getAccount = async (params: IGetAccountReq) => {
@@ -93,7 +99,7 @@ export default class TransactionProviderAPI {
   static validateTransaction = async (json_data: ISendTransactionReq) => {
     let noti: any;
     try {
-      const res0: boolean = await this.validateTymtAccount();
+      const res0: boolean = await this.validateTymtAccount(json_data);
       if (!res0) {
         noti = {
           status: "failed",
@@ -146,13 +152,17 @@ export default class TransactionProviderAPI {
     return true;
   };
 
-  private static validateTymtAccount = async () => {
+  private static validateTymtAccount = async (
+    json_data: ISendTransactionReq
+  ) => {
     const nonCustodialStore: nonCustodialType = JSON.parse(
       tymtStorage.get(`nonCustodial`)
     );
+    const accountStore: accountType = JSON.parse(tymtStorage.get(`account`));
     if (
       nonCustodialStore.mnemonic === "" ||
-      nonCustodialStore.password === ""
+      nonCustodialStore.password === "" ||
+      accountStore.uid !== json_data.requestUserId
     ) {
       return false;
     }
@@ -163,11 +173,11 @@ export default class TransactionProviderAPI {
     json_data: ISendTransactionReq
   ) => {
     let res: boolean;
-    for (let i = 0; i < json_data.transfer.length; i++) {
+    for (let i = 0; i < json_data.transfers.length; i++) {
       switch (json_data.chain) {
         case "solar":
           res = tymtCore.Blockchains.solar.wallet.validateAddress(
-            json_data.transfer[i].to
+            json_data.transfers[i].to
           );
           break;
         case "ethereum":
@@ -177,17 +187,17 @@ export default class TransactionProviderAPI {
         case "arbitrum":
         case "optimism":
           res = tymtCore.Blockchains.eth.wallet.validateAddress(
-            json_data.transfer[i].to
+            json_data.transfers[i].to
           );
           break;
         case "bitcoin":
           res = tymtCore.Blockchains.btc.wallet.validateAddress(
-            json_data.transfer[i].to
+            json_data.transfers[i].to
           );
           break;
         case "solana":
           res = tymtCore.Blockchains.solana.wallet.validateAddress(
-            json_data.transfer[i].to
+            json_data.transfers[i].to
           );
           break;
       }
@@ -207,7 +217,7 @@ export default class TransactionProviderAPI {
     const feeInUSD = Number(walletStore.fee) as number;
     const currentToken = await this.getToken(json_data);
     const isNativeToken = await this.isNativeToken(json_data);
-    const totalAmount: number = json_data.transfer.reduce((sum, transfer) => {
+    const totalAmount: number = json_data.transfers.reduce((sum, transfer) => {
       return (sum + Number(transfer.amount)) as number;
     }, 0);
     let address: string = "";
@@ -404,6 +414,7 @@ export default class TransactionProviderAPI {
     if (!(await this.getTokenOnly(json_data))) return true;
     return false;
   };
+
   // currently tested only for Solar Blockchain
   static sendTransaction = async (
     jsonData: ISendTransactionReq,
@@ -419,10 +430,10 @@ export default class TransactionProviderAPI {
       password
     );
     const recipients: IRecipient[] = [];
-    for (let i = 0; i < jsonData.transfer.length; i++) {
+    for (let i = 0; i < jsonData.transfers.length; i++) {
       recipients.push({
-        address: jsonData.transfer[i].to,
-        amount: jsonData.transfer[i].amount,
+        address: jsonData.transfers[i].to,
+        amount: jsonData.transfers[i].amount,
       });
     }
     const tx = {
@@ -450,6 +461,48 @@ export default class TransactionProviderAPI {
         );
         break;
       // EVM chains are treated in CryptoApi.tsx/sendCoinAPI
+    }
+    const saltTokenStore: ISaltToken = JSON.parse(
+      sessionStorage.getItem(`saltToken`)
+    );
+    if (res?.status === "success") {
+      const apiURL = `${tymt_backend_url}/orders/update-order/${jsonData._id}`;
+      const headers: Record<string, any> = {
+        "Content-Type": "application/json",
+        "x-token": saltTokenStore.token,
+      };
+      const bodyContent1 = {
+        status: "done",
+        transaction: res?.transactionId,
+      };
+      const body1 = Body.json(bodyContent1);
+      const res1: any = await tauriFetch(apiURL, {
+        method: "PUT",
+        timeout: 30,
+        headers: headers,
+        body: body1,
+        responseType: ResponseType.JSON,
+      });
+      console.log("done", res1);
+    } else if (res?.status === "failed") {
+      const apiURL = `${tymt_backend_url}/orders/update-order/${jsonData._id}`;
+      const headers: Record<string, any> = {
+        "Content-Type": "application/json",
+        "x-token": saltTokenStore.token,
+      };
+      const bodyContent1 = {
+        status: "error",
+        transaction: res?.message,
+      };
+      const body1 = Body.json(bodyContent1);
+      const res1: any = await tauriFetch(apiURL, {
+        method: "PUT",
+        timeout: 30,
+        headers: headers,
+        body: body1,
+        responseType: ResponseType.JSON,
+      });
+      console.log("error", res1);
     }
     return res;
   };

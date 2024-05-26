@@ -274,7 +274,7 @@ class Solana implements IWallet {
         const noti: INotification = {
           status: "success",
           title: "Send SOL",
-          message: "Transaction is sent out.",
+          message: "Transaction confirmed.",
           transactionId: response2?.data?.result,
         };
         return noti;

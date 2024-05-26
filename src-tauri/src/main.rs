@@ -162,6 +162,60 @@ async fn main() -> std::io::Result<()> {
             let app_handle = app.handle().clone();
             _ = APPHANDLE.set(app_handle);
 
+            #[derive(Deserialize, Serialize)]
+            struct GetAccountReqType {
+                chain: String, // solar, evm, bitcoin, solana
+            }
+
+            #[derive(Deserialize, Serialize)]
+            struct GetBalanceReqType {
+                chain: String, // solar, bitcoin, solana, ethereum, polygon, avalanche, arbitrum, binance, optimism
+                address: String,
+            }
+
+            #[derive(Serialize, Deserialize, Clone)]
+            struct Transfer {
+                to: String,
+                amount: String,
+            }
+
+            #[derive(Deserialize, Serialize)]
+            struct SendTransactionReqType {
+                chain: String, // solar, bitcoin, solana, ethereum, polygon, avalanche, arbitrum, binance, optimism
+                transfers: Vec<Transfer>,
+                note: String,
+                memo: Option<String>,
+                token: Option<String>,
+                status: String,
+                transaction: String,
+            }
+
+            #[derive(Deserialize, Serialize, Clone)]
+            struct GetOrderResResultDataType {
+                requestUserId: String,
+                chain: String,
+                transfers: Vec<Transfer>,
+                note: String,
+                memo: String,
+                status: String,
+                transaction: String,
+                _id: String,
+                createdAt: String,
+                updatedAt: String,
+            }
+
+            #[derive(Deserialize, Serialize, Clone)]
+            struct GetOrderResResultType {
+                data: GetOrderResResultDataType,
+                msg: String,
+            }
+
+            #[derive(Deserialize, Serialize)]
+            struct GetOrderResType {
+                msg: String,
+                result: GetOrderResResultType,
+            }
+
             async fn validate_token(token: String) -> bool {
                 APPHANDLE.get()
                     .expect("APPHANDLE is available")
@@ -188,7 +242,11 @@ async fn main() -> std::io::Result<()> {
                     Ok(received) => {
                         // println!("Received: {}", received);
                         APPHANDLE.get().expect("APPHANDLE is available").unlisten(response);
-                        return received == "true";
+                        let res = received == "true";
+                        if !res {
+                            println!("Invalid token");
+                        }
+                        return res;
                     }
                     Err(err) => {
                         println!("Error receiving message: {:?}", err);
@@ -198,10 +256,24 @@ async fn main() -> std::io::Result<()> {
                 }
             }
 
-            #[derive(Deserialize, Serialize)]
-            struct GetAccountReqType {
-                chain: String, // solar, evm, bitcoin, solana
+            async fn validate_chain(name: String) -> bool {
+                if
+                    name != "solar" &&
+                    name != "bitcoin" &&
+                    name != "solana" &&
+                    name != "ethereum" &&
+                    name != "polygon" &&
+                    name != "binance" &&
+                    name != "avalanche" &&
+                    name != "arbitrum" &&
+                    name != "optimism"
+                {
+                    println!("Invalid chain");
+                    return false;
+                }
+                return true;
             }
+
             async fn get_account(
                 request: HttpRequest,
                 request_param: web::Json<GetAccountReqType>
@@ -212,8 +284,12 @@ async fn main() -> std::io::Result<()> {
                     request.headers().get("x-token").unwrap().to_str().unwrap().to_string()
                 ).await;
                 if !is_valid_token {
-                    println!("Invalid token");
                     return HttpResponse::InternalServerError().body("Invalid token");
+                }
+
+                let is_valid_chain = validate_chain(request_param.chain.clone()).await;
+                if !is_valid_chain {
+                    return HttpResponse::InternalServerError().body("Invalid chain");
                 }
 
                 let json_data = serde_json
@@ -258,11 +334,6 @@ async fn main() -> std::io::Result<()> {
                 }
             }
 
-            #[derive(Deserialize, Serialize)]
-            struct GetBalanceReqType {
-                chain: String, // solar, bitcoin, solana, ethereum, polygon, avalanche, arbitrum, binance, optimism
-                address: String,
-            }
             async fn get_balance(
                 request: HttpRequest,
                 request_param: web::Json<GetBalanceReqType>
@@ -273,10 +344,13 @@ async fn main() -> std::io::Result<()> {
                     request.headers().get("x-token").unwrap().to_str().unwrap().to_string()
                 ).await;
                 if !is_valid_token {
-                    println!("Invalid token");
                     return HttpResponse::InternalServerError().body("Invalid token");
                 }
 
+                let is_valid_chain = validate_chain(request_param.chain.clone()).await;
+                if !is_valid_chain {
+                    return HttpResponse::InternalServerError().body("Invalid chain");
+                }
                 let json_data = serde_json
                     ::to_string(&request_param)
                     .expect("Failed to serialize JSON data");
@@ -318,25 +392,10 @@ async fn main() -> std::io::Result<()> {
                 }
             }
 
-            #[derive(Serialize, Deserialize)]
-            struct Transfer {
-                to: String,
-                amount: String,
-            }
-            #[derive(Deserialize, Serialize)]
-            struct SendTransactionReqType {
-                chain: String, // solar, bitcoin, solana, ethereum, polygon, avalanche, arbitrum, binance, optimism
-                transfer: Vec<Transfer>,
-                note: String,
-                memo: Option<String>,
-                token: Option<String>,
-            }
-            async fn send_transaction(
-                request_param: web::Json<SendTransactionReqType>
-            ) -> HttpResponse {
+            async fn send_transaction(request_param: GetOrderResResultDataType) -> HttpResponse {
                 println!("-------> POST /send-transaction");
 
-                if request_param.transfer.len() > 1 && request_param.chain != "solar" {
+                if request_param.transfers.len() > 1 && request_param.chain != "solar" {
                     println!("Invalid batch transfer {}", request_param.chain);
                     return HttpResponse::BadRequest().body(
                         format!(
@@ -400,11 +459,15 @@ async fn main() -> std::io::Result<()> {
                     request.headers().get("x-token").unwrap().to_str().unwrap().to_string()
                 ).await;
                 if !is_valid_token {
-                    println!("Invalid token");
                     return HttpResponse::InternalServerError().body("Invalid token");
                 }
 
-                if request_param.transfer.len() > 1 && request_param.chain != "solar" {
+                let is_valid_chain = validate_chain(request_param.chain.clone()).await;
+                if !is_valid_chain {
+                    return HttpResponse::InternalServerError().body("Invalid chain");
+                }
+
+                if request_param.transfers.len() > 1 && request_param.chain != "solar" {
                     println!("Invalid batch transfer {}", request_param.chain);
                     return HttpResponse::BadRequest().body(
                         format!(
@@ -420,6 +483,10 @@ async fn main() -> std::io::Result<()> {
                     client
                         .post("https://dev.tymt.com/api/orders/request-new-order")
                         .header(header::CONTENT_TYPE, "application/json")
+                        .header(
+                            "x-token",
+                            request.headers().get("x-token").unwrap().to_str().unwrap().to_string()
+                        )
                         .body(serde_json::to_string(&request_param.into_inner()).unwrap())
                         .send().await
                 {
@@ -459,7 +526,6 @@ async fn main() -> std::io::Result<()> {
                     request.headers().get("x-token").unwrap().to_str().unwrap().to_string()
                 ).await;
                 if !is_valid_token {
-                    println!("Invalid token");
                     return HttpResponse::InternalServerError().body("Invalid token");
                 }
 
@@ -473,11 +539,14 @@ async fn main() -> std::io::Result<()> {
                     Ok(response) => {
                         match response.text().await {
                             Ok(json) => {
-                                let parsed_struct: SendTransactionReqType = serde_json
+                                println!("{}", json);
+                                let parsed_struct: GetOrderResType = serde_json
                                     ::from_str(&json)
                                     .unwrap();
-                                let json_struct = web::Json(parsed_struct);
-                                send_transaction(json_struct).await
+                                let json_struct: web::Json<GetOrderResType> = web::Json(
+                                    parsed_struct
+                                );
+                                send_transaction(json_struct.result.data.clone()).await
                             }
                             Err(err) => {
                                 eprintln!("Failed to parse response as JSON: {:?}", err);

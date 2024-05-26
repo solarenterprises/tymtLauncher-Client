@@ -143,11 +143,6 @@ const ConfirmInformation = () => {
             salt,
             mnemonicStore.mnemonic
           );
-          const _testToken = tymtCore.Blockchains.solar.wallet.signMessage(
-            "Vj5zPFiq8hKj9t52I7HT=xY~BOZX*O)^",
-            mnemonicStore.mnemonic
-          );
-          console.log("_testToken", _testToken);
           dispatch(
             setSaltToken({
               salt: salt,

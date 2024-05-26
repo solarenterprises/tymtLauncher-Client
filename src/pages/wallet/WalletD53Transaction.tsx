@@ -376,8 +376,8 @@ const WalletD53Transaction = () => {
           switchChain(json_data);
         }
         setChain(json_data.chain);
-        setTo(json_data.transfer[0].to);
-        const totalAmount: number = json_data.transfer.reduce(
+        setTo(json_data.transfers[0].to);
+        const totalAmount: number = json_data.transfers.reduce(
           (sum, transfer) => {
             return (sum + Number(transfer.amount)) as number;
           },

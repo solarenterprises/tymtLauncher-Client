@@ -1,6 +1,6 @@
 import { Outlet } from "react-router-dom";
 import { listen } from "@tauri-apps/api/event";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { emit } from "@tauri-apps/api/event";
 import { IGetAccountReq, IGetBalanceReq } from "../types/eventParamTypes";
 import TransactionProviderAPI from "../lib/api/TransactionProviderAPI";
@@ -27,25 +27,34 @@ const TransactionProvider = () => {
   const chainStore: IChain = useSelector(getChain);
   const walletStore: walletType = useSelector(selectWallet);
   const saltTokenStore: ISaltToken = useSelector(getSaltToken);
+  const saltTokenRef = useRef(saltTokenStore);
   const mnemonicStore: IMnemonic = useSelector(getMnemonic);
+  const mnemonicRef = useRef(mnemonicStore);
   const dispatch = useDispatch<AppDispatch>();
+
+  useEffect(() => {
+    saltTokenRef.current = saltTokenStore;
+  }, [saltTokenStore]);
+
+  useEffect(() => {
+    mnemonicRef.current = mnemonicStore;
+  }, [mnemonicStore]);
 
   useEffect(() => {
     if (
       nonCustodialStore.mnemonic !== "" &&
-      nonCustodialStore.password !== ""
+      nonCustodialStore.password !== "" &&
+      saltTokenRef.current.token !== ""
     ) {
-      console.log("nonCustodialStore.mnemonic or password has been changed!");
       dispatch(
         refreshBalancesAsync({
           _multiWalletStore: multiWalletStore,
         })
       ).then(() => {
-        console.log("refreshed BalancesAsync");
         dispatch(refreshCurrencyAsync()).then(() => {});
       });
     }
-  }, [nonCustodialStore.mnemonic, nonCustodialStore.password]);
+  }, [nonCustodialStore.mnemonic, nonCustodialStore.password, saltTokenStore]);
 
   useEffect(() => {
     if (chainStore.chain.symbol === "SXP") {
@@ -82,16 +91,23 @@ const TransactionProvider = () => {
 
     const unlisten_validate_token = listen("validate-token", async (event) => {
       const token: string = event.payload as string;
-      if (!mnemonicStore.mnemonic || !token) {
+      const saltTokenStore: ISaltToken = JSON.parse(
+        sessionStorage.getItem(`saltToken`)
+      );
+      if (
+        !mnemonicRef.current.mnemonic ||
+        !token ||
+        token !== saltTokenStore.token
+      ) {
         emit("res-validate-token", false);
         return;
       }
       const publicKey: string =
         await tymtCore.Blockchains.solar.wallet.getPublicKey(
-          mnemonicStore.mnemonic
+          mnemonicRef.current.mnemonic
         );
       const res: boolean = tymtCore.Blockchains.solar.wallet.verifyMessage(
-        saltTokenStore.salt,
+        saltTokenRef.current.salt,
         publicKey,
         token
       );

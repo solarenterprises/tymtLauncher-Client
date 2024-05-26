@@ -137,7 +137,7 @@ class ERC20 {
       const noti: INotification = {
         status: "success",
         title: "Send EVM",
-        message: "Transaction is sent out.",
+        message: "Transaction confirmed.",
         transactionId: response[0].hash,
       };
       return noti;
@@ -229,7 +229,7 @@ class ERC20 {
       const noti: INotification = {
         status: "success",
         title: "Send EVM",
-        message: "Transaction is sent out.",
+        message: "Transaction confirmed.",
         transactionId: response[0].hash,
       };
       return noti;

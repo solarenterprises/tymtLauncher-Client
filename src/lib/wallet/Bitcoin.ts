@@ -309,7 +309,7 @@ class Bitcoin implements IWallet {
         const noti: INotification = {
           status: "success",
           title: "Send BTC",
-          message: "Transaction is sent out.",
+          message: "Transaction confirmed.",
           transactionId: response, // not tested
         };
         return noti;
