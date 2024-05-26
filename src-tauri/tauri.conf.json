@@ -15,6 +15,7 @@
     "allowlist": {
       "all": true,
       "fs": {
+        "readFile": true,
         "removeDir": true,
         "removeFile": true,
         "scope": [

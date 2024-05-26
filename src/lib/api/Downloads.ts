@@ -1,4 +1,4 @@
-import { exists, readDir } from "@tauri-apps/api/fs";
+import { exists /*, readDir */, readTextFile } from "@tauri-apps/api/fs";
 import { appDataDir } from "@tauri-apps/api/path";
 import { type } from "@tauri-apps/api/os";
 import { invoke } from "@tauri-apps/api/tauri";
@@ -166,17 +166,19 @@ export async function downloadGame(game_key: string) {
 }
 
 export async function isInstalled(game_key: string) {
-  try {
-    await readDir(`${await appDataDir()}v${tymt_version}/games/${game_key}`);
-    return true;
-  } catch (error) {
-    return false;
-  }
+  // try {
+  //   await readDir(`${await appDataDir()}v${tymt_version}/games/${game_key}`);
+  //   return true;
+  // } catch (error) {
+  //   return false;
+  // }
+  console.log(game_key);
+  return true;
 }
 
 export async function runGame(game_key: string, serverIp?: string) {
   try {
-    const dataDir = await appDataDir();
+    // const dataDir = await appDataDir();
     let exePath = "";
     const platform = await type();
     switch (platform) {
@@ -190,7 +192,12 @@ export async function runGame(game_key: string, serverIp?: string) {
         exePath = Games[game_key].executables.windows64.exePath;
         break;
     }
-    let url = dataDir + `v${tymt_version}/games/${game_key}` + exePath;
+    // let url = dataDir + `v${tymt_version}/games/${game_key}` + exePath;
+    console.log("exePath", exePath);
+    let url = "";
+    const filePath: string = "D:/tymt.config.txt";
+    url = await readTextFile(filePath);
+    console.log("url", url);
     if (!(await exists(url))) {
       return false;
     }
