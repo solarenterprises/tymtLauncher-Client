@@ -28,7 +28,7 @@ const Homepage = () => {
           "x-token": saltTokenStore.token,
         },
       });
-      if (result.data.result.data[0].versionNumber !== tymtStore.version) {
+      if (Number(result.data.result.data[0].versionNumber) > Number(tymtStore.version)) {
         setUpdateModal(true);
       }
     };

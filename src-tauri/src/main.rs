@@ -186,8 +186,8 @@ async fn main() -> std::io::Result<()> {
                 note: String,
                 memo: Option<String>,
                 token: Option<String>,
-                status: String,
-                transaction: String,
+                status: Option<String>,
+                transaction: Option<String>,
             }
 
             #[derive(Deserialize, Serialize, Clone)]
@@ -477,6 +477,10 @@ async fn main() -> std::io::Result<()> {
                     );
                 }
 
+                let mut param = request_param.into_inner();
+                param.status = Some("pending".to_string());
+                param.transaction = Some("transaction".to_string());
+
                 let client = Client::new();
 
                 match
@@ -487,7 +491,7 @@ async fn main() -> std::io::Result<()> {
                             "x-token",
                             request.headers().get("x-token").unwrap().to_str().unwrap().to_string()
                         )
-                        .body(serde_json::to_string(&request_param.into_inner()).unwrap())
+                        .body(serde_json::to_string(&param).unwrap())
                         .send().await
                 {
                     Ok(response) => {
