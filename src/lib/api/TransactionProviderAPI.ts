@@ -415,7 +415,6 @@ export default class TransactionProviderAPI {
     return false;
   };
 
-  // currently tested only for Solar Blockchain
   static sendTransaction = async (
     jsonData: ISendTransactionReq,
     password: string,
