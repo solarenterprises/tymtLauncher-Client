@@ -54,7 +54,7 @@ const TransactionProvider = () => {
         dispatch(refreshCurrencyAsync()).then(() => {});
       });
     }
-  }, [nonCustodialStore.mnemonic, nonCustodialStore.password, saltTokenStore]);
+  }, [nonCustodialStore.mnemonic, nonCustodialStore.password, saltTokenStore, mnemonicStore]);
 
   useEffect(() => {
     if (chainStore.chain.symbol === "SXP") {
@@ -91,9 +91,7 @@ const TransactionProvider = () => {
 
     const unlisten_validate_token = listen("validate-token", async (event) => {
       const token: string = event.payload as string;
-      const saltTokenStore: ISaltToken = JSON.parse(
-        sessionStorage.getItem(`saltToken`)
-      );
+      const saltTokenStore: ISaltToken = saltTokenRef.current;
       if (
         !mnemonicRef.current.mnemonic ||
         !token ||

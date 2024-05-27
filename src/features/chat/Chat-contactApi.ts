@@ -2,6 +2,7 @@ import axios from "axios";
 import tymtCore from "../../lib/core/tymtCore";
 import { tymt_backend_url } from "../../configs";
 import { ISaltToken } from "../../types/accountTypes";
+import tymtStorage from "../../lib/Storage";
 
 export const searchUsers = async (nameorsxp: string) => {
   try {
@@ -28,9 +29,7 @@ export interface contactinterface {
 
 export const createContact = async (_id: string) => {
   try {
-    const saltTokenStore: ISaltToken = JSON.parse(
-      sessionStorage.getItem(`saltToken`)
-    );
+    const saltTokenStore: ISaltToken = JSON.parse(tymtStorage.get(`saltToken`));
     const contact: contactinterface = {
       contact: _id,
     };
@@ -49,9 +48,7 @@ export const createContact = async (_id: string) => {
 
 export const deleteContact = async (_id: string) => {
   try {
-    const saltTokenStore: ISaltToken = JSON.parse(
-      sessionStorage.getItem(`saltToken`)
-    );
+    const saltTokenStore: ISaltToken = JSON.parse(tymtStorage.get(`saltToken`));
     const res = await axios.delete(`${tymt_backend_url}/users/contact`, {
       headers: {
         "x-token": saltTokenStore.token,
@@ -74,9 +71,7 @@ export const deleteContact = async (_id: string) => {
 
 export const receiveContactlist = async () => {
   try {
-    const saltTokenStore: ISaltToken = JSON.parse(
-      sessionStorage.getItem(`saltToken`)
-    );
+    const saltTokenStore: ISaltToken = JSON.parse(tymtStorage.get(`saltToken`));
     const res = await axios.get(`${tymt_backend_url}/users/contact/list`, {
       headers: {
         "x-token": saltTokenStore.token,
@@ -101,9 +96,7 @@ export interface accessinterface {
 
 export const getsenderName = async (userid: string) => {
   try {
-    const saltTokenStore: ISaltToken = JSON.parse(
-      sessionStorage.getItem(`saltToken`)
-    );
+    const saltTokenStore: ISaltToken = JSON.parse(tymtStorage.get(`saltToken`));
     const res = await axios.get(`${tymt_backend_url}/users/${userid}`, {
       headers: {
         "x-token": saltTokenStore.token,
@@ -123,9 +116,7 @@ export const getsenderName = async (userid: string) => {
 
 export const getUserAvatar = async (userid: string) => {
   try {
-    const saltTokenStore: ISaltToken = JSON.parse(
-      sessionStorage.getItem(`saltToken`)
-    );
+    const saltTokenStore: ISaltToken = JSON.parse(tymtStorage.get(`saltToken`));
     const res = await axios.get(
       `${tymt_backend_url}/users/get-avatar/${userid}`,
       {
@@ -147,9 +138,7 @@ export const getUserAvatar = async (userid: string) => {
 
 export const getUsernotificationStatus = async (userid: string) => {
   try {
-    const saltTokenStore: ISaltToken = JSON.parse(
-      sessionStorage.getItem(`saltToken`)
-    );
+    const saltTokenStore: ISaltToken = JSON.parse(tymtStorage.get(`saltToken`));
     const res = await axios.get(`${tymt_backend_url}/users/${userid}`, {
       headers: {
         "x-token": saltTokenStore.token,
@@ -171,9 +160,7 @@ export const updateUsernotificationStatus = async (
   notificationStatus: boolean
 ) => {
   try {
-    const saltToken: ISaltToken = JSON.parse(
-      sessionStorage.getItem(`saltToken`)
-    );
+    const saltToken: ISaltToken = JSON.parse(tymtStorage.get(`saltToken`));
     const res = await axios.put(
       `${tymt_backend_url}/users/${userid}`,
       {

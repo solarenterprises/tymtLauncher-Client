@@ -1,6 +1,7 @@
 import axios from "axios";
 import { tymt_backend_url } from "../../configs";
 import { ISaltToken } from "../../types/accountTypes";
+import tymtStorage from "../../lib/Storage";
 
 export const fetchUnreadAlerts = async (userid: string) => {
   try {
@@ -47,9 +48,7 @@ export const updateAlertReadstatus = async (
   userid: string
 ) => {
   try {
-    const saltTokenStore: ISaltToken = JSON.parse(
-      sessionStorage.getItem(`saltToken`)
-    );
+    const saltTokenStore: ISaltToken = JSON.parse(tymtStorage.get(`saltToken`));
     const res = await axios.put(
       `${tymt_backend_url}/alerts/add-reader/${alert_id}`,
       {
@@ -77,9 +76,7 @@ export const approveFriendRequest = async (
   userid: string
 ) => {
   try {
-    const saltTokenStore: ISaltToken = JSON.parse(
-      sessionStorage.getItem(`saltToken`)
-    );
+    const saltTokenStore: ISaltToken = JSON.parse(tymtStorage.get(`saltToken`));
     const res = await axios.put(
       `${tymt_backend_url}/alerts/${alert_id}`,
       {
@@ -109,9 +106,7 @@ export const declineFriendRequest = async (
   userid: string
 ) => {
   try {
-    const saltTokenStore: ISaltToken = JSON.parse(
-      sessionStorage.getItem(`saltToken`)
-    );
+    const saltTokenStore: ISaltToken = JSON.parse(tymtStorage.get(`saltToken`));
     const res = await axios.put(
       `${tymt_backend_url}/alerts/${alert_id}`,
       {

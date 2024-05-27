@@ -3,15 +3,14 @@ import axios, { AxiosResponse } from "axios";
 import { tymt_backend_url } from "../../configs/index";
 import { INonCustodyBeforeSignInReq } from "../../types/AuthAPITypes";
 import { ISaltToken } from "../../types/accountTypes";
+import tymtStorage from "../Storage";
 
 class AuthAPI {
   static async nonCustodySignup(
     body: any,
     url: string
   ): Promise<AxiosResponse<any, any>> {
-    const saltTokenStore: ISaltToken = JSON.parse(
-      sessionStorage.getItem(`saltToken`)
-    );
+    const saltTokenStore: ISaltToken = JSON.parse(tymtStorage.get(`saltToken`));
     return await axios.post(`${tymt_backend_url}${url}`, body, {
       headers: {
         "x-token": saltTokenStore.token,

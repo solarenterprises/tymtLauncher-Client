@@ -201,6 +201,14 @@ const WalletD53Transaction = () => {
   };
 
   const handleRejectClick = async () => {
+    try {
+      await TransactionProviderAPI.updateTransactionStatus(
+        jsonData,
+        "rejected"
+      );
+    } catch (err) {
+      console.error("Failed to update tx status as rejected: ", err);
+    }
     let res = {
       status: "failed",
       title: `Send ${chainStore.chain.symbol}`,

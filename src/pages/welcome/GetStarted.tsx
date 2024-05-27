@@ -29,7 +29,6 @@ import {
   setMachineId,
 } from "../../features/account/MachineIdSlice";
 import { invoke } from "@tauri-apps/api/tauri";
-import { setSaltToken } from "../../features/account/SaltTokenSlice";
 import { setMnemonic } from "../../features/account/MnemonicSlice";
 
 const GetStarted = () => {
@@ -85,7 +84,6 @@ const GetStarted = () => {
         isLoggedIn: false,
       })
     );
-    dispatch(setSaltToken({ salt: "", token: "" }));
     dispatch(setMnemonic({ mnemonic: "" }));
   }, []);
 

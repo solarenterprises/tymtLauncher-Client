@@ -81,6 +81,7 @@ const Wallet = () => {
       sumValue += wallets[rowKey].chain.balance * wallets[rowKey].chain.price;
     });
     setValue(sumValue * (reserve as number));
+    console.log("sumValue", sumValue, reserve);
   }, [wallets, currentChain, currencyStore]);
 
   useEffect(() => {

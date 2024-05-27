@@ -3,6 +3,7 @@
 
 import { createSlice } from "@reduxjs/toolkit";
 import { ISaltToken } from "../../types/accountTypes";
+import tymtStorage from "../../lib/Storage";
 
 const init: ISaltToken = {
   salt: "",
@@ -10,7 +11,7 @@ const init: ISaltToken = {
 };
 
 const loadSaltToken: () => ISaltToken = () => {
-  const tokenData = sessionStorage.getItem("saltToken");
+  const tokenData = tymtStorage.get("saltToken");
   return tokenData ? JSON.parse(tokenData) : init;
 };
 
@@ -26,7 +27,7 @@ export const saltTokenSlice = createSlice({
   reducers: {
     setSaltToken: (state, action) => {
       state.data = action.payload;
-      sessionStorage.setItem("saltToken", JSON.stringify(action.payload));
+      tymtStorage.set("saltToken", JSON.stringify(action.payload));
     },
   },
 });

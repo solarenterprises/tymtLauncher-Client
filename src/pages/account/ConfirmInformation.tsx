@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import createKeccakHash from "keccak";
 
@@ -37,6 +37,7 @@ import {
   nonCustodialType,
   custodialType,
   IMnemonic,
+  ISaltToken,
 } from "../../types/accountTypes";
 import {
   getMultiWallet,
@@ -64,7 +65,10 @@ import {
 } from "../../features/chat/SocketHashSlice";
 import { ISocketHash } from "../../types/chatTypes";
 import tymtCore from "../../lib/core/tymtCore";
-import { setSaltToken } from "../../features/account/SaltTokenSlice";
+import {
+  getSaltToken,
+  setSaltToken,
+} from "../../features/account/SaltTokenSlice";
 import { INonCustodyBeforeSignInReq } from "../../types/AuthAPITypes";
 import { getMnemonic } from "../../features/account/MnemonicSlice";
 
@@ -87,6 +91,12 @@ const ConfirmInformation = () => {
   const socketHashStore: ISocketHash = useSelector(getSocketHash);
   const [loading, setLoading] = useState<boolean>(false);
   const mnemonicStore: IMnemonic = useSelector(getMnemonic);
+  const saltTokenStore: ISaltToken = useSelector(getSaltToken);
+  const saltTokenRef = useRef(saltTokenStore);
+
+  useEffect(() => {
+    saltTokenRef.current = saltTokenStore;
+  }, [saltTokenStore]);
 
   const {
     setNotificationStatus,
@@ -139,16 +149,22 @@ const ConfirmInformation = () => {
           };
           const res0 = await AuthAPI.nonCustodyBeforeSignin(body0);
           const salt = res0?.data?.salt;
-          const token = tymtCore.Blockchains.solar.wallet.signMessage(
-            salt,
-            mnemonicStore.mnemonic
-          );
-          dispatch(
-            setSaltToken({
-              salt: salt,
-              token: token,
-            })
-          );
+          let token: string;
+          if (salt != saltTokenRef.current.salt) {
+            console.log(salt, "SALT", saltTokenRef.current.salt);
+            token = tymtCore.Blockchains.solar.wallet.signMessage(
+              salt,
+              mnemonicStore.mnemonic
+            );
+            dispatch(
+              setSaltToken({
+                salt: salt,
+                token: token,
+              })
+            );
+          } else {
+            token = saltTokenRef.current.token;
+          }
           const res = await AuthAPI.nonCustodySignin({
             sxpAddress: multiWalletStore.Solar.chain.wallet,
             token: token,

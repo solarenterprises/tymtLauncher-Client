@@ -461,9 +461,7 @@ export default class TransactionProviderAPI {
         break;
       // EVM chains are treated in CryptoApi.tsx/sendCoinAPI
     }
-    const saltTokenStore: ISaltToken = JSON.parse(
-      sessionStorage.getItem(`saltToken`)
-    );
+    const saltTokenStore: ISaltToken = JSON.parse(tymtStorage.get(`saltToken`));
     if (res?.status === "success") {
       const apiURL = `${tymt_backend_url}/orders/update-order/${jsonData._id}`;
       const headers: Record<string, any> = {
@@ -504,6 +502,44 @@ export default class TransactionProviderAPI {
       console.log("error", res1);
     }
     return res;
+  };
+
+  static updateTransactionStatus = async (
+    jsonData: ISendTransactionReq,
+    status: string,
+    transaction?: string
+  ) => {
+    try {
+      const saltTokenStore: ISaltToken = JSON.parse(
+        tymtStorage.get(`saltToken`)
+      );
+      let bodyContent1;
+      if (transaction) {
+        bodyContent1 = {
+          status: status,
+          transaction: transaction,
+        };
+      } else {
+        bodyContent1 = {
+          status: status,
+        };
+      }
+      const body1 = Body.json(bodyContent1);
+      const apiURL = `${tymt_backend_url}/orders/update-order/${jsonData._id}`;
+      const headers: Record<string, any> = {
+        "Content-Type": "application/json",
+        "x-token": saltTokenStore.token,
+      };
+      await tauriFetch(apiURL, {
+        method: "PUT",
+        timeout: 30,
+        headers: headers,
+        body: body1,
+        responseType: ResponseType.JSON,
+      });
+    } catch (err) {
+      console.error("Failed to update tx status: ", err);
+    }
   };
 
   static getChainIcon = (chain: string) => {

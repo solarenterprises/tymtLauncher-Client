@@ -22,7 +22,6 @@ import { getAccount, setAccount } from "../../features/account/AccountSlice";
 
 import { loginEnum, walletEnum, accountType } from "../../types/accountTypes";
 import ComingModal from "../../components/ComingModal";
-import { setSaltToken } from "../../features/account/SaltTokenSlice";
 import { setMnemonic } from "../../features/account/MnemonicSlice";
 
 const Start = () => {
@@ -41,7 +40,6 @@ const Start = () => {
         isLoggedIn: false,
       })
     );
-    dispatch(setSaltToken({ salt: "", token: "" }));
     dispatch(setMnemonic({ mnemonic: "" }));
   }, []);
 
