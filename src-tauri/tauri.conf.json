@@ -7,7 +7,7 @@
     "withGlobalTauri": true
   },
   "package": {
-    "productName": "tymtLauncher",
+    "productName": "tymtLauncherDebug",
     "version": "2.1.2"
   },
 
@@ -67,7 +67,7 @@
     "windows": [
       {
         "label": "tymtLauncher",
-        "title": "tymtLauncher 2.1.2",
+        "title": "tymtLauncher (debug) 2.1.2",
         "resizable": true,
         "width": 1440,
         "height": 1024,
@@ -102,7 +102,7 @@
     "bundle": {
       "active": true,
       "targets": "all",
-      "identifier": "tymtLauncher",
+      "identifier": "tymtLauncherDebug",
       "publisher": "dev@solarenterprises.com",
       "icon": [
         "icons/32x32.png",

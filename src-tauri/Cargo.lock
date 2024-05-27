@@ -5046,7 +5046,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "tymtlauncher"
+name = "tymtlauncherdebug"
 version = "2.1.2"
 dependencies = [
  "actix-web",
