@@ -64,6 +64,7 @@ const InputPasswordNoTooltip = ({
               onClick={handleClickShowPassword}
               onMouseDown={handleMouseDownPassword}
               className={"icon-button"}
+              tabIndex={-1}
             >
               {showPassword ? (
                 <VisibilityOutlinedIcon className={"icon-button"} />

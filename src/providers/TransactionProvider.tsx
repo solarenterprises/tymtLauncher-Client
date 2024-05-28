@@ -54,7 +54,12 @@ const TransactionProvider = () => {
         dispatch(refreshCurrencyAsync()).then(() => {});
       });
     }
-  }, [nonCustodialStore.mnemonic, nonCustodialStore.password, saltTokenStore, mnemonicStore]);
+  }, [
+    nonCustodialStore.mnemonic,
+    nonCustodialStore.password,
+    saltTokenStore,
+    mnemonicStore,
+  ]);
 
   useEffect(() => {
     if (chainStore.chain.symbol === "SXP") {
@@ -91,19 +96,17 @@ const TransactionProvider = () => {
 
     const unlisten_validate_token = listen("validate-token", async (event) => {
       const token: string = event.payload as string;
-      const saltTokenStore: ISaltToken = saltTokenRef.current;
       if (
         !mnemonicRef.current.mnemonic ||
         !token ||
-        token !== saltTokenStore.token
+        token !== saltTokenRef.current.token
       ) {
         emit("res-validate-token", false);
         return;
       }
-      const publicKey: string =
-        await tymtCore.Blockchains.solar.wallet.getPublicKey(
-          mnemonicRef.current.mnemonic
-        );
+      const publicKey: string = tymtCore.Blockchains.solar.wallet.getPublicKey(
+        mnemonicRef.current.mnemonic
+      );
       const res: boolean = tymtCore.Blockchains.solar.wallet.verifyMessage(
         saltTokenRef.current.salt,
         publicKey,

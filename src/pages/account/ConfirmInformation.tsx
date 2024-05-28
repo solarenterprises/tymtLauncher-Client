@@ -134,7 +134,7 @@ const ConfirmInformation = () => {
       if (accountStore.mode === loginEnum.login) {
         try {
           const publicKey: string =
-            await tymtCore.Blockchains.solar.wallet.getPublicKey(
+            tymtCore.Blockchains.solar.wallet.getPublicKey(
               mnemonicStore.mnemonic
             );
           const signature: string =
@@ -202,7 +202,7 @@ const ConfirmInformation = () => {
           const _avatar = tempNonCustodialStore.avatar;
           const _length = tempNonCustodialStore.mnemonicLength;
           const _publicKey: string =
-            await tymtCore.Blockchains.solar.wallet.getPublicKey(
+            tymtCore.Blockchains.solar.wallet.getPublicKey(
               tempNonCustodialStore.mnemonic
             );
           dispatch(
@@ -338,7 +338,7 @@ const ConfirmInformation = () => {
           const _avatar = tempNonCustodialStore.avatar;
           const _length = tempNonCustodialStore.mnemonicLength;
           const _publicKey: string =
-            await tymtCore.Blockchains.solar.wallet.getPublicKey(
+            tymtCore.Blockchains.solar.wallet.getPublicKey(
               tempNonCustodialStore.mnemonic
             );
           dispatch(
@@ -475,7 +475,7 @@ const ConfirmInformation = () => {
           const _avatar = tempNonCustodialStore.avatar;
           const _length = tempNonCustodialStore.mnemonicLength;
           const _publicKey: string =
-            await tymtCore.Blockchains.solar.wallet.getPublicKey(
+            tymtCore.Blockchains.solar.wallet.getPublicKey(
               tempNonCustodialStore.mnemonic
             );
           dispatch(

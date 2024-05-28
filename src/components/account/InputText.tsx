@@ -130,6 +130,7 @@ const InputText = ({
                   onClick={onIconButtonClick}
                   onMouseDown={handleMouseDownPassword}
                   className={"icon-button"}
+                  tabIndex={-1}
                 >
                   <ContentCopyIcon className={"icon-button"} />
                 </IconButton>
@@ -241,6 +242,7 @@ const InputText = ({
                     onClick={handleClickShowPassword}
                     onMouseDown={handleMouseDownPassword}
                     className={"icon-button"}
+                    tabIndex={-1}
                   >
                     {showPassword ? (
                       <VisibilityOutlinedIcon className={"icon-button"} />
@@ -309,6 +311,7 @@ const InputText = ({
                   onClick={onIconButtonClick}
                   onMouseDown={handleMouseDownPassword}
                   className={"icon-button"}
+                  tabIndex={-1}
                 >
                   <ContentCopyIcon className={"icon-button"} />
                 </IconButton>
@@ -316,6 +319,7 @@ const InputText = ({
                   onClick={onAddressButtonClick}
                   onMouseDown={handleMouseDownPassword}
                   className={"icon-button"}
+                  tabIndex={-1}
                 >
                   <i className="pi pi-book icon-button" />
                 </IconButton>

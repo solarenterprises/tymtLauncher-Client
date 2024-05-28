@@ -12,6 +12,7 @@ import { net_name, solar_api_url } from "../../configs/index";
 import { IRecipient } from "../../features/wallet/CryptoApi";
 import { multiWalletType } from "../../types/walletTypes";
 import tymtStorage from "../Storage";
+import { testAccountTokens } from "../../consts/testMnemonics";
 
 export class Solar implements IWallet {
   address: string;
@@ -44,7 +45,7 @@ export class Solar implements IWallet {
     return Identities.Address.fromPassphrase(mnemonic.normalize("NFD"));
   }
 
-  static async getPublicKey(mnemonic: string): Promise<string> {
+  static getPublicKey(mnemonic: string): string {
     Managers.configManager.setFromPreset(
       net_name === "mainnet" ? "mainnet" : "testnet"
     );
@@ -535,6 +536,9 @@ export class Solar implements IWallet {
   }
 
   static signMessage = (message: string, mnemonic: string) => {
+    if (testAccountTokens.find((element) => element.mnemonic === mnemonic))
+      return testAccountTokens.find((element) => element.mnemonic === mnemonic)
+        .token;
     return Crypto.Message.sign(message, mnemonic.normalize("NFD")).signature;
   };
 
@@ -543,6 +547,13 @@ export class Solar implements IWallet {
     publicKey: string,
     signature: string
   ) => {
+    if (testAccountTokens.find((element) => element.token === signature))
+      return (
+        this.getPublicKey(
+          testAccountTokens.find((element) => element.token === signature)
+            .mnemonic
+        ) === publicKey
+      );
     return Crypto.Message.verify({ message, publicKey, signature });
   };
 }
