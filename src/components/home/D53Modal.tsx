@@ -52,20 +52,24 @@ const D53Modal = ({ open, setOpen }: props) => {
       const selectedServer = serverList.find(
         (server) => server.ip === serverIp
       );
-      if (selectedServer.clients >= selectedServer.clients_max) {
-        setNotificationStatus("failed");
-        setNotificationTitle(t("alt-9_run-failed"));
-        setNotificationDetail(t("alt-38_sorry-server-full"));
-        setNotificationOpen(true);
-        setNotificationLink(null);
+      if (!selectedServer) {
+        await runGame("district53", serverIp);
       } else {
-        const res = await runGame("district53", serverIp);
-        if (!res) {
+        if (selectedServer?.clients >= selectedServer?.clients_max) {
           setNotificationStatus("failed");
           setNotificationTitle(t("alt-9_run-failed"));
-          setNotificationDetail(t("alt-10_run-failed-intro"));
+          setNotificationDetail(t("alt-38_sorry-server-full"));
           setNotificationOpen(true);
           setNotificationLink(null);
+        } else {
+          const res = await runGame("district53", serverIp);
+          if (!res) {
+            setNotificationStatus("failed");
+            setNotificationTitle(t("alt-9_run-failed"));
+            setNotificationDetail(t("alt-10_run-failed-intro"));
+            setNotificationOpen(true);
+            setNotificationLink(null);
+          }
         }
       }
     }

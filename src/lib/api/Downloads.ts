@@ -179,7 +179,7 @@ export async function isInstalled(game_key: string) {
 
 export async function runGame(game_key: string, serverIp?: string) {
   try {
-    // const dataDir = await appDataDir();
+    const dataDir = await appDataDir();
     let exePath = "";
     const platform = await type();
     switch (platform) {
@@ -194,11 +194,12 @@ export async function runGame(game_key: string, serverIp?: string) {
         break;
     }
     // let url = dataDir + `v${tymt_version}/games/${game_key}` + exePath;
+    console.log("dataDir", dataDir);
     console.log("exePath", exePath);
-    let url = "";
-    const filePath: string = "D:/tymt.config.txt";
-    url = await readTextFile(filePath);
-    console.log("url", url);
+    const filePath: string = dataDir + `games.config.json`;
+    let configJson = JSON.parse(await readTextFile(filePath));
+    let url = configJson[game_key].path;
+    console.log("configJson", configJson, url);
     if (!(await exists(url))) {
       return false;
     }
