@@ -15,6 +15,7 @@ import {
   userType,
   ChatHistoryType,
   deliverEncryptionKeyType,
+  encryptionkeyStoreType,
 } from "../../types/chatTypes";
 import { chatType, notificationType } from "../../types/settingTypes";
 
@@ -65,7 +66,7 @@ import { selectNotification } from "../../features/settings/NotificationSlice";
 import { selectChat } from "../../features/settings/ChatSlice";
 import {
   addEncryptionKey,
-  selectEncryptionKeyByUserId,
+  selectEncryptionKeyStore,
 } from "../../features/chat/Chat-encryptionkeySlice";
 import { generateRandomString } from "../../features/chat/Chat-contactApi";
 import {
@@ -93,12 +94,29 @@ const Chatroom = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
   const classes = ChatStyle();
-  const data: chatType = useSelector(selectChat);
-  const currentpartner: userType = useSelector(selectPartner);
-  const account: accountType = useSelector(getAccount);
+
+  const chatStore: chatType = useSelector(selectChat);
+  const currentPartnerStore: userType = useSelector(selectPartner);
+  const accountStore: accountType = useSelector(getAccount);
   const chatHistoryStore: ChatHistoryType = useSelector(getChatHistory);
-  const chatuserlist: userType[] = useSelector(getUserlist);
+  const chatUserListStore: userType[] = useSelector(getUserlist);
   const notificationStore: notificationType = useSelector(selectNotification);
+  // const userid: string = currentpartner._id;
+  // const existkey: string = useSelector((state) =>
+  //   selectEncryptionKeyByUserId(state, userid)
+  // );
+  const encryptionKeyStore: encryptionkeyStoreType = useSelector(
+    selectEncryptionKeyStore
+  );
+
+  const chatStoreRef = useRef(chatStore);
+  const currentPartnerStoreRef = useRef(currentPartnerStore);
+  const accountStoreRef = useRef(accountStore);
+  const chatHistoryStoreRef = useRef(chatHistoryStore);
+  const chatUserListStoreRef = useRef(chatUserListStore);
+  const notificationStoreRef = useRef(notificationStore);
+  const encryptionKeyStoreRef = useRef(encryptionKeyStore);
+
   const [panel, setPanel] = useState("chatroom-chatuserlist");
   const [value, setValue] = useState<string>("");
   const [showChat, setShowChat] = useState(false);
@@ -107,10 +125,28 @@ const Chatroom = () => {
   const [keyperuser, setKeyperUser] = useState<string>("");
   const [processedPages, setProcessedPages] = useState(new Set());
   const [screenexpanded, setScreenExpanded] = useState<boolean>(false);
-  const userid: string = currentpartner._id;
-  const existkey: string = useSelector((state) =>
-    selectEncryptionKeyByUserId(state, userid)
-  );
+
+  useEffect(() => {
+    chatStoreRef.current = chatStore;
+  }, [chatStore]);
+  useEffect(() => {
+    currentPartnerStoreRef.current = currentPartnerStore;
+  }, [currentPartnerStore]);
+  useEffect(() => {
+    accountStoreRef.current = accountStore;
+  }, [accountStore]);
+  useEffect(() => {
+    chatHistoryStoreRef.current = chatHistoryStore;
+  }, [chatHistoryStore]);
+  useEffect(() => {
+    chatUserListStoreRef.current = chatUserListStore;
+  }, [chatUserListStore]);
+  useEffect(() => {
+    notificationStoreRef.current = notificationStore;
+  }, [notificationStore]);
+  useEffect(() => {
+    encryptionKeyStoreRef.current = encryptionKeyStore;
+  }, [encryptionKeyStore]);
 
   const setChat = useCallback(
     (viewChat: boolean) => {
@@ -122,58 +158,82 @@ const Chatroom = () => {
   // When currentpartner is changed ask encryption key to partner
 
   useEffect(() => {
+    const existkey =
+      encryptionKeyStoreRef.current.encryption_Keys[
+        currentPartnerStoreRef.current._id
+      ];
     if (existkey) {
       setKeyperUser(existkey);
     } else {
       const key = generateRandomString(32);
       setKeyperUser(key);
       const deliverydata: deliverEncryptionKeyType = {
-        sender_id: account.uid,
-        recipient_id: currentpartner._id,
+        sender_id: accountStoreRef.current.uid,
+        recipient_id: currentPartnerStoreRef.current._id,
         key: key,
       };
       socket.emit("deliver-encryption-key", JSON.stringify(deliverydata));
-      dispatch(addEncryptionKey({ userId: userid, encryptionKey: key }));
+      dispatch(
+        addEncryptionKey({
+          userId: currentPartnerStoreRef.current._id,
+          encryptionKey: key,
+        })
+      );
     }
-  }, [currentpartner._id, socket]);
+  }, [currentPartnerStoreRef.current._id, socket]);
 
   useEffect(() => {
     setPage(1);
     setHasMore(true);
     dispatch(setChatHistory({ messages: [] }));
     setProcessedPages(new Set());
-  }, [currentpartner._id]);
+  }, [currentPartnerStoreRef.current._id]);
 
   const fetchMessages = async () => {
     if (!hasMore) return;
 
     const query = {
-      room_user_ids: [account.uid, currentpartner._id],
+      room_user_ids: [
+        accountStoreRef.current.uid,
+        currentPartnerStoreRef.current._id,
+      ],
       pagination: { page: page, pageSize: 20 },
     };
 
     if (!processedPages.has(page)) {
       setProcessedPages(new Set(processedPages.add(page)));
       socket.emit("get-messages-by-room", JSON.stringify(query));
-      socket.on("messages-by-room", async (result) => {
-        if (result && result.data.length > 0) {
-          if (data.message === "anyone" || data.message === "friend") {
-            dispatch(
-              setChatHistory({
-                messages: [...chatHistoryStore.messages, ...result.data],
-              })
-            );
-            setPage(page + 1);
-          } else {
-            setHasMore(false);
-          }
-        } else {
-          setHasMore(false);
-        }
-      });
     }
     // }
   };
+
+  useEffect(() => {
+    socket.on("messages-by-room", async (result) => {
+      if (result && result.data.length > 0) {
+        if (
+          chatStoreRef.current.message === "anyone" ||
+          chatStoreRef.current.message === "friend"
+        ) {
+          dispatch(
+            setChatHistory({
+              messages: [
+                ...chatHistoryStoreRef.current.messages,
+                ...result.data,
+              ],
+            })
+          );
+          setPage(page + 1);
+        } else {
+          setHasMore(false);
+        }
+      } else {
+        setHasMore(false);
+      }
+    });
+    return () => {
+      socket.off("messages-by-room");
+    };
+  }, []);
 
   const debouncedFetchMessages = _.debounce(fetchMessages, 1000);
 
@@ -248,7 +308,7 @@ const Chatroom = () => {
     if (scrollref.current && page < 3) {
       scrollref.current.scrollTop = scrollref.current.scrollHeight;
     }
-  }, [debouncedFetchMessages, currentpartner._id, page]);
+  }, [debouncedFetchMessages, currentPartnerStoreRef.current._id, page]);
 
   return (
     <>
@@ -297,13 +357,17 @@ const Chatroom = () => {
                   justifyContent={"space-between"}
                 >
                   <Stack alignItems={"center"} flexDirection={"row"}>
-                    {chatuserlist[0] && (
+                    {chatUserListStoreRef.current[0] && (
                       <>
                         <Avatar
-                          onlineStatus={currentpartner.onlineStatus}
-                          userid={currentpartner._id}
+                          onlineStatus={
+                            currentPartnerStoreRef.current.onlineStatus
+                          }
+                          userid={currentPartnerStoreRef.current._id}
                           size={50}
-                          status={currentpartner.notificationStatus}
+                          status={
+                            currentPartnerStoreRef.current.notificationStatus
+                          }
                         />
                         <Stack
                           marginLeft={"16px"}
@@ -312,15 +376,15 @@ const Chatroom = () => {
                           spacing={1}
                         >
                           <Box className={"fs-18-bold white"}>
-                            {currentpartner.nickName}
+                            {currentPartnerStoreRef.current.nickName}
                           </Box>
                           <Box className={"fs-12-regular gray"}>
-                            {currentpartner.sxpAddress}
+                            {currentPartnerStoreRef.current.sxpAddress}
                           </Box>
                         </Stack>
                       </>
                     )}
-                    {!chatuserlist[0] && <></>}
+                    {!chatUserListStoreRef.current[0] && <></>}
                   </Stack>
                   <Stack alignItems={"center"} flexDirection={"row"}>
                     <Button
@@ -361,7 +425,7 @@ const Chatroom = () => {
                   isReverse={true}
                   useWindow={false}
                 >
-                  {[...chatHistoryStore.messages]
+                  {[...chatHistoryStoreRef.current.messages]
                     .reverse()
                     ?.map((message, index) => {
                       const isSameDay = (date1, date2) => {
@@ -376,7 +440,7 @@ const Chatroom = () => {
                         if (index === 0) return true;
 
                         const previousMessageDate = new Date(
-                          [...chatHistoryStore.messages].reverse()[
+                          [...chatHistoryStoreRef.current.messages].reverse()[
                             index - 1
                           ]?.createdAt
                         );
@@ -398,10 +462,10 @@ const Chatroom = () => {
 
                       const detectLastMessageofStack = () => {
                         const nextMessageSender = [
-                          ...chatHistoryStore.messages,
+                          ...chatHistoryStoreRef.current.messages,
                         ].reverse()[index + 1]?.sender_id;
                         const currentMessageSender = [
-                          ...chatHistoryStore.messages,
+                          ...chatHistoryStoreRef.current.messages,
                         ].reverse()[index]?.sender_id;
 
                         return !isSameSender(
@@ -434,18 +498,20 @@ const Chatroom = () => {
                               gap={"15px"}
                               justifyContent={
                                 !screenexpanded
-                                  ? message.sender_id === account.uid
+                                  ? message.sender_id ===
+                                    accountStoreRef.current.uid
                                     ? "flex-end"
                                     : "flex-start"
                                   : "flex-start"
                               }
                             >
-                              {message.sender_id === account.uid && (
+                              {message.sender_id ===
+                                accountStoreRef.current.uid && (
                                 <>
                                   {screenexpanded && isLastMessageofStack && (
                                     <Avatar
                                       onlineStatus={true}
-                                      userid={account.uid}
+                                      userid={accountStoreRef.current.uid}
                                       size={40}
                                       status={
                                         !notificationStore.alert
@@ -515,14 +581,23 @@ const Chatroom = () => {
                                   </Box>
                                 </>
                               )}
-                              {message.sender_id !== account.uid && (
+                              {message.sender_id !==
+                                accountStoreRef.current.uid && (
                                 <>
                                   {screenexpanded && isLastMessageofStack && (
                                     <Avatar
-                                      onlineStatus={currentpartner.onlineStatus}
-                                      userid={currentpartner._id}
+                                      onlineStatus={
+                                        currentPartnerStoreRef.current
+                                          .onlineStatus
+                                      }
+                                      userid={
+                                        currentPartnerStoreRef.current._id
+                                      }
                                       size={40}
-                                      status={currentpartner.notificationStatus}
+                                      status={
+                                        currentPartnerStoreRef.current
+                                          .notificationStatus
+                                      }
                                     />
                                   )}
                                   {screenexpanded && !isLastMessageofStack && (

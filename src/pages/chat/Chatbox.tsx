@@ -2,18 +2,16 @@ import { useEffect, useRef } from "react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-
 import { Box, Divider, Button, Stack } from "@mui/material";
-
 import {
   ChatHistoryType,
   deliverEncryptionKeyType,
+  encryptionkeyStoreType,
   propsType,
   userType,
 } from "../../types/chatTypes";
 import { accountType } from "../../types/accountTypes";
 import { chatType } from "../../types/settingTypes";
-
 import { selectPartner } from "../../features/chat/Chat-currentPartnerSlice";
 import { getAccount } from "../../features/account/AccountSlice";
 import {
@@ -23,20 +21,16 @@ import {
 import { selectChat } from "../../features/settings/ChatSlice";
 import {
   addEncryptionKey,
-  selectEncryptionKeyByUserId,
+  selectEncryptionKeyStore,
 } from "../../features/chat/Chat-encryptionkeySlice";
-
 import maximize from "../../assets/chat/maximize.svg";
 import backIcon from "../../assets/settings/back-icon.svg";
 import ChatStyle from "../../styles/ChatStyles";
 import Avatar from "../../components/home/Avatar";
 import OrLinechat from "../../components/chat/Orlinechat";
 import Chatinputfield from "../../components/chat/Chatinputfield";
-
 import "firebase/database";
-
 import React from "react";
-
 import { useSocket } from "../../providers/SocketProvider";
 import { AppDispatch } from "../../store";
 import _ from "lodash";
@@ -54,81 +48,118 @@ const Chatbox = ({ view, setView }: propsType) => {
   const { socket } = useSocket();
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
-  const account: accountType = useSelector(getAccount);
-  const currentpartner: userType = useSelector(selectPartner);
-  const chatHistoryStore: ChatHistoryType = useSelector(getChatHistory);
-  const data: chatType = useSelector(selectChat);
-  const userid: string = currentpartner._id;
-  const existkey: string = useSelector((state) =>
-    selectEncryptionKeyByUserId(state, userid)
-  );
+
   const [value, setValue] = useState<string>("");
   const [page, setPage] = useState<number>(1);
   const [hasMore, setHasMore] = useState(true);
-  // const [isLoading, setLoading] = useState<boolean>(false);
   const [keyperuser, setKeyperUser] = useState<string>("");
   const [processedPages, setProcessedPages] = useState(new Set());
 
-  // When currentpartner is changed ask encryption key to partner
+  const accountStore: accountType = useSelector(getAccount);
+  const currentPartnerStore: userType = useSelector(selectPartner);
+  const chatHistoryStore: ChatHistoryType = useSelector(getChatHistory);
+  const chatStore: chatType = useSelector(selectChat);
+  const encryptionKeyStore: encryptionkeyStoreType = useSelector(
+    selectEncryptionKeyStore
+  );
+
+  const accountStoreRef = useRef(accountStore);
+  const currentPartnerStoreRef = useRef(currentPartnerStore);
+  const chatHistoryStoreRef = useRef(chatHistoryStore);
+  const chatStoreRef = useRef(chatStore);
+  const encryptionKeyStoreRef = useRef(encryptionKeyStore);
 
   useEffect(() => {
+    accountStoreRef.current = accountStore;
+  }, [accountStore]);
+  useEffect(() => {
+    currentPartnerStoreRef.current = currentPartnerStore;
+  }, [currentPartnerStore]);
+  useEffect(() => {
+    chatHistoryStoreRef.current = chatHistoryStore;
+  }, [chatHistoryStore]);
+  useEffect(() => {
+    chatStoreRef.current = chatStore;
+  }, [chatStore]);
+  useEffect(() => {
+    encryptionKeyStoreRef.current = encryptionKeyStore;
+  }, [encryptionKeyStore]);
+
+  useEffect(() => {
+    const existkey =
+      encryptionKeyStoreRef.current.encryption_Keys[
+        currentPartnerStoreRef.current._id
+      ];
     if (existkey) {
       setKeyperUser(existkey);
     } else {
       const key = generateRandomString(32);
       setKeyperUser(key);
       const deliverydata: deliverEncryptionKeyType = {
-        sender_id: account.uid,
-        recipient_id: currentpartner._id,
+        sender_id: accountStoreRef.current.uid,
+        recipient_id: currentPartnerStoreRef.current._id,
         key: key,
       };
       socket.emit("deliver-encryption-key", JSON.stringify(deliverydata));
-      dispatch(addEncryptionKey({ userId: userid, encryptionKey: key }));
+      dispatch(
+        addEncryptionKey({
+          userId: currentPartnerStoreRef.current._id,
+          encryptionKey: key,
+        })
+      );
     }
-  }, [currentpartner._id, socket]);
+  }, [currentPartnerStoreRef.current._id, socket]);
 
   useEffect(() => {
     setPage(1);
     setHasMore(true);
     dispatch(setChatHistory({ messages: [] }));
     setProcessedPages(new Set());
-    // setLoading(false);
-  }, [currentpartner._id]);
-  // When the scrolling up, this function fetches one page of history for each loading.
+  }, [currentPartnerStoreRef.current._id]);
 
   const fetchMessages = async () => {
-    // setLoading(true);
     if (!hasMore) return;
     const query = {
-      room_user_ids: [account.uid, currentpartner._id],
+      room_user_ids: [
+        accountStoreRef.current.uid,
+        currentPartnerStoreRef.current._id,
+      ],
       pagination: { page: page, pageSize: 20 },
     };
     if (!processedPages.has(page)) {
       // Add the current page number to the set of processed pages
       setProcessedPages(new Set(processedPages.add(page)));
-
       socket.emit("get-messages-by-room", JSON.stringify(query));
+    }
+  };
 
-      socket.on("messages-by-room", async (result) => {
-        if (result && result.data.length > 0) {
-          if (data.message === "anyone" || data.message === "friend") {
-            dispatch(
-              setChatHistory({
-                messages: [...chatHistoryStore.messages, ...result.data],
-              })
-            );
-            // setLoading(false);
-            setPage(page + 1);
-          } else {
-            setHasMore(false);
-          }
+  useEffect(() => {
+    socket.on("messages-by-room", async (result) => {
+      if (result && result.data.length > 0) {
+        if (
+          chatStoreRef.current.message === "anyone" ||
+          chatStoreRef.current.message === "friend"
+        ) {
+          dispatch(
+            setChatHistory({
+              messages: [
+                ...chatHistoryStoreRef.current.messages,
+                ...result.data,
+              ],
+            })
+          );
+          setPage(page + 1);
         } else {
           setHasMore(false);
         }
-      });
-    }
-    // }
-  };
+      } else {
+        setHasMore(false);
+      }
+    });
+    return () => {
+      socket.off("messages-by-room");
+    };
+  }, []);
 
   const debouncedFetchMessages = _.debounce(fetchMessages, 1000);
 
@@ -187,7 +218,7 @@ const Chatbox = ({ view, setView }: propsType) => {
     if (scrollref.current && page < 3) {
       scrollref.current.scrollTop = scrollref.current.scrollHeight;
     }
-  }, [debouncedFetchMessages, currentpartner._id, page]);
+  }, [debouncedFetchMessages, currentPartnerStoreRef.current._id, page]);
 
   return (
     <>
@@ -208,10 +239,10 @@ const Chatbox = ({ view, setView }: propsType) => {
               </Button>
               <Stack alignItems={"center"} flexDirection={"row"}>
                 <Avatar
-                  onlineStatus={currentpartner.onlineStatus}
-                  userid={currentpartner._id}
+                  onlineStatus={currentPartnerStoreRef.current.onlineStatus}
+                  userid={currentPartnerStoreRef.current._id}
                   size={50}
-                  status={currentpartner.notificationStatus}
+                  status={currentPartnerStoreRef.current.notificationStatus}
                 />
                 <Stack
                   marginLeft={"16px"}
@@ -220,10 +251,10 @@ const Chatbox = ({ view, setView }: propsType) => {
                   spacing={1}
                 >
                   <Box className={"fs-18-bold white"}>
-                    {currentpartner.nickName}
+                    {currentPartnerStoreRef.current.nickName}
                   </Box>
                   <Box className={"fs-12-regular gray"}>
-                    {currentpartner.sxpAddress}
+                    {currentPartnerStoreRef.current.sxpAddress}
                   </Box>
                 </Stack>
               </Stack>
@@ -242,7 +273,6 @@ const Chatbox = ({ view, setView }: propsType) => {
                 setHasMore(true);
                 dispatch(setChatHistory({ messages: [] }));
                 setProcessedPages(new Set());
-                // setLoading(false);
               }}
             >
               <Box className={"center-align"}>
@@ -277,7 +307,7 @@ const Chatbox = ({ view, setView }: propsType) => {
               isReverse={true}
               useWindow={false}
             >
-              {[...chatHistoryStore.messages]
+              {[...chatHistoryStoreRef.current.messages]
                 .reverse()
                 ?.map((message, index) => {
                   const isSameDay = (date1, date2) => {
@@ -292,7 +322,7 @@ const Chatbox = ({ view, setView }: propsType) => {
                     if (index === 0) return true;
 
                     const previousMessageDate = new Date(
-                      [...chatHistoryStore.messages].reverse()[
+                      [...chatHistoryStoreRef.current.messages].reverse()[
                         index - 1
                       ]?.createdAt
                     );
@@ -311,10 +341,10 @@ const Chatbox = ({ view, setView }: propsType) => {
 
                   const detectLastMessageofStack = () => {
                     const nextMessageSender = [
-                      ...chatHistoryStore.messages,
+                      ...chatHistoryStoreRef.current.messages,
                     ].reverse()[index + 1]?.sender_id;
                     const currentMessageSender = [
-                      ...chatHistoryStore.messages,
+                      ...chatHistoryStoreRef.current.messages,
                     ].reverse()[index]?.sender_id;
 
                     return !isSameSender(
@@ -346,12 +376,13 @@ const Chatbox = ({ view, setView }: propsType) => {
                           marginTop={"10px"}
                           gap={"15px"}
                           justifyContent={
-                            message.sender_id === account.uid
+                            message.sender_id === accountStoreRef.current.uid
                               ? "flex-end"
                               : "flex-start"
                           }
                         >
-                          {message.sender_id === account.uid && (
+                          {message.sender_id ===
+                            accountStoreRef.current.uid && (
                             <>
                               <Box
                                 className={
@@ -399,7 +430,8 @@ const Chatbox = ({ view, setView }: propsType) => {
                               </Box>
                             </>
                           )}
-                          {message.sender_id !== account.uid && (
+                          {message.sender_id !==
+                            accountStoreRef.current.uid && (
                             <>
                               <Box
                                 className={
