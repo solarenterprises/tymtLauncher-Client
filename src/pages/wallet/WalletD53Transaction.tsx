@@ -90,7 +90,6 @@ const WalletD53Transaction = () => {
   const [blur, setBlur] = useState<boolean>(false);
   const [expired, setExpired] = useState<boolean>(true);
   const [timeLeft, setTimeLeft] = useState<number>(0);
-  const [lastActivity, setLastActivity] = useState(Date.now());
   const [icon, setIcon] = useState<string>("");
   const [jsonData, setJsonData] = useState<ISendTransactionReq>();
   const multiWalletRef = useRef(multiWalletStore);
@@ -196,7 +195,7 @@ const WalletD53Transaction = () => {
     invoke("hide_transaction_window");
     setLoading(false);
     setExpired(true);
-    setTimeLeft(60);
+    setTimeLeft(120);
     setSwitchChainModalOpen(false);
   };
 
@@ -223,7 +222,7 @@ const WalletD53Transaction = () => {
     setToken(undefined);
     invoke("hide_transaction_window");
     setExpired(true);
-    setTimeLeft(60);
+    setTimeLeft(120);
     setSwitchChainModalOpen(false);
   };
 
@@ -368,6 +367,15 @@ const WalletD53Transaction = () => {
         );
         if (!isValid) {
           invoke("hide_transaction_window");
+          try {
+            await TransactionProviderAPI.updateTransactionStatus(
+              json_data,
+              "fail"
+            );
+          } catch (err) {
+            console.error("Failed to update transaction status as fail: ", err);
+          }
+
           return;
         }
         // await switchChain(chain);
@@ -396,7 +404,7 @@ const WalletD53Transaction = () => {
         setMemo(json_data.memo ?? "");
         setToken(await TransactionProviderAPI.getToken(json_data));
         setExpired(false);
-        setTimeLeft(60);
+        setTimeLeft(120);
         setBlur(false);
       }
     );
@@ -409,28 +417,20 @@ const WalletD53Transaction = () => {
   useEffect(() => {
     if (!expired) {
       let checkActivityIntervalId = setInterval(() => {
-        if (Date.now() - lastActivity >= 5 * 1e3) {
-          setTimeLeft((prevTimeLeft) => prevTimeLeft - 1);
-        } else {
-          setTimeLeft(60);
-        }
+        setTimeLeft((prevTimeLeft) => prevTimeLeft - 1);
       }, 1 * 1e3);
 
       return () => {
         clearInterval(checkActivityIntervalId);
       };
     }
-  }, [expired, lastActivity]);
+  }, [expired]);
 
   useEffect(() => {
     if (timeLeft < 0) {
       handleRejectClick();
     }
   }, [timeLeft]);
-
-  useEffect(() => {
-    setLastActivity(Date.now());
-  }, [formik.values.password, walletStore.fee]);
 
   return (
     <Stack
