@@ -100,7 +100,10 @@ const Chatbox = ({ view, setView }: propsType) => {
         recipient_id: currentPartnerStoreRef.current._id,
         key: key,
       };
-      socket.emit("deliver-encryption-key", JSON.stringify(deliverydata));
+      socket.current.emit(
+        "deliver-encryption-key",
+        JSON.stringify(deliverydata)
+      );
       dispatch(
         addEncryptionKey({
           userId: currentPartnerStoreRef.current._id,
@@ -129,39 +132,46 @@ const Chatbox = ({ view, setView }: propsType) => {
     if (!processedPages.has(page)) {
       // Add the current page number to the set of processed pages
       setProcessedPages(new Set(processedPages.add(page)));
-      socket.emit("get-messages-by-room", JSON.stringify(query));
-      console.log("Chatbox > socket.emit > get-messages-by-room");
+      socket.current.emit("get-messages-by-room", JSON.stringify(query));
+      console.log("Chatbox > socket.current.emit > get-messages-by-room");
     }
   };
 
   useEffect(() => {
-    socket.on("messages-by-room", async (result) => {
-      console.log("Chatbox > socket.on > messages-by-room", result);
-      if (result && result.data.length > 0) {
-        if (
-          chatStoreRef.current.message === "anyone" ||
-          chatStoreRef.current.message === "friend"
-        ) {
-          dispatch(
-            setChatHistory({
-              messages: [
-                ...chatHistoryStoreRef.current.messages,
-                ...result.data,
-              ],
-            })
-          );
-          setPage(page + 1);
-        } else {
-          setHasMore(false);
-        }
-      } else {
-        setHasMore(false);
+    if (socket.current) {
+      if (!socket.current.hasListeners("messages-by-room")) {
+        socket.current.on("messages-by-room", async (result) => {
+          console.log("Chatbox > socket.current.on > messages-by-room", result);
+          if (result && result.data.length > 0) {
+            if (
+              chatStoreRef.current.message === "anyone" ||
+              chatStoreRef.current.message === "friend"
+            ) {
+              dispatch(
+                setChatHistory({
+                  messages: [
+                    ...chatHistoryStoreRef.current.messages,
+                    ...result.data,
+                  ],
+                })
+              );
+              setPage(page + 1);
+            } else {
+              setHasMore(false);
+            }
+          } else {
+            setHasMore(false);
+          }
+        });
       }
-    });
+    }
+
     return () => {
-      socket.off("messages-by-room");
+      if (socket.current) {
+        socket.current.off("messages-by-room");
+      }
     };
-  }, [socket]);
+  }, [socket.current]);
 
   const debouncedFetchMessages = _.debounce(fetchMessages, 3000);
 
@@ -363,9 +373,7 @@ const Chatbox = ({ view, setView }: propsType) => {
                       {/* Existing Box for rendering the message */}
                       <Box
                         className={"bubblecontainer"}
-                        key={`${
-                          message.sender_id
-                        }-${index}-${new Date().toISOString()}`}
+                        key={`${index}-${message.createdAt}`}
                       >
                         {timeline &&
                           decryptedmessage !==

@@ -1,4 +1,4 @@
-import React from "react";
+// import React from "react";
 import ReactDOM from "react-dom/client";
 import { Routes, Route, BrowserRouter } from "react-router-dom";
 
@@ -75,7 +75,7 @@ import TransactionProvider from "./providers/TransactionProvider";
 window.Buffer = Buffer;
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
-  <React.StrictMode>
+  // <React.StrictMode>
     <StoreProvider store={store}>
       <FullscreenProvider>
         <BrowserRouter>
@@ -231,5 +231,5 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
         </BrowserRouter>
       </FullscreenProvider>
     </StoreProvider>
-  </React.StrictMode>
+  // </React.StrictMode>
 );

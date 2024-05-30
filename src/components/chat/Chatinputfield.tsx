@@ -90,7 +90,7 @@ const Chatinputfield = ({
           message: encryptedvalue,
           createdAt: Date.now(),
         };
-        socket.emit("post-message", JSON.stringify(message));
+        socket.current.emit("post-message", JSON.stringify(message));
         const data = {
           alertType: "chat",
           note: {
@@ -99,7 +99,7 @@ const Chatinputfield = ({
           },
           receivers: [currentpartner._id],
         };
-        socket.emit("post-alert", JSON.stringify(data));
+        socket.current.emit("post-alert", JSON.stringify(data));
         const updatedHistory = [message, ...chatHistoryStore.messages];
         dispatch(
           setChatHistory({

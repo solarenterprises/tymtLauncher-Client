@@ -74,7 +74,7 @@ const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
           sender_id: account.uid,
           recipient_id: userid,
         };
-        socket.emit("ask-encryption-key", JSON.stringify(askdata));
+        socket.current.emit("ask-encryption-key", JSON.stringify(askdata));
         console.log("request for asking key", askdata);
       }
     }
@@ -101,13 +101,13 @@ const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
       note: { sender: detail.note.sender, status: "accepted" },
       receivers: detail.receivers,
     };
-    socket.emit("update-alert", JSON.stringify(data));
+    socket.current.emit("update-alert", JSON.stringify(data));
     const updatealert = {
       id: detail._id,
       reader: detail.note.sender,
     };
     console.log("update-FR-alert", updatealert);
-    socket.emit("add-reader-alert", JSON.stringify(updatealert));
+    socket.current.emit("add-reader-alert", JSON.stringify(updatealert));
   };
   const declineFR = () => {
     const data = {
@@ -120,8 +120,8 @@ const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
       id: detail._id,
       reader: detail.note.sender,
     };
-    socket.emit("add-reader-alert", JSON.stringify(updatealert));
-    socket.emit("update-alert", JSON.stringify(data));
+    socket.current.emit("add-reader-alert", JSON.stringify(updatealert));
+    socket.current.emit("update-alert", JSON.stringify(data));
   };
 
   const updateContact = async (_id) => {

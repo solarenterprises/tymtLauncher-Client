@@ -172,7 +172,10 @@ const Chatroom = () => {
         recipient_id: currentPartnerStoreRef.current._id,
         key: key,
       };
-      socket.emit("deliver-encryption-key", JSON.stringify(deliverydata));
+      socket.current.emit(
+        "deliver-encryption-key",
+        JSON.stringify(deliverydata)
+      );
       dispatch(
         addEncryptionKey({
           userId: currentPartnerStoreRef.current._id,
@@ -202,37 +205,44 @@ const Chatroom = () => {
 
     if (!processedPages.has(page)) {
       setProcessedPages(new Set(processedPages.add(page)));
-      socket.emit("get-messages-by-room", JSON.stringify(query));
+      socket.current.emit("get-messages-by-room", JSON.stringify(query));
     }
     // }
   };
 
   useEffect(() => {
-    socket.on("messages-by-room", async (result) => {
-      console.log("Chatroom > socket.on > messages-by-room", result);
-      if (result && result.data.length > 0) {
-        if (
-          chatStoreRef.current.message === "anyone" ||
-          chatStoreRef.current.message === "friend"
-        ) {
-          dispatch(
-            setChatHistory({
-              messages: [
-                ...chatHistoryStoreRef.current.messages,
-                ...result.data,
-              ],
-            })
+    if (socket.current) {
+      if (!socket.current.hasListeners("messages-by-room")) {
+        socket.current.on("messages-by-room", async (result) => {
+          console.log(
+            "Chatroom > socket.current.on > messages-by-room",
+            result
           );
-          setPage(page + 1);
-        } else {
-          setHasMore(false);
-        }
-      } else {
-        setHasMore(false);
+          if (result && result.data.length > 0) {
+            if (
+              chatStoreRef.current.message === "anyone" ||
+              chatStoreRef.current.message === "friend"
+            ) {
+              dispatch(
+                setChatHistory({
+                  messages: [
+                    ...chatHistoryStoreRef.current.messages,
+                    ...result.data,
+                  ],
+                })
+              );
+              setPage(page + 1);
+            } else {
+              setHasMore(false);
+            }
+          } else {
+            setHasMore(false);
+          }
+        });
       }
-    });
+    }
     return () => {
-      socket.off("messages-by-room");
+      socket.current.off("messages-by-room");
     };
   }, [socket]);
 

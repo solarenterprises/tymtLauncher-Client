@@ -43,6 +43,10 @@ const chatHistorySlice = createSlice({
       state.data = action.payload;
       tymtStorage.set(`chatHistory`, JSON.stringify(action.payload));
     },
+    addChatHistory(state, action) {
+      state.data.messages = [action.payload, ...state.data.messages];
+      tymtStorage.set(`chatHistory`, JSON.stringify(action.payload));
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -65,4 +69,4 @@ export const getChatHistory = (state: any) => state.chatHistory.data;
 
 export default chatHistorySlice.reducer;
 
-export const { setChatHistory } = chatHistorySlice.actions;
+export const { setChatHistory, addChatHistory } = chatHistorySlice.actions;
