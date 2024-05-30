@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useRef } from "react";
+import { createContext, useContext } from "react";
 import { useSelector } from "react-redux";
 import { socket_backend_url } from "../configs";
 import { io, Socket } from "socket.io-client";
@@ -8,36 +8,41 @@ import { ISocketHash } from "../types/chatTypes";
 import { getSocketHash } from "../features/chat/SocketHashSlice";
 import { Outlet } from "react-router-dom";
 
-const socket: Socket = io(socket_backend_url as string);
+// const socket: Socket = io(socket_backend_url as string);
 
 const SocketContext = createContext<{ socket: Socket } | undefined>(undefined);
 
 export const useSocket = () => useContext(SocketContext);
 
 export const SocketProvider = () => {
+  // const [socket, setSocket] = useState<Socket>(null);
   const accountStore: accountType = useSelector(getAccount);
   const socketHashStore: ISocketHash = useSelector(getSocketHash);
-  const accountStoreRef = useRef(accountStore);
-  const socketHashStoreRef = useRef(socketHashStore);
 
-  useEffect(() => {
-    accountStoreRef.current = accountStore;
-  }, [accountStore]);
+  // useEffect(() => {
+  //   socket.auth = {
+  //     userId: accountStore.uid,
+  //     socket_hash: socketHashStore.socketHash,
+  //   };
+  // }, [accountStore.uid, socketHashStore.socketHash]);
 
-  useEffect(() => {
-    socketHashStoreRef.current = socketHashStore;
-  }, [socketHashStore]);
+  const socket: Socket = io(socket_backend_url as string, {
+    auth: { userId: accountStore.uid, socket_hash: socketHashStore.socketHash },
+  });
 
-  useEffect(() => {
-    socket.auth = {
-      userId: accountStoreRef.current.uid,
-      socket_hash: socketHashStoreRef.current.socketHash,
-    };
-  }, [accountStoreRef.current, socketHashStoreRef.current]);
+  // useEffect(() => {
+  //   const newSocket: Socket = io(socket_backend_url as string, {
+  //     auth: {
+  //       userId: accountStore.uid,
+  //       socket_hash: socketHashStore.socketHash,
+  //     },
+  //   });
+  //   setSocket(newSocke
 
-  // const socket: Socket = io(socket_backend_url as string, {
-  //   auth: { userId: account.uid, socket_hash: sockethash.socketHash },
-  // });
+  //   return () => {
+  //     newSocket.close();
+  //   };
+  // }, [accountStore.uid, socketHashStore.socketHash]);
 
   return (
     <SocketContext.Provider

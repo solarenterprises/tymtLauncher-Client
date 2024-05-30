@@ -130,11 +130,13 @@ const Chatbox = ({ view, setView }: propsType) => {
       // Add the current page number to the set of processed pages
       setProcessedPages(new Set(processedPages.add(page)));
       socket.emit("get-messages-by-room", JSON.stringify(query));
+      console.log("Chatbox > socket.emit > get-messages-by-room");
     }
   };
 
   useEffect(() => {
     socket.on("messages-by-room", async (result) => {
+      console.log("Chatbox > socket.on > messages-by-room", result);
       if (result && result.data.length > 0) {
         if (
           chatStoreRef.current.message === "anyone" ||
@@ -159,9 +161,9 @@ const Chatbox = ({ view, setView }: propsType) => {
     return () => {
       socket.off("messages-by-room");
     };
-  }, []);
+  }, [socket]);
 
-  const debouncedFetchMessages = _.debounce(fetchMessages, 1000);
+  const debouncedFetchMessages = _.debounce(fetchMessages, 3000);
 
   const formatDateDifference = (date) => {
     const today: any = new Date(Date.now());
@@ -239,10 +241,10 @@ const Chatbox = ({ view, setView }: propsType) => {
               </Button>
               <Stack alignItems={"center"} flexDirection={"row"}>
                 <Avatar
-                  onlineStatus={currentPartnerStoreRef.current.onlineStatus}
-                  userid={currentPartnerStoreRef.current._id}
+                  onlineStatus={currentPartnerStore.onlineStatus}
+                  userid={currentPartnerStore._id}
                   size={50}
-                  status={currentPartnerStoreRef.current.notificationStatus}
+                  status={currentPartnerStore.notificationStatus}
                 />
                 <Stack
                   marginLeft={"16px"}
@@ -251,10 +253,10 @@ const Chatbox = ({ view, setView }: propsType) => {
                   spacing={1}
                 >
                   <Box className={"fs-18-bold white"}>
-                    {currentPartnerStoreRef.current.nickName}
+                    {currentPartnerStore.nickName}
                   </Box>
                   <Box className={"fs-12-regular gray"}>
-                    {currentPartnerStoreRef.current.sxpAddress}
+                    {currentPartnerStore.sxpAddress}
                   </Box>
                 </Stack>
               </Stack>
@@ -307,7 +309,7 @@ const Chatbox = ({ view, setView }: propsType) => {
               isReverse={true}
               useWindow={false}
             >
-              {[...chatHistoryStoreRef.current.messages]
+              {[...chatHistoryStore.messages]
                 .reverse()
                 ?.map((message, index) => {
                   const isSameDay = (date1, date2) => {
@@ -322,7 +324,7 @@ const Chatbox = ({ view, setView }: propsType) => {
                     if (index === 0) return true;
 
                     const previousMessageDate = new Date(
-                      [...chatHistoryStoreRef.current.messages].reverse()[
+                      [...chatHistoryStore.messages].reverse()[
                         index - 1
                       ]?.createdAt
                     );
@@ -341,10 +343,10 @@ const Chatbox = ({ view, setView }: propsType) => {
 
                   const detectLastMessageofStack = () => {
                     const nextMessageSender = [
-                      ...chatHistoryStoreRef.current.messages,
+                      ...chatHistoryStore.messages,
                     ].reverse()[index + 1]?.sender_id;
                     const currentMessageSender = [
-                      ...chatHistoryStoreRef.current.messages,
+                      ...chatHistoryStore.messages,
                     ].reverse()[index]?.sender_id;
 
                     return !isSameSender(
@@ -376,13 +378,12 @@ const Chatbox = ({ view, setView }: propsType) => {
                           marginTop={"10px"}
                           gap={"15px"}
                           justifyContent={
-                            message.sender_id === accountStoreRef.current.uid
+                            message.sender_id === accountStore.uid
                               ? "flex-end"
                               : "flex-start"
                           }
                         >
-                          {message.sender_id ===
-                            accountStoreRef.current.uid && (
+                          {message.sender_id === accountStore.uid && (
                             <>
                               <Box
                                 className={
@@ -430,8 +431,7 @@ const Chatbox = ({ view, setView }: propsType) => {
                               </Box>
                             </>
                           )}
-                          {message.sender_id !==
-                            accountStoreRef.current.uid && (
+                          {message.sender_id !== accountStore.uid && (
                             <>
                               <Box
                                 className={

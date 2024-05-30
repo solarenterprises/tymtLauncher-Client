@@ -227,7 +227,7 @@ const ChatuserlistinRoom = ({ view, setView }: propsType) => {
                   (user, index) => {
                     const count =
                       searchvalue === ""
-                        ? unreadalerts.filter(
+                        ? unreadalerts?.filter(
                             (alert) =>
                               alert.note.sender === user._id &&
                               alert.alertType === "chat"

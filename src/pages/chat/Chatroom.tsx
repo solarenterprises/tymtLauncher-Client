@@ -209,6 +209,7 @@ const Chatroom = () => {
 
   useEffect(() => {
     socket.on("messages-by-room", async (result) => {
+      console.log("Chatroom > socket.on > messages-by-room", result);
       if (result && result.data.length > 0) {
         if (
           chatStoreRef.current.message === "anyone" ||
@@ -233,7 +234,7 @@ const Chatroom = () => {
     return () => {
       socket.off("messages-by-room");
     };
-  }, []);
+  }, [socket]);
 
   const debouncedFetchMessages = _.debounce(fetchMessages, 1000);
 

@@ -137,11 +137,33 @@ const ChatProvider = () => {
   //   );
   // };
 
+  const handleEncryptionKeyDelivery = (data) => {
+    const userid = data.sender_id;
+    const encryptionkey = data.key;
+    dispatch(
+      addEncryptionKey({ userId: userid, encryptionKey: encryptionkey })
+    );
+  };
+
+  const handleAskingEncryptionKey = (data) => {
+    const userid: string = data.sender_id;
+    const existkey = encryptionKeyStoreRef.current.encryption_Keys[userid];
+    const key = existkey ? existkey : generateRandomString(32);
+    const deliverydata: deliverEncryptionKeyType = {
+      sender_id: accountStoreRef.current.uid,
+      recipient_id: data.sender_id,
+      key: key,
+    };
+    socket.emit("deliver-encryption-key", JSON.stringify(deliverydata));
+    dispatch(addEncryptionKey({ userId: userid, encryptionKey: key }));
+  };
+
   const handleIncomingMessages = async (
     message: ChatMessageType,
     senderInChatUserlist: userType,
     senderInChatFriendlist: userType
   ) => {
+    console.log("handleIncomingMessages");
     if (message.recipient_id === accountStoreRef.current.uid) {
       if (chatStoreRef.current.message === "anyone") {
         console.log("messagereception", chatStoreRef.current.message);
@@ -184,38 +206,19 @@ const ChatProvider = () => {
     }
   };
 
-  const handleEncryptionKeyDelivery = (data) => {
-    const userid = data.sender_id;
-    const encryptionkey = data.key;
-    dispatch(
-      addEncryptionKey({ userId: userid, encryptionKey: encryptionkey })
-    );
-  };
-
-  const handleAskingEncryptionKey = (data) => {
-    const userid: string = data.sender_id;
-    const existkey = encryptionKeyStoreRef.current.encryption_Keys[userid];
-    const key = existkey ? existkey : generateRandomString(32);
-    const deliverydata: deliverEncryptionKeyType = {
-      sender_id: accountStoreRef.current.uid,
-      recipient_id: data.sender_id,
-      key: key,
-    };
-    socket.emit("deliver-encryption-key", JSON.stringify(deliverydata));
-    dispatch(addEncryptionKey({ userId: userid, encryptionKey: key }));
-  };
-
   useEffect(() => {
-    socket.on("connect", function () {});
-
+    socket.on("connect", () => {
+      console.log("socket.on > connect");
+    });
     return () => {
       socket.off("connect");
     };
-  }, []);
+  }, [socket]);
 
   // Handle each posted message incoming to user
   useEffect(() => {
     socket.on("message-posted", async (message: ChatMessageType) => {
+      console.log("socket.on > message-posted", message);
       const senderId = message.sender_id;
       const senderInChatUserlist = chatUserListStoreRef.current.find(
         (user) => user._id === senderId
@@ -257,12 +260,12 @@ const ChatProvider = () => {
     return () => {
       socket.off("message-posted");
     };
-  }, []);
+  }, [socket]);
 
   // Handle each posted alert incoming to user
   useEffect(() => {
     socket.on("alert-posted", async (alert: alertType) => {
-      console.log("alert-posted", alert);
+      console.log("socket.on > alert-posted", alert);
       const handleIncomingRequest = async () => {
         if (alert.alertType === "friend-request") {
           if (
@@ -323,12 +326,12 @@ const ChatProvider = () => {
     return () => {
       socket.off("alert-posted");
     };
-  }, []);
+  }, [socket]);
 
   // Handle each updated alert incoming to user
   useEffect(() => {
     socket.on("alert-updated", async (alert: alertType) => {
-      console.log("alert-updated", alert);
+      console.log("socket.on > alert-updated", alert);
       const handleIncomingUpdatedAlert = () => {
         if (
           alert.alertType === "friend-request" &&
@@ -380,25 +383,25 @@ const ChatProvider = () => {
     return () => {
       socket.off("alert-updated");
     };
-  }, []);
+  }, [socket]);
 
   // receive request for  encryption key and generate/send encryption key to partner
   useEffect(() => {
     socket.on("ask-encryption-key", async (data: askEncryptionKeyType) => {
-      console.log("receiving encryption key request--->", data);
+      console.log("socket.on > ask-encryption-key", data);
       handleAskingEncryptionKey(data);
     });
     return () => {
       socket.off("ask-encryption-key");
     };
-  }, []);
+  }, [socket]);
 
   // receive delivered encryption key
   useEffect(() => {
     socket.on(
       "deliver-encryption-key",
       async (data: deliveredEncryptionKeyType) => {
-        console.log("encryption-key delievery--->", data);
+        console.log("socket.on > deliver-encryption-key", data);
         handleEncryptionKeyDelivery(data);
         socket.emit("received-encryption-key", JSON.stringify(data));
       }
@@ -406,11 +409,11 @@ const ChatProvider = () => {
     return () => {
       socket.off("deliver-encryption-key");
     };
-  }, []);
+  }, [socket]);
 
   useEffect(() => {
     socket.on("user-online-status-updated", async (data) => {
-      console.log("received updated user online status-->", data);
+      console.log("socket.on > user-online-status-updated", data);
       const handleUpdatedOnlineStatus = async () => {
         const userId = data.userid;
         const userinChatuserlist = chatUserListStoreRef.current.find(
@@ -427,11 +430,11 @@ const ChatProvider = () => {
     return () => {
       socket.off("user-online-status-updated");
     };
-  }, []);
+  }, [socket]);
 
   useEffect(() => {
     socket.on("user-notification-status-updated", async (data) => {
-      console.log("received updated user online status-->", data);
+      console.log("socket.on > user-notification-status-updated", data);
       const handleUpdatedOnlineStatus = async () => {
         const userId = data.userid;
         const userinChatuserlist = chatUserListStoreRef.current.find(
@@ -451,7 +454,7 @@ const ChatProvider = () => {
     return () => {
       socket.off("user-notification-status-updated");
     };
-  });
+  }, [socket]);
 
   return (
     <>
