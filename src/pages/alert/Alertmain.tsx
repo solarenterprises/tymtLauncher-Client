@@ -1,5 +1,5 @@
 import { Box, Button, Stack } from "@mui/material";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import unreaddot from "../../assets/alert/unreaddot.svg";
@@ -20,50 +20,90 @@ import {
 } from "../../features/alert/AlertbadgeSlice";
 
 const Alertmain = () => {
-  const dispatch = useDispatch();
   const { t } = useTranslation();
-  const account: accountType = useSelector(getAccount);
-  const alertbadge: alertbadgeType = useSelector(selectBadgeStatus);
+
+  const dispatch = useDispatch();
+  const accountStore: accountType = useSelector(getAccount);
+  const alertBadgeStore: alertbadgeType = useSelector(selectBadgeStatus);
+
+  const accountStoreRef = useRef(accountStore);
+  const alertBadgeStoreRef = useRef(alertBadgeStore);
+
+  useEffect(() => {
+    alertBadgeStoreRef.current = alertBadgeStore;
+  }, [alertBadgeStore]);
+  useEffect(() => {
+    accountStoreRef.current = accountStore;
+  }, [accountStoreRef]);
+
   const [unreadcount, setUnreadCount] = useState<number>(0);
   const [readcount, setReadCount] = useState<number>(0);
   const [unreadalerts, setUnreadAlerts] = useState<alertType[]>([]);
   const [readalerts, setReadAlerts] = useState<alertType[]>([]);
   const [read, setRead] = useState<string>("unread");
 
-  const getUnreadAlerts = useCallback(async () => {
-    const unreadalerts: alertType[] = await fetchUnreadAlerts(account.uid);
-    setUnreadCount(unreadalerts.length);
-    setUnreadAlerts(unreadalerts);
-  }, [alertbadge.trigger]);
+  const unreadalertsRef = useRef(unreadalerts);
 
-  const getReadAlerts = useCallback(async () => {
-    const readalerts: alertType[] = await fetchReadAlerts(account.uid);
-    setReadCount(readalerts.length);
-    setReadAlerts(readalerts);
-  }, [alertbadge.trigger]);
+  useEffect(() => {
+    unreadalertsRef.current = unreadalerts;
+  }, [unreadalerts]);
+
+  const getUnreadAlerts = async () => {
+    try {
+      const newunreadalerts: alertType[] = await fetchUnreadAlerts(
+        accountStoreRef.current.uid
+      );
+      setUnreadCount(newunreadalerts.length);
+      setUnreadAlerts(newunreadalerts);
+      console.log("getUnreadAlerts");
+    } catch (err) {
+      console.error("Failed to getUnreadAlerts: ", err);
+    }
+  };
+
+  const getReadAlerts = async () => {
+    try {
+      const newreadalerts: alertType[] = await fetchReadAlerts(
+        accountStoreRef.current.uid
+      );
+      setReadCount(newreadalerts.length);
+      setReadAlerts(newreadalerts);
+      console.log("getReadAlerts");
+    } catch (err) {
+      console.error("Failed to getReadAlerts: ", err);
+    }
+  };
 
   const getAlerts = async () => {
-    await getUnreadAlerts();
-    await getReadAlerts();
+    try {
+      await Promise.all([getUnreadAlerts, getReadAlerts]);
+      console.log("getAlerts");
+    } catch (err) {
+      console.error("Failed to getAlerts: ", err);
+    }
   };
 
   const updateAlert = async () => {
-    for (const alert of unreadalerts) {
-      await updateAlertReadstatus(alert._id, account.uid);
+    try {
+      await Promise.all(
+        unreadalertsRef.current.map((element) =>
+          updateAlertReadstatus(element._id, accountStoreRef.current.uid)
+        )
+      );
+      await getAlerts();
+      dispatch(setBadgeStatus({ ...alertBadgeStoreRef.current, badge: false }));
+      console.log("updateAlert");
+    } catch (err) {
+      console.error("Failed to updateAlert: ", err);
     }
-    await getUnreadAlerts();
-    await getReadAlerts();
-    dispatch(setBadgeStatus({ ...alertbadge, badge: false }));
-    console.log("userid", account.uid);
   };
 
   useEffect(() => {
     getAlerts();
-    if (unreadalerts.length > 0) {
-      dispatch(setBadgeStatus({ ...alertbadge, badge: true }));
+    if (unreadalertsRef.current.length > 0) {
+      dispatch(setBadgeStatus({ ...alertBadgeStoreRef.current, badge: true }));
     }
-    console.log("alertbadge trigger", alertbadge.trigger);
-  }, [alertbadge.trigger]);
+  }, [alertBadgeStoreRef.current.trigger]);
 
   return (
     <Box className={"alertmain-container"}>

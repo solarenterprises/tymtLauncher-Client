@@ -6,9 +6,8 @@ import tymtStorage from "../../lib/Storage";
 
 export const searchUsers = async (nameorsxp: string) => {
   try {
-    const isaddress = await tymtCore.Blockchains.solar.wallet.validateAddress(
-      nameorsxp
-    );
+    const isaddress =
+      tymtCore.Blockchains.solar.wallet.validateAddress(nameorsxp);
 
     const res = await axios.get(
       isaddress
@@ -17,10 +16,14 @@ export const searchUsers = async (nameorsxp: string) => {
     );
 
     if (res.status === 200) {
+      console.log("searchUsers");
       return res.data.users;
     } else {
+      console.log("searchUsers res.status !== 200");
     }
-  } catch (err) {}
+  } catch (err) {
+    console.error("Failed to searchUsers: ", err);
+  }
 };
 
 export interface contactinterface {
@@ -40,10 +43,14 @@ export const createContact = async (_id: string) => {
       },
     });
     if (res.status === 200) {
+      console.log("createContact");
       return res.data.contacts;
     } else {
+      console.log("createContact res.status !== 200");
     }
-  } catch (err) {}
+  } catch (err) {
+    console.error("Failed to createContact: ", err);
+  }
 };
 
 export const deleteContact = async (_id: string) => {
@@ -59,13 +66,13 @@ export const deleteContact = async (_id: string) => {
       },
     });
     if (res.status === 200) {
-      console.log("Contact deleted successfully");
+      console.log("deleteContact");
       return res.data.contacts;
     } else {
-      console.log("Failed to delete contact");
+      console.log("deleteContact res.status !== 200");
     }
   } catch (err) {
-    console.log("Error while deleting contact:", err.message);
+    console.log("Failed to deleteContact: ", err);
   }
 };
 
@@ -79,13 +86,13 @@ export const receiveContactlist = async () => {
       },
     });
     if (res.status === 200) {
-      console.log("Contactlist", res.data.contacts);
+      console.log("receiveContactlist", res.data.contacts);
       return res.data.contacts;
     } else {
-      console.log("Contactlist get failed");
+      console.log("receiveContactlist res.status !== 200");
     }
   } catch (err) {
-    console.log("Contactlist not catched");
+    console.error("Failed to receiveContactlist: ", err);
   }
 };
 
@@ -104,13 +111,13 @@ export const getsenderName = async (userid: string) => {
       },
     });
     if (res.status === 200) {
-      console.log("getcontactlist success");
+      console.log("getsenderName");
       return res.data.result.data.nickName;
     } else {
-      console.log("Get sender failed");
+      console.log("getsenderName res.status !== 200");
     }
   } catch (err) {
-    console.log("Sender not catched");
+    console.error("Failed to getsenderName: ", err);
   }
 };
 
@@ -127,12 +134,13 @@ export const getUserAvatar = async (userid: string) => {
       }
     );
     if (res.status === 200) {
+      console.log("getUserAvatar");
       return res.data.avatarUrl;
     } else {
-      console.log("getUserAvatar failed");
+      console.log("getUserAvatar res.status !== 200");
     }
   } catch (err) {
-    console.log("getUserAvatar failed");
+    console.error("Failed to getUserAvatar: ", err);
   }
 };
 
@@ -146,12 +154,13 @@ export const getUsernotificationStatus = async (userid: string) => {
       },
     });
     if (res.status === 200) {
+      console.log("getUsernotificationStatus");
       return res.data.result.data.notificationStatus;
     } else {
-      console.log("getUsernotificationStatus failed");
+      console.log("getUsernotificationStatus res.status !== 200");
     }
   } catch (err) {
-    console.log("getUsernotificationStatus failed");
+    console.error("Failed to getUsernotificationStatus: ", err);
   }
 };
 
@@ -160,7 +169,7 @@ export const updateUsernotificationStatus = async (
   notificationStatus: boolean
 ) => {
   try {
-    const saltToken: ISaltToken = JSON.parse(tymtStorage.get(`saltToken`));
+    const saltTokenStore: ISaltToken = JSON.parse(tymtStorage.get(`saltToken`));
     const res = await axios.put(
       `${tymt_backend_url}/users/${userid}`,
       {
@@ -168,17 +177,20 @@ export const updateUsernotificationStatus = async (
       },
       {
         headers: {
-          "x-token": saltToken.token,
+          "x-token": saltTokenStore.token,
           "Content-Type": "application/json",
         },
       }
     );
     if (res.status === 200) {
-      console.log("update success", res.data.result.data.notificationStatus);
+      console.log("updateUsernotificationStatus");
       return res.data.notificationStatus;
     } else {
+      console.log("updateUsernotificationStatus res.status !== 200");
     }
-  } catch (err) {}
+  } catch (err) {
+    console.error("Failed to updateUsernotificationStatus: ", err);
+  }
 };
 
 export const generateRandomString = (length: number) => {

@@ -19,6 +19,7 @@ import {
   selectPartner,
   setCurrentChatPartner,
 } from "../../features/chat/Chat-currentPartnerSlice";
+import { useEffect, useRef } from "react";
 
 const Userlist = ({
   user,
@@ -28,19 +29,31 @@ const Userlist = ({
   setContextMenuPosition,
   setView,
 }: propsUserlistType) => {
-  const selectedusertoDelete: selecteduserType = useSelector(getSelectedUser);
-  const userdata: userType[] = useSelector(selectPartner);
   const dispatch = useDispatch();
+
+  const selectedUserToDeleteStore: selecteduserType =
+    useSelector(getSelectedUser);
+  const userDataStore: userType[] = useSelector(selectPartner);
+
+  const selectedUserToDeleteStoreRef = useRef(selectedUserToDeleteStore);
+
+  useEffect(() => {
+    selectedUserToDeleteStoreRef.current = selectedUserToDeleteStore;
+  }, [selectedUserToDeleteStore]);
+
   const handleContextMenu = (e: any, id: string) => {
     e.preventDefault();
     const mouseX = e.clientX;
     const mouseY = e.clientY;
-    // const mouseX = e.pageX;
-    // const mouseY = e.pageY;
     setShowContextMenu(true);
     setContextMenuPosition({ x: mouseX, y: mouseY });
     e.stopPropagation();
-    dispatch(setSelectedUsertoDelete({ ...selectedusertoDelete, id: id }));
+    dispatch(
+      setSelectedUsertoDelete({
+        ...selectedUserToDeleteStoreRef.current,
+        id: id,
+      })
+    );
     const handleClickOutsideContextMenu = (event) => {
       if (
         !event.target.closest(".context_menu_block") &&
@@ -89,7 +102,7 @@ const Userlist = ({
         onClick={() => {
           dispatch(
             setCurrentChatPartner({
-              ...userdata,
+              ...userDataStore,
               _id: user._id,
               nickName: user.nickName,
               avatar: user.avatar,

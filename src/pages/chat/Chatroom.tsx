@@ -1,16 +1,14 @@
 import { useSelector, useDispatch } from "react-redux";
-import { useCallback, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import React from "react";
-
 import { Box, Grid, Divider, Button, Stack } from "@mui/material";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import ChatStyle from "../../styles/ChatStyles";
 import x from "../../assets/chat/x.svg";
 import Avatar from "../../components/home/Avatar";
 import OrLinechat from "../../components/chat/Orlinechat";
-
 import {
   userType,
   ChatHistoryType,
@@ -18,7 +16,6 @@ import {
   encryptionkeyStoreType,
 } from "../../types/chatTypes";
 import { chatType, notificationType } from "../../types/settingTypes";
-
 import {
   accountType,
   // , walletEnum
@@ -30,38 +27,16 @@ import {
   setChatHistory,
 } from "../../features/chat/Chat-historySlice";
 import { getUserlist } from "../../features/chat/Chat-userlistSlice";
-
 import Chatindex from "../../pages/chat";
 import ChatSettinginRoom from "./ChatsettinginRoom";
 import ChatuserlistinRoom from "./ChatuserlistinRoom";
 import ChatfriendinRoom from "./Chatsetting-friendinRoom";
 import ChatMsginRoom from "./Chatsetting-MsginRoom";
 import Chatinputfield from "../../components/chat/Chatinputfield";
-
-/*** Firebase RDB reference ***/
-// import React from "react";
-// import {
-//   ref,
-//   child,
-//   push,
-//   set,
-//   onValue,
-//   serverTimestamp,
-//   // off,
-// } from "firebase/database";
-// import { firebaseDB } from "../../firebase";
-
-// const firebaseChatsSentRef = ref(firebaseDB, "/chats/sent");
-// const firebaseChatsReceivedRef = ref(firebaseDB, "/chats/received");
-// /*** Firebase RDB reference ***/
-
-//Socket reference
-
 import { useSocket } from "../../providers/SocketProvider";
 import { AppDispatch } from "../../store";
-
 import _ from "lodash";
-import InfiniteScroll from "react-infinite-scroller";
+import InfiniteScroll from "react-infinite-scroll-component";
 import { selectNotification } from "../../features/settings/NotificationSlice";
 import { selectChat } from "../../features/settings/ChatSlice";
 import {
@@ -75,6 +50,7 @@ import {
 } from "../../features/chat/Chat-intercomSupportSlice";
 import { ThreeDots } from "react-loader-spinner";
 import { Chatdecrypt } from "../../lib/api/ChatEncrypt";
+import { useTranslation } from "react-i18next";
 
 const theme = createTheme({
   palette: {
@@ -90,10 +66,46 @@ const theme = createTheme({
 });
 
 const Chatroom = () => {
+  const { t } = useTranslation();
   const { socket } = useSocket();
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
   const classes = ChatStyle();
+
+  const [panel, setPanel] = useState("chatroom-chatuserlist");
+  const [value, setValue] = useState<string>("");
+  const [showChat, setShowChat] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [keyperuser, setKeyperUser] = useState<string>("");
+  const [processedPages, setProcessedPages] = useState(new Set());
+  const [screenexpanded, setScreenExpanded] = useState<boolean>(false);
+
+  const valueRef = useRef(value);
+  const hasMoreRef = useRef(hasMore);
+  const pageRef = useRef(page);
+  const keyperuserRef = useRef(keyperuser);
+  const processedPagesRef = useRef(processedPages);
+  const showChatRef = useRef(showChat);
+
+  useEffect(() => {
+    valueRef.current = value;
+  }, [value]);
+  useEffect(() => {
+    hasMoreRef.current = hasMore;
+  }, [hasMore]);
+  useEffect(() => {
+    pageRef.current = page;
+  }, [page]);
+  useEffect(() => {
+    keyperuserRef.current = keyperuser;
+  }, [keyperuser]);
+  useEffect(() => {
+    processedPagesRef.current = processedPages;
+  }, [processedPages]);
+  useEffect(() => {
+    showChatRef.current = showChat;
+  }, [showChat]);
 
   const chatStore: chatType = useSelector(selectChat);
   const currentPartnerStore: userType = useSelector(selectPartner);
@@ -101,10 +113,6 @@ const Chatroom = () => {
   const chatHistoryStore: ChatHistoryType = useSelector(getChatHistory);
   const chatUserListStore: userType[] = useSelector(getUserlist);
   const notificationStore: notificationType = useSelector(selectNotification);
-  // const userid: string = currentpartner._id;
-  // const existkey: string = useSelector((state) =>
-  //   selectEncryptionKeyByUserId(state, userid)
-  // );
   const encryptionKeyStore: encryptionkeyStoreType = useSelector(
     selectEncryptionKeyStore
   );
@@ -116,15 +124,6 @@ const Chatroom = () => {
   const chatUserListStoreRef = useRef(chatUserListStore);
   const notificationStoreRef = useRef(notificationStore);
   const encryptionKeyStoreRef = useRef(encryptionKeyStore);
-
-  const [panel, setPanel] = useState("chatroom-chatuserlist");
-  const [value, setValue] = useState<string>("");
-  const [showChat, setShowChat] = useState(false);
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
-  const [keyperuser, setKeyperUser] = useState<string>("");
-  const [processedPages, setProcessedPages] = useState(new Set());
-  const [screenexpanded, setScreenExpanded] = useState<boolean>(false);
 
   useEffect(() => {
     chatStoreRef.current = chatStore;
@@ -147,13 +146,6 @@ const Chatroom = () => {
   useEffect(() => {
     encryptionKeyStoreRef.current = encryptionKeyStore;
   }, [encryptionKeyStore]);
-
-  const setChat = useCallback(
-    (viewChat: boolean) => {
-      setShowChat(viewChat);
-    },
-    [showChat]
-  );
 
   // When currentpartner is changed ask encryption key to partner
 
@@ -193,22 +185,29 @@ const Chatroom = () => {
   }, [currentPartnerStoreRef.current._id]);
 
   const fetchMessages = async () => {
-    if (!hasMore) return;
-
+    if (!hasMoreRef.current) return;
     const query = {
       room_user_ids: [
         accountStoreRef.current.uid,
         currentPartnerStoreRef.current._id,
       ],
-      pagination: { page: page, pageSize: 20 },
+      pagination: { page: pageRef.current, pageSize: 20 },
     };
-
-    if (!processedPages.has(page)) {
-      setProcessedPages(new Set(processedPages.add(page)));
+    if (!processedPagesRef.current.has(pageRef.current)) {
+      setProcessedPages(
+        new Set(processedPagesRef.current.add(pageRef.current))
+      );
       socket.current.emit("get-messages-by-room", JSON.stringify(query));
+      console.log("Chatroom > socket.current.emit > get-messages-by-room");
     }
-    // }
   };
+
+  // Fetch chat history of the first page
+  useEffect(() => {
+    if (socket.current) {
+      fetchMessages();
+    }
+  }, [socket.current]);
 
   useEffect(() => {
     if (socket.current) {
@@ -223,15 +222,25 @@ const Chatroom = () => {
               chatStoreRef.current.message === "anyone" ||
               chatStoreRef.current.message === "friend"
             ) {
-              dispatch(
-                setChatHistory({
-                  messages: [
-                    ...chatHistoryStoreRef.current.messages,
-                    ...result.data,
-                  ],
-                })
-              );
-              setPage(page + 1);
+              if (pageRef.current === 1) {
+                dispatch(
+                  setChatHistory({
+                    messages: [...result.data],
+                  })
+                );
+              } else if (pageRef.current > 1) {
+                dispatch(
+                  setChatHistory({
+                    messages: [
+                      ...chatHistoryStoreRef.current.messages,
+                      ...result.data,
+                    ],
+                  })
+                );
+              }
+              setPage((prev) => {
+                return prev + 1;
+              });
             } else {
               setHasMore(false);
             }
@@ -242,11 +251,11 @@ const Chatroom = () => {
       }
     }
     return () => {
-      socket.current.off("messages-by-room");
+      if (socket.current && socket.current.hasListeners("messages-by-room")) {
+        socket.current.off("messages-by-room");
+      }
     };
-  }, [socket]);
-
-  const debouncedFetchMessages = _.debounce(fetchMessages, 1000);
+  }, [socket.current]);
 
   const formatDateDifference = (date) => {
     const today: any = new Date(Date.now());
@@ -272,7 +281,7 @@ const Chatroom = () => {
   };
 
   const decryptMessage = (encryptedmessage: string) => {
-    return Chatdecrypt(encryptedmessage, keyperuser);
+    return Chatdecrypt(encryptedmessage, keyperuserRef.current);
   };
 
   // Set mounted to true when chatroom is mounted
@@ -303,6 +312,7 @@ const Chatroom = () => {
   }, []);
 
   const scrollref = useRef<HTMLDivElement>(null);
+
   const Scroll = () => {
     const { offsetHeight, scrollHeight, scrollTop } =
       scrollref.current as HTMLDivElement;
@@ -312,14 +322,8 @@ const Chatroom = () => {
   };
 
   useEffect(() => {
-    if (scrollref.current && value === "") Scroll();
-  }, [value]);
-
-  useEffect(() => {
-    if (scrollref.current && page < 3) {
-      scrollref.current.scrollTop = scrollref.current.scrollHeight;
-    }
-  }, [debouncedFetchMessages, currentPartnerStoreRef.current._id, page]);
+    if (scrollref.current && valueRef.current === "") Scroll();
+  }, [valueRef.current]);
 
   return (
     <>
@@ -368,17 +372,13 @@ const Chatroom = () => {
                   justifyContent={"space-between"}
                 >
                   <Stack alignItems={"center"} flexDirection={"row"}>
-                    {chatUserListStoreRef.current[0] && (
+                    {chatUserListStore[0] && (
                       <>
                         <Avatar
-                          onlineStatus={
-                            currentPartnerStoreRef.current.onlineStatus
-                          }
-                          userid={currentPartnerStoreRef.current._id}
+                          onlineStatus={currentPartnerStore.onlineStatus}
+                          userid={currentPartnerStore._id}
                           size={50}
-                          status={
-                            currentPartnerStoreRef.current.notificationStatus
-                          }
+                          status={currentPartnerStore.notificationStatus}
                         />
                         <Stack
                           marginLeft={"16px"}
@@ -387,15 +387,15 @@ const Chatroom = () => {
                           spacing={1}
                         >
                           <Box className={"fs-18-bold white"}>
-                            {currentPartnerStoreRef.current.nickName}
+                            {currentPartnerStore.nickName}
                           </Box>
                           <Box className={"fs-12-regular gray"}>
-                            {currentPartnerStoreRef.current.sxpAddress}
+                            {currentPartnerStore.sxpAddress}
                           </Box>
                         </Stack>
                       </>
                     )}
-                    {!chatUserListStoreRef.current[0] && <></>}
+                    {!chatUserListStore[0] && <></>}
                   </Stack>
                   <Stack alignItems={"center"} flexDirection={"row"}>
                     <Button
@@ -420,7 +420,6 @@ const Chatroom = () => {
 
               {/* Message inbox */}
               <Box
-                // className={classes.scroll_bar_chatbox}
                 className={"scroll_bar_chatbox"}
                 ref={scrollref}
                 display={"flex"}
@@ -429,14 +428,38 @@ const Chatroom = () => {
                 <Box sx={{ width: "100%", flex: "1 1 auto" }}></Box>
 
                 <InfiniteScroll
-                  // pageStart={page}
-                  // initialLoad={false}
-                  loadMore={debouncedFetchMessages}
+                  style={{
+                    minHeight: "100%",
+                  }}
+                  dataLength={chatHistoryStore.messages.length} //This is important field to render the next data
+                  next={fetchMessages}
                   hasMore={hasMore}
-                  isReverse={true}
-                  useWindow={false}
+                  loader={
+                    <Box className={"fs-14-regular white t-center"}>
+                      {t("cha-32_loading")}
+                    </Box>
+                  }
+                  // endMessage={
+                  //   <Box className={"fs-14-regular white t-center"}>
+                  //     {t("cha-33_you-seen-all")}
+                  //   </Box>
+                  // }
+                  // below props only if you need pull down functionality
+                  refreshFunction={fetchMessages}
+                  pullDownToRefresh
+                  pullDownToRefreshThreshold={50}
+                  pullDownToRefreshContent={
+                    <Box className={"fs-14-regular white t-center"}>
+                      &#8595; {t("cha-34_pull-down")}
+                    </Box>
+                  }
+                  releaseToRefreshContent={
+                    <Box className={"fs-14-regular white t-center"}>
+                      &#8593; {t("cha-35_release-to-refresh")}
+                    </Box>
+                  }
                 >
-                  {[...chatHistoryStoreRef.current.messages]
+                  {[...chatHistoryStore.messages]
                     .reverse()
                     ?.map((message, index) => {
                       const isSameDay = (date1, date2) => {
@@ -451,7 +474,7 @@ const Chatroom = () => {
                         if (index === 0) return true;
 
                         const previousMessageDate = new Date(
-                          [...chatHistoryStoreRef.current.messages].reverse()[
+                          [...chatHistoryStore.messages].reverse()[
                             index - 1
                           ]?.createdAt
                         );
@@ -473,10 +496,10 @@ const Chatroom = () => {
 
                       const detectLastMessageofStack = () => {
                         const nextMessageSender = [
-                          ...chatHistoryStoreRef.current.messages,
+                          ...chatHistoryStore.messages,
                         ].reverse()[index + 1]?.sender_id;
                         const currentMessageSender = [
-                          ...chatHistoryStoreRef.current.messages,
+                          ...chatHistoryStore.messages,
                         ].reverse()[index]?.sender_id;
 
                         return !isSameSender(
@@ -490,7 +513,6 @@ const Chatroom = () => {
 
                       return (
                         <>
-                          {/* Your existing Box component for rendering the message */}
                           <Box
                             className={"bubblecontainer"}
                             key={`${
@@ -509,20 +531,18 @@ const Chatroom = () => {
                               gap={"15px"}
                               justifyContent={
                                 !screenexpanded
-                                  ? message.sender_id ===
-                                    accountStoreRef.current.uid
+                                  ? message.sender_id === accountStore.uid
                                     ? "flex-end"
                                     : "flex-start"
                                   : "flex-start"
                               }
                             >
-                              {message.sender_id ===
-                                accountStoreRef.current.uid && (
+                              {message.sender_id === accountStore.uid && (
                                 <>
                                   {screenexpanded && isLastMessageofStack && (
                                     <Avatar
                                       onlineStatus={true}
-                                      userid={accountStoreRef.current.uid}
+                                      userid={accountStore.uid}
                                       size={40}
                                       status={
                                         !notificationStore.alert
@@ -536,13 +556,6 @@ const Chatroom = () => {
                                       style={{ width: "40px", height: "40px" }}
                                     />
                                   )}
-
-                                  {/* <Box
-                                  className={"fs-16 white"}
-                                  sx={{ marginLeft: "16px" }}
-                                >
-                                  {userStore.nickname}
-                                </Box> */}
                                   <Box
                                     className={
                                       isLastMessageofStack && screenexpanded
@@ -592,22 +605,17 @@ const Chatroom = () => {
                                   </Box>
                                 </>
                               )}
-                              {message.sender_id !==
-                                accountStoreRef.current.uid && (
+                              {message.sender_id !== accountStore.uid && (
                                 <>
                                   {screenexpanded && isLastMessageofStack && (
                                     <Avatar
                                       onlineStatus={
-                                        currentPartnerStoreRef.current
-                                          .onlineStatus
+                                        currentPartnerStore.onlineStatus
                                       }
-                                      userid={
-                                        currentPartnerStoreRef.current._id
-                                      }
+                                      userid={currentPartnerStore._id}
                                       size={40}
                                       status={
-                                        currentPartnerStoreRef.current
-                                          .notificationStatus
+                                        currentPartnerStore.notificationStatus
                                       }
                                     />
                                   )}
@@ -616,15 +624,6 @@ const Chatroom = () => {
                                       style={{ width: "40px", height: "40px" }}
                                     />
                                   )}
-
-                                  {/* <Stack>
-                                  <Box
-                                    className={"fs-16 white"}
-                                    sx={{ marginLeft: "16px" }}
-                                  >
-                                    {currentpartner.nickName}
-                                  </Box>
-                                </Stack> */}
                                   <Box
                                     className={
                                       isLastMessageofStack
@@ -686,7 +685,7 @@ const Chatroom = () => {
               />
             </Box>
           </Box>
-          <Chatindex viewChat={showChat} setViewChat={setChat} />
+          <Chatindex viewChat={showChat} setViewChat={setShowChat} />
         </Grid>
       </ThemeProvider>
     </>

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
@@ -62,13 +62,9 @@ const theme = createTheme({
 const Chatmain = ({ view, setView }: propsType) => {
   const classes = ChatStyle();
   const { socket } = useSocket();
-  const dispatch = useDispatch();
   const { t } = useTranslation();
+
   const [value, setValue] = useState<string>("");
-  const chatuserlist: userType[] = useSelector(getUserlist);
-  const selectedusertoDelete: selecteduserType = useSelector(getSelectedUser);
-  const account: accountType = useSelector(getAccount);
-  const alertbadge: alertbadgeType = useSelector(selectBadgeStatus);
   const [searchedresult, setSearchedresult] = useState<userType[]>([]);
   const [isClickedBlock, setIsClickedBlock] = useState(false);
   const [isClickedDelete, setIsClickedDelete] = useState(false);
@@ -83,8 +79,35 @@ const Chatmain = ({ view, setView }: propsType) => {
   });
   const [unreadalerts, setUnreadAlerts] = useState<alertType[]>([]);
 
+  const valueRef = useRef(value);
+
+  useEffect(() => {
+    valueRef.current = value;
+  }, [value]);
+
+  const dispatch = useDispatch();
+  const chatUserListStore: userType[] = useSelector(getUserlist);
+  const selectedUserToDeleteStore: selecteduserType =
+    useSelector(getSelectedUser);
+  const accountStore: accountType = useSelector(getAccount);
+  const alertBadgeStore: alertbadgeType = useSelector(selectBadgeStatus);
+
+  const selectedUserToDeleteStoreRef = useRef(selectedUserToDeleteStore);
+  const accountStoreRef = useRef(accountStore);
+  const alertBadgeStoreRef = useRef(alertBadgeStore);
+
+  useEffect(() => {
+    selectedUserToDeleteStoreRef.current = selectedUserToDeleteStore;
+  }, [selectedUserToDeleteStore]);
+  useEffect(() => {
+    accountStoreRef.current = accountStore;
+  }, [accountStore]);
+  useEffect(() => {
+    alertBadgeStoreRef.current = alertBadgeStore;
+  }, [alertBadgeStore]);
+
   const deleteSelectedUser = async () => {
-    await deleteContact(selectedusertoDelete.id);
+    await deleteContact(selectedUserToDeleteStoreRef.current.id);
     setOpenDeleteModal(false);
     const contacts: userType[] = await receiveContactlist();
     dispatch(setUserList(contacts));
@@ -95,14 +118,14 @@ const Chatmain = ({ view, setView }: propsType) => {
     const data = {
       alertType: "friend-request",
       note: {
-        sender: `${account.uid}`,
+        sender: `${accountStoreRef.current.uid}`,
         status: "pending",
       },
-      receivers: [selectedusertoDelete.id],
+      receivers: [selectedUserToDeleteStoreRef.current.id],
     };
     socket.current.emit("post-alert", JSON.stringify(data));
     setOpenRequestModal(false);
-    await updateContact(selectedusertoDelete.id);
+    await updateContact(selectedUserToDeleteStoreRef.current.id);
   };
 
   const debouncedFilterUsers = debounce(async (value: string) => {
@@ -120,18 +143,20 @@ const Chatmain = ({ view, setView }: propsType) => {
   };
 
   useEffect(() => {
-    filterUsers(value);
-  }, [value]);
+    filterUsers(valueRef.current);
+  }, [valueRef.current]);
 
   // read the unread chat alerts and mark the number of unread messages
   const getUnreadAlerts = async () => {
-    const unreadalerts: alertType[] = await fetchUnreadAlerts(account.uid);
+    const unreadalerts: alertType[] = await fetchUnreadAlerts(
+      accountStoreRef.current.uid
+    );
     setUnreadAlerts(unreadalerts);
   };
 
   useEffect(() => {
     getUnreadAlerts();
-  }, [alertbadge]);
+  }, [alertBadgeStoreRef.current]);
 
   return (
     <>
@@ -227,7 +252,7 @@ const Chatmain = ({ view, setView }: propsType) => {
             />
             {/* userlist section */}
             <Box className={classes.scroll_bar}>
-              {chatuserlist?.length === 0 && value === "" ? (
+              {chatUserListStore?.length === 0 && value === "" ? (
                 <>
                   <Grid container sx={{ justifyContent: "center" }}>
                     <img
@@ -241,7 +266,7 @@ const Chatmain = ({ view, setView }: propsType) => {
                 </>
               ) : (
                 <>
-                  {(value === "" ? chatuserlist : searchedresult)?.map(
+                  {(value === "" ? chatUserListStore : searchedresult)?.map(
                     (user, index) => {
                       const count =
                         value === ""

@@ -34,7 +34,7 @@ import React from "react";
 import { useSocket } from "../../providers/SocketProvider";
 import { AppDispatch } from "../../store";
 import _ from "lodash";
-import InfiniteScroll from "react-infinite-scroller";
+import InfiniteScroll from "react-infinite-scroll-component";
 import { generateRandomString } from "../../features/chat/Chat-contactApi";
 import {
   setMountedFalse,
@@ -42,8 +42,10 @@ import {
 } from "../../features/chat/Chat-intercomSupportSlice";
 import { ThreeDots } from "react-loader-spinner";
 import { Chatdecrypt } from "../../lib/api/ChatEncrypt";
+import { useTranslation } from "react-i18next";
 
 const Chatbox = ({ view, setView }: propsType) => {
+  const { t } = useTranslation();
   const classes = ChatStyle();
   const { socket } = useSocket();
   const navigate = useNavigate();
@@ -54,6 +56,28 @@ const Chatbox = ({ view, setView }: propsType) => {
   const [hasMore, setHasMore] = useState(true);
   const [keyperuser, setKeyperUser] = useState<string>("");
   const [processedPages, setProcessedPages] = useState(new Set());
+
+  const valueRef = useRef(value);
+  const hasMoreRef = useRef(hasMore);
+  const pageRef = useRef(page);
+  const keyperuserRef = useRef(keyperuser);
+  const processedPagesRef = useRef(processedPages);
+
+  useEffect(() => {
+    valueRef.current = value;
+  }, [value]);
+  useEffect(() => {
+    hasMoreRef.current = hasMore;
+  }, [hasMore]);
+  useEffect(() => {
+    pageRef.current = page;
+  }, [page]);
+  useEffect(() => {
+    keyperuserRef.current = keyperuser;
+  }, [keyperuser]);
+  useEffect(() => {
+    processedPagesRef.current = processedPages;
+  }, [processedPages]);
 
   const accountStore: accountType = useSelector(getAccount);
   const currentPartnerStore: userType = useSelector(selectPartner);
@@ -86,56 +110,78 @@ const Chatbox = ({ view, setView }: propsType) => {
   }, [encryptionKeyStore]);
 
   useEffect(() => {
-    const existkey =
-      encryptionKeyStoreRef.current.encryption_Keys[
-        currentPartnerStoreRef.current._id
-      ];
-    if (existkey) {
-      setKeyperUser(existkey);
-    } else {
-      const key = generateRandomString(32);
-      setKeyperUser(key);
-      const deliverydata: deliverEncryptionKeyType = {
-        sender_id: accountStoreRef.current.uid,
-        recipient_id: currentPartnerStoreRef.current._id,
-        key: key,
-      };
-      socket.current.emit(
-        "deliver-encryption-key",
-        JSON.stringify(deliverydata)
-      );
-      dispatch(
-        addEncryptionKey({
-          userId: currentPartnerStoreRef.current._id,
-          encryptionKey: key,
-        })
-      );
+    if (socket.current && currentPartnerStore._id) {
+      const existkey =
+        encryptionKeyStoreRef.current.encryption_Keys[currentPartnerStore._id];
+      if (existkey) {
+        setKeyperUser(existkey);
+      } else {
+        const key = generateRandomString(32);
+        setKeyperUser(key);
+        const deliverydata: deliverEncryptionKeyType = {
+          sender_id: accountStoreRef.current.uid,
+          recipient_id: currentPartnerStore._id,
+          key: key,
+        };
+        socket.current.emit(
+          "deliver-encryption-key",
+          JSON.stringify(deliverydata)
+        );
+        console.log("Chatbox > socket.current.emit > deliver-encryption-key");
+        dispatch(
+          addEncryptionKey({
+            userId: currentPartnerStore._id,
+            encryptionKey: key,
+          })
+        );
+      }
     }
-  }, [currentPartnerStoreRef.current._id, socket]);
+  }, [currentPartnerStore._id, socket.current]);
 
   useEffect(() => {
-    setPage(1);
-    setHasMore(true);
-    dispatch(setChatHistory({ messages: [] }));
-    setProcessedPages(new Set());
-  }, [currentPartnerStoreRef.current._id]);
+    console.log(
+      "NOTICE: currentPartnerStore changed: ",
+      currentPartnerStore._id
+    );
+    if (currentPartnerStore._id) {
+      setPage(1);
+      setHasMore(true);
+      dispatch(setChatHistory({ messages: [] }));
+      setProcessedPages(new Set());
+    }
+  }, [currentPartnerStore]);
 
   const fetchMessages = async () => {
-    if (!hasMore) return;
-    const query = {
-      room_user_ids: [
-        accountStoreRef.current.uid,
-        currentPartnerStoreRef.current._id,
-      ],
-      pagination: { page: page, pageSize: 20 },
-    };
-    if (!processedPages.has(page)) {
-      // Add the current page number to the set of processed pages
-      setProcessedPages(new Set(processedPages.add(page)));
-      socket.current.emit("get-messages-by-room", JSON.stringify(query));
-      console.log("Chatbox > socket.current.emit > get-messages-by-room");
+    try {
+      if (accountStoreRef.current.uid && currentPartnerStoreRef.current._id) {
+        if (!hasMoreRef.current) return;
+        const query = {
+          room_user_ids: [
+            accountStoreRef.current.uid,
+            currentPartnerStoreRef.current._id,
+          ],
+          pagination: { page: pageRef.current, pageSize: 20 },
+        };
+        if (!processedPagesRef.current.has(pageRef.current)) {
+          setProcessedPages(
+            new Set(processedPagesRef.current.add(pageRef.current))
+          );
+          socket.current.emit("get-messages-by-room", JSON.stringify(query));
+          console.log("Chatbox > socket.current.emit > get-messages-by-room");
+        }
+      }
+      console.log("fetchMessages");
+    } catch (err) {
+      console.error("Failed to fetchMessages: ", err);
     }
   };
+
+  // Fetch chat history of the first page
+  useEffect(() => {
+    if (socket.current && page === 1) {
+      fetchMessages();
+    }
+  }, [socket.current, page]);
 
   useEffect(() => {
     if (socket.current) {
@@ -147,15 +193,25 @@ const Chatbox = ({ view, setView }: propsType) => {
               chatStoreRef.current.message === "anyone" ||
               chatStoreRef.current.message === "friend"
             ) {
-              dispatch(
-                setChatHistory({
-                  messages: [
-                    ...chatHistoryStoreRef.current.messages,
-                    ...result.data,
-                  ],
-                })
-              );
-              setPage(page + 1);
+              if (pageRef.current === 1) {
+                dispatch(
+                  setChatHistory({
+                    messages: [...result.data],
+                  })
+                );
+              } else if (pageRef.current > 1) {
+                dispatch(
+                  setChatHistory({
+                    messages: [
+                      ...chatHistoryStoreRef.current.messages,
+                      ...result.data,
+                    ],
+                  })
+                );
+              }
+              setPage((prev) => {
+                return prev + 1;
+              });
             } else {
               setHasMore(false);
             }
@@ -167,13 +223,11 @@ const Chatbox = ({ view, setView }: propsType) => {
     }
 
     return () => {
-      if (socket.current) {
+      if (socket.current && socket.current.hasListeners("messages-by-room")) {
         socket.current.off("messages-by-room");
       }
     };
   }, [socket.current]);
-
-  const debouncedFetchMessages = _.debounce(fetchMessages, 3000);
 
   const formatDateDifference = (date) => {
     const today: any = new Date(Date.now());
@@ -199,11 +253,10 @@ const Chatbox = ({ view, setView }: propsType) => {
   };
 
   const decryptMessage = (encryptedmessage: string) => {
-    return Chatdecrypt(encryptedmessage, keyperuser);
+    return Chatdecrypt(encryptedmessage, keyperuserRef.current);
   };
 
   // Set mounted to true when chatbox is mounted
-
   useEffect(() => {
     if (view === "chatbox") {
       dispatch(setMountedTrue());
@@ -214,6 +267,7 @@ const Chatbox = ({ view, setView }: propsType) => {
   }, [dispatch, view]);
 
   const scrollref = useRef<HTMLDivElement>(null);
+
   const Scroll = () => {
     const { offsetHeight, scrollHeight, scrollTop } =
       scrollref.current as HTMLDivElement;
@@ -223,14 +277,14 @@ const Chatbox = ({ view, setView }: propsType) => {
   };
 
   useEffect(() => {
-    if (scrollref.current && value === "") Scroll();
-  }, [value]);
+    if (scrollref.current && valueRef.current === "") Scroll();
+  }, [valueRef.current]);
 
-  useEffect(() => {
-    if (scrollref.current && page < 3) {
-      scrollref.current.scrollTop = scrollref.current.scrollHeight;
-    }
-  }, [debouncedFetchMessages, currentPartnerStoreRef.current._id, page]);
+  // useEffect(() => {
+  //   if (scrollref.current && pageRef.current < 3) {
+  //     scrollref.current.scrollTop = scrollref.current.scrollHeight;
+  //   }
+  // }, [currentPartnerStoreRef.current._id, pageRef.current]);
 
   return (
     <>
@@ -302,7 +356,6 @@ const Chatbox = ({ view, setView }: propsType) => {
 
           {/* Message inbox */}
           <Box
-            // className={classes.scroll_bar_chatbox}
             className={"scroll_bar_chatbox"}
             display={"flex"}
             flexDirection={"column"}
@@ -312,12 +365,36 @@ const Chatbox = ({ view, setView }: propsType) => {
             <Box sx={{ width: "100%", flex: "1 1 auto" }}></Box>
 
             <InfiniteScroll
-              // pageStart={page}
-              // initialLoad={false}
-              loadMore={debouncedFetchMessages}
+              style={{
+                minHeight: "100%",
+              }}
+              dataLength={chatHistoryStore.messages.length} //This is important field to render the next data
+              next={fetchMessages}
               hasMore={hasMore}
-              isReverse={true}
-              useWindow={false}
+              loader={
+                <Box className={"fs-14-regular white t-center"}>
+                  {t("cha-32_loading")}
+                </Box>
+              }
+              // endMessage={
+              //   <Box className={"fs-14-regular white t-center"}>
+              //     {t("cha-33_you-seen-all")}
+              //   </Box>
+              // }
+              // below props only if you need pull down functionality
+              refreshFunction={fetchMessages}
+              pullDownToRefresh
+              pullDownToRefreshThreshold={50}
+              pullDownToRefreshContent={
+                <Box className={"fs-14-regular white t-center"}>
+                  &#8595; {t("cha-34_pull-down")}
+                </Box>
+              }
+              releaseToRefreshContent={
+                <Box className={"fs-14-regular white t-center"}>
+                  &#8593; {t("cha-35_release-to-refresh")}
+                </Box>
+              }
             >
               {[...chatHistoryStore.messages]
                 .reverse()

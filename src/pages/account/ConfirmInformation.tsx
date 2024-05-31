@@ -165,11 +165,10 @@ const ConfirmInformation = () => {
           } else {
             token = saltTokenRef.current.token;
           }
-          const res = await AuthAPI.nonCustodySignin({
+          await AuthAPI.nonCustodySignin({
             sxpAddress: multiWalletStore.Solar.chain.wallet,
             token: token,
           });
-          console.log("SignInRes", res);
           dispatch(
             setAccount({
               ...accountStore,
