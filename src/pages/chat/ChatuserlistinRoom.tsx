@@ -241,7 +241,7 @@ const ChatuserlistinRoom = ({ view, setView }: propsType) => {
                         numberofunreadmessages={numberofunreadmessages}
                         setShowContextMenu={setShowContextMenu}
                         setContextMenuPosition={setContextMenuPosition}
-                        setView={setView}
+                        // setView={setView}
                       />
                     );
                   }

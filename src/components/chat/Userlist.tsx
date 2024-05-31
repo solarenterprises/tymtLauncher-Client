@@ -112,7 +112,9 @@ const Userlist = ({
               notificationStatus: user.notificationStatus,
             })
           );
-          setView("chatbox");
+          if (setView) {
+            setView("chatbox");
+          }
           updateContact(user._id);
         }}
       >

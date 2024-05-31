@@ -27,7 +27,7 @@ import {
   setChatHistory,
 } from "../../features/chat/Chat-historySlice";
 import { getUserlist } from "../../features/chat/Chat-userlistSlice";
-import Chatindex from "../../pages/chat";
+// import Chatindex from "../../pages/chat";
 import ChatSettinginRoom from "./ChatsettinginRoom";
 import ChatuserlistinRoom from "./ChatuserlistinRoom";
 import ChatfriendinRoom from "./Chatsetting-friendinRoom";
@@ -74,7 +74,7 @@ const Chatroom = () => {
 
   const [panel, setPanel] = useState("chatroom-chatuserlist");
   const [value, setValue] = useState<string>("");
-  const [showChat, setShowChat] = useState(false);
+  // const [showChat, setShowChat] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [keyperuser, setKeyperUser] = useState<string>("");
@@ -86,7 +86,7 @@ const Chatroom = () => {
   const pageRef = useRef(page);
   const keyperuserRef = useRef(keyperuser);
   const processedPagesRef = useRef(processedPages);
-  const showChatRef = useRef(showChat);
+  // const showChatRef = useRef(showChat);
 
   useEffect(() => {
     valueRef.current = value;
@@ -103,9 +103,9 @@ const Chatroom = () => {
   useEffect(() => {
     processedPagesRef.current = processedPages;
   }, [processedPages]);
-  useEffect(() => {
-    showChatRef.current = showChat;
-  }, [showChat]);
+  // useEffect(() => {
+  //   showChatRef.current = showChat;
+  // }, [showChat]);
 
   const chatStore: chatType = useSelector(selectChat);
   const currentPartnerStore: userType = useSelector(selectPartner);
@@ -696,7 +696,7 @@ const Chatroom = () => {
               />
             </Box>
           </Box>
-          <Chatindex viewChat={showChat} setViewChat={setShowChat} />
+          {/* <Chatindex viewChat={showChat} setViewChat={setShowChat} /> */}
         </Grid>
       </ThemeProvider>
     </>

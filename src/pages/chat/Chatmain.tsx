@@ -143,8 +143,10 @@ const Chatmain = ({ view, setView }: propsType) => {
   };
 
   useEffect(() => {
-    filterUsers(valueRef.current);
-  }, [valueRef.current]);
+    if (view === "chatmain") {
+      filterUsers(value);
+    }
+  }, [value, view]);
 
   // read the unread chat alerts and mark the number of unread messages
   const getUnreadAlerts = async () => {
@@ -155,8 +157,10 @@ const Chatmain = ({ view, setView }: propsType) => {
   };
 
   useEffect(() => {
-    getUnreadAlerts();
-  }, [alertBadgeStoreRef.current]);
+    if (view === "chatmain") {
+      getUnreadAlerts();
+    }
+  }, [alertBadgeStore, view]);
 
   return (
     <>

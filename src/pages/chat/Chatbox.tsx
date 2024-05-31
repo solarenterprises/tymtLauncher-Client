@@ -110,7 +110,7 @@ const Chatbox = ({ view, setView }: propsType) => {
   }, [encryptionKeyStore]);
 
   useEffect(() => {
-    if (socket.current && currentPartnerStore._id) {
+    if (socket.current && currentPartnerStore._id && view === "chatbox") {
       const existkey =
         encryptionKeyStoreRef.current.encryption_Keys[currentPartnerStore._id];
       if (existkey) {
@@ -136,20 +136,16 @@ const Chatbox = ({ view, setView }: propsType) => {
         );
       }
     }
-  }, [currentPartnerStore, socket.current]);
+  }, [currentPartnerStore, socket.current, view]);
 
   useEffect(() => {
-    console.log(
-      "NOTICE: currentPartnerStore changed: ",
-      currentPartnerStore._id
-    );
-    if (currentPartnerStore._id) {
+    if (currentPartnerStore._id && view === "chatbox") {
       setPage(1);
       setHasMore(true);
       dispatch(setChatHistory({ messages: [] }));
       setProcessedPages(new Set());
     }
-  }, [currentPartnerStore]);
+  }, [currentPartnerStore, view]);
 
   const fetchMessages = async () => {
     try {
@@ -178,13 +174,13 @@ const Chatbox = ({ view, setView }: propsType) => {
 
   // Fetch chat history of the first page
   useEffect(() => {
-    if (socket.current && page === 1) {
+    if (socket.current && page === 1 && view === "chatbox") {
       fetchMessages();
     }
-  }, [socket.current, page]);
+  }, [socket.current, page, view]);
 
   useEffect(() => {
-    if (socket.current) {
+    if (socket.current && view === "chatbox") {
       if (!socket.current.hasListeners("messages-by-room")) {
         socket.current.on("messages-by-room", async (result) => {
           console.log("Chatbox > socket.current.on > messages-by-room", result);
@@ -227,7 +223,7 @@ const Chatbox = ({ view, setView }: propsType) => {
         socket.current.off("messages-by-room");
       }
     };
-  }, [socket.current]);
+  }, [socket.current, view]);
 
   const formatDateDifference = (date) => {
     const today: any = new Date(Date.now());
@@ -277,8 +273,9 @@ const Chatbox = ({ view, setView }: propsType) => {
   };
 
   useEffect(() => {
-    if (scrollref.current && valueRef.current === "") Scroll();
-  }, [valueRef.current]);
+    if (scrollref.current && valueRef.current === "" && view === "chatbox")
+      Scroll();
+  }, [valueRef.current, view]);
 
   return (
     <>

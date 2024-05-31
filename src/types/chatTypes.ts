@@ -51,7 +51,7 @@ export interface propsUserlistType {
   setContextMenuPosition: (
     contextMenuPosition: contextmenupositionType
   ) => void;
-  setView: (panel: string) => void;
+  setView?: (panel: string) => void;
 }
 
 export interface contextmenupositionType {
