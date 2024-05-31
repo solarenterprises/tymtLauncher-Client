@@ -151,17 +151,15 @@ const Chatroom = () => {
 
   useEffect(() => {
     const existkey =
-      encryptionKeyStoreRef.current.encryption_Keys[
-        currentPartnerStoreRef.current._id
-      ];
+      encryptionKeyStoreRef.current.encryption_Keys[currentPartnerStore._id];
     if (existkey) {
       setKeyperUser(existkey);
     } else {
       const key = generateRandomString(32);
       setKeyperUser(key);
       const deliverydata: deliverEncryptionKeyType = {
-        sender_id: accountStoreRef.current.uid,
-        recipient_id: currentPartnerStoreRef.current._id,
+        sender_id: accountStore.uid,
+        recipient_id: currentPartnerStore._id,
         key: key,
       };
       socket.current.emit(
@@ -170,44 +168,57 @@ const Chatroom = () => {
       );
       dispatch(
         addEncryptionKey({
-          userId: currentPartnerStoreRef.current._id,
+          userId: currentPartnerStore._id,
           encryptionKey: key,
         })
       );
     }
-  }, [currentPartnerStoreRef.current._id, socket]);
+  }, [currentPartnerStore, socket.current]);
 
   useEffect(() => {
-    setPage(1);
-    setHasMore(true);
-    dispatch(setChatHistory({ messages: [] }));
-    setProcessedPages(new Set());
-  }, [currentPartnerStoreRef.current._id]);
+    console.log(
+      "NOTICE: currentPartnerStore changed: ",
+      currentPartnerStore._id
+    );
+    if (currentPartnerStore._id) {
+      setPage(1);
+      setHasMore(true);
+      dispatch(setChatHistory({ messages: [] }));
+      setProcessedPages(new Set());
+    }
+  }, [currentPartnerStore]);
 
   const fetchMessages = async () => {
-    if (!hasMoreRef.current) return;
-    const query = {
-      room_user_ids: [
-        accountStoreRef.current.uid,
-        currentPartnerStoreRef.current._id,
-      ],
-      pagination: { page: pageRef.current, pageSize: 20 },
-    };
-    if (!processedPagesRef.current.has(pageRef.current)) {
-      setProcessedPages(
-        new Set(processedPagesRef.current.add(pageRef.current))
-      );
-      socket.current.emit("get-messages-by-room", JSON.stringify(query));
-      console.log("Chatroom > socket.current.emit > get-messages-by-room");
+    try {
+      if (accountStoreRef.current.uid && currentPartnerStoreRef.current._id) {
+        if (!hasMoreRef.current) return;
+        const query = {
+          room_user_ids: [
+            accountStoreRef.current.uid,
+            currentPartnerStoreRef.current._id,
+          ],
+          pagination: { page: pageRef.current, pageSize: 20 },
+        };
+        if (!processedPagesRef.current.has(pageRef.current)) {
+          setProcessedPages(
+            new Set(processedPagesRef.current.add(pageRef.current))
+          );
+          socket.current.emit("get-messages-by-room", JSON.stringify(query));
+          console.log("Chatbox > socket.current.emit > get-messages-by-room");
+        }
+      }
+      console.log("fetchMessages");
+    } catch (err) {
+      console.error("Failed to fetchMessages: ", err);
     }
   };
 
   // Fetch chat history of the first page
   useEffect(() => {
-    if (socket.current) {
+    if (socket.current && page === 1) {
       fetchMessages();
     }
-  }, [socket.current]);
+  }, [socket.current, page]);
 
   useEffect(() => {
     if (socket.current) {

@@ -136,7 +136,7 @@ const Chatbox = ({ view, setView }: propsType) => {
         );
       }
     }
-  }, [currentPartnerStore._id, socket.current]);
+  }, [currentPartnerStore, socket.current]);
 
   useEffect(() => {
     console.log(
@@ -279,12 +279,6 @@ const Chatbox = ({ view, setView }: propsType) => {
   useEffect(() => {
     if (scrollref.current && valueRef.current === "") Scroll();
   }, [valueRef.current]);
-
-  // useEffect(() => {
-  //   if (scrollref.current && pageRef.current < 3) {
-  //     scrollref.current.scrollTop = scrollref.current.scrollHeight;
-  //   }
-  // }, [currentPartnerStoreRef.current._id, pageRef.current]);
 
   return (
     <>
