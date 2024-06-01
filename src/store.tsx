@@ -46,11 +46,9 @@ import mnemonicReducer from "./features/account/MnemonicSlice";
 import saltTokenReducer from "./features/account/SaltTokenSlice";
 
 const blacklistActionTypes = [
-  "notification/setNotification",
   "intercomsupport/setChatMounted",
   "intercomsupport/setMountedTrue",
   "intercomsupport/setMountedFalse",
-  // Add other notification actions if there are more
 ];
 
 const stateSyncConfig = {
@@ -58,7 +56,6 @@ const stateSyncConfig = {
 };
 
 const stateSyncMiddleware = createStateSyncMiddleware(stateSyncConfig);
-// const stateSyncMiddleware = createStateSyncMiddleware();
 
 const store = configureStore({
   reducer: {
@@ -108,5 +105,6 @@ const store = configureStore({
 });
 
 initMessageListener(store);
+
 export type AppDispatch = typeof store.dispatch;
 export default store;

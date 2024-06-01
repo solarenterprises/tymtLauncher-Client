@@ -76,7 +76,7 @@ const Profile = ({ view, setView }: propsType) => {
       setNotificationOpen(true);
       setNotificationLink(null);
     }
-  }, [nickname, nonCustodial, custodial]);
+  }, [nickname, nonCustodial, custodial, account]);
 
   const UploadFile = () => {
     const fileInput = document.getElementById("file-input");

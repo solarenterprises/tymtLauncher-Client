@@ -23,13 +23,13 @@ const Notification = ({ view, setView }: propsType) => {
   const data: notificationType = useSelector(selectNotification);
   const accountStore: accountType = useSelector(getAccount);
 
-  const putUserStatus = async () => {
+  const putUserStatus = useCallback(async () => {
     try {
       await updateUsernotificationStatus(accountStore.uid, data.alert);
     } catch (err) {
       console.log(err);
     }
-  };
+  }, [accountStore, data]);
 
   const updateNotification = useCallback(
     async (type: string) => {

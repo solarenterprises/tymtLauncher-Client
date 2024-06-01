@@ -696,7 +696,6 @@ const Chatroom = () => {
               />
             </Box>
           </Box>
-          {/* <Chatindex viewChat={showChat} setViewChat={setShowChat} /> */}
         </Grid>
       </ThemeProvider>
     </>

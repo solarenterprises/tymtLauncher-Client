@@ -47,7 +47,7 @@ const ChatSettinginRoom = ({ view, setView }: propsType) => {
         })
       );
     } catch (err) {
-      console.log(err);
+      console.error("Failed to putUserStatus: ", err);
     }
   };
 

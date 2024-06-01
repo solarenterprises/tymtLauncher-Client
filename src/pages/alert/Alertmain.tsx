@@ -55,7 +55,7 @@ const Alertmain = () => {
       );
       setUnreadCount(newunreadalerts.length);
       setUnreadAlerts(newunreadalerts);
-      console.log("getUnreadAlerts");
+      console.log("getUnreadAlerts", newunreadalerts);
     } catch (err) {
       console.error("Failed to getUnreadAlerts: ", err);
     }
@@ -68,7 +68,7 @@ const Alertmain = () => {
       );
       setReadCount(newreadalerts.length);
       setReadAlerts(newreadalerts);
-      console.log("getReadAlerts");
+      console.log("getReadAlerts", newreadalerts);
     } catch (err) {
       console.error("Failed to getReadAlerts: ", err);
     }
@@ -76,7 +76,7 @@ const Alertmain = () => {
 
   const getAlerts = async () => {
     try {
-      await Promise.all([getUnreadAlerts, getReadAlerts]);
+      await Promise.all([getUnreadAlerts(), getReadAlerts()]);
       console.log("getAlerts");
     } catch (err) {
       console.error("Failed to getAlerts: ", err);
@@ -100,10 +100,15 @@ const Alertmain = () => {
 
   useEffect(() => {
     getAlerts();
-    if (unreadalertsRef.current.length > 0) {
-      dispatch(setBadgeStatus({ ...alertBadgeStoreRef.current, badge: true }));
+  }, [alertBadgeStore.trigger]);
+
+  useEffect(() => {
+    if (unreadalerts.length > 0) {
+      dispatch(setBadgeStatus({ ...alertBadgeStore, badge: true }));
+    } else {
+      dispatch(setBadgeStatus({ ...alertBadgeStore, badge: false }));
     }
-  }, [alertBadgeStoreRef.current.trigger]);
+  }, [unreadalerts]);
 
   return (
     <Box className={"alertmain-container"}>

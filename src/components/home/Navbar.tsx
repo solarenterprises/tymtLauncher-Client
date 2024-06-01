@@ -488,7 +488,9 @@ const Navbar = () => {
           </Button>
         </Grid>
         <Settings view={showSetting} setView={setView} />
-        <Chatindex viewChat={showChat} setViewChat={setChat} />
+        {location.pathname.indexOf("chat") === -1 && (
+          <Chatindex viewChat={showChat} setViewChat={setChat} />
+        )}
         <Alertindex viewAlert={showAlert} setViewAlert={setAlert} />
       </Grid>
       <ComingModal open={coming} setOpen={setComing} />

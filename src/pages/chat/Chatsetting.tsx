@@ -21,6 +21,7 @@ import {
   selectNotification,
   setNotification,
 } from "../../features/settings/NotificationSlice";
+import { useCallback } from "react";
 
 const ChatSetting = ({ view, setView }: propsType) => {
   const { t } = useTranslation();
@@ -37,7 +38,7 @@ const ChatSetting = ({ view, setView }: propsType) => {
     setNotificationLink,
   } = useNotification();
 
-  const putUserStatus = async () => {
+  const putUserStatus = useCallback(async () => {
     try {
       await updateUsernotificationStatus(account.uid, notificationStore.alert);
       dispatch(
@@ -46,10 +47,11 @@ const ChatSetting = ({ view, setView }: propsType) => {
           alert: !notificationStore.alert,
         })
       );
+      console.log("putUserStatus");
     } catch (err) {
-      console.log(err);
+      console.error("Failed to putUserStatus: ", err);
     }
-  };
+  }, [notificationStore, account]);
 
   return (
     <>

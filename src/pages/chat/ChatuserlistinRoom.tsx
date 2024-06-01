@@ -177,7 +177,15 @@ const ChatuserlistinRoom = ({ view, setView }: propsType) => {
                 onChange={(e) => {
                   if (setSearchValue) {
                     setSearchValue(e.target.value);
-                    filterUsers(e.target.value);
+                    if (!e.target.value) {
+                      receiveContactlist()
+                        .then((contacts) => dispatch(setUserList(contacts)))
+                        .catch((err) =>
+                          console.error("Failed to receiveContactlist: ", err)
+                        );
+                    } else {
+                      filterUsers(e.target.value);
+                    }
                   }
                 }}
               />

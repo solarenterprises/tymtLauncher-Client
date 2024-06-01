@@ -144,7 +144,13 @@ const Chatmain = ({ view, setView }: propsType) => {
 
   useEffect(() => {
     if (view === "chatmain") {
-      filterUsers(value);
+      if (!value) {
+        receiveContactlist()
+          .then((contacts) => dispatch(setUserList(contacts)))
+          .catch((err) => console.error("Failed to receiveContactlist: ", err));
+      } else {
+        filterUsers(value);
+      }
     }
   }, [value, view]);
 

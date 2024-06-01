@@ -129,7 +129,7 @@ export const SocketProvider = () => {
   const socket = useRef<Socket>(null);
 
   useEffect(() => {
-    if (accountStoreRef.current.uid && socketHashStoreRef.current.socketHash) {
+    if (accountStore.uid && socketHashStore.socketHash) {
       appWindow.title().then((res) => {
         if (res === "tymtLauncher (debug) 2.1.2") {
           socket.current = io(socket_backend_url as string, {
@@ -264,7 +264,7 @@ export const SocketProvider = () => {
                   if (alert.alertType === "friend-request") {
                     if (
                       chatStoreRef.current.friend === "anyone" &&
-                      alert.receivers[0] === accountStoreRef.current.uid
+                      alert.receivers[0] === accountStore.uid
                     ) {
                       const senderId = alert.note?.sender;
                       const senderInChatUserlist =
@@ -309,7 +309,7 @@ export const SocketProvider = () => {
                     notificationStoreRef.current.alert &&
                     alert.alertType !== "chat" &&
                     alert.receivers.find(
-                      (userid) => userid === accountStoreRef.current.uid
+                      (userid) => userid === accountStore.uid
                     )
                   ) {
                     dispatch(
@@ -327,7 +327,7 @@ export const SocketProvider = () => {
                     notificationStoreRef.current.alert &&
                     alert.alertType === "chat" &&
                     alert.receivers.find(
-                      (userid) => userid === accountStoreRef.current.uid
+                      (userid) => userid === accountStore.uid
                     )
                   ) {
                     dispatch(
@@ -520,7 +520,7 @@ export const SocketProvider = () => {
         socket.current.disconnect();
       }
     };
-  }, [accountStoreRef.current.uid, socketHashStoreRef.current.socketHash]);
+  }, [accountStore.uid, socketHashStore.socketHash]);
 
   return (
     <SocketContext.Provider

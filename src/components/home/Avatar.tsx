@@ -1,29 +1,17 @@
 import { useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
-import { useEffect, useState } from "react";
 import { Tooltip, Stack, Box } from "@mui/material";
 import onlineframe from "../../assets/chat/onlineframe.svg";
 import offlineframe from "../../assets/chat/offlineframe.svg";
 import donotdisturbframe from "../../assets/chat/donotdisturbframe.svg";
 import mask from "../../assets/account/mask.png";
 import { IChain } from "../../types/walletTypes";
-import { notificationType } from "../../types/settingTypes";
 import { getChain } from "../../features/wallet/ChainSlice";
-import { selectNotification } from "../../features/settings/NotificationSlice";
 import accountIcon from "../../assets/wallet/account.svg";
 
 const Avatar = ({ size, userid, onlineStatus, ischain, status }: any) => {
   const { t } = useTranslation();
   const chain: IChain = useSelector(getChain);
-  const [notificationstatus, setNotificationStatus] = useState("");
-  const notificationStore: notificationType = useSelector(selectNotification);
-  const getNotificationStatus = () => {
-    setNotificationStatus(status);
-  };
-
-  useEffect(() => {
-    getNotificationStatus();
-  }, [userid, notificationStore.alert]);
 
   return (
     <>
@@ -94,11 +82,7 @@ const Avatar = ({ size, userid, onlineStatus, ischain, status }: any) => {
           )}
           {onlineStatus === true && (
             <img
-              src={
-                notificationstatus === "donotdisturb"
-                  ? donotdisturbframe
-                  : onlineframe
-              }
+              src={status === "donotdisturb" ? donotdisturbframe : onlineframe}
               style={{
                 position: "absolute",
                 width: "100%",
