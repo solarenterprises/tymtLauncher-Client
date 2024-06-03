@@ -38,7 +38,7 @@ export interface propsFRcontextmenuType {
   setShowContextMenu: (param: boolean) => void;
   setIsClickedDelete: (param: boolean) => void;
   setOpenDeleteModal: (param: boolean) => void;
-  setOpenRequestModal: (param: boolean) => void;
+  setOpenRequestModal?: (param: boolean) => void;
   setIsClickedRequest: (param: boolean) => void;
   contextMenuPosition: contextmenupositionType;
 }
@@ -80,6 +80,21 @@ export interface userType {
   friend: boolean;
 }
 
+export interface IContact {
+  _id: string;
+  nickName: string;
+  sxpAddress: string;
+  onlineStatus: boolean;
+  lastAvailable: string;
+  notificationStatus: string;
+  lang?: string;
+  avatar?: string;
+}
+
+export interface IContactList {
+  contacts: IContact[];
+}
+
 export interface ChatMessageType {
   sender_id: string;
   recipient_id: string;
@@ -116,11 +131,23 @@ export interface scrollDownType {
   down: boolean;
 }
 
-export interface alertType {
+export interface INote {
+  message: string;
+  sender: string;
+  status?: string;
+  detail?: string;
+}
+
+export interface IAlert {
   _id: string;
   alertType: string;
-  note: any;
+  note: INote;
   receivers: string[];
+  isDeleted?: boolean;
+  reads?: string[];
+  updatedAt?: string;
+  createdAt?: string;
+  readAts?: Map<string, number>;
 }
 
 export interface encryptionkeyStoreType {

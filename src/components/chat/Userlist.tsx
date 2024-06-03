@@ -1,25 +1,15 @@
 import { Box, Grid, Stack } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import Avatar from "../home/Avatar";
-import {
-  createContact,
-  receiveContactlist,
-} from "../../features/chat/Chat-contactApi";
-import { setUserList } from "../../features/chat/Chat-userlistSlice";
-import {
-  propsUserlistType,
-  selecteduserType,
-  userType,
-} from "../../types/chatTypes";
+import { propsUserlistType, selecteduserType } from "../../types/chatTypes";
 import {
   getSelectedUser,
   setSelectedUsertoDelete,
 } from "../../features/chat/Chat-selecteduserSlice";
-import {
-  selectPartner,
-  setCurrentChatPartner,
-} from "../../features/chat/Chat-currentPartnerSlice";
 import { useEffect, useRef } from "react";
+import { createContactAsync } from "../../features/chat/ContactListSlice";
+import { AppDispatch } from "../../store";
+import { setCurrentPartner } from "../../features/chat/CurrentPartnerSlice";
 
 const Userlist = ({
   user,
@@ -29,11 +19,10 @@ const Userlist = ({
   setContextMenuPosition,
   setView,
 }: propsUserlistType) => {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
 
   const selectedUserToDeleteStore: selecteduserType =
     useSelector(getSelectedUser);
-  const userDataStore: userType[] = useSelector(selectPartner);
 
   const selectedUserToDeleteStoreRef = useRef(selectedUserToDeleteStore);
 
@@ -69,9 +58,7 @@ const Userlist = ({
   };
 
   const updateContact = async (_id) => {
-    await createContact(_id);
-    const contacts: userType[] = await receiveContactlist();
-    dispatch(setUserList(contacts));
+    dispatch(createContactAsync(_id));
   };
 
   return (
@@ -101,8 +88,7 @@ const Userlist = ({
         onContextMenu={(e) => handleContextMenu(e, user._id)}
         onClick={() => {
           dispatch(
-            setCurrentChatPartner({
-              ...userDataStore,
+            setCurrentPartner({
               _id: user._id,
               nickName: user.nickName,
               avatar: user.avatar,

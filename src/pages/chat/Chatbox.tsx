@@ -5,14 +5,13 @@ import { useSelector, useDispatch } from "react-redux";
 import { Box, Divider, Button, Stack } from "@mui/material";
 import {
   ChatHistoryType,
+  IContact,
   deliverEncryptionKeyType,
   encryptionkeyStoreType,
   propsType,
-  userType,
 } from "../../types/chatTypes";
 import { accountType } from "../../types/accountTypes";
 import { chatType } from "../../types/settingTypes";
-import { selectPartner } from "../../features/chat/Chat-currentPartnerSlice";
 import { getAccount } from "../../features/account/AccountSlice";
 import {
   getChatHistory,
@@ -35,7 +34,7 @@ import { useSocket } from "../../providers/SocketProvider";
 import { AppDispatch } from "../../store";
 import _ from "lodash";
 import InfiniteScroll from "react-infinite-scroll-component";
-import { generateRandomString } from "../../features/chat/Chat-contactApi";
+import { generateRandomString } from "../../features/chat/ContactListApi";
 import {
   setMountedFalse,
   setMountedTrue,
@@ -43,6 +42,7 @@ import {
 import { ThreeDots } from "react-loader-spinner";
 import { Chatdecrypt } from "../../lib/api/ChatEncrypt";
 import { useTranslation } from "react-i18next";
+import { getCurrentPartner } from "../../features/chat/CurrentPartnerSlice";
 
 const Chatbox = ({ view, setView }: propsType) => {
   const { t } = useTranslation();
@@ -80,7 +80,7 @@ const Chatbox = ({ view, setView }: propsType) => {
   }, [processedPages]);
 
   const accountStore: accountType = useSelector(getAccount);
-  const currentPartnerStore: userType = useSelector(selectPartner);
+  const currentPartnerStore: IContact = useSelector(getCurrentPartner);
   const chatHistoryStore: ChatHistoryType = useSelector(getChatHistory);
   const chatStore: chatType = useSelector(selectChat);
   const encryptionKeyStore: encryptionkeyStoreType = useSelector(

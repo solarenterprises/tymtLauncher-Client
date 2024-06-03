@@ -40,9 +40,9 @@ import { getChain } from "../../features/wallet/ChainSlice";
 import ComingModal from "../ComingModal";
 import CardModal from "../CardModal";
 import Alertindex from "../../pages/alert";
-import { selectBadgeStatus } from "../../features/alert/AlertbadgeSlice";
 import { selectNotification } from "../../features/settings/NotificationSlice";
-import { alertbadgeType } from "../../types/alertTypes";
+import { getAlertList } from "../../features/alert/AlertListSlice";
+import { IAlertList } from "../../types/alertTypes";
 
 const theme = createTheme({
   palette: {
@@ -61,7 +61,6 @@ const Navbar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const alertbadge: alertbadgeType = useSelector(selectBadgeStatus);
   const notification: notificationType = useSelector(selectNotification);
   const currentpage: PaginationType = useSelector(getCurrentPage);
   const currentlogo: TymtlogoType = useSelector(getCurrentLogo);
@@ -73,6 +72,7 @@ const Navbar = () => {
     account.wallet === walletEnum.noncustodial
       ? nonCustodialStore
       : custodialStore;
+  const alertListStore: IAlertList = useSelector(getAlertList);
   const { t } = useTranslation();
   const [showSetting, setShowSetting] = useState(false);
   const [showChat, setShowChat] = useState(false);
@@ -351,7 +351,7 @@ const Navbar = () => {
                 setShowAlert(!showAlert);
               }}
             >
-              {alertbadge.badge == true && (
+              {alertListStore.unread.length > 0 && (
                 <span className={"notification_dot"}></span>
               )}
               <svg

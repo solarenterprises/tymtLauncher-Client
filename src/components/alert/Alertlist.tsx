@@ -1,9 +1,20 @@
-import { Stack, Box, Button, Divider } from "@mui/material";
+import { Stack, Box, Divider } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { propsAlertListType } from "../../types/alertTypes";
+import { IContactList, askEncryptionKeyType } from "../../types/chatTypes";
+import { useSocket } from "../../providers/SocketProvider";
+import { accountType } from "../../types/accountTypes";
+import { selectEncryptionKeyByUserId } from "../../features/chat/Chat-encryptionkeySlice";
+import { getAccount } from "../../features/account/AccountSlice";
+import { decrypt } from "../../lib/api/Encrypt";
+import { ThreeDots } from "react-loader-spinner";
+import { updateAlertReadStatusAsync } from "../../features/alert/AlertListSlice";
+import { AppDispatch } from "../../store";
+import { getContactList } from "../../features/chat/ContactListSlice";
+import { setCurrentPartner } from "../../features/chat/CurrentPartnerSlice";
 import failedIcon from "../../assets/alert/failed-icon.svg";
 import successIcon from "../../assets/alert/success-icon.svg";
 import warnnigIcon from "../../assets/alert/warnning-icon.svg";
@@ -11,131 +22,91 @@ import alertIcon from "../../assets/alert/alert-icon.png";
 import messageIcon from "../../assets/alert/message-icon.svg";
 import unreaddot from "../../assets/alert/unreaddot.svg";
 import readdot from "../../assets/alert/readdot.svg";
-import Avatar from "../home/Avatar";
-import {
-  getUserlist,
-  setUserList,
-} from "../../features/chat/Chat-userlistSlice";
-import {
-  askEncryptionKeyType,
-  // deliverEncryptionKeyType,
-  userType,
-} from "../../types/chatTypes";
-import {
-  getFriendlist,
-  setFriendlist,
-} from "../../features/chat/Chat-friendlistSlice";
-import { useSocket } from "../../providers/SocketProvider";
-import {
-  createContact,
-  // generateRandomString,
-  receiveContactlist,
-} from "../../features/chat/Chat-contactApi";
-import { accountType } from "../../types/accountTypes";
-import {
-  // addEncryptionKey,
-  selectEncryptionKeyByUserId,
-} from "../../features/chat/Chat-encryptionkeySlice";
-import { getAccount } from "../../features/account/AccountSlice";
-import { decrypt } from "../../lib/api/Encrypt";
-import {
-  selectPartner,
-  setCurrentChatPartner,
-} from "../../features/chat/Chat-currentPartnerSlice";
-import { ThreeDots } from "react-loader-spinner";
-import { updateAlertReadstatus } from "../../features/chat/Chat-alertApi";
 
 const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
   const { t } = useTranslation();
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
   const { socket } = useSocket();
-  const [logo, setLogo] = useState<any>();
-  const [keyperuser, setKeyperUser] = useState<string>("");
-  const [decryptedmessage, setDecryptedMessage] = useState<string>("");
-  const account: accountType = useSelector(getAccount);
-  const userdata: userType[] = useSelector(selectPartner);
-  const chatuserlist: userType[] = useSelector(getUserlist);
-  const friendlist: userType[] = useSelector(getFriendlist);
-  const senderUser = chatuserlist.find(
+  const navigate = useNavigate();
+
+  const dispatch = useDispatch<AppDispatch>();
+  const accountStore: accountType = useSelector(getAccount);
+  const contactListStore: IContactList = useSelector(getContactList);
+  const senderUser = contactListStore.contacts.find(
     (user) => user._id === detail.note?.sender
   );
-
   const existkey = useSelector((state) =>
     selectEncryptionKeyByUserId(state, detail.note?.sender)
   );
 
+  const [logo, setLogo] = useState<any>();
+  const [keyperuser, setKeyperUser] = useState<string>("");
+  const [decryptedmessage, setDecryptedMessage] = useState<string>("");
+
   useEffect(() => {
-    if (title === "chat") {
-      if (existkey) {
-        setKeyperUser(existkey);
-      } else {
-        const userid = detail.note?.sender;
-        const askdata: askEncryptionKeyType = {
-          sender_id: account.uid,
-          recipient_id: userid,
-        };
-        socket.current.emit("ask-encryption-key", JSON.stringify(askdata));
-        console.log("request for asking key", askdata);
+    if (socket.current) {
+      if (title === "chat") {
+        console.log(existkey, senderUser);
+        if (existkey) {
+          setKeyperUser(existkey);
+        } else {
+          const userid = detail.note?.sender;
+          const askdata: askEncryptionKeyType = {
+            sender_id: accountStore.uid,
+            recipient_id: userid,
+          };
+          socket.current.emit("ask-encryption-key", JSON.stringify(askdata));
+          console.log("socket.current.emit > ask-encryption-key", askdata);
+        }
       }
     }
-  }, [detail, existkey]);
+  }, [detail, existkey, socket.current]);
 
-  const addFriend = async () => {
-    const senderId = title === "Friend Request" ? detail.note?.sender : null;
-    const senderInChatUserlist = chatuserlist.find(
-      (user) => user._id === senderId
-    );
-    const senderInChatFriendlist = friendlist.find(
-      (user) => user._id === senderId
-    );
-    console.log("friendlist", friendlist);
-    console.log("request sender", senderInChatUserlist);
-    console.log("chatuserlist", chatuserlist);
-    const updatedFriendlist: userType[] = [...friendlist, senderInChatUserlist];
-    if (!senderInChatFriendlist) dispatch(setFriendlist(updatedFriendlist));
-  };
+  // const addFriend = async () => {
+  //   const senderId = title === "Friend Request" ? detail.note?.sender : null;
+  //   const senderInFriendList = friendListStore.contacts.find(
+  //     (user) => user._id === senderId
+  //   );
+  //   if (senderInFriendList) return;
+  //   const senderInContactList = contactListStore.contacts.find(
+  //     (user) => user._id === senderId
+  //   );
+  //   if (!senderInContactList) return;
+  //   dispatch(addOneToFriendList(senderInContactList));
+  // };
 
-  const approveFR = () => {
-    const data = {
-      id: detail._id,
-      note: { sender: detail.note.sender, status: "accepted" },
-      receivers: detail.receivers,
-    };
-    socket.current.emit("update-alert", JSON.stringify(data));
-    const updatealert = {
-      id: detail._id,
-      reader: detail.note.sender,
-    };
-    console.log("update-FR-alert", updatealert);
-    socket.current.emit("add-reader-alert", JSON.stringify(updatealert));
-  };
-  const declineFR = () => {
-    const data = {
-      id: detail._id,
-      note: { sender: detail.note.sender, status: "rejected" },
-      receivers: detail.receivers,
-    };
-    console.log("rejecting data", data);
-    const updatealert = {
-      id: detail._id,
-      reader: detail.note.sender,
-    };
-    socket.current.emit("add-reader-alert", JSON.stringify(updatealert));
-    socket.current.emit("update-alert", JSON.stringify(data));
-  };
+  // const approveFR = () => {
+  //   const data = {
+  //     id: detail._id,
+  //     note: { sender: detail.note.sender, status: "accepted" },
+  //     receivers: detail.receivers,
+  //   };
+  //   socket.current.emit("update-alert", JSON.stringify(data));
+  //   const updatealert = {
+  //     id: detail._id,
+  //     reader: detail.note.sender,
+  //   };
+  //   console.log("update-FR-alert", updatealert);
+  //   socket.current.emit("add-reader-alert", JSON.stringify(updatealert));
+  // };
 
-  const updateContact = async (_id) => {
-    await createContact(_id);
-    const contacts: userType[] = await receiveContactlist();
-    dispatch(setUserList(contacts));
-  };
+  // const declineFR = () => {
+  //   const data = {
+  //     id: detail._id,
+  //     note: { sender: detail.note.sender, status: "rejected" },
+  //     receivers: detail.receivers,
+  //   };
+  //   console.log("rejecting data", data);
+  //   const updatealert = {
+  //     id: detail._id,
+  //     reader: detail.note.sender,
+  //   };
+  //   socket.current.emit("add-reader-alert", JSON.stringify(updatealert));
+  //   socket.current.emit("update-alert", JSON.stringify(data));
+  // };
 
-  useEffect(() => {
-    if (!senderUser) {
-      updateContact(detail.note?.sender);
-    }
-  }, [senderUser]);
+  // const updateContact = async (_id) => {
+  //   dispatch(createContactAsync(_id));
+  // };
 
   useEffect(() => {
     if (status == "failed") {
@@ -180,21 +151,29 @@ const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
           padding: "16px 4px 0px 4px",
         }}
         onClick={() => {
-          if (title === "chat") {
-            navigate(`/chat?senderId=${detail.note?.sender}`);
-            dispatch(
-              setCurrentChatPartner({
-                ...userdata,
-                _id: senderUser?._id,
-                nickName: senderUser?.nickName,
-                avatar: senderUser?.avatar,
-                lang: senderUser?.lang,
-                sxpAddress: senderUser?.sxpAddress,
-                onlineStatus: senderUser?.onlineStatus,
-                notificationStatus: senderUser?.notificationStatus,
-              })
-            );
-            updateAlertReadstatus(detail?._id, account.uid);
+          try {
+            if (title === "chat") {
+              navigate(`/chat?senderId=${detail.note?.sender}`);
+              dispatch(
+                setCurrentPartner({
+                  _id: senderUser?._id,
+                  nickName: senderUser?.nickName,
+                  avatar: senderUser?.avatar,
+                  lang: senderUser?.lang,
+                  sxpAddress: senderUser?.sxpAddress,
+                  onlineStatus: senderUser?.onlineStatus,
+                  notificationStatus: senderUser?.notificationStatus,
+                })
+              );
+              dispatch(
+                updateAlertReadStatusAsync({
+                  alertId: detail?._id,
+                  userId: accountStore.uid,
+                })
+              );
+            }
+          } catch (err) {
+            console.error("Failed to click on alertList: ", err);
           }
         }}
       >
@@ -244,7 +223,7 @@ const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
                   color={`white`}
                 />
               )}
-            {title === "Friend Request" &&
+            {/* {title === "Friend Request" &&
               detail.note.status === "pending" &&
               t("not-10_fr-intro")}
             {title === "Friend Request" &&
@@ -252,9 +231,9 @@ const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
               t("not-11_fr-accept")}
             {title === "Friend Request" &&
               detail.note.status === "rejected" &&
-              t("not-12_fr-reject")}
+              t("not-12_fr-reject")} */}
           </Box>
-          {title === "Friend Request" && detail.note.status === "pending" && (
+          {/* {title === "Friend Request" && detail.note.status === "pending" && (
             <>
               <Stack
                 display={"flex"}
@@ -301,7 +280,7 @@ const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
                 </Stack>
               </Stack>
             </>
-          )}
+          )} */}
           <Divider
             sx={{
               backgroundColor: "#FFFFFF1A",

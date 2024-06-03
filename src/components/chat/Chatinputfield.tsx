@@ -1,7 +1,6 @@
 import { useTranslation } from "react-i18next";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-
 import {
   Box,
   Button,
@@ -11,28 +10,27 @@ import {
   TextField,
 } from "@mui/material";
 import TextareaAutosize from "@mui/material/TextareaAutosize";
-
 import emotion from "../../assets/chat/emotion.svg";
 import send from "../../assets/chat/chatframe.svg";
-
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import ChatStyle from "../../styles/ChatStyles";
 import EmojiPicker, { SkinTones } from "emoji-picker-react";
 import { useSocket } from "../../providers/SocketProvider";
 import {
   ChatHistoryType,
+  IContact,
   propsChatinputfieldType,
-  userType,
 } from "../../types/chatTypes";
 import { accountType } from "../../types/accountTypes";
 import { getAccount } from "../../features/account/AccountSlice";
-import { selectPartner } from "../../features/chat/Chat-currentPartnerSlice";
 import {
   getChatHistory,
   setChatHistory,
 } from "../../features/chat/Chat-historySlice";
 import { encrypt } from "../../lib/api/Encrypt";
 import { selectEncryptionKeyByUserId } from "../../features/chat/Chat-encryptionkeySlice";
+import { getCurrentPartner } from "../../features/chat/CurrentPartnerSlice";
+import { AppDispatch } from "../../store";
 
 const theme = createTheme({
   palette: {
@@ -53,16 +51,18 @@ const Chatinputfield = ({
   setValue,
 }: propsChatinputfieldType) => {
   const { socket } = useSocket();
-  const dispatch = useDispatch();
   const { t } = useTranslation();
   const classes = ChatStyle();
-  const account: accountType = useSelector(getAccount);
-  const currentpartner: userType = useSelector(selectPartner);
+
+  const dispatch = useDispatch<AppDispatch>();
+  const accountStore: accountType = useSelector(getAccount);
+  const currentPartnerStore: IContact = useSelector(getCurrentPartner);
   const chatHistoryStore: ChatHistoryType = useSelector(getChatHistory);
-  const userid: string = currentpartner._id;
+  const userid: string = currentPartnerStore._id;
   const existkey: string = useSelector((state) =>
     selectEncryptionKeyByUserId(state, userid)
   );
+
   const [anchorEl, setAnchorEl] = useState(null);
   const [EmojiLibraryOpen, setIsEmojiLibraryOpen] = useState(false);
 
@@ -79,14 +79,14 @@ const Chatinputfield = ({
     setValue(value + emoji.emoji);
   };
 
-  const sendMessage = async () => {
+  const sendMessage = useCallback(async () => {
     try {
       if (value.trim() !== "") {
         const encryptedvalue = await encrypt(value, keyperuser);
+        console.log("socket.current.emit > post-message", keyperuser);
         const message = {
-          sender_id: account.uid,
-          recipient_id: currentpartner._id,
-          // room_id: `room_${account.uid}_${currentpartner._id}`,
+          sender_id: accountStore.uid,
+          recipient_id: currentPartnerStore._id,
           message: encryptedvalue,
           createdAt: Date.now(),
         };
@@ -94,10 +94,10 @@ const Chatinputfield = ({
         const data = {
           alertType: "chat",
           note: {
-            sender: `${account.uid}`,
+            sender: `${accountStore.uid}`,
             message: encryptedvalue,
           },
-          receivers: [currentpartner._id],
+          receivers: [currentPartnerStore._id],
         };
         socket.current.emit("post-alert", JSON.stringify(data));
         const updatedHistory = [message, ...chatHistoryStore.messages];
@@ -109,7 +109,7 @@ const Chatinputfield = ({
         setValue("");
       }
     } catch (err: any) {}
-  };
+  }, [accountStore, currentPartnerStore]);
 
   // actually enter the input and send the message
 

@@ -11,7 +11,6 @@ import {
   notificationType,
 } from "../../types/settingTypes";
 import { accountType } from "../../types/accountTypes";
-import { updateUsernotificationStatus } from "../../features/chat/Chat-contactApi";
 import { getAccount } from "../../features/account/AccountSlice";
 import { useNotification } from "../../providers/NotificationProvider";
 import {
@@ -19,6 +18,7 @@ import {
   setNotification,
 } from "../../features/settings/NotificationSlice";
 import { useEffect, useRef } from "react";
+import { updateUsernotificationStatus } from "../../features/chat/ContactListApi";
 
 const Chat = ({ view, setView }: propsType) => {
   const { t } = useTranslation();

@@ -14,23 +14,18 @@ import {
   ChatHistoryType,
   deliverEncryptionKeyType,
   encryptionkeyStoreType,
+  IContactList,
 } from "../../types/chatTypes";
 import { chatType, notificationType } from "../../types/settingTypes";
-import {
-  accountType,
-  // , walletEnum
-} from "../../types/accountTypes";
+import { accountType } from "../../types/accountTypes";
 import { getAccount } from "../../features/account/AccountSlice";
-import { selectPartner } from "../../features/chat/Chat-currentPartnerSlice";
 import {
   getChatHistory,
   setChatHistory,
 } from "../../features/chat/Chat-historySlice";
-import { getUserlist } from "../../features/chat/Chat-userlistSlice";
-// import Chatindex from "../../pages/chat";
 import ChatSettinginRoom from "./ChatsettinginRoom";
 import ChatuserlistinRoom from "./ChatuserlistinRoom";
-import ChatfriendinRoom from "./Chatsetting-friendinRoom";
+// import ChatfriendinRoom from "./Chatsetting-friendinRoom";
 import ChatMsginRoom from "./Chatsetting-MsginRoom";
 import Chatinputfield from "../../components/chat/Chatinputfield";
 import { useSocket } from "../../providers/SocketProvider";
@@ -43,7 +38,6 @@ import {
   addEncryptionKey,
   selectEncryptionKeyStore,
 } from "../../features/chat/Chat-encryptionkeySlice";
-import { generateRandomString } from "../../features/chat/Chat-contactApi";
 import {
   setMountedFalse,
   setMountedTrue,
@@ -51,6 +45,9 @@ import {
 import { ThreeDots } from "react-loader-spinner";
 import { Chatdecrypt } from "../../lib/api/ChatEncrypt";
 import { useTranslation } from "react-i18next";
+import { getContactList } from "../../features/chat/ContactListSlice";
+import { generateRandomString } from "../../features/chat/ContactListApi";
+import { getCurrentPartner } from "../../features/chat/CurrentPartnerSlice";
 
 const theme = createTheme({
   palette: {
@@ -108,10 +105,10 @@ const Chatroom = () => {
   // }, [showChat]);
 
   const chatStore: chatType = useSelector(selectChat);
-  const currentPartnerStore: userType = useSelector(selectPartner);
+  const currentPartnerStore: userType = useSelector(getCurrentPartner);
   const accountStore: accountType = useSelector(getAccount);
   const chatHistoryStore: ChatHistoryType = useSelector(getChatHistory);
-  const chatUserListStore: userType[] = useSelector(getUserlist);
+  const contactListStore: IContactList = useSelector(getContactList);
   const notificationStore: notificationType = useSelector(selectNotification);
   const encryptionKeyStore: encryptionkeyStoreType = useSelector(
     selectEncryptionKeyStore
@@ -121,7 +118,7 @@ const Chatroom = () => {
   const currentPartnerStoreRef = useRef(currentPartnerStore);
   const accountStoreRef = useRef(accountStore);
   const chatHistoryStoreRef = useRef(chatHistoryStore);
-  const chatUserListStoreRef = useRef(chatUserListStore);
+  const contactListStoreRef = useRef(contactListStore);
   const notificationStoreRef = useRef(notificationStore);
   const encryptionKeyStoreRef = useRef(encryptionKeyStore);
 
@@ -138,8 +135,8 @@ const Chatroom = () => {
     chatHistoryStoreRef.current = chatHistoryStore;
   }, [chatHistoryStore]);
   useEffect(() => {
-    chatUserListStoreRef.current = chatUserListStore;
-  }, [chatUserListStore]);
+    contactListStoreRef.current = contactListStore;
+  }, [contactListStore]);
   useEffect(() => {
     notificationStoreRef.current = notificationStore;
   }, [notificationStore]);
@@ -352,7 +349,7 @@ const Chatroom = () => {
           <Box className={classes.userlist_container}>
             <ChatSettinginRoom view={panel} setView={setPanel} />
             <ChatuserlistinRoom view={panel} setView={setPanel} />
-            <ChatfriendinRoom view={panel} setView={setPanel} />
+            {/* <ChatfriendinRoom view={panel} setView={setPanel} /> */}
             <ChatMsginRoom view={panel} setView={setPanel} />
           </Box>
           {/* chatroom inbox */}
@@ -383,7 +380,7 @@ const Chatroom = () => {
                   justifyContent={"space-between"}
                 >
                   <Stack alignItems={"center"} flexDirection={"row"}>
-                    {chatUserListStore[0] && (
+                    {contactListStore.contacts[0] && (
                       <>
                         <Avatar
                           onlineStatus={currentPartnerStore.onlineStatus}
@@ -406,7 +403,7 @@ const Chatroom = () => {
                         </Stack>
                       </>
                     )}
-                    {!chatUserListStore[0] && <></>}
+                    {!contactListStore.contacts[0] && <></>}
                   </Stack>
                   <Stack alignItems={"center"} flexDirection={"row"}>
                     <Button

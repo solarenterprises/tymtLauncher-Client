@@ -1,114 +1,27 @@
 import { Box, Button, Stack } from "@mui/material";
-import { useEffect, useRef, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useState } from "react";
+import {
+  // useDispatch,
+  useSelector,
+} from "react-redux";
 import { useTranslation } from "react-i18next";
 import unreaddot from "../../assets/alert/unreaddot.svg";
 import readdot from "../../assets/alert/readdot.svg";
-import AlertList from "../../components/alert/Alertlist";
-import { accountType } from "../../types/accountTypes";
-import { getAccount } from "../../features/account/AccountSlice";
+import AlertList from "../../components/alert/AlertList";
+import { IAlertList } from "../../types/alertTypes";
 import {
-  fetchReadAlerts,
-  fetchUnreadAlerts,
-  updateAlertReadstatus,
-} from "../../features/chat/Chat-alertApi";
-import { alertType } from "../../types/chatTypes";
-import { alertbadgeType } from "../../types/alertTypes";
-import {
-  selectBadgeStatus,
-  setBadgeStatus,
-} from "../../features/alert/AlertbadgeSlice";
+  getAlertList,
+  // updateAllAlertReadStatusAsync,
+} from "../../features/alert/AlertListSlice";
 
 const Alertmain = () => {
   const { t } = useTranslation();
 
-  const dispatch = useDispatch();
-  const accountStore: accountType = useSelector(getAccount);
-  const alertBadgeStore: alertbadgeType = useSelector(selectBadgeStatus);
+  // const dispatch = useDispatch();
 
-  const accountStoreRef = useRef(accountStore);
-  const alertBadgeStoreRef = useRef(alertBadgeStore);
+  const alertListStore: IAlertList = useSelector(getAlertList);
 
-  useEffect(() => {
-    alertBadgeStoreRef.current = alertBadgeStore;
-  }, [alertBadgeStore]);
-  useEffect(() => {
-    accountStoreRef.current = accountStore;
-  }, [accountStoreRef]);
-
-  const [unreadcount, setUnreadCount] = useState<number>(0);
-  const [readcount, setReadCount] = useState<number>(0);
-  const [unreadalerts, setUnreadAlerts] = useState<alertType[]>([]);
-  const [readalerts, setReadAlerts] = useState<alertType[]>([]);
-  const [read, setRead] = useState<string>("unread");
-
-  const unreadalertsRef = useRef(unreadalerts);
-
-  useEffect(() => {
-    unreadalertsRef.current = unreadalerts;
-  }, [unreadalerts]);
-
-  const getUnreadAlerts = async () => {
-    try {
-      const newunreadalerts: alertType[] = await fetchUnreadAlerts(
-        accountStoreRef.current.uid
-      );
-      setUnreadCount(newunreadalerts.length);
-      setUnreadAlerts(newunreadalerts);
-      console.log("getUnreadAlerts", newunreadalerts);
-    } catch (err) {
-      console.error("Failed to getUnreadAlerts: ", err);
-    }
-  };
-
-  const getReadAlerts = async () => {
-    try {
-      const newreadalerts: alertType[] = await fetchReadAlerts(
-        accountStoreRef.current.uid
-      );
-      setReadCount(newreadalerts.length);
-      setReadAlerts(newreadalerts);
-      console.log("getReadAlerts", newreadalerts);
-    } catch (err) {
-      console.error("Failed to getReadAlerts: ", err);
-    }
-  };
-
-  const getAlerts = async () => {
-    try {
-      await Promise.all([getUnreadAlerts(), getReadAlerts()]);
-      console.log("getAlerts");
-    } catch (err) {
-      console.error("Failed to getAlerts: ", err);
-    }
-  };
-
-  const updateAlert = async () => {
-    try {
-      await Promise.all(
-        unreadalertsRef.current.map((element) =>
-          updateAlertReadstatus(element._id, accountStoreRef.current.uid)
-        )
-      );
-      await getAlerts();
-      dispatch(setBadgeStatus({ ...alertBadgeStoreRef.current, badge: false }));
-      console.log("updateAlert");
-    } catch (err) {
-      console.error("Failed to updateAlert: ", err);
-    }
-  };
-
-  useEffect(() => {
-    getAlerts();
-  }, [alertBadgeStore.trigger]);
-
-  useEffect(() => {
-    if (unreadalerts.length > 0) {
-      dispatch(setBadgeStatus({ ...alertBadgeStore, badge: true }));
-    } else {
-      dispatch(setBadgeStatus({ ...alertBadgeStore, badge: false }));
-    }
-  }, [unreadalerts]);
+  const [page, setPage] = useState<string>("unread");
 
   return (
     <Box className={"alertmain-container"}>
@@ -132,7 +45,7 @@ const Alertmain = () => {
             <Button
               className="read-status-button"
               onClick={() => {
-                setRead("unread");
+                setPage("unread");
               }}
             >
               <Stack
@@ -141,7 +54,9 @@ const Alertmain = () => {
                 alignItems={"center"}
                 gap={"8px"}
               >
-                <Box className={"fs-18-regular gray"}>{unreadcount}</Box>
+                <Box className={"fs-18-regular gray"}>
+                  {alertListStore.unread.length}
+                </Box>
                 <Box className={"fs-18-regular gray"}>{t("not-2_unread")}</Box>
                 <img src={unreaddot} width={"8px"} height={"8px"} />
               </Stack>
@@ -149,7 +64,7 @@ const Alertmain = () => {
             <Button
               className="read-status-button"
               onClick={() => {
-                setRead("read");
+                setPage("read");
               }}
             >
               <Stack
@@ -158,7 +73,9 @@ const Alertmain = () => {
                 alignItems={"center"}
                 gap={"8px"}
               >
-                <Box className={"fs-18-regular gray"}>{readcount}</Box>
+                <Box className={"fs-18-regular gray"}>
+                  {alertListStore.read.length}
+                </Box>
                 <Box className={"fs-18-regular gray"}> {t("not-3_read")}</Box>
                 <img src={readdot} width={"8px"} height={"8px"} />
               </Stack>
@@ -167,7 +84,7 @@ const Alertmain = () => {
           <Button
             className="modal_btn_left_fr"
             onClick={() => {
-              updateAlert();
+              // dispatch(updateAllAlertReadStatusAsync());
             }}
           >
             <Box className={"fs-18-bold"} color={"var(--Main-Blue, #52E1F2)"}>
@@ -176,8 +93,8 @@ const Alertmain = () => {
           </Button>
         </Stack>
         <Box className={"alert-inbox-scrollbar"}>
-          {read === "unread" &&
-            unreadalerts
+          {page === "unread" &&
+            [...alertListStore.unread]
               .reverse()
               .map((alert, index) => (
                 <AlertList
@@ -194,8 +111,8 @@ const Alertmain = () => {
                   read={"unread"}
                 />
               ))}
-          {read === "read" &&
-            readalerts
+          {page === "read" &&
+            [...alertListStore.read]
               .reverse()
               .map((alert, index) => (
                 <AlertList
