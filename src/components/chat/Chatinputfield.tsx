@@ -19,6 +19,7 @@ import { useSocket } from "../../providers/SocketProvider";
 import {
   ChatHistoryType,
   IContact,
+  encryptionkeyStoreType,
   propsChatinputfieldType,
 } from "../../types/chatTypes";
 import { accountType } from "../../types/accountTypes";
@@ -28,7 +29,7 @@ import {
   setChatHistory,
 } from "../../features/chat/Chat-historySlice";
 import { encrypt } from "../../lib/api/Encrypt";
-import { selectEncryptionKeyByUserId } from "../../features/chat/Chat-encryptionkeySlice";
+import { selectEncryptionKeyStore } from "../../features/chat/Chat-encryptionkeySlice";
 import { getCurrentPartner } from "../../features/chat/CurrentPartnerSlice";
 import { AppDispatch } from "../../store";
 
@@ -58,9 +59,8 @@ const Chatinputfield = ({
   const accountStore: accountType = useSelector(getAccount);
   const currentPartnerStore: IContact = useSelector(getCurrentPartner);
   const chatHistoryStore: ChatHistoryType = useSelector(getChatHistory);
-  const userid: string = currentPartnerStore._id;
-  const existkey: string = useSelector((state) =>
-    selectEncryptionKeyByUserId(state, userid)
+  const encryptionKeyStore: encryptionkeyStoreType = useSelector(
+    selectEncryptionKeyStore
   );
 
   const [anchorEl, setAnchorEl] = useState(null);
@@ -80,11 +80,10 @@ const Chatinputfield = ({
   };
 
   const sendMessage = useCallback(async () => {
-    if (socket.current) {
+    if (socket.current && socket.current.connected) {
       try {
         if (value.trim() !== "") {
           const encryptedvalue = await encrypt(value, keyperuser);
-          console.log("socket.current.emit > post-message", keyperuser);
           const message = {
             sender_id: accountStore.uid,
             recipient_id: currentPartnerStore._id,
@@ -92,6 +91,8 @@ const Chatinputfield = ({
             createdAt: Date.now(),
           };
           socket.current.emit("post-message", JSON.stringify(message));
+          console.log("socket.current.emit > post-message");
+
           const data = {
             alertType: "chat",
             note: {
@@ -101,6 +102,8 @@ const Chatinputfield = ({
             receivers: [currentPartnerStore._id],
           };
           socket.current.emit("post-alert", JSON.stringify(data));
+          console.log("socket.current.emit > post-alert");
+
           const updatedHistory = [message, ...chatHistoryStore.messages];
           dispatch(
             setChatHistory({
@@ -113,30 +116,37 @@ const Chatinputfield = ({
         console.error("Failed to sendMessage: ", err);
       }
     }
-  }, [accountStore, currentPartnerStore, socket.current]);
+  }, [accountStore, currentPartnerStore, socket.current, value]);
 
-  // actually enter the input and send the message
+  const handleEnter = useCallback(
+    async (e: any) => {
+      if (e.key === "Enter" && (e.ctrlKey || e.shiftKey)) {
+        e.preventDefault();
 
-  const handleEnter = async (e: any) => {
-    if (e.key === "Enter" && (e.ctrlKey || e.shiftKey)) {
-      e.preventDefault();
+        const cursorPosition = e.target.selectionStart;
+        const beforeText = value.substring(0, cursorPosition);
+        const afterText = value.substring(cursorPosition);
+        setValue(`${beforeText}\n${afterText}`);
 
-      const cursorPosition = e.target.selectionStart;
-      const beforeText = value.substring(0, cursorPosition);
-      const afterText = value.substring(cursorPosition);
-      setValue(`${beforeText}\n${afterText}`);
-
-      setTimeout(() => {
-        e.target.selectionStart = e.target.selectionEnd = cursorPosition + 1;
-      }, 0);
-    } else if (e.key === "Enter") {
-      e.preventDefault();
-      if (existkey) {
-        await sendMessage();
+        setTimeout(() => {
+          e.target.selectionStart = e.target.selectionEnd = cursorPosition + 1;
+        }, 0);
+      } else if (e.key === "Enter") {
+        e.preventDefault();
+        console.log(
+          "debug",
+          encryptionKeyStore,
+          currentPartnerStore,
+          encryptionKeyStore.encryption_Keys[currentPartnerStore._id]
+        );
+        if (encryptionKeyStore.encryption_Keys[currentPartnerStore._id]) {
+          await sendMessage();
+        }
+        setValue("");
       }
-      setValue("");
-    }
-  };
+    },
+    [encryptionKeyStore, currentPartnerStore, sendMessage]
+  );
 
   return (
     <Box sx={{ marginTop: "5px", marginBottom: "0px" }}>
