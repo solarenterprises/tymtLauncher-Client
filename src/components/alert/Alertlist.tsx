@@ -43,6 +43,7 @@ import {
   setCurrentChatPartner,
 } from "../../features/chat/Chat-currentPartnerSlice";
 import { ThreeDots } from "react-loader-spinner";
+import { updateAlertReadstatus } from "../../features/chat/Chat-alertApi";
 
 const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
   const { t } = useTranslation();
@@ -193,6 +194,7 @@ const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
                 notificationStatus: senderUser?.notificationStatus,
               })
             );
+            updateAlertReadstatus(detail?._id, account.uid);
           }
         }}
       >

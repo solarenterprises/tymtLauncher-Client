@@ -151,7 +151,7 @@ export const SocketProvider = () => {
                 "message-posted",
 
                 async (message: ChatMessageType) => {
-                  console.log("socket.on > message-posted");
+                  console.log("socket.current.on > message-posted");
                   const senderId = message.sender_id;
                   const senderInChatUserlist =
                     chatUserListStoreRef.current.find(
@@ -337,7 +337,7 @@ export const SocketProvider = () => {
                       })
                     );
                   }
-                };
+                }
                 handleIncomingRequest();
               });
             }
