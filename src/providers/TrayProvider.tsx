@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useEffect, ReactNode } from "react";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  ReactNode,
+  useRef,
+} from "react";
 import { useNavigate } from "react-router-dom";
 
 import { listen } from "@tauri-apps/api/event";
@@ -31,20 +37,29 @@ export const TrayProvider: React.FC<TrayProviderProps> = ({ children }) => {
   const notificationStore: notificationType = useSelector(selectNotification);
   const accountStore: accountType = useSelector(getAccount);
 
+  const notificationStoreRef = useRef(notificationStore);
+  const accountStoreRef = useRef(accountStore);
+
+  useEffect(() => {
+    notificationStoreRef.current = notificationStore;
+  }, [notificationStore]);
+  useEffect(() => {
+    accountStoreRef.current = accountStore;
+  }, [accountStore]);
+
   const callSetTrayItemsEnabled = async (
     itemIds: String[],
     enabled: boolean
   ) => {
     try {
       await invoke("set_tray_items_enabled", { itemIds, enabled });
-      console.log("set_tray_items_enabled function invoked successfully");
     } catch (error) {
-      console.error("Error invoking set_tray_items_enabled function:", error);
+      console.error("Failed to callSetTrayItemsEnabled:", error);
     }
   };
 
   useEffect(() => {
-    if (!accountStore.isLoggedIn) {
+    if (!accountStoreRef.current.isLoggedIn) {
       const itemIds = ["signout"];
       const enabled = false;
       callSetTrayItemsEnabled(itemIds, enabled);
@@ -53,7 +68,7 @@ export const TrayProvider: React.FC<TrayProviderProps> = ({ children }) => {
       const enabled = true;
       callSetTrayItemsEnabled(itemIds, enabled);
     }
-  }, [accountStore.isLoggedIn]);
+  }, [accountStoreRef.current.isLoggedIn]);
 
   useEffect(() => {
     const unlisten_wallet = listen("wallet", (event) => {
@@ -86,7 +101,9 @@ export const TrayProvider: React.FC<TrayProviderProps> = ({ children }) => {
     const unlisten_disable_notifications = listen(
       "disable_notifications",
       (event) => {
-        dispatch(setNotification({ ...notificationStore, alert: false }));
+        dispatch(
+          setNotification({ ...notificationStoreRef.current, alert: false })
+        );
         console.log(event.payload as string);
       }
     );
@@ -98,7 +115,7 @@ export const TrayProvider: React.FC<TrayProviderProps> = ({ children }) => {
       unlisten_about.then((unlistenFn) => unlistenFn());
       unlisten_disable_notifications.then((unlistenFn) => unlistenFn());
     };
-  }, []);
+  }, [notificationStoreRef.current]);
 
   return <TrayContext.Provider value={{}}>{children}</TrayContext.Provider>;
 };

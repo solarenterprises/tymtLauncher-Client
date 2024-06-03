@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
@@ -18,33 +18,28 @@ import settingicon from "../../assets/chat/settings.svg";
 import nocontact from "../../assets/chat/nocontact.png";
 import BlockModal from "../../components/chat/BlockModal";
 import DeleteModal from "../../components/chat/DeleteModal";
-import RequestModal from "../../components/chat/RequestModal";
-import { useSocket } from "../../providers/SocketProvider";
+// import RequestModal from "../../components/chat/RequestModal";
+// import { useSocket } from "../../providers/SocketProvider";
 import {
-  alertType,
+  IContactList,
   propsType,
   selecteduserType,
   userType,
 } from "../../types/chatTypes";
 import { accountType } from "../../types/accountTypes";
-import {
-  getUserlist,
-  setUserList,
-} from "../../features/chat/Chat-userlistSlice";
-import {
-  createContact,
-  deleteContact,
-  receiveContactlist,
-  searchUsers,
-} from "../../features/chat/Chat-contactApi";
 import { getSelectedUser } from "../../features/chat/Chat-selecteduserSlice";
-import { setChatHistory } from "../../features/chat/Chat-historySlice";
 import { getAccount } from "../../features/account/AccountSlice";
-import { fetchUnreadAlerts } from "../../features/chat/Chat-alertApi";
-import { alertbadgeType } from "../../types/alertTypes";
-import { selectBadgeStatus } from "../../features/alert/AlertbadgeSlice";
+import { IAlertList } from "../../types/alertTypes";
 import FRcontextmenu from "../../components/chat/FRcontextmenu";
 import Userlist from "../../components/chat/Userlist";
+import {
+  // createContactAsync,
+  deleteContactAsync,
+  getContactList,
+} from "../../features/chat/ContactListSlice";
+import { AppDispatch } from "../../store";
+import { getAlertList } from "../../features/alert/AlertListSlice";
+import { searchUsers } from "../../features/chat/ContactListApi";
 
 const theme = createTheme({
   palette: {
@@ -61,14 +56,10 @@ const theme = createTheme({
 
 const Chatmain = ({ view, setView }: propsType) => {
   const classes = ChatStyle();
-  const { socket } = useSocket();
-  const dispatch = useDispatch();
+  // const { socket } = useSocket();
   const { t } = useTranslation();
+
   const [value, setValue] = useState<string>("");
-  const chatuserlist: userType[] = useSelector(getUserlist);
-  const selectedusertoDelete: selecteduserType = useSelector(getSelectedUser);
-  const account: accountType = useSelector(getAccount);
-  const alertbadge: alertbadgeType = useSelector(selectBadgeStatus);
   const [searchedresult, setSearchedresult] = useState<userType[]>([]);
   const [isClickedBlock, setIsClickedBlock] = useState(false);
   const [isClickedDelete, setIsClickedDelete] = useState(false);
@@ -76,62 +67,68 @@ const Chatmain = ({ view, setView }: propsType) => {
   const [showContextMenu, setShowContextMenu] = useState(false);
   const [openBlockModal, setOpenBlockModal] = useState(false);
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
-  const [openRequestModal, setOpenRequestModal] = useState(false);
+  // const [openRequestModal, setOpenRequestModal] = useState(false);
   const [contextMenuPosition, setContextMenuPosition] = useState({
     x: 0,
     y: 0,
   });
-  const [unreadalerts, setUnreadAlerts] = useState<alertType[]>([]);
+
+  const valueRef = useRef(value);
+
+  useEffect(() => {
+    valueRef.current = value;
+  }, [value]);
+
+  const dispatch = useDispatch<AppDispatch>();
+  const contactListStore: IContactList = useSelector(getContactList);
+
+  const selectedUserToDeleteStore: selecteduserType =
+    useSelector(getSelectedUser);
+  const accountStore: accountType = useSelector(getAccount);
+  const alertListStore: IAlertList = useSelector(getAlertList);
+
+  const selectedUserToDeleteStoreRef = useRef(selectedUserToDeleteStore);
+  const accountStoreRef = useRef(accountStore);
+
+  useEffect(() => {
+    selectedUserToDeleteStoreRef.current = selectedUserToDeleteStore;
+  }, [selectedUserToDeleteStore]);
+  useEffect(() => {
+    accountStoreRef.current = accountStore;
+  }, [accountStore]);
 
   const deleteSelectedUser = async () => {
-    await deleteContact(selectedusertoDelete.id);
+    dispatch(deleteContactAsync(selectedUserToDeleteStoreRef.current.id));
     setOpenDeleteModal(false);
-    const contacts: userType[] = await receiveContactlist();
-    dispatch(setUserList(contacts));
-    dispatch(setChatHistory({ messages: [] }));
   };
 
-  const sendRequest = async () => {
-    const data = {
-      alertType: "friend-request",
-      note: {
-        sender: `${account.uid}`,
-        status: "pending",
-      },
-      receivers: [selectedusertoDelete.id],
-    };
-    socket.emit("post-alert", JSON.stringify(data));
-    setOpenRequestModal(false);
-    await updateContact(selectedusertoDelete.id);
-  };
+  // const sendRequest = async () => {
+  //   const data = {
+  //     alertType: "friend-request",
+  //     note: {
+  //       sender: `${accountStoreRef.current.uid}`,
+  //       status: "pending",
+  //     },
+  //     receivers: [selectedUserToDeleteStoreRef.current.id],
+  //   };
+  //   socket.current.emit("post-alert", JSON.stringify(data));
+  //   setOpenRequestModal(false);
+  //   dispatch(createContactAsync(selectedUserToDeleteStoreRef.current.id));
+  // };
 
   const debouncedFilterUsers = debounce(async (value: string) => {
     setSearchedresult(await searchUsers(value));
-  }, 1000); // Adjust the delay time (in milliseconds) as needed
+  }, 1000);
 
   const filterUsers = (value: string) => {
     debouncedFilterUsers(value);
   };
 
-  const updateContact = async (_id) => {
-    await createContact(_id);
-    const contacts: userType[] = await receiveContactlist();
-    dispatch(setUserList(contacts));
-  };
-
   useEffect(() => {
-    filterUsers(value);
-  }, [value]);
-
-  // read the unread chat alerts and mark the number of unread messages
-  const getUnreadAlerts = async () => {
-    const unreadalerts: alertType[] = await fetchUnreadAlerts(account.uid);
-    setUnreadAlerts(unreadalerts);
-  };
-
-  useEffect(() => {
-    getUnreadAlerts();
-  }, [alertbadge]);
+    if (view === "chatmain" && !value) {
+      filterUsers(value);
+    }
+  }, [value, view]);
 
   return (
     <>
@@ -227,7 +224,7 @@ const Chatmain = ({ view, setView }: propsType) => {
             />
             {/* userlist section */}
             <Box className={classes.scroll_bar}>
-              {chatuserlist?.length === 0 && value === "" ? (
+              {contactListStore?.contacts?.length === 0 && value === "" ? (
                 <>
                   <Grid container sx={{ justifyContent: "center" }}>
                     <img
@@ -241,30 +238,31 @@ const Chatmain = ({ view, setView }: propsType) => {
                 </>
               ) : (
                 <>
-                  {(value === "" ? chatuserlist : searchedresult)?.map(
-                    (user, index) => {
-                      const count =
-                        value === ""
-                          ? unreadalerts.filter(
-                              (alert) =>
-                                alert.note.sender === user._id &&
-                                alert.alertType === "chat"
-                            ).length
-                          : 0;
-                      const numberofunreadmessages = count;
+                  {(value === ""
+                    ? contactListStore?.contacts
+                    : searchedresult
+                  )?.map((user, index) => {
+                    const count =
+                      value === ""
+                        ? alertListStore.unread?.filter(
+                            (alert) =>
+                              alert.note.sender === user._id &&
+                              alert.alertType === "chat"
+                          ).length
+                        : 0;
+                    const numberofunreadmessages = count;
 
-                      return (
-                        <Userlist
-                          user={user}
-                          index={index}
-                          numberofunreadmessages={numberofunreadmessages}
-                          setShowContextMenu={setShowContextMenu}
-                          setContextMenuPosition={setContextMenuPosition}
-                          setView={setView}
-                        />
-                      );
-                    }
-                  )}
+                    return (
+                      <Userlist
+                        user={user}
+                        index={index}
+                        numberofunreadmessages={numberofunreadmessages}
+                        setShowContextMenu={setShowContextMenu}
+                        setContextMenuPosition={setContextMenuPosition}
+                        setView={setView}
+                      />
+                    );
+                  })}
                   {showContextMenu && (
                     <FRcontextmenu
                       value={value}
@@ -276,7 +274,7 @@ const Chatmain = ({ view, setView }: propsType) => {
                       setShowContextMenu={setShowContextMenu}
                       setIsClickedDelete={setIsClickedDelete}
                       setOpenDeleteModal={setOpenDeleteModal}
-                      setOpenRequestModal={setOpenRequestModal}
+                      // setOpenRequestModal={setOpenRequestModal}
                       setIsClickedRequest={setIsClickedRequest}
                       contextMenuPosition={contextMenuPosition}
                     />
@@ -292,12 +290,12 @@ const Chatmain = ({ view, setView }: propsType) => {
                     deleteSelectedUser={deleteSelectedUser}
                     roommode={false}
                   />
-                  <RequestModal
+                  {/* <RequestModal
                     openRequestModal={openRequestModal}
                     setOpenRequestModal={setOpenRequestModal}
                     sendFriendRequest={sendRequest}
                     roommode={false}
-                  />
+                  /> */}
                 </>
               )}
             </Box>

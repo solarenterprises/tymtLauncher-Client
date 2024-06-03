@@ -1,52 +1,56 @@
 import { Box, Button, Divider, Stack } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
-
 import {
   selectNotification,
   setNotification,
 } from "../../features/settings/NotificationSlice";
-
 import backIcon from "../../assets/settings/back-icon.svg";
 import SwitchComp from "../../components/SwitchComp";
 import arrowImg from "../../assets/settings/arrow-right.svg";
 import { useCallback } from "react";
 import { propsType, notificationType } from "../../types/settingTypes";
-
-import { updateUsernotificationStatus } from "../../features/chat/Chat-contactApi";
 import { accountType } from "../../types/accountTypes";
 import { getAccount } from "../../features/account/AccountSlice";
+import { updateUsernotificationStatus } from "../../features/chat/ContactListApi";
+import { AppDispatch } from "../../store";
 
 const Notification = ({ view, setView }: propsType) => {
   const { t } = useTranslation();
-  const dispatch = useDispatch();
-  const data: notificationType = useSelector(selectNotification);
+  const dispatch = useDispatch<AppDispatch>();
+  const notificationStore: notificationType = useSelector(selectNotification);
   const accountStore: accountType = useSelector(getAccount);
 
-  const putUserStatus = async () => {
+  const putUserStatus = useCallback(async () => {
     try {
-      await updateUsernotificationStatus(accountStore.uid, data.alert);
+      await updateUsernotificationStatus(
+        accountStore.uid,
+        notificationStore.alert
+      );
     } catch (err) {
       console.log(err);
     }
-  };
+  }, [accountStore, notificationStore]);
 
   const updateNotification = useCallback(
     async (type: string) => {
       let updateData: any;
       if (type == "alert") {
         await putUserStatus();
-        updateData = { ...data, alert: !data.alert };
+        updateData = { ...notificationStore, alert: !notificationStore.alert };
       }
       if (type == "update") {
-        updateData = { ...data, update: !data.update };
+        updateData = {
+          ...notificationStore,
+          update: !notificationStore.update,
+        };
       }
       if (type == "sound") {
-        updateData = { ...data, sound: !data.sound };
+        updateData = { ...notificationStore, sound: !notificationStore.sound };
       }
       dispatch(setNotification(updateData));
     },
-    [data]
+    [notificationStore]
   );
   return (
     <>
@@ -100,7 +104,7 @@ const Notification = ({ view, setView }: propsType) => {
                 alignItems={"center"}
               >
                 <SwitchComp
-                  checked={data.alert}
+                  checked={notificationStore.alert}
                   onClick={() => {
                     updateNotification("alert");
                   }}
@@ -141,7 +145,7 @@ const Notification = ({ view, setView }: propsType) => {
                 alignItems={"center"}
               >
                 <SwitchComp
-                  checked={data.update}
+                  checked={notificationStore.update}
                   onClick={() => {
                     updateNotification("update");
                   }}
@@ -183,7 +187,7 @@ const Notification = ({ view, setView }: propsType) => {
                 alignItems={"center"}
               >
                 <SwitchComp
-                  checked={data.sound}
+                  checked={notificationStore.sound}
                   onClick={() => {
                     updateNotification("sound");
                   }}
@@ -228,7 +232,7 @@ const Notification = ({ view, setView }: propsType) => {
                   textAlign={"center"}
                 >
                   <Box className="fs-h4 white">
-                    {data.hour} {t("set-45_h")}
+                    {notificationStore.hour} {t("set-45_h")}
                   </Box>
                   <Box className="center-align">
                     <img src={arrowImg} />

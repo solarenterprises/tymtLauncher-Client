@@ -1,10 +1,8 @@
 import { Box, Button, Divider, Stack } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
-
 import backIcon from "../../assets/settings/back-icon.svg";
 import arrowImg from "../../assets/settings/arrow-right.svg";
-
 import { selectChat } from "../../features/settings/ChatSlice";
 import SwitchComp from "../../components/SwitchComp";
 import {
@@ -13,20 +11,20 @@ import {
   notificationType,
 } from "../../types/settingTypes";
 import { accountType } from "../../types/accountTypes";
-import { updateUsernotificationStatus } from "../../features/chat/Chat-contactApi";
 import { getAccount } from "../../features/account/AccountSlice";
-
 import { useNotification } from "../../providers/NotificationProvider";
 import {
   selectNotification,
   setNotification,
 } from "../../features/settings/NotificationSlice";
+import { useCallback } from "react";
+import { updateUsernotificationStatus } from "../../features/chat/ContactListApi";
 
 const ChatSetting = ({ view, setView }: propsType) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
-  const data: chatType = useSelector(selectChat);
-  const account: accountType = useSelector(getAccount);
+  const chatStore: chatType = useSelector(selectChat);
+  const accountStore: accountType = useSelector(getAccount);
   const notificationStore: notificationType = useSelector(selectNotification);
 
   const {
@@ -37,19 +35,23 @@ const ChatSetting = ({ view, setView }: propsType) => {
     setNotificationLink,
   } = useNotification();
 
-  const putUserStatus = async () => {
+  const putUserStatus = useCallback(async () => {
     try {
-      await updateUsernotificationStatus(account.uid, notificationStore.alert);
+      await updateUsernotificationStatus(
+        accountStore.uid,
+        notificationStore.alert
+      );
       dispatch(
         setNotification({
           ...notificationStore,
           alert: !notificationStore.alert,
         })
       );
+      console.log("putUserStatus");
     } catch (err) {
-      console.log(err);
+      console.error("Failed to putUserStatus: ", err);
     }
-  };
+  }, [notificationStore, accountStore]);
 
   return (
     <>
@@ -151,9 +153,9 @@ const ChatSetting = ({ view, setView }: propsType) => {
                   textAlign={"center"}
                 >
                   <Box className={"fs-h4 white"}>
-                    {data.message == "anyone" && t("set-23_anyone")}
-                    {data.message == "noone" && t("set-26_no-one")}
-                    {data.message == "friend" && t("set-27_friends")}
+                    {chatStore.message == "anyone" && t("set-23_anyone")}
+                    {chatStore.message == "noone" && t("set-26_no-one")}
+                    {chatStore.message == "friend" && t("set-27_friends")}
                   </Box>
                   <Box className={"enter-align"}>
                     <img src={arrowImg} />
@@ -192,8 +194,8 @@ const ChatSetting = ({ view, setView }: propsType) => {
                   textAlign={"center"}
                 >
                   <Box className={"fs-h4 white"}>
-                    {data.friend == "anyone" && t("set-23_anyone")}
-                    {data.friend == "noone" && t("set-26_no-one")}
+                    {chatStore.friend == "anyone" && t("set-23_anyone")}
+                    {chatStore.friend == "noone" && t("set-26_no-one")}
                   </Box>
                   <Box className={"center-align"}>
                     <img src={arrowImg} />

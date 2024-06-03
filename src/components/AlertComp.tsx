@@ -1,4 +1,4 @@
-import { Snackbar, Stack, Box, Button } from "@mui/material";
+import { Snackbar, Stack, Box } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -13,27 +13,27 @@ import warnnigIcon from "../assets/alert/warnning-icon.svg";
 import alertIcon from "../assets/alert/alert-icon.png";
 import messageIcon from "../assets/alert/message-icon.svg";
 import closeIcon from "../assets/settings/x-icon.svg";
-import Avatar from "./home/Avatar";
+// import Avatar from "./home/Avatar";
 import { propsAlertTypes } from "../types/commonTypes";
-import { getUserlist } from "../features/chat/Chat-userlistSlice";
 import { notification_duration } from "../configs";
-import {
-  selectPartner,
-  setCurrentChatPartner,
-} from "../features/chat/Chat-currentPartnerSlice";
-import { userType } from "../types/chatTypes";
-import { accountType } from "../types/accountTypes";
-import {
-  getFriendlist,
-  setFriendlist,
-} from "../features/chat/Chat-friendlistSlice";
-import {
-  approveFriendRequest,
-  declineFriendRequest,
-} from "../features/chat/Chat-alertApi";
-import { getAccount } from "../features/account/AccountSlice";
+import { IContactList } from "../types/chatTypes";
+// import { accountType } from "../types/accountTypes";
+// import {
+//   addOneToFriendList,
+//   getFriendlist,
+// } from "../features/chat/FriendListSlice";
+// import { getAccount } from "../features/account/AccountSlice";
 import { selectEncryptionKeyByUserId } from "../features/chat/Chat-encryptionkeySlice";
 import { decrypt } from "../lib/api/Encrypt";
+import {
+  // getCurrentPartner,
+  setCurrentPartner,
+} from "../features/chat/CurrentPartnerSlice";
+import { getContactList } from "../features/chat/ContactListSlice";
+// import {
+//   approveFriendRequest,
+//   declineFriendRequest,
+// } from "../features/alert/AlertListApi";
 
 function SlideTransition(props) {
   return <Slide {...props} direction="left" />;
@@ -49,25 +49,31 @@ const AlertComp = ({
 }: propsAlertTypes) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const dispatch = useDispatch();
   const classname = CommonStyles();
   const searchParams = new URLSearchParams(link?.split("?")[1]);
-  const userdata: userType[] = useSelector(selectPartner);
-  const chatuserlist: userType[] = useSelector(getUserlist);
-  const friendlist: userType[] = useSelector(getFriendlist);
-  const account: accountType = useSelector(getAccount);
-  const [border, setBorder] = useState("");
-  const [bg, setBg] = useState("");
-  const [logo, setLogo] = useState<any>();
-  const [message, setMessage] = useState<string>("");
+
+  const contactListStore: IContactList = useSelector(getContactList);
+
   const senderId =
     title === "Friend Request"
       ? detail.note?.sender
       : searchParams.get("senderId");
-  const senderUser = chatuserlist.find((user) => user._id === senderId);
+  const senderUser = contactListStore.contacts.find(
+    (user) => user._id === senderId
+  );
+
+  const dispatch = useDispatch();
+  // const currentPartnerStore: IContact = useSelector(getCurrentPartner);
+  // const friendListStore: IContactList = useSelector(getFriendlist);
+  // const accountStore: accountType = useSelector(getAccount);
   const existkey: string = useSelector((state) =>
     selectEncryptionKeyByUserId(state, senderId)
   );
+
+  const [border, setBorder] = useState("");
+  const [bg, setBg] = useState("");
+  const [logo, setLogo] = useState<any>();
+  const [message, setMessage] = useState<string>("");
 
   useEffect(() => {
     const decryptmessage = async () => {
@@ -78,23 +84,28 @@ const AlertComp = ({
     };
     decryptmessage();
   }, [detail]);
-  const addFriend = async () => {
-    const senderId = detail.note?.sender;
-    const senderInChatUserlist = chatuserlist.find(
-      (user) => user._id === senderId
-    );
-    console.log("request sender", senderInChatUserlist);
-    console.log("chatuserlist", chatuserlist);
-    const updatedFriendlist: userType[] = [...friendlist, senderInChatUserlist];
-    dispatch(setFriendlist(updatedFriendlist));
-    console.log("friendlist", friendlist);
-  };
-  const approveFR = async () => {
-    await approveFriendRequest(detail._id, account.uid);
-  };
-  const declineFR = async () => {
-    await declineFriendRequest(detail._id, account.uid);
-  };
+
+  // const addFriend = useCallback(async () => {
+  //   const senderId = detail.note?.sender;
+  //   const senderInFriendList = friendListStore.contacts.find(
+  //     (user) => user._id === senderId
+  //   );
+  //   if (senderInFriendList) return;
+  //   const senderInContactList = contactListStore.contacts.find(
+  //     (user) => user._id === senderId
+  //   );
+  //   if (!senderInContactList) return;
+  //   dispatch(addOneToFriendList(senderInContactList));
+  // }, [friendListStore, contactListStore]);
+
+  // const approveFR = useCallback(async () => {
+  //   await approveFriendRequest(detail._id, accountStore.uid);
+  // }, [];
+
+  // const declineFR = async () => {
+  //   await declineFriendRequest(detail._id, accountStore.uid);
+  // }, [accountStore]);
+
   useEffect(() => {
     if (status == "failed") {
       setLogo(failedIcon);
@@ -157,8 +168,7 @@ const AlertComp = ({
           navigate(link);
           if (title !== "Friend Request") {
             dispatch(
-              setCurrentChatPartner({
-                ...userdata,
+              setCurrentPartner({
                 _id: senderUser?._id,
                 nickName: senderUser?.nickName,
                 avatar: senderUser?.avatar,
@@ -210,7 +220,7 @@ const AlertComp = ({
               <img src={closeIcon} />
             </Box>
           </Stack>
-          {title === "Friend Request" && (
+          {/* {title === "Friend Request" && (
             <>
               <Stack
                 display={"flex"}
@@ -263,7 +273,7 @@ const AlertComp = ({
                 </Stack>
               </Stack>
             </>
-          )}
+          )} */}
         </Stack>
       </Snackbar>
     </>

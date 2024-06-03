@@ -1,69 +1,34 @@
 import { Box, Button, Stack } from "@mui/material";
-import { useCallback, useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useState } from "react";
+import {
+  // useDispatch,
+  useSelector,
+} from "react-redux";
 import { useTranslation } from "react-i18next";
 import unreaddot from "../../assets/alert/unreaddot.svg";
 import readdot from "../../assets/alert/readdot.svg";
-import AlertList from "../../components/alert/Alertlist";
-import { accountType } from "../../types/accountTypes";
-import { getAccount } from "../../features/account/AccountSlice";
+import AlertList from "../../components/alert/AlertList";
+import { IAlertList } from "../../types/alertTypes";
 import {
-  fetchReadAlerts,
-  fetchUnreadAlerts,
-  updateAlertReadstatus,
-} from "../../features/chat/Chat-alertApi";
-import { alertType } from "../../types/chatTypes";
-import { alertbadgeType } from "../../types/alertTypes";
-import {
-  selectBadgeStatus,
-  setBadgeStatus,
-} from "../../features/alert/AlertbadgeSlice";
+  getAlertList,
+  // updateAllAlertReadStatusAsync,
+} from "../../features/alert/AlertListSlice";
+import { encryptionkeyStoreType } from "../../types/chatTypes";
+import { selectEncryptionKeyStore } from "../../features/chat/Chat-encryptionkeySlice";
+import { useSocket } from "../../providers/SocketProvider";
 
 const Alertmain = () => {
-  const dispatch = useDispatch();
   const { t } = useTranslation();
-  const account: accountType = useSelector(getAccount);
-  const alertbadge: alertbadgeType = useSelector(selectBadgeStatus);
-  const [unreadcount, setUnreadCount] = useState<number>(0);
-  const [readcount, setReadCount] = useState<number>(0);
-  const [unreadalerts, setUnreadAlerts] = useState<alertType[]>([]);
-  const [readalerts, setReadAlerts] = useState<alertType[]>([]);
-  const [read, setRead] = useState<string>("unread");
+  const { askEncryptionKey } = useSocket();
 
-  const getUnreadAlerts = useCallback(async () => {
-    const unreadalerts: alertType[] = await fetchUnreadAlerts(account.uid);
-    setUnreadCount(unreadalerts.length);
-    setUnreadAlerts(unreadalerts);
-  }, [alertbadge.trigger]);
+  // const dispatch = useDispatch();
 
-  const getReadAlerts = useCallback(async () => {
-    const readalerts: alertType[] = await fetchReadAlerts(account.uid);
-    setReadCount(readalerts.length);
-    setReadAlerts(readalerts);
-  }, [alertbadge.trigger]);
+  const alertListStore: IAlertList = useSelector(getAlertList);
+  const encryptionKeyStore: encryptionkeyStoreType = useSelector(
+    selectEncryptionKeyStore
+  );
 
-  const getAlerts = async () => {
-    await getUnreadAlerts();
-    await getReadAlerts();
-  };
-
-  const updateAlert = async () => {
-    for (const alert of unreadalerts) {
-      await updateAlertReadstatus(alert._id, account.uid);
-    }
-    await getUnreadAlerts();
-    await getReadAlerts();
-    dispatch(setBadgeStatus({ ...alertbadge, badge: false }));
-    console.log("userid", account.uid);
-  };
-
-  useEffect(() => {
-    getAlerts();
-    if (unreadalerts.length > 0) {
-      dispatch(setBadgeStatus({ ...alertbadge, badge: true }));
-    }
-    console.log("alertbadge trigger", alertbadge.trigger);
-  }, [alertbadge.trigger]);
+  const [page, setPage] = useState<string>("unread");
 
   return (
     <Box className={"alertmain-container"}>
@@ -87,7 +52,7 @@ const Alertmain = () => {
             <Button
               className="read-status-button"
               onClick={() => {
-                setRead("unread");
+                setPage("unread");
               }}
             >
               <Stack
@@ -96,7 +61,9 @@ const Alertmain = () => {
                 alignItems={"center"}
                 gap={"8px"}
               >
-                <Box className={"fs-18-regular gray"}>{unreadcount}</Box>
+                <Box className={"fs-18-regular gray"}>
+                  {alertListStore.unread.length}
+                </Box>
                 <Box className={"fs-18-regular gray"}>{t("not-2_unread")}</Box>
                 <img src={unreaddot} width={"8px"} height={"8px"} />
               </Stack>
@@ -104,7 +71,7 @@ const Alertmain = () => {
             <Button
               className="read-status-button"
               onClick={() => {
-                setRead("read");
+                setPage("read");
               }}
             >
               <Stack
@@ -113,7 +80,9 @@ const Alertmain = () => {
                 alignItems={"center"}
                 gap={"8px"}
               >
-                <Box className={"fs-18-regular gray"}>{readcount}</Box>
+                <Box className={"fs-18-regular gray"}>
+                  {alertListStore.read.length}
+                </Box>
                 <Box className={"fs-18-regular gray"}> {t("not-3_read")}</Box>
                 <img src={readdot} width={"8px"} height={"8px"} />
               </Stack>
@@ -122,7 +91,7 @@ const Alertmain = () => {
           <Button
             className="modal_btn_left_fr"
             onClick={() => {
-              updateAlert();
+              // dispatch(updateAllAlertReadStatusAsync());
             }}
           >
             <Box className={"fs-18-bold"} color={"var(--Main-Blue, #52E1F2)"}>
@@ -131,12 +100,16 @@ const Alertmain = () => {
           </Button>
         </Stack>
         <Box className={"alert-inbox-scrollbar"}>
-          {read === "unread" &&
-            unreadalerts
-              .reverse()
-              .map((alert, index) => (
+          {page === "unread" &&
+            [...alertListStore.unread].reverse().map((alert, index) => {
+              if (alert.alertType === "chat") {
+                const key =
+                  encryptionKeyStore.encryption_Keys[alert?.note?.sender];
+                if (!key) askEncryptionKey(alert?.note?.sender);
+              }
+              return (
                 <AlertList
-                  key={`${index}-${new Date().toISOString()}`}
+                  key={`${alert._id}-${index}`}
                   status={alert.alertType === "chat" ? "message" : "alert"}
                   title={
                     alert.alertType === "friend-request"
@@ -148,13 +121,18 @@ const Alertmain = () => {
                   detail={alert}
                   read={"unread"}
                 />
-              ))}
-          {read === "read" &&
-            readalerts
-              .reverse()
-              .map((alert, index) => (
+              );
+            })}
+          {page === "read" &&
+            [...alertListStore.read].reverse().map((alert, index) => {
+              if (alert.alertType === "chat") {
+                const key =
+                  encryptionKeyStore.encryption_Keys[alert?.note?.sender];
+                if (!key) askEncryptionKey(alert?.note?.sender);
+              }
+              return (
                 <AlertList
-                  key={`${index}-${new Date().toISOString()}`}
+                  key={`${alert._id}-${index}`}
                   status={alert.alertType === "chat" ? "message" : "alert"}
                   title={
                     alert.alertType === "friend-request"
@@ -166,7 +144,8 @@ const Alertmain = () => {
                   detail={alert}
                   read={"read"}
                 />
-              ))}
+              );
+            })}
         </Box>
       </Box>
     </Box>

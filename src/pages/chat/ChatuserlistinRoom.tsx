@@ -1,5 +1,5 @@
 import { useSelector, useDispatch } from "react-redux";
-import { useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import {
   Box,
   Grid,
@@ -15,41 +15,37 @@ import settingicon from "../../assets/chat/settings.svg";
 import searchlg from "../../assets/searchlg.svg";
 import BlockModal from "../../components/chat/BlockModal";
 import DeleteModal from "../../components/chat/DeleteModal";
-import RequestModal from "../../components/chat/RequestModal";
+// import RequestModal from "../../components/chat/RequestModal";
 import ChatStyle from "../../styles/ChatStyles";
-import { useSocket } from "../../providers/SocketProvider";
-import { getUserlist } from "../../features/chat/Chat-userlistSlice";
-import { alertType, propsType, userType } from "../../types/chatTypes";
-import { accountType } from "../../types/accountTypes";
-import {
-  deleteContact,
-  receiveContactlist,
-} from "../../features/chat/Chat-contactApi";
-import { setUserList } from "../../features/chat/Chat-userlistSlice";
+import { IContactList, propsType, userType } from "../../types/chatTypes";
 import { getSelectedUser } from "../../features/chat/Chat-selecteduserSlice";
-import { createContact } from "../../features/chat/Chat-contactApi";
 import { selecteduserType } from "../../types/chatTypes";
-import { searchUsers } from "../../features/chat/Chat-contactApi";
-import { setChatHistory } from "../../features/chat/Chat-historySlice";
+// import { setChatHistory } from "../../features/chat/Chat-historySlice";
 import { debounce } from "lodash";
-import { getAccount } from "../../features/account/AccountSlice";
-import { fetchUnreadAlerts } from "../../features/chat/Chat-alertApi";
-import { selectBadgeStatus } from "../../features/alert/AlertbadgeSlice";
-import { alertbadgeType } from "../../types/alertTypes";
+import { IAlertList } from "../../types/alertTypes";
 import FRcontextmenu from "../../components/chat/FRcontextmenu";
 import Userlist from "../../components/chat/Userlist";
+import {
+  deleteContactAsync,
+  getContactList,
+} from "../../features/chat/ContactListSlice";
+import { AppDispatch } from "../../store";
+import { searchUsers } from "../../features/chat/ContactListApi";
+import { getAlertList } from "../../features/alert/AlertListSlice";
 
 const ChatuserlistinRoom = ({ view, setView }: propsType) => {
-  const { socket } = useSocket();
-  const dispatch = useDispatch();
-  const { t } = useTranslation();
   const classes = ChatStyle();
-  const chatuserlist: userType[] = useSelector(getUserlist);
+
+  const { t } = useTranslation();
+
+  const dispatch = useDispatch<AppDispatch>();
+  const contactListStore: IContactList = useSelector(getContactList);
+  const selectedUserToDelete: selecteduserType = useSelector(getSelectedUser);
+  const alertListStore: IAlertList = useSelector(getAlertList);
+
   const [searchedresult, setSearchedresult] = useState<userType[]>([]);
-  const account: accountType = useSelector(getAccount);
-  const selectedusertoDelete: selecteduserType = useSelector(getSelectedUser);
-  const alertbadge: alertbadgeType = useSelector(selectBadgeStatus);
   const [searchvalue, setSearchValue] = useState<string>("");
+
   const [showContextMenu, setShowContextMenu] = useState(false);
   const [contextMenuPosition, setContextMenuPosition] = useState({
     x: 0,
@@ -62,8 +58,7 @@ const ChatuserlistinRoom = ({ view, setView }: propsType) => {
   /***Modals of Userlist ***/
   const [openBlockModal, setOpenBlockModal] = useState(false);
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
-  const [openRequestModal, setOpenRequestModal] = useState(false);
-  const [unreadalerts, setUnreadAlerts] = useState<alertType[]>([]);
+  // const [openRequestModal, setOpenRequestModal] = useState(false);
 
   const debouncedFilterUsers = debounce(async (value) => {
     setSearchedresult(await searchUsers(value));
@@ -73,44 +68,24 @@ const ChatuserlistinRoom = ({ view, setView }: propsType) => {
     debouncedFilterUsers(value);
   };
 
-  const deleteSelectedUser = async () => {
-    await deleteContact(selectedusertoDelete.id);
+  const deleteSelectedUser = useCallback(async () => {
+    dispatch(deleteContactAsync(selectedUserToDelete.id));
     setOpenDeleteModal(false);
-    const contacts: userType[] = await receiveContactlist();
-    dispatch(setUserList(contacts));
-    dispatch(setChatHistory({ messages: [] }));
-    console.log("selectedusertoDelete", selectedusertoDelete.id);
-  };
+  }, [selectedUserToDelete]);
 
-  const sendRequest = async () => {
-    const data = {
-      alertType: "friend-request",
-      note: {
-        sender: `${account.uid}`,
-        status: "pending",
-      },
-      receivers: [selectedusertoDelete.id],
-    };
-    socket.emit("post-alert", JSON.stringify(data));
-    setOpenRequestModal(false);
-    await updateContact(selectedusertoDelete.id);
-  };
-
-  const updateContact = async (_id) => {
-    await createContact(_id);
-    const contacts: userType[] = await receiveContactlist();
-    dispatch(setUserList(contacts));
-  };
-
-  // read the unread chat alerts and mark the number of unread messages
-  const getUnreadAlerts = async () => {
-    const unreadalerts: alertType[] = await fetchUnreadAlerts(account.uid);
-    setUnreadAlerts(unreadalerts);
-  };
-
-  useEffect(() => {
-    getUnreadAlerts();
-  }, [alertbadge]);
+  // const sendRequest = useCallback(async () => {
+  //   const data = {
+  //     alertType: "friend-request",
+  //     note: {
+  //       sender: `${accountStore.uid}`,
+  //       status: "pending",
+  //     },
+  //     receivers: [selectedUserToDelete.id],
+  //   };
+  //   socket.current.emit("post-alert", JSON.stringify(data));
+  //   setOpenRequestModal(false);
+  //   dispatch(createContactAsync(selectedUserToDelete.id));
+  // }, [accountStore, selectedUserToDelete]);
 
   return (
     <>
@@ -175,8 +150,7 @@ const ChatuserlistinRoom = ({ view, setView }: propsType) => {
                   ),
                 }}
                 onChange={(e) => {
-                  if (setSearchValue) {
-                    setSearchValue(e.target.value);
+                  if (!e.target.value) {
                     filterUsers(e.target.value);
                   }
                 }}
@@ -201,7 +175,7 @@ const ChatuserlistinRoom = ({ view, setView }: propsType) => {
             }}
           />
           <Box className={classes.userlist_container}>
-            {chatuserlist?.length === 0 && searchvalue === "" ? (
+            {contactListStore.contacts?.length === 0 && searchvalue === "" ? (
               <>
                 <Grid container sx={{ justifyContent: "center" }}>
                   <img
@@ -223,29 +197,30 @@ const ChatuserlistinRoom = ({ view, setView }: propsType) => {
               </>
             ) : (
               <>
-                {(searchvalue === "" ? chatuserlist : searchedresult)?.map(
-                  (user, index) => {
-                    const count =
-                      searchvalue === ""
-                        ? unreadalerts.filter(
-                            (alert) =>
-                              alert.note.sender === user._id &&
-                              alert.alertType === "chat"
-                          ).length
-                        : 0;
-                    const numberofunreadmessages = count;
-                    return (
-                      <Userlist
-                        user={user}
-                        index={index}
-                        numberofunreadmessages={numberofunreadmessages}
-                        setShowContextMenu={setShowContextMenu}
-                        setContextMenuPosition={setContextMenuPosition}
-                        setView={setView}
-                      />
-                    );
-                  }
-                )}
+                {(searchvalue === ""
+                  ? contactListStore.contacts
+                  : searchedresult
+                )?.map((user, index) => {
+                  const count =
+                    searchvalue === ""
+                      ? alertListStore.unread?.filter(
+                          (alert) =>
+                            alert.note.sender === user._id &&
+                            alert.alertType === "chat"
+                        ).length
+                      : 0;
+                  const numberofunreadmessages = count;
+                  return (
+                    <Userlist
+                      user={user}
+                      index={index}
+                      numberofunreadmessages={numberofunreadmessages}
+                      setShowContextMenu={setShowContextMenu}
+                      setContextMenuPosition={setContextMenuPosition}
+                      // setView={setView}
+                    />
+                  );
+                })}
                 {showContextMenu && (
                   <FRcontextmenu
                     value={searchvalue}
@@ -257,7 +232,7 @@ const ChatuserlistinRoom = ({ view, setView }: propsType) => {
                     setShowContextMenu={setShowContextMenu}
                     setIsClickedDelete={setIsClickedDelete}
                     setOpenDeleteModal={setOpenDeleteModal}
-                    setOpenRequestModal={setOpenRequestModal}
+                    // setOpenRequestModal={setOpenRequestModal}
                     setIsClickedRequest={setIsClickedRequest}
                     contextMenuPosition={contextMenuPosition}
                   />
@@ -273,12 +248,12 @@ const ChatuserlistinRoom = ({ view, setView }: propsType) => {
                   deleteSelectedUser={deleteSelectedUser}
                   roommode={true}
                 />
-                <RequestModal
+                {/* <RequestModal
                   openRequestModal={openRequestModal}
                   setOpenRequestModal={setOpenRequestModal}
                   sendFriendRequest={sendRequest}
                   roommode={true}
-                />
+                /> */}
               </>
             )}
           </Box>

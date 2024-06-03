@@ -17,15 +17,7 @@ import {
   setMountedFalse,
   setMountedTrue,
 } from "../../features/chat/Chat-intercomSupportSlice";
-import {
-  selectNotification,
-  setNotification,
-} from "../../features/settings/NotificationSlice";
-import {
-  languageType,
-  notificationType,
-  walletType,
-} from "../../types/settingTypes";
+import { languageType, walletType } from "../../types/settingTypes";
 import {
   IChain,
   ICurrency,
@@ -69,7 +61,6 @@ const WalletD53Transaction = () => {
     i18n: { changeLanguage },
   } = useTranslation();
   const dispatch = useDispatch<AppDispatch>();
-  const notificationStore: notificationType = useSelector(selectNotification);
   const multiWalletStore: multiWalletType = useSelector(getMultiWallet);
   const nonCustodialStore: nonCustodialType = useSelector(getNonCustodial);
   const currencyStore: ICurrency = useSelector(getCurrency);
@@ -327,23 +318,11 @@ const WalletD53Transaction = () => {
 
   useEffect(() => {
     dispatch(setMountedTrue());
-    dispatch(
-      setNotification({
-        ...notificationStore,
-        alert: false,
-      })
-    );
 
     return () => {
       dispatch(setMountedFalse());
-      dispatch(
-        setNotification({
-          ...notificationStore,
-          alert: true,
-        })
-      );
     };
-  }, [dispatch]);
+  }, []);
 
   useEffect(() => {
     if (copied) {

@@ -9,7 +9,7 @@ import AlertComp from "../components/AlertComp";
 import { useSelector } from "react-redux";
 import { selectNotification } from "../features/settings/NotificationSlice";
 import { notificationType } from "../types/settingTypes";
-
+import { useLocation } from "react-router-dom";
 import {
   isPermissionGranted,
   requestPermission,
@@ -47,6 +47,7 @@ interface NotificationProviderProps {
 export const NotificationProvider: React.FC<NotificationProviderProps> = ({
   children,
 }) => {
+  const location = useLocation();
   const { t } = useTranslation();
   const [notificationOpen, setNotificationOpen] = useState<boolean>(false);
   const [notificationStatus, setNotificationStatus] = useState<string>("");
@@ -118,7 +119,11 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
     >
       {children}
       <AlertComp
-        open={notificationStore.alert ? notificationOpen : false}
+        open={
+          notificationStore.alert && location.pathname !== "/d53-transaction"
+            ? notificationOpen
+            : false
+        }
         status={notificationStatus}
         title={notificationTitle}
         detail={notificationDetail}

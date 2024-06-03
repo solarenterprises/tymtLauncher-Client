@@ -14,7 +14,7 @@ const init: notificationType = {
 
 const loadNotification: () => notificationType = () => {
   const data = tymtStorage.get(`notification`);
-  if (data === null || data === "" || data === undefined) {
+  if (!data) {
     tymtStorage.set(`notification`, JSON.stringify(init));
     return init;
   } else {

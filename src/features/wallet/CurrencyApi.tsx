@@ -10,6 +10,7 @@ interface ICurrencyRes {
 export const refreshCurrency = async () => {
   try {
     const res = await axios.get(`${tymt_backend_url}/currencies`);
+    console.log("refreshCurrency");
     return {
       USD: 1.0,
       EUR: res.data.result.data.find(
@@ -35,7 +36,7 @@ export const refreshCurrency = async () => {
       ).rate,
     };
   } catch (err) {
-    console.log(err);
+    console.error("Failed to refreshCurrency: ", err);
     return {};
   }
 };

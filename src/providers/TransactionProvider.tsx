@@ -27,59 +27,75 @@ const TransactionProvider = () => {
   const chainStore: IChain = useSelector(getChain);
   const walletStore: walletType = useSelector(selectWallet);
   const saltTokenStore: ISaltToken = useSelector(getSaltToken);
-  const saltTokenRef = useRef(saltTokenStore);
   const mnemonicStore: IMnemonic = useSelector(getMnemonic);
-  const mnemonicRef = useRef(mnemonicStore);
   const dispatch = useDispatch<AppDispatch>();
 
-  useEffect(() => {
-    saltTokenRef.current = saltTokenStore;
-  }, [saltTokenStore]);
+  const chainStoreRef = useRef(chainStore);
+  const walletStoreRef = useRef(walletStore);
+  const nonCustodialStoreRef = useRef(nonCustodialStore);
+  const saltTokenStoreRef = useRef(saltTokenStore);
+  const mnemonicStoreRef = useRef(mnemonicStore);
+  const multiWalletStoreRef = useRef(multiWalletStore);
 
   useEffect(() => {
-    mnemonicRef.current = mnemonicStore;
+    chainStoreRef.current = chainStore;
+  }, [chainStore]);
+  useEffect(() => {
+    walletStoreRef.current = walletStore;
+  }, [walletStore]);
+  useEffect(() => {
+    nonCustodialStoreRef.current = nonCustodialStore;
+  }, [nonCustodialStore]);
+  useEffect(() => {
+    saltTokenStoreRef.current = saltTokenStore;
+  }, [saltTokenStore]);
+  useEffect(() => {
+    mnemonicStoreRef.current = mnemonicStore;
   }, [mnemonicStore]);
+  useEffect(() => {
+    multiWalletStoreRef.current = multiWalletStore;
+  }, [multiWalletStore]);
 
   useEffect(() => {
     if (
-      nonCustodialStore.mnemonic !== "" &&
-      nonCustodialStore.password !== "" &&
-      saltTokenRef.current.token !== ""
+      nonCustodialStoreRef.current.mnemonic !== "" &&
+      nonCustodialStoreRef.current.password !== "" &&
+      saltTokenStoreRef.current.token !== ""
     ) {
       dispatch(
         refreshBalancesAsync({
-          _multiWalletStore: multiWalletStore,
+          _multiWalletStore: multiWalletStoreRef.current,
         })
       ).then(() => {
         dispatch(refreshCurrencyAsync()).then(() => {});
       });
     }
   }, [
-    nonCustodialStore.mnemonic,
-    nonCustodialStore.password,
-    saltTokenStore,
-    mnemonicStore,
+    nonCustodialStoreRef.current.mnemonic,
+    nonCustodialStoreRef.current.password,
+    saltTokenStoreRef.current,
+    mnemonicStoreRef.current,
   ]);
 
   useEffect(() => {
-    if (chainStore.chain.symbol === "SXP") {
+    if (chainStoreRef.current.chain.symbol === "SXP") {
       dispatch(
         setWallet({
-          ...walletStore,
+          ...walletStoreRef.current,
           status: "minimum",
           fee: "0.0183",
         })
       );
-    } else if (chainStore.chain.symbol === "BTC") {
+    } else if (chainStoreRef.current.chain.symbol === "BTC") {
       dispatch(
         setWallet({
-          ...walletStore,
+          ...walletStoreRef.current,
           status: "minimum",
           fee: "7.5",
         })
       );
     }
-  }, [chainStore]);
+  }, [chainStoreRef.current]);
 
   useEffect(() => {
     const unlisten_get_account = listen("POST-/get-account", async (event) => {
@@ -97,18 +113,18 @@ const TransactionProvider = () => {
     const unlisten_validate_token = listen("validate-token", async (event) => {
       const token: string = event.payload as string;
       if (
-        !mnemonicRef.current.mnemonic ||
+        !mnemonicStoreRef.current.mnemonic ||
         !token ||
-        token !== saltTokenRef.current.token
+        token !== saltTokenStoreRef.current.token
       ) {
         emit("res-validate-token", false);
         return;
       }
       const publicKey: string = tymtCore.Blockchains.solar.wallet.getPublicKey(
-        mnemonicRef.current.mnemonic
+        mnemonicStoreRef.current.mnemonic
       );
       const res: boolean = tymtCore.Blockchains.solar.wallet.verifyMessage(
-        saltTokenRef.current.salt,
+        saltTokenStoreRef.current.salt,
         publicKey,
         token
       );
