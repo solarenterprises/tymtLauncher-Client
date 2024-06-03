@@ -4,12 +4,9 @@ import { useSelector, useDispatch } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { propsAlertListType } from "../../types/alertTypes";
-import { IContactList, askEncryptionKeyType } from "../../types/chatTypes";
-import { useSocket } from "../../providers/SocketProvider";
+import { IContactList, encryptionkeyStoreType } from "../../types/chatTypes";
 import { accountType } from "../../types/accountTypes";
-import { selectEncryptionKeyByUserId } from "../../features/chat/Chat-encryptionkeySlice";
 import { getAccount } from "../../features/account/AccountSlice";
-import { decrypt } from "../../lib/api/Encrypt";
 import { ThreeDots } from "react-loader-spinner";
 import { updateAlertReadStatusAsync } from "../../features/alert/AlertListSlice";
 import { AppDispatch } from "../../store";
@@ -22,10 +19,11 @@ import alertIcon from "../../assets/alert/alert-icon.png";
 import messageIcon from "../../assets/alert/message-icon.svg";
 import unreaddot from "../../assets/alert/unreaddot.svg";
 import readdot from "../../assets/alert/readdot.svg";
+import { selectEncryptionKeyStore } from "../../features/chat/Chat-encryptionkeySlice";
+import { Chatdecrypt } from "../../lib/api/ChatEncrypt";
 
 const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
   const { t } = useTranslation();
-  const { socket } = useSocket();
   const navigate = useNavigate();
 
   const dispatch = useDispatch<AppDispatch>();
@@ -34,32 +32,21 @@ const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
   const senderUser = contactListStore.contacts.find(
     (user) => user._id === detail.note?.sender
   );
-  const existkey = useSelector((state) =>
-    selectEncryptionKeyByUserId(state, detail.note?.sender)
+  const encryptionKeyStore: encryptionkeyStoreType = useSelector(
+    selectEncryptionKeyStore
   );
 
   const [logo, setLogo] = useState<any>();
-  const [keyperuser, setKeyperUser] = useState<string>("");
-  const [decryptedmessage, setDecryptedMessage] = useState<string>("");
+  const [decryptedMessage, setDecryptedMessage] = useState<string>(
+    "Unable to decode message #tymt114#"
+  );
 
   useEffect(() => {
-    if (socket.current) {
-      if (title === "chat") {
-        console.log(existkey, senderUser);
-        if (existkey) {
-          setKeyperUser(existkey);
-        } else {
-          const userid = detail.note?.sender;
-          const askdata: askEncryptionKeyType = {
-            sender_id: accountStore.uid,
-            recipient_id: userid,
-          };
-          socket.current.emit("ask-encryption-key", JSON.stringify(askdata));
-          console.log("socket.current.emit > ask-encryption-key", askdata);
-        }
-      }
+    const key = encryptionKeyStore.encryption_Keys[detail.note?.sender];
+    if (key && decryptedMessage === "Unable to decode message #tymt114#") {
+      setDecryptedMessage(Chatdecrypt(detail.note?.message, key));
     }
-  }, [detail, existkey, socket.current]);
+  }, [encryptionKeyStore]);
 
   // const addFriend = async () => {
   //   const senderId = title === "Friend Request" ? detail.note?.sender : null;
@@ -125,19 +112,6 @@ const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
       setLogo(messageIcon);
     }
   }, [status]);
-
-  useEffect(() => {
-    if (title === "chat") {
-      const decryptMessage = async () => {
-        const messagedecrytped = await decrypt(
-          detail.note?.message,
-          keyperuser
-        );
-        setDecryptedMessage(messagedecrytped);
-      };
-      decryptMessage();
-    }
-  }, [keyperuser]);
 
   return (
     <>
@@ -210,12 +184,12 @@ const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
                 ? detail.note?.message.substring(0, 100) + "..."
                 : detail.note?.message)}
             {title === "chat" &&
-            decryptedmessage !== "Unable to decode message #tymt114#" &&
-            decryptedmessage.length > 100
-              ? decryptedmessage.substring(0, 100) + "..."
-              : decryptedmessage}
+            decryptedMessage !== "Unable to decode message #tymt114#" &&
+            decryptedMessage.length > 100
+              ? decryptedMessage.substring(0, 100) + "..."
+              : decryptedMessage}
             {title === "chat" &&
-              decryptedmessage === "Unable to decode message #tymt114#" && (
+              decryptedMessage === "Unable to decode message #tymt114#" && (
                 <ThreeDots
                   height="25px"
                   width={"40px"}

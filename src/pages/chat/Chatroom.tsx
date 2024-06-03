@@ -1,5 +1,5 @@
 import { useSelector, useDispatch } from "react-redux";
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import React from "react";
@@ -12,7 +12,6 @@ import OrLinechat from "../../components/chat/Orlinechat";
 import {
   userType,
   ChatHistoryType,
-  deliverEncryptionKeyType,
   encryptionkeyStoreType,
   IContactList,
 } from "../../types/chatTypes";
@@ -34,10 +33,7 @@ import _ from "lodash";
 import InfiniteScroll from "react-infinite-scroll-component";
 import { selectNotification } from "../../features/settings/NotificationSlice";
 import { selectChat } from "../../features/settings/ChatSlice";
-import {
-  addEncryptionKey,
-  selectEncryptionKeyStore,
-} from "../../features/chat/Chat-encryptionkeySlice";
+import { selectEncryptionKeyStore } from "../../features/chat/Chat-encryptionkeySlice";
 import {
   setMountedFalse,
   setMountedTrue,
@@ -46,7 +42,6 @@ import { ThreeDots } from "react-loader-spinner";
 import { Chatdecrypt } from "../../lib/api/ChatEncrypt";
 import { useTranslation } from "react-i18next";
 import { getContactList } from "../../features/chat/ContactListSlice";
-import { generateRandomString } from "../../features/chat/ContactListApi";
 import { getCurrentPartner } from "../../features/chat/CurrentPartnerSlice";
 
 const theme = createTheme({
@@ -74,14 +69,12 @@ const Chatroom = () => {
   // const [showChat, setShowChat] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const [keyperuser, setKeyperUser] = useState<string>("");
   const [processedPages, setProcessedPages] = useState(new Set());
   const [screenexpanded, setScreenExpanded] = useState<boolean>(false);
 
   const valueRef = useRef(value);
   const hasMoreRef = useRef(hasMore);
   const pageRef = useRef(page);
-  const keyperuserRef = useRef(keyperuser);
   const processedPagesRef = useRef(processedPages);
   // const showChatRef = useRef(showChat);
 
@@ -94,9 +87,6 @@ const Chatroom = () => {
   useEffect(() => {
     pageRef.current = page;
   }, [page]);
-  useEffect(() => {
-    keyperuserRef.current = keyperuser;
-  }, [keyperuser]);
   useEffect(() => {
     processedPagesRef.current = processedPages;
   }, [processedPages]);
@@ -113,6 +103,8 @@ const Chatroom = () => {
   const encryptionKeyStore: encryptionkeyStoreType = useSelector(
     selectEncryptionKeyStore
   );
+  const currentKey =
+    encryptionKeyStore.encryption_Keys[currentPartnerStore._id];
 
   const chatStoreRef = useRef(chatStore);
   const currentPartnerStoreRef = useRef(currentPartnerStore);
@@ -143,34 +135,6 @@ const Chatroom = () => {
   useEffect(() => {
     encryptionKeyStoreRef.current = encryptionKeyStore;
   }, [encryptionKeyStore]);
-
-  // When currentpartner is changed ask encryption key to partner
-
-  useEffect(() => {
-    const existkey =
-      encryptionKeyStoreRef.current.encryption_Keys[currentPartnerStore._id];
-    if (existkey) {
-      setKeyperUser(existkey);
-    } else {
-      const key = generateRandomString(32);
-      setKeyperUser(key);
-      const deliverydata: deliverEncryptionKeyType = {
-        sender_id: accountStore.uid,
-        recipient_id: currentPartnerStore._id,
-        key: key,
-      };
-      socket.current.emit(
-        "deliver-encryption-key",
-        JSON.stringify(deliverydata)
-      );
-      dispatch(
-        addEncryptionKey({
-          userId: currentPartnerStore._id,
-          encryptionKey: key,
-        })
-      );
-    }
-  }, [currentPartnerStore, socket.current]);
 
   useEffect(() => {
     console.log(
@@ -288,9 +252,13 @@ const Chatroom = () => {
     }
   };
 
-  const decryptMessage = (encryptedmessage: string) => {
-    return Chatdecrypt(encryptedmessage, keyperuserRef.current);
-  };
+  const decryptMessage = useCallback(
+    (encryptedmessage: string) => {
+      console.log("decryptMessage", currentKey);
+      return Chatdecrypt(encryptedmessage, currentKey);
+    },
+    [currentKey]
+  );
 
   // Set mounted to true when chatroom is mounted
   useEffect(() => {
@@ -689,7 +657,7 @@ const Chatroom = () => {
               <Chatinputfield
                 value={value}
                 setValue={setValue}
-                keyperuser={keyperuser}
+                keyperuser={currentKey}
               />
             </Box>
           </Box>

@@ -82,22 +82,29 @@ const D53Modal = ({ open, setOpen }: props) => {
   }
 
   useEffect(() => {
-    const init = async () => {
-      const apiURL = `https://serverlist.district53.io/`;
-      const res: any = await tauriFetch(apiURL, {
-        method: "GET",
-        timeout: 30,
-        responseType: ResponseType.JSON,
-      });
-      setServerList(res.data);
-      setServerIp(res.data[0].ip);
+    let intervalId: NodeJS.Timeout;
+    if (open) {
+      const init = async () => {
+        const apiURL = `https://serverlist.district53.io/`;
+        const res: any = await tauriFetch(apiURL, {
+          method: "GET",
+          timeout: 30,
+          responseType: ResponseType.JSON,
+        });
+        setServerList(res.data);
+        setServerIp(res.data[0].ip);
+      };
+
+      init();
+      intervalId = setInterval(init, 30 * 1e3);
+    }
+
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
     };
-
-    init();
-    const intervalId = setInterval(init, 30 * 1e3);
-
-    return () => clearInterval(intervalId);
-  }, []);
+  }, [open]);
 
   return (
     <Modal

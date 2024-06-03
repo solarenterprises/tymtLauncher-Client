@@ -53,9 +53,8 @@ export const TrayProvider: React.FC<TrayProviderProps> = ({ children }) => {
   ) => {
     try {
       await invoke("set_tray_items_enabled", { itemIds, enabled });
-      console.log("set_tray_items_enabled function invoked successfully");
     } catch (error) {
-      console.error("Error invoking set_tray_items_enabled function:", error);
+      console.error("Failed to callSetTrayItemsEnabled:", error);
     }
   };
 

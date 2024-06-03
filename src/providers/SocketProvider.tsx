@@ -1,6 +1,7 @@
 import {
   MutableRefObject,
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useRef,
@@ -52,9 +53,15 @@ import {
 } from "../features/chat/ContactListApi";
 import { addOneToUnreadList } from "../features/alert/AlertListSlice";
 
-const SocketContext = createContext<
-  { socket: MutableRefObject<Socket> } | undefined
->(undefined);
+interface SocketContextType {
+  socket: MutableRefObject<Socket>;
+  askEncryptionKey: (recipientId: string) => void;
+}
+
+const SocketContext = createContext<SocketContextType>({
+  socket: undefined,
+  askEncryptionKey: (_) => {},
+});
 
 export const useSocket = () => useContext(SocketContext);
 
@@ -157,10 +164,6 @@ export const SocketProvider = () => {
                     message.sender_id === currentPartnerStoreRef.current._id &&
                     message.recipient_id === accountStoreRef.current.uid
                   ) {
-                    console.log(
-                      "message reception",
-                      chatStoreRef.current.message
-                    );
                     if (chatStoreRef.current.message === "anyone") {
                       const updatedHistory = [
                         message,
@@ -175,26 +178,15 @@ export const SocketProvider = () => {
                       chatStoreRef.current.message === "friend" &&
                       senderInChatFriendlist
                     ) {
-                      console.log(
-                        "senderInChatFriendlist",
-                        senderInChatFriendlist
-                      );
                       const updatedHistory = [
                         message,
                         ...chatHistoryStoreRef.current.messages,
                       ];
                       dispatch(setChatHistory({ messages: updatedHistory }));
-                    } else {
                     }
-                  } else {
                   }
-                  console.log("handleIncomingMessages");
                   if (message.recipient_id === accountStoreRef.current.uid) {
                     if (chatStoreRef.current.message === "anyone") {
-                      console.log(
-                        "messagereception",
-                        chatStoreRef.current.message
-                      );
                       if (!senderInChatUserlist) {
                         const senderName = await getsenderName(
                           message.sender_id
@@ -222,10 +214,6 @@ export const SocketProvider = () => {
                         );
                       }
                     } else if (chatStoreRef.current.message === "friend") {
-                      console.log(
-                        "messagereception",
-                        chatStoreRef.current.message
-                      );
                       if (senderInChatFriendlist) {
                         const senderName = senderInChatFriendlist.nickName;
 
@@ -237,13 +225,7 @@ export const SocketProvider = () => {
                           `/chat?senderId=${message.sender_id}`
                         );
                       }
-                    } else {
                     }
-                  } else {
-                    console.log(
-                      "messagereception",
-                      chatStoreRef.current.message
-                    );
                   }
                 }
               );
@@ -303,6 +285,11 @@ export const SocketProvider = () => {
                     )
                   ) {
                     dispatch(addOneToUnreadList(alert));
+                    const key =
+                      encryptionKeyStoreRef.current.encryption_Keys[
+                        alert.note?.sender
+                      ];
+                    if (!key) askEncryptionKey(alert.note?.sender);
                   }
                 };
                 handleIncomingRequest();
@@ -480,10 +467,32 @@ export const SocketProvider = () => {
     };
   }, [accountStore.uid, socketHashStore.socketHash]);
 
+  const askEncryptionKey = useCallback(
+    async (recipientId: string) => {
+      try {
+        if (encryptionKeyStore.encryption_Keys[recipientId]) return;
+        if (!socket.current) {
+          console.error("Failed to askEncryptionKey: socket.current undefined");
+          return;
+        }
+        const askData: askEncryptionKeyType = {
+          sender_id: accountStore.uid,
+          recipient_id: recipientId,
+        };
+        socket.current.emit("ask-encryption-key", JSON.stringify(askData));
+        console.log("askEncryptionKey");
+      } catch (err) {
+        console.error("Failed to askEncryptionKey: ", err);
+      }
+    },
+    [accountStore, encryptionKeyStore]
+  );
+
   return (
     <SocketContext.Provider
       value={{
         socket,
+        askEncryptionKey,
       }}
     >
       <Outlet />

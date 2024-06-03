@@ -13,13 +13,20 @@ import {
   getAlertList,
   // updateAllAlertReadStatusAsync,
 } from "../../features/alert/AlertListSlice";
+import { encryptionkeyStoreType } from "../../types/chatTypes";
+import { selectEncryptionKeyStore } from "../../features/chat/Chat-encryptionkeySlice";
+import { useSocket } from "../../providers/SocketProvider";
 
 const Alertmain = () => {
   const { t } = useTranslation();
+  const { askEncryptionKey } = useSocket();
 
   // const dispatch = useDispatch();
 
   const alertListStore: IAlertList = useSelector(getAlertList);
+  const encryptionKeyStore: encryptionkeyStoreType = useSelector(
+    selectEncryptionKeyStore
+  );
 
   const [page, setPage] = useState<string>("unread");
 
@@ -94,9 +101,13 @@ const Alertmain = () => {
         </Stack>
         <Box className={"alert-inbox-scrollbar"}>
           {page === "unread" &&
-            [...alertListStore.unread]
-              .reverse()
-              .map((alert, index) => (
+            [...alertListStore.unread].reverse().map((alert, index) => {
+              if (alert.alertType === "chat") {
+                const key =
+                  encryptionKeyStore.encryption_Keys[alert?.note?.sender];
+                if (!key) askEncryptionKey(alert?.note?.sender);
+              }
+              return (
                 <AlertList
                   key={`${alert._id}-${index}`}
                   status={alert.alertType === "chat" ? "message" : "alert"}
@@ -110,11 +121,16 @@ const Alertmain = () => {
                   detail={alert}
                   read={"unread"}
                 />
-              ))}
+              );
+            })}
           {page === "read" &&
-            [...alertListStore.read]
-              .reverse()
-              .map((alert, index) => (
+            [...alertListStore.read].reverse().map((alert, index) => {
+              if (alert.alertType === "chat") {
+                const key =
+                  encryptionKeyStore.encryption_Keys[alert?.note?.sender];
+                if (!key) askEncryptionKey(alert?.note?.sender);
+              }
+              return (
                 <AlertList
                   key={`${alert._id}-${index}`}
                   status={alert.alertType === "chat" ? "message" : "alert"}
@@ -128,7 +144,8 @@ const Alertmain = () => {
                   detail={alert}
                   read={"read"}
                 />
-              ))}
+              );
+            })}
         </Box>
       </Box>
     </Box>

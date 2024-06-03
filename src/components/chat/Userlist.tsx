@@ -10,6 +10,7 @@ import { useEffect, useRef } from "react";
 import { createContactAsync } from "../../features/chat/ContactListSlice";
 import { AppDispatch } from "../../store";
 import { setCurrentPartner } from "../../features/chat/CurrentPartnerSlice";
+import { useSocket } from "../../providers/SocketProvider";
 
 const Userlist = ({
   user,
@@ -19,8 +20,9 @@ const Userlist = ({
   setContextMenuPosition,
   setView,
 }: propsUserlistType) => {
-  const dispatch = useDispatch<AppDispatch>();
+  const { askEncryptionKey } = useSocket();
 
+  const dispatch = useDispatch<AppDispatch>();
   const selectedUserToDeleteStore: selecteduserType =
     useSelector(getSelectedUser);
 
@@ -57,8 +59,32 @@ const Userlist = ({
     return false;
   };
 
-  const updateContact = async (_id) => {
-    dispatch(createContactAsync(_id));
+  const handleBoxClick = async () => {
+    try {
+      dispatch(createContactAsync(user._id))
+        .then(() => {
+          askEncryptionKey(user._id);
+          dispatch(
+            setCurrentPartner({
+              _id: user._id,
+              nickName: user.nickName,
+              avatar: user.avatar,
+              lang: user.lang,
+              sxpAddress: user.sxpAddress,
+              onlineStatus: user.onlineStatus,
+              notificationStatus: user.notificationStatus,
+            })
+          );
+          if (setView) {
+            setView("chatbox");
+          }
+        })
+        .catch((err) => {
+          console.error("Failed to createContactAsync: ", err);
+        });
+    } catch (err) {
+      console.error("Failed to handleBoxClick: ", err);
+    }
   };
 
   return (
@@ -86,23 +112,7 @@ const Userlist = ({
           },
         }}
         onContextMenu={(e) => handleContextMenu(e, user._id)}
-        onClick={() => {
-          dispatch(
-            setCurrentPartner({
-              _id: user._id,
-              nickName: user.nickName,
-              avatar: user.avatar,
-              lang: user.lang,
-              sxpAddress: user.sxpAddress,
-              onlineStatus: user.onlineStatus,
-              notificationStatus: user.notificationStatus,
-            })
-          );
-          if (setView) {
-            setView("chatbox");
-          }
-          updateContact(user._id);
-        }}
+        onClick={handleBoxClick}
       >
         <Avatar
           onlineStatus={user.onlineStatus}

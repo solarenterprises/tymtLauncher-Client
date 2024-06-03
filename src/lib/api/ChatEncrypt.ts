@@ -22,6 +22,10 @@ export const Chatencrypt = (_mnemonic: string, _password: string) => {
 
 export const Chatdecrypt = (_encryptedMnemonic: string, _password: string) => {
   try {
+    if (!_password) {
+      console.error("Failed to Chatdecrypt: key undefined");
+      return "Unable to decode message #tymt114#";
+    }
     const key = crypto
       .createHash("sha512")
       .update(_password.normalize("NFD"))

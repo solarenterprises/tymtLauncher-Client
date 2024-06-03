@@ -80,42 +80,46 @@ const Chatinputfield = ({
   };
 
   const sendMessage = useCallback(async () => {
-    try {
-      if (value.trim() !== "") {
-        const encryptedvalue = await encrypt(value, keyperuser);
-        console.log("socket.current.emit > post-message", keyperuser);
-        const message = {
-          sender_id: accountStore.uid,
-          recipient_id: currentPartnerStore._id,
-          message: encryptedvalue,
-          createdAt: Date.now(),
-        };
-        socket.current.emit("post-message", JSON.stringify(message));
-        const data = {
-          alertType: "chat",
-          note: {
-            sender: `${accountStore.uid}`,
+    if (socket.current) {
+      try {
+        if (value.trim() !== "") {
+          const encryptedvalue = await encrypt(value, keyperuser);
+          console.log("socket.current.emit > post-message", keyperuser);
+          const message = {
+            sender_id: accountStore.uid,
+            recipient_id: currentPartnerStore._id,
             message: encryptedvalue,
-          },
-          receivers: [currentPartnerStore._id],
-        };
-        socket.current.emit("post-alert", JSON.stringify(data));
-        const updatedHistory = [message, ...chatHistoryStore.messages];
-        dispatch(
-          setChatHistory({
-            messages: updatedHistory,
-          })
-        );
-        setValue("");
+            createdAt: Date.now(),
+          };
+          socket.current.emit("post-message", JSON.stringify(message));
+          const data = {
+            alertType: "chat",
+            note: {
+              sender: `${accountStore.uid}`,
+              message: encryptedvalue,
+            },
+            receivers: [currentPartnerStore._id],
+          };
+          socket.current.emit("post-alert", JSON.stringify(data));
+          const updatedHistory = [message, ...chatHistoryStore.messages];
+          dispatch(
+            setChatHistory({
+              messages: updatedHistory,
+            })
+          );
+          setValue("");
+        }
+      } catch (err) {
+        console.error("Failed to sendMessage: ", err);
       }
-    } catch (err: any) {}
-  }, [accountStore, currentPartnerStore]);
+    }
+  }, [accountStore, currentPartnerStore, socket.current]);
 
   // actually enter the input and send the message
 
   const handleEnter = async (e: any) => {
     if (e.key === "Enter" && (e.ctrlKey || e.shiftKey)) {
-      e.preventDefault(); // Prevent the default action to avoid form submission
+      e.preventDefault();
 
       const cursorPosition = e.target.selectionStart;
       const beforeText = value.substring(0, cursorPosition);
@@ -129,8 +133,8 @@ const Chatinputfield = ({
       e.preventDefault();
       if (existkey) {
         await sendMessage();
-      } // Handle sending the message
-      setValue(""); // Reset input field
+      }
+      setValue("");
     }
   };
 

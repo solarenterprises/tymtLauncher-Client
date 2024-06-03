@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
@@ -6,7 +6,6 @@ import { Box, Divider, Button, Stack } from "@mui/material";
 import {
   ChatHistoryType,
   IContact,
-  deliverEncryptionKeyType,
   encryptionkeyStoreType,
   propsType,
 } from "../../types/chatTypes";
@@ -18,10 +17,7 @@ import {
   setChatHistory,
 } from "../../features/chat/Chat-historySlice";
 import { selectChat } from "../../features/settings/ChatSlice";
-import {
-  addEncryptionKey,
-  selectEncryptionKeyStore,
-} from "../../features/chat/Chat-encryptionkeySlice";
+import { selectEncryptionKeyStore } from "../../features/chat/Chat-encryptionkeySlice";
 import maximize from "../../assets/chat/maximize.svg";
 import backIcon from "../../assets/settings/back-icon.svg";
 import ChatStyle from "../../styles/ChatStyles";
@@ -34,7 +30,6 @@ import { useSocket } from "../../providers/SocketProvider";
 import { AppDispatch } from "../../store";
 import _ from "lodash";
 import InfiniteScroll from "react-infinite-scroll-component";
-import { generateRandomString } from "../../features/chat/ContactListApi";
 import {
   setMountedFalse,
   setMountedTrue,
@@ -54,13 +49,11 @@ const Chatbox = ({ view, setView }: propsType) => {
   const [value, setValue] = useState<string>("");
   const [page, setPage] = useState<number>(1);
   const [hasMore, setHasMore] = useState(true);
-  const [keyperuser, setKeyperUser] = useState<string>("");
   const [processedPages, setProcessedPages] = useState(new Set());
 
   const valueRef = useRef(value);
   const hasMoreRef = useRef(hasMore);
   const pageRef = useRef(page);
-  const keyperuserRef = useRef(keyperuser);
   const processedPagesRef = useRef(processedPages);
 
   useEffect(() => {
@@ -73,9 +66,6 @@ const Chatbox = ({ view, setView }: propsType) => {
     pageRef.current = page;
   }, [page]);
   useEffect(() => {
-    keyperuserRef.current = keyperuser;
-  }, [keyperuser]);
-  useEffect(() => {
     processedPagesRef.current = processedPages;
   }, [processedPages]);
 
@@ -86,6 +76,8 @@ const Chatbox = ({ view, setView }: propsType) => {
   const encryptionKeyStore: encryptionkeyStoreType = useSelector(
     selectEncryptionKeyStore
   );
+  const currentKey =
+    encryptionKeyStore.encryption_Keys[currentPartnerStore._id];
 
   const accountStoreRef = useRef(accountStore);
   const currentPartnerStoreRef = useRef(currentPartnerStore);
@@ -108,35 +100,6 @@ const Chatbox = ({ view, setView }: propsType) => {
   useEffect(() => {
     encryptionKeyStoreRef.current = encryptionKeyStore;
   }, [encryptionKeyStore]);
-
-  useEffect(() => {
-    if (socket.current && currentPartnerStore._id && view === "chatbox") {
-      const existkey =
-        encryptionKeyStoreRef.current.encryption_Keys[currentPartnerStore._id];
-      if (existkey) {
-        setKeyperUser(existkey);
-      } else {
-        const key = generateRandomString(32);
-        setKeyperUser(key);
-        const deliverydata: deliverEncryptionKeyType = {
-          sender_id: accountStoreRef.current.uid,
-          recipient_id: currentPartnerStore._id,
-          key: key,
-        };
-        socket.current.emit(
-          "deliver-encryption-key",
-          JSON.stringify(deliverydata)
-        );
-        console.log("Chatbox > socket.current.emit > deliver-encryption-key");
-        dispatch(
-          addEncryptionKey({
-            userId: currentPartnerStore._id,
-            encryptionKey: key,
-          })
-        );
-      }
-    }
-  }, [currentPartnerStore, socket.current, view]);
 
   useEffect(() => {
     if (currentPartnerStore._id && view === "chatbox") {
@@ -248,9 +211,13 @@ const Chatbox = ({ view, setView }: propsType) => {
     }
   };
 
-  const decryptMessage = (encryptedmessage: string) => {
-    return Chatdecrypt(encryptedmessage, keyperuserRef.current);
-  };
+  const decryptMessage = useCallback(
+    (encryptedmessage: string) => {
+      console.log("decryptMessage", currentKey);
+      return Chatdecrypt(encryptedmessage, currentKey);
+    },
+    [currentKey]
+  );
 
   // Set mounted to true when chatbox is mounted
   useEffect(() => {
@@ -568,7 +535,7 @@ const Chatbox = ({ view, setView }: propsType) => {
           <Chatinputfield
             value={value}
             setValue={setValue}
-            keyperuser={keyperuser}
+            keyperuser={currentKey}
           />
         </Box>
       )}
