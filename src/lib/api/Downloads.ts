@@ -122,19 +122,22 @@ export async function downloadGame(game_key: string) {
   let url = "";
   switch (platform) {
     case "Linux":
-      url = production_version
-        ? game.executables.linux.prod.url
-        : game.executables.linux.dev?.url ?? "";
+      url =
+        production_version === "prod"
+          ? game.executables.linux.prod.url
+          : game.executables.linux.dev?.url ?? "";
       break;
     case "Darwin":
-      url = production_version
-        ? game.executables.macos.prod.url
-        : game.executables.macos.dev?.url ?? "";
+      url =
+        production_version === "prod"
+          ? game.executables.macos.prod.url
+          : game.executables.macos.dev?.url ?? "";
       break;
     case "Windows_NT":
-      url = production_version
-        ? game.executables.windows64.prod.url
-        : game.executables.windows64.dev?.url ?? "";
+      url =
+        production_version === "prod"
+          ? game.executables.windows64.prod.url
+          : game.executables.windows64.dev?.url ?? "";
       break;
   }
   if (!url) {
@@ -143,7 +146,7 @@ export async function downloadGame(game_key: string) {
   switch (platform) {
     case "Linux":
       switch (
-        production_version
+        production_version === "prod"
           ? game.executables.linux.prod.type
           : game.executables.linux.dev?.type ?? ""
       ) {
@@ -151,7 +154,7 @@ export async function downloadGame(game_key: string) {
           await downloadAndUnzipLinux(
             url,
             `/v${tymt_version}/games/${game_key}`,
-            production_version
+            production_version === "prod"
               ? game.executables.linux.prod.exePath
               : game.executables.linux.dev?.exePath ?? ""
           );
@@ -166,7 +169,7 @@ export async function downloadGame(game_key: string) {
       break;
     case "Darwin":
       switch (
-        production_version
+        production_version === "prod"
           ? game.executables.macos.prod.type
           : game.executables.macos.dev?.type ?? ""
       ) {
@@ -174,7 +177,7 @@ export async function downloadGame(game_key: string) {
           await downloadAndUnzipMacOS(
             url,
             `/v${tymt_version}/games/${game_key}`,
-            production_version
+            production_version === "prod"
               ? game.executables.macos.prod.exePath
               : game.executables.macos.dev?.exePath ?? ""
           );
@@ -183,7 +186,7 @@ export async function downloadGame(game_key: string) {
           await downloadAndUntarbz2MacOS(
             url,
             `/v${tymt_version}/games/${game_key}`,
-            production_version
+            production_version === "prod"
               ? game.executables.macos.prod.exePath
               : game.executables.macos.dev?.exePath ?? ""
           );
@@ -213,19 +216,22 @@ export async function runGame(game_key: string, serverIp?: string) {
     const platform = await type();
     switch (platform) {
       case "Linux":
-        exePath = production_version
-          ? Games[game_key].executables.linux.prod.exePath
-          : Games[game_key].executables.linux.dev?.exePath ?? "";
+        exePath =
+          production_version === "prod"
+            ? Games[game_key].executables.linux.prod.exePath
+            : Games[game_key].executables.linux.dev?.exePath ?? "";
         break;
       case "Darwin":
-        exePath = production_version
-          ? Games[game_key].executables.macos.prod.exePath
-          : Games[game_key].executables.macos.dev?.exePath ?? "";
+        exePath =
+          production_version === "prod"
+            ? Games[game_key].executables.macos.prod.exePath
+            : Games[game_key].executables.macos.dev?.exePath ?? "";
         break;
       case "Windows_NT":
-        exePath = production_version
-          ? Games[game_key].executables.windows64.prod.exePath
-          : Games[game_key].executables.windows64.dev?.exePath ?? "";
+        exePath =
+          production_version === "prod"
+            ? Games[game_key].executables.windows64.prod.exePath
+            : Games[game_key].executables.windows64.dev?.exePath ?? "";
         break;
     }
     let url = dataDir + `v${tymt_version}/games/${game_key}` + exePath;
@@ -250,7 +256,7 @@ export async function runGame(game_key: string, serverIp?: string) {
       switch (platform) {
         case "Linux":
           switch (
-            production_version
+            production_version === "prod"
               ? Games[game_key].executables.linux.prod.type
               : Games[game_key].executables.linux.dev?.type ?? ""
           ) {

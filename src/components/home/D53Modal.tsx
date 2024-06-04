@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import InputText from "../account/InputText";
 import { useNotification } from "../../providers/NotificationProvider";
 import { fetch as tauriFetch, ResponseType } from "@tauri-apps/api/http";
+import { production_version } from "../../configs";
 
 interface props {
   open: boolean;
@@ -85,7 +86,10 @@ const D53Modal = ({ open, setOpen }: props) => {
     let intervalId: NodeJS.Timeout;
     if (open) {
       const init = async () => {
-        const apiURL = `https://serverlist.district53.io/`;
+        const apiURL =
+          production_version === "prod"
+            ? `https://serverlist.district53.io/`
+            : `http://dev.district53.io:5000/`;
         const res: any = await tauriFetch(apiURL, {
           method: "GET",
           timeout: 30,

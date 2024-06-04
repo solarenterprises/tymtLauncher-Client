@@ -121,7 +121,7 @@ const Games: { [key: string]: Game } = {
       },
       windows64: {
         prod: {
-          url: "https://github.com/district53/minetest/releases/download/5.9.0.001/District53_5.9.0.001_win_x64.zip",
+          url: "https://dev.district53.io:3000/download/District53_5.9.0.2_win_x64.zip",
           type: "zip",
           file: "minetest",
           exePath: "/bin/District53.exe",
