@@ -147,7 +147,6 @@ const District53intro = ({ setImage }: props) => {
                       setNotificationLink(null);
                     } else {
                       if (!installed) {
-                        console.log("downloadGame");
                         setNotificationStatus("success");
                         setNotificationTitle(t("alt-28_download-start"));
                         setNotificationDetail(t("alt-29_wait-for-a-few"));

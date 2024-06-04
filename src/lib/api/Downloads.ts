@@ -143,6 +143,7 @@ export async function downloadGame(game_key: string) {
   if (!url) {
     return false;
   }
+  console.log("downloadGame: ", url);
   switch (platform) {
     case "Linux":
       switch (
@@ -239,8 +240,10 @@ export async function runGame(game_key: string, serverIp?: string) {
     // let configJson = JSON.parse(await readTextFile(filePath));
     // let url = configJson[game_key].path;
     if (!(await exists(url))) {
+      console.error("Failed to runGame: url not existing");
       return false;
     }
+    console.log("runGame: ", url);
     if (game_key === "district53") {
       const d53_ip: string = serverIp;
       if (!d53_ip) {
