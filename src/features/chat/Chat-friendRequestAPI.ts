@@ -9,10 +9,7 @@ export interface alertrequestinterface {
   receivers: string[];
 }
 
-export const sendFriendRequest = async (
-  receivers: string[],
-  senderId: string
-) => {
+export const sendFriendRequest = async (receivers: string[], senderId: string) => {
   try {
     const saltTokenStore: ISaltToken = JSON.parse(tymtStorage.get(`saltToken`));
     const alertrequest: alertrequestinterface = {

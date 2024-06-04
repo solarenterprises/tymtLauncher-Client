@@ -7,15 +7,12 @@ import { IAlertList } from "../../types/alertTypes";
 export const fetchUnreadAlertList = async (userid: string) => {
   try {
     const saltTokenStore: ISaltToken = JSON.parse(tymtStorage.get(`saltToken`));
-    const res = await axios.get(
-      `${tymt_backend_url}/alerts/alerts-unread-for-user/${userid}`,
-      {
-        headers: {
-          "x-token": saltTokenStore.token,
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    const res = await axios.get(`${tymt_backend_url}/alerts/alerts-unread-for-user/${userid}`, {
+      headers: {
+        "x-token": saltTokenStore.token,
+        "Content-Type": "application/json",
+      },
+    });
     if (res?.status === 200) {
       console.log("fetchUnreadAlertList");
       return {
@@ -38,15 +35,12 @@ export const fetchUnreadAlertList = async (userid: string) => {
 export const fetchReadAlertList = async (userid: string) => {
   try {
     const saltTokenStore: ISaltToken = JSON.parse(tymtStorage.get(`saltToken`));
-    const res = await axios.get(
-      `${tymt_backend_url}/alerts/alerts-read-for-user/${userid}`,
-      {
-        headers: {
-          "x-token": saltTokenStore.token,
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    const res = await axios.get(`${tymt_backend_url}/alerts/alerts-read-for-user/${userid}`, {
+      headers: {
+        "x-token": saltTokenStore.token,
+        "Content-Type": "application/json",
+      },
+    });
     if (res?.status === 200) {
       console.log("fetchReadAlertList");
       return {
@@ -68,10 +62,7 @@ export const fetchReadAlertList = async (userid: string) => {
 
 export const fetchAlertList = async (userid: string) => {
   try {
-    const res = await Promise.all([
-      fetchUnreadAlertList(userid),
-      fetchReadAlertList(userid),
-    ]);
+    const res = await Promise.all([fetchUnreadAlertList(userid), fetchReadAlertList(userid)]);
     const res1: IAlertList = {
       unread: res[0]?.unread,
       read: res[1]?.read,
@@ -86,15 +77,12 @@ export const fetchAlertList = async (userid: string) => {
 export const fetchCountUnreadAlertList = async (userid: string) => {
   try {
     const saltTokenStore: ISaltToken = JSON.parse(tymtStorage.get(`saltToken`));
-    const res = await axios.get(
-      `${tymt_backend_url}/alerts/alerts-count-unread-for-user/${userid}`,
-      {
-        headers: {
-          "x-token": saltTokenStore.token,
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    const res = await axios.get(`${tymt_backend_url}/alerts/alerts-count-unread-for-user/${userid}`, {
+      headers: {
+        "x-token": saltTokenStore.token,
+        "Content-Type": "application/json",
+      },
+    });
     if (res?.status === 200) {
       console.log("fetchCountUnreadAlertList");
       return res?.data?.count;
@@ -112,9 +100,7 @@ interface updateAlertReadStatusPayload {
   alertId: string;
   userId: string;
 }
-export const updateAlertReadStatus = async (
-  payload: updateAlertReadStatusPayload
-) => {
+export const updateAlertReadStatus = async (payload: updateAlertReadStatusPayload) => {
   try {
     const { alertId, userId } = payload;
     const saltTokenStore: ISaltToken = JSON.parse(tymtStorage.get(`saltToken`));

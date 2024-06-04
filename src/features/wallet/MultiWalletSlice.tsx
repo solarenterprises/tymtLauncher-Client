@@ -26,15 +26,9 @@ const initialState = {
   msg: "",
 };
 
-export const getAddressesFromMnemonicAsync = createAsyncThunk(
-  "multiWallet/getAddressesFromMnemonic",
-  getAddressesFromMnemonic
-);
+export const getAddressesFromMnemonicAsync = createAsyncThunk("multiWallet/getAddressesFromMnemonic", getAddressesFromMnemonic);
 
-export const refreshBalancesAsync = createAsyncThunk(
-  "multiWallet/refreshBalances",
-  refreshBalances
-);
+export const refreshBalancesAsync = createAsyncThunk("multiWallet/refreshBalances", refreshBalances);
 
 export const multiWalletSlice = createSlice({
   name: "multiWallet",
@@ -50,26 +44,20 @@ export const multiWalletSlice = createSlice({
       .addCase(getAddressesFromMnemonicAsync.pending, (state) => {
         state.status = "loading";
       })
-      .addCase(
-        getAddressesFromMnemonicAsync.fulfilled,
-        (state, action: PayloadAction<any>) => {
-          // Update state based on the fetched addresses
-          state.data = { ...state.data, ...action.payload };
-          tymtStorage.set(`multiWallet`, JSON.stringify(state.data));
-          state.status = "succeeded";
-        }
-      )
+      .addCase(getAddressesFromMnemonicAsync.fulfilled, (state, action: PayloadAction<any>) => {
+        // Update state based on the fetched addresses
+        state.data = { ...state.data, ...action.payload };
+        tymtStorage.set(`multiWallet`, JSON.stringify(state.data));
+        state.status = "succeeded";
+      })
       .addCase(refreshBalancesAsync.pending, (state) => {
         state.status = "loading";
       })
-      .addCase(
-        refreshBalancesAsync.fulfilled,
-        (state, action: PayloadAction<any>) => {
-          state.data = action.payload;
-          tymtStorage.set(`multiWallet`, JSON.stringify(state.data));
-          state.status = "succeeded";
-        }
-      )
+      .addCase(refreshBalancesAsync.fulfilled, (state, action: PayloadAction<any>) => {
+        state.data = action.payload;
+        tymtStorage.set(`multiWallet`, JSON.stringify(state.data));
+        state.status = "succeeded";
+      })
       .addCase(refreshBalancesAsync.rejected, (state) => {
         state.status = "failed";
       });

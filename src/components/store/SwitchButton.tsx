@@ -1,10 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { useSelector, useDispatch } from "react-redux";
-
 import { Box, Stack, Button, Grid } from "@mui/material";
-
 import { getViewmode, setViewmode } from "../../features/store/Gameview";
-
 import { viewType } from "../../types/storeTypes";
 
 const SwitchBtnGameview = () => {
@@ -24,11 +21,7 @@ const SwitchBtnGameview = () => {
           spacing={"6px"}
         >
           <Button
-            className={
-              viewmode.mode === "overview"
-                ? "switch-button-checked"
-                : "switch-button"
-            }
+            className={viewmode.mode === "overview" ? "switch-button-checked" : "switch-button"}
             onClick={() => {
               dispatch(setViewmode({ ...viewmode, mode: "overview" }));
             }}
@@ -45,11 +38,7 @@ const SwitchBtnGameview = () => {
             </Box>
           </Button>
           <Button
-            className={
-              viewmode.mode === "review"
-                ? "switch-button-checked"
-                : "switch-button"
-            }
+            className={viewmode.mode === "review" ? "switch-button-checked" : "switch-button"}
             onClick={() => {
               dispatch(setViewmode({ ...viewmode, mode: "review" }));
             }}

@@ -1,8 +1,5 @@
 import { configureStore } from "@reduxjs/toolkit";
-import {
-  createStateSyncMiddleware,
-  initMessageListener,
-} from "redux-state-sync";
+import { createStateSyncMiddleware, initMessageListener } from "redux-state-sync";
 
 import languageReducer from "./features/settings/LanguageSlice";
 import notificationReducer from "./features/settings/NotificationSlice";
@@ -46,11 +43,7 @@ import alertReducer from "./features/chat/Chat-alertSlice";
 import chatReducer from "./features/settings/ChatSlice";
 import alertListReducer from "./features/alert/AlertListSlice";
 
-const blacklistActionTypes = [
-  "intercomsupport/setChatMounted",
-  "intercomsupport/setMountedTrue",
-  "intercomsupport/setMountedFalse",
-];
+const blacklistActionTypes = ["intercomsupport/setChatMounted", "intercomsupport/setMountedTrue", "intercomsupport/setMountedFalse"];
 
 const stateSyncConfig = {
   blacklist: blacklistActionTypes,
@@ -101,8 +94,7 @@ const store = configureStore({
     saltToken: saltTokenReducer,
     alertList: alertListReducer,
   },
-  middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(stateSyncMiddleware),
+  middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(stateSyncMiddleware),
 });
 
 initMessageListener(store);

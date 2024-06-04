@@ -1,11 +1,4 @@
-import {
-  MutableRefObject,
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useRef,
-} from "react";
+import { MutableRefObject, createContext, useCallback, useContext, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { socket_backend_url } from "../configs";
 import { io, Socket } from "socket.io-client";
@@ -29,28 +22,15 @@ import { AppDispatch } from "../store";
 import { getFriendList, setFriendList } from "../features/chat/FriendListSlice";
 import { selectChat } from "../features/settings/ChatSlice";
 import { chatType, notificationType } from "../types/settingTypes";
-import {
-  setChatHistory,
-  getChatHistory,
-} from "../features/chat/Chat-historySlice";
+import { setChatHistory, getChatHistory } from "../features/chat/Chat-historySlice";
 
 import { useNotification } from "./NotificationProvider";
 import { selectNotification } from "../features/settings/NotificationSlice";
-import {
-  addEncryptionKey,
-  selectEncryptionKeyStore,
-} from "../features/chat/Chat-encryptionkeySlice";
+import { addEncryptionKey, selectEncryptionKeyStore } from "../features/chat/Chat-encryptionkeySlice";
 import { appWindow } from "@tauri-apps/api/window";
 import { getCurrentPartner } from "../features/chat/CurrentPartnerSlice";
-import {
-  createContactAsync,
-  getContactList,
-  updateOneInContactList,
-} from "../features/chat/ContactListSlice";
-import {
-  getsenderName,
-  generateRandomString,
-} from "../features/chat/ContactListApi";
+import { createContactAsync, getContactList, updateOneInContactList } from "../features/chat/ContactListSlice";
+import { getsenderName, generateRandomString } from "../features/chat/ContactListApi";
 import { addOneToUnreadList } from "../features/alert/AlertListSlice";
 
 interface SocketContextType {
@@ -66,13 +46,7 @@ const SocketContext = createContext<SocketContextType>({
 export const useSocket = () => useContext(SocketContext);
 
 export const SocketProvider = () => {
-  const {
-    setNotificationStatus,
-    setNotificationTitle,
-    setNotificationDetail,
-    setNotificationOpen,
-    setNotificationLink,
-  } = useNotification();
+  const { setNotificationStatus, setNotificationTitle, setNotificationDetail, setNotificationOpen, setNotificationLink } = useNotification();
 
   const dispatch = useDispatch<AppDispatch>();
   const accountStore: accountType = useSelector(getAccount);
@@ -83,9 +57,7 @@ export const SocketProvider = () => {
   const chatStore: chatType = useSelector(selectChat);
   const chatHistoryStore: ChatHistoryType = useSelector(getChatHistory);
   const notificationStore: notificationType = useSelector(selectNotification);
-  const encryptionKeyStore: encryptionkeyStoreType = useSelector(
-    selectEncryptionKeyStore
-  );
+  const encryptionKeyStore: encryptionkeyStoreType = useSelector(selectEncryptionKeyStore);
 
   const accountStoreRef = useRef(accountStore);
   const socketHashStoreRef = useRef(socketHashStore);
@@ -152,56 +124,32 @@ export const SocketProvider = () => {
                 async (message: ChatMessageType) => {
                   console.log("socket.current.on > message-posted");
                   const senderId = message.sender_id;
-                  const senderInChatUserlist =
-                    contactListStoreRef.current.contacts.find(
-                      (user) => user._id === senderId
-                    );
-                  const senderInChatFriendlist =
-                    friendListStoreRef.current.contacts.find(
-                      (user) => user._id === senderId
-                    );
-                  if (
-                    message.sender_id === currentPartnerStoreRef.current._id &&
-                    message.recipient_id === accountStoreRef.current.uid
-                  ) {
+                  const senderInChatUserlist = contactListStoreRef.current.contacts.find((user) => user._id === senderId);
+                  const senderInChatFriendlist = friendListStoreRef.current.contacts.find((user) => user._id === senderId);
+                  if (message.sender_id === currentPartnerStoreRef.current._id && message.recipient_id === accountStoreRef.current.uid) {
                     if (chatStoreRef.current.message === "anyone") {
-                      const updatedHistory = [
-                        message,
-                        ...chatHistoryStoreRef.current.messages,
-                      ];
+                      const updatedHistory = [message, ...chatHistoryStoreRef.current.messages];
                       dispatch(
                         setChatHistory({
                           messages: updatedHistory,
                         })
                       );
-                    } else if (
-                      chatStoreRef.current.message === "friend" &&
-                      senderInChatFriendlist
-                    ) {
-                      const updatedHistory = [
-                        message,
-                        ...chatHistoryStoreRef.current.messages,
-                      ];
+                    } else if (chatStoreRef.current.message === "friend" && senderInChatFriendlist) {
+                      const updatedHistory = [message, ...chatHistoryStoreRef.current.messages];
                       dispatch(setChatHistory({ messages: updatedHistory }));
                     }
                   }
                   if (message.recipient_id === accountStoreRef.current.uid) {
                     if (chatStoreRef.current.message === "anyone") {
                       if (!senderInChatUserlist) {
-                        const senderName = await getsenderName(
-                          message.sender_id
-                        );
-                        dispatch(createContactAsync(message.sender_id)).then(
-                          () => {
-                            setNotificationOpen(true);
-                            setNotificationStatus("message");
-                            setNotificationTitle(senderName);
-                            setNotificationDetail(message.message);
-                            setNotificationLink(
-                              `/chat?senderId=${message.sender_id}`
-                            );
-                          }
-                        );
+                        const senderName = await getsenderName(message.sender_id);
+                        dispatch(createContactAsync(message.sender_id)).then(() => {
+                          setNotificationOpen(true);
+                          setNotificationStatus("message");
+                          setNotificationTitle(senderName);
+                          setNotificationDetail(message.message);
+                          setNotificationLink(`/chat?senderId=${message.sender_id}`);
+                        });
                       } else {
                         const senderName = senderInChatUserlist.nickName;
 
@@ -209,9 +157,7 @@ export const SocketProvider = () => {
                         setNotificationStatus("message");
                         setNotificationTitle(senderName);
                         setNotificationDetail(message.message);
-                        setNotificationLink(
-                          `/chat?senderId=${message.sender_id}`
-                        );
+                        setNotificationLink(`/chat?senderId=${message.sender_id}`);
                       }
                     } else if (chatStoreRef.current.message === "friend") {
                       if (senderInChatFriendlist) {
@@ -221,9 +167,7 @@ export const SocketProvider = () => {
                         setNotificationStatus("message");
                         setNotificationTitle(senderName);
                         setNotificationDetail(message.message);
-                        setNotificationLink(
-                          `/chat?senderId=${message.sender_id}`
-                        );
+                        setNotificationLink(`/chat?senderId=${message.sender_id}`);
                       }
                     }
                   }
@@ -236,15 +180,9 @@ export const SocketProvider = () => {
                 console.log("socket.current.on > alert-posted", alert);
                 const handleIncomingRequest = async () => {
                   if (alert.alertType === "friend-request") {
-                    if (
-                      chatStoreRef.current.friend === "anyone" &&
-                      alert.receivers[0] === accountStore.uid
-                    ) {
+                    if (chatStoreRef.current.friend === "anyone" && alert.receivers[0] === accountStore.uid) {
                       const senderId = alert.note?.sender;
-                      const senderInChatUserlist =
-                        contactListStoreRef.current.contacts.find(
-                          (user) => user._id === senderId
-                        );
+                      const senderInChatUserlist = contactListStoreRef.current.contacts.find((user) => user._id === senderId);
                       if (senderInChatUserlist) {
                         dispatch(addOneToUnreadList(alert));
                         setNotificationOpen(true);
@@ -266,9 +204,7 @@ export const SocketProvider = () => {
                   } else if (
                     notificationStoreRef.current.alert &&
                     alert.alertType !== "chat" &&
-                    alert.receivers.find(
-                      (userid) => userid === accountStore.uid
-                    )
+                    alert.receivers.find((userid) => userid === accountStore.uid)
                   ) {
                     dispatch(addOneToUnreadList(alert));
 
@@ -280,15 +216,10 @@ export const SocketProvider = () => {
                   } else if (
                     notificationStoreRef.current.alert &&
                     alert.alertType === "chat" &&
-                    alert.receivers.find(
-                      (userid) => userid === accountStore.uid
-                    )
+                    alert.receivers.find((userid) => userid === accountStore.uid)
                   ) {
                     dispatch(addOneToUnreadList(alert));
-                    const key =
-                      encryptionKeyStoreRef.current.encryption_Keys[
-                        alert.note?.sender
-                      ];
+                    const key = encryptionKeyStoreRef.current.encryption_Keys[alert.note?.sender];
                     if (!key) askEncryptionKey(alert.note?.sender);
                   }
                 };
@@ -302,8 +233,7 @@ export const SocketProvider = () => {
                 const handleIncomingUpdatedAlert = () => {
                   if (
                     alert.alertType === "friend-request" &&
-                    (alert.note.sender === accountStoreRef.current.uid ||
-                      alert.receivers[0] === accountStoreRef.current.uid)
+                    (alert.note.sender === accountStoreRef.current.uid || alert.receivers[0] === accountStoreRef.current.uid)
                   ) {
                     {
                       if (notificationStoreRef.current.alert) {
@@ -311,42 +241,21 @@ export const SocketProvider = () => {
 
                         setNotificationOpen(true);
                         setNotificationStatus("alert");
-                        setNotificationTitle(
-                          `Friend request ${alert.note.status}`
-                        );
+                        setNotificationTitle(`Friend request ${alert.note.status}`);
                         setNotificationDetail(`Friend request accepted`);
                         setNotificationLink(null);
                       }
-                      if (
-                        alert.note.sender === accountStoreRef.current.uid &&
-                        alert.note.status === "accepted"
-                      ) {
-                        const senderInFriendList =
-                          friendListStoreRef.current.contacts.find(
-                            (user) => user._id === alert.receivers[0]
-                          );
+                      if (alert.note.sender === accountStoreRef.current.uid && alert.note.status === "accepted") {
+                        const senderInFriendList = friendListStoreRef.current.contacts.find((user) => user._id === alert.receivers[0]);
                         if (senderInFriendList) return;
-                        const senderInChatUserlist =
-                          contactListStoreRef.current.contacts.find(
-                            (user) => user._id === alert.receivers[0]
-                          );
+                        const senderInChatUserlist = contactListStoreRef.current.contacts.find((user) => user._id === alert.receivers[0]);
                         if (!senderInChatUserlist) return;
-                        const updatedFriendlist: IContact[] = [
-                          ...friendListStoreRef.current.contacts,
-                          senderInChatUserlist,
-                        ];
-                        dispatch(
-                          setFriendList({ contacts: updatedFriendlist })
-                        );
+                        const updatedFriendlist: IContact[] = [...friendListStoreRef.current.contacts, senderInChatUserlist];
+                        dispatch(setFriendList({ contacts: updatedFriendlist }));
                       }
                     }
                   } else {
-                    if (
-                      notificationStoreRef.current.alert &&
-                      alert.receivers.find(
-                        (userid) => userid === accountStoreRef.current.uid
-                      )
-                    ) {
+                    if (notificationStoreRef.current.alert && alert.receivers.find((userid) => userid === accountStoreRef.current.uid)) {
                       dispatch(addOneToUnreadList(alert));
 
                       setNotificationOpen(true);
@@ -363,66 +272,42 @@ export const SocketProvider = () => {
             }
 
             if (!socket.current.hasListeners("ask-encryption-key")) {
-              socket.current.on(
-                "ask-encryption-key",
-                async (data: askEncryptionKeyType) => {
-                  console.log("socket.current.on > ask-encryption-key", data);
-                  const userid: string = data.sender_id;
-                  const existkey =
-                    encryptionKeyStoreRef.current.encryption_Keys[userid];
-                  const key = existkey ? existkey : generateRandomString(32);
-                  const deliverydata: deliverEncryptionKeyType = {
-                    sender_id: accountStoreRef.current.uid,
-                    recipient_id: data.sender_id,
-                    key: key,
-                  };
-                  socket.current.emit(
-                    "deliver-encryption-key",
-                    JSON.stringify(deliverydata)
-                  );
-                  dispatch(
-                    addEncryptionKey({ userId: userid, encryptionKey: key })
-                  );
-                }
-              );
+              socket.current.on("ask-encryption-key", async (data: askEncryptionKeyType) => {
+                console.log("socket.current.on > ask-encryption-key", data);
+                const userid: string = data.sender_id;
+                const existkey = encryptionKeyStoreRef.current.encryption_Keys[userid];
+                const key = existkey ? existkey : generateRandomString(32);
+                const deliverydata: deliverEncryptionKeyType = {
+                  sender_id: accountStoreRef.current.uid,
+                  recipient_id: data.sender_id,
+                  key: key,
+                };
+                socket.current.emit("deliver-encryption-key", JSON.stringify(deliverydata));
+                dispatch(addEncryptionKey({ userId: userid, encryptionKey: key }));
+              });
             }
 
             if (!socket.current.hasListeners("deliver-encryption-key")) {
-              socket.current.on(
-                "deliver-encryption-key",
-                async (data: deliveredEncryptionKeyType) => {
-                  console.log(
-                    "socket.current.on > deliver-encryption-key",
-                    data
-                  );
-                  const userid = data.sender_id;
-                  const encryptionkey = data.key;
-                  dispatch(
-                    addEncryptionKey({
-                      userId: userid,
-                      encryptionKey: encryptionkey,
-                    })
-                  );
-                  socket.current.emit(
-                    "received-encryption-key",
-                    JSON.stringify(data)
-                  );
-                }
-              );
+              socket.current.on("deliver-encryption-key", async (data: deliveredEncryptionKeyType) => {
+                console.log("socket.current.on > deliver-encryption-key", data);
+                const userid = data.sender_id;
+                const encryptionkey = data.key;
+                dispatch(
+                  addEncryptionKey({
+                    userId: userid,
+                    encryptionKey: encryptionkey,
+                  })
+                );
+                socket.current.emit("received-encryption-key", JSON.stringify(data));
+              });
             }
 
             if (!socket.current.hasListeners("user-online-status-updated")) {
               socket.current.on("user-online-status-updated", async (data) => {
-                console.log(
-                  "socket.current.on > user-online-status-updated",
-                  data
-                );
+                console.log("socket.current.on > user-online-status-updated", data);
                 const handleUpdatedOnlineStatus = async () => {
                   const userId = data.userid;
-                  const userInChatuserlist =
-                    contactListStoreRef.current.contacts.find(
-                      (user) => user._id === userId
-                    );
+                  const userInChatuserlist = contactListStoreRef.current.contacts.find((user) => user._id === userId);
                   if (userInChatuserlist) {
                     dispatch(updateOneInContactList(data));
                   }
@@ -431,29 +316,18 @@ export const SocketProvider = () => {
               });
             }
 
-            if (
-              !socket.current.hasListeners("user-notification-status-updated")
-            ) {
-              socket.current.on(
-                "user-notification-status-updated",
-                async (data) => {
-                  console.log(
-                    "socket.current.on > user-notification-status-updated",
-                    data
-                  );
-                  const handleUpdatedOnlineStatus = async () => {
-                    const userId = data.userid;
-                    const userInChatuserlist =
-                      contactListStoreRef.current.contacts.find(
-                        (user) => user._id === userId
-                      );
-                    if (userInChatuserlist) {
-                      dispatch(updateOneInContactList(data));
-                    }
-                  };
-                  handleUpdatedOnlineStatus();
-                }
-              );
+            if (!socket.current.hasListeners("user-notification-status-updated")) {
+              socket.current.on("user-notification-status-updated", async (data) => {
+                console.log("socket.current.on > user-notification-status-updated", data);
+                const handleUpdatedOnlineStatus = async () => {
+                  const userId = data.userid;
+                  const userInChatuserlist = contactListStoreRef.current.contacts.find((user) => user._id === userId);
+                  if (userInChatuserlist) {
+                    dispatch(updateOneInContactList(data));
+                  }
+                };
+                handleUpdatedOnlineStatus();
+              });
             }
           }
         }

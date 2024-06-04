@@ -14,7 +14,7 @@ export const chains = [
     address: "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
     count: "10,000.00",
     value: "$3,382.21",
-    token: "SXP"
+    token: "SXP",
   },
   {
     icon: binanceIcon,
@@ -22,7 +22,7 @@ export const chains = [
     address: "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
     count: "12.00",
     value: "$4168.92",
-    token: "BNB"
+    token: "BNB",
   },
   {
     icon: ethereumIcon,
@@ -30,7 +30,7 @@ export const chains = [
     address: "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
     count: "9.00",
     value: "$25,345.21",
-    token: "ETH"
+    token: "ETH",
   },
   {
     icon: bitcoinIcon,
@@ -38,7 +38,7 @@ export const chains = [
     address: "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
     count: "0.03",
     value: "$1,800.00",
-    token: "BTC"
+    token: "BTC",
   },
   // {
   //   icon: solanaIcon,
@@ -54,7 +54,7 @@ export const chains = [
     address: "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
     count: "10,000.00",
     value: "$3,382.21",
-    token: "MATIC"
+    token: "MATIC",
   },
   {
     icon: avalancheIcon,
@@ -62,7 +62,7 @@ export const chains = [
     address: "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
     count: "10,000.00",
     value: "$3,382.21",
-    token: "AVAX"
+    token: "AVAX",
   },
   {
     icon: arbitrumIcon,
@@ -70,7 +70,7 @@ export const chains = [
     address: "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
     count: "10,000.00",
     value: "$3,382.21",
-    token: "ARB"
+    token: "ARB",
   },
   {
     icon: optimismIcon,
@@ -78,6 +78,6 @@ export const chains = [
     address: "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
     count: "10,000.00",
     value: "$3,382.21",
-    token: "OP"
-  }
+    token: "OP",
+  },
 ];

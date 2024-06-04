@@ -5,9 +5,7 @@ import tymtStorage from "../../lib/Storage";
 
 export const fetchUnreadAlerts = async (userid: string) => {
   try {
-    const res = await axios.get(
-      `${tymt_backend_url}/alerts/alerts-unread-for-user/${userid}`
-    );
+    const res = await axios.get(`${tymt_backend_url}/alerts/alerts-unread-for-user/${userid}`);
     if (res.status === 200) {
       console.log("fetchUnreadAlerts");
       return res.data.result;
@@ -21,9 +19,7 @@ export const fetchUnreadAlerts = async (userid: string) => {
 
 export const fetchReadAlerts = async (userid: string) => {
   try {
-    const res = await axios.get(
-      `${tymt_backend_url}/alerts/alerts-read-for-user/${userid}`
-    );
+    const res = await axios.get(`${tymt_backend_url}/alerts/alerts-read-for-user/${userid}`);
     if (res.status === 200) {
       console.log("fetchReadAlerts");
       return res.data.result;
@@ -37,9 +33,7 @@ export const fetchReadAlerts = async (userid: string) => {
 
 export const fetchCountUnreadAlerts = async (userid: string) => {
   try {
-    const res = await axios.get(
-      `${tymt_backend_url}/alerts/alerts-count-unread-for-user/${userid}`
-    );
+    const res = await axios.get(`${tymt_backend_url}/alerts/alerts-count-unread-for-user/${userid}`);
     if (res.status === 200) {
       console.log("fetchCountUnreadAlerts");
       return res.data.count;
@@ -51,10 +45,7 @@ export const fetchCountUnreadAlerts = async (userid: string) => {
   }
 };
 
-export const updateAlertReadstatus = async (
-  alert_id: string,
-  userid: string
-) => {
+export const updateAlertReadstatus = async (alert_id: string, userid: string) => {
   try {
     const saltTokenStore: ISaltToken = JSON.parse(tymtStorage.get(`saltToken`));
     const res = await axios.put(
@@ -78,5 +69,3 @@ export const updateAlertReadstatus = async (
     console.error("Failed to updateAlertReadstatus: ", err);
   }
 };
-
-

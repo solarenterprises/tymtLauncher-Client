@@ -5,30 +5,15 @@ import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import VisibilityOffOutlinedIcon from "@mui/icons-material/VisibilityOffOutlined";
 import { propsInputPasswordNoTooltipTypes } from "../../types/commonTypes";
 
-const InputPasswordNoTooltip = ({
-  id,
-  label,
-  name,
-  setValue,
-  value,
-  onChange,
-  onBlur,
-  error,
-}: propsInputPasswordNoTooltipTypes) => {
+const InputPasswordNoTooltip = ({ id, label, name, setValue, value, onChange, onBlur, error }: propsInputPasswordNoTooltipTypes) => {
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const handleClickShowPassword = () => setShowPassword((show) => !show);
-  const handleMouseDownPassword = (
-    event: React.MouseEvent<HTMLButtonElement>
-  ) => {
+  const handleMouseDownPassword = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
   };
 
   return (
-    <FormControl
-      sx={{ width: "100%" }}
-      variant="standard"
-      className="input-text"
-    >
+    <FormControl sx={{ width: "100%" }} variant="standard" className="input-text">
       <InputLabel
         htmlFor={id}
         sx={{
@@ -66,11 +51,7 @@ const InputPasswordNoTooltip = ({
               className={"icon-button"}
               tabIndex={-1}
             >
-              {showPassword ? (
-                <VisibilityOutlinedIcon className={"icon-button"} />
-              ) : (
-                <VisibilityOffOutlinedIcon className={"icon-button"} />
-              )}
+              {showPassword ? <VisibilityOutlinedIcon className={"icon-button"} /> : <VisibilityOffOutlinedIcon className={"icon-button"} />}
             </IconButton>
           </InputAdornment>
         }

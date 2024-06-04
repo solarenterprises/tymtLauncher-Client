@@ -8,11 +8,7 @@ import { IMnemonic, ISaltToken, nonCustodialType } from "../types/accountTypes";
 import { useDispatch, useSelector } from "react-redux";
 import { getNonCustodial } from "../features/account/NonCustodialSlice";
 import { AppDispatch } from "../store";
-import {
-  getMultiWallet,
-  refreshBalancesAsync,
-} from "../features/wallet/MultiWalletSlice";
-import { refreshCurrencyAsync } from "../features/wallet/CurrencySlice";
+import { getMultiWallet } from "../features/wallet/MultiWalletSlice";
 import { IChain, multiWalletType } from "../types/walletTypes";
 import { getChain } from "../features/wallet/ChainSlice";
 import { walletType } from "../types/settingTypes";
@@ -57,27 +53,6 @@ const TransactionProvider = () => {
   }, [multiWalletStore]);
 
   useEffect(() => {
-    if (
-      nonCustodialStoreRef.current.mnemonic !== "" &&
-      nonCustodialStoreRef.current.password !== "" &&
-      saltTokenStoreRef.current.token !== ""
-    ) {
-      dispatch(
-        refreshBalancesAsync({
-          _multiWalletStore: multiWalletStoreRef.current,
-        })
-      ).then(() => {
-        dispatch(refreshCurrencyAsync()).then(() => {});
-      });
-    }
-  }, [
-    nonCustodialStoreRef.current.mnemonic,
-    nonCustodialStoreRef.current.password,
-    saltTokenStoreRef.current,
-    mnemonicStoreRef.current,
-  ]);
-
-  useEffect(() => {
     if (chainStoreRef.current.chain.symbol === "SXP") {
       dispatch(
         setWallet({
@@ -112,22 +87,12 @@ const TransactionProvider = () => {
 
     const unlisten_validate_token = listen("validate-token", async (event) => {
       const token: string = event.payload as string;
-      if (
-        !mnemonicStoreRef.current.mnemonic ||
-        !token ||
-        token !== saltTokenStoreRef.current.token
-      ) {
+      if (!mnemonicStoreRef.current.mnemonic || !token || token !== saltTokenStoreRef.current.token) {
         emit("res-validate-token", false);
         return;
       }
-      const publicKey: string = tymtCore.Blockchains.solar.wallet.getPublicKey(
-        mnemonicStoreRef.current.mnemonic
-      );
-      const res: boolean = tymtCore.Blockchains.solar.wallet.verifyMessage(
-        saltTokenStoreRef.current.salt,
-        publicKey,
-        token
-      );
+      const publicKey: string = tymtCore.Blockchains.solar.wallet.getPublicKey(mnemonicStoreRef.current.mnemonic);
+      const res: boolean = tymtCore.Blockchains.solar.wallet.verifyMessage(saltTokenStoreRef.current.salt, publicKey, token);
       emit("res-validate-token", res);
     });
 

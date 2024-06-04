@@ -48,9 +48,7 @@ export interface propsUserlistType {
   index: number;
   numberofunreadmessages: number;
   setShowContextMenu: (param: boolean) => void;
-  setContextMenuPosition: (
-    contextMenuPosition: contextmenupositionType
-  ) => void;
+  setContextMenuPosition: (contextMenuPosition: contextmenupositionType) => void;
   setView?: (panel: string) => void;
 }
 

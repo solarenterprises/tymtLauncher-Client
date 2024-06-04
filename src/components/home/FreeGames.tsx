@@ -2,9 +2,7 @@ import { Grid, Box, Card, Chip, Stack, Button } from "@mui/material";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-
 import "swiper/css";
-
 import postercard1 from "../../assets/main/gamelists/postercard1.png";
 import postercard2 from "../../assets/main/gamelists/postercard2.png";
 import postercard3 from "../../assets/main/gamelists/postercard3.png";
@@ -73,31 +71,16 @@ const FreeGames = () => {
   }, [screenWidth]);
 
   return (
-    <Grid
-      item
-      xs={12}
-      container
-      sx={{ position: "relative", overflow: "hidden", marginTop: "80px" }}
-    >
-      <Grid
-        xs={12}
-        container
-        sx={{ justifyContent: "space-between", alignItems: "center" }}
-      >
+    <Grid item xs={12} container sx={{ position: "relative", overflow: "hidden", marginTop: "80px" }}>
+      <Grid xs={12} container sx={{ justifyContent: "space-between", alignItems: "center" }}>
         <Box className={"fs-38-bold"} color={"white"} textTransform={"none"}>
           {t("hom-9_free-games")}
         </Box>
         <Stack flexDirection={"row"} alignItems={"center"}>
-          <Button
-            className={classes.trending_chevron_button}
-            onClick={() => handlePrevSlide()}
-          >
+          <Button className={classes.trending_chevron_button} onClick={() => handlePrevSlide()}>
             <img src={chevronleft} />
           </Button>
-          <Button
-            className={classes.trending_chevron_button}
-            onClick={() => handleNextSlide()}
-          >
+          <Button className={classes.trending_chevron_button} onClick={() => handleNextSlide()}>
             <img src={chevronright} />
           </Button>
         </Stack>
@@ -119,13 +102,7 @@ const FreeGames = () => {
           {FreegameList.map((freegame) => (
             <SwiperSlide key={freegame.name}>
               <Card className={classes.card_freegame_container}>
-                <img
-                  src={freegame.url}
-                  width={"100%"}
-                  height={"204px"}
-                  style={{ borderRadius: "16px" }}
-                  loading="lazy"
-                />
+                <img src={freegame.url} width={"100%"} height={"204px"} style={{ borderRadius: "16px" }} loading="lazy" />
                 <Stack
                   flexDirection={"column"}
                   sx={{
@@ -151,10 +128,7 @@ const FreeGames = () => {
                   >
                     {freegame.name}
                   </Box>
-                  <Chip
-                    label={t("hom-18_action")}
-                    className={classes.card_genre_label}
-                  />
+                  <Chip label={t("hom-18_action")} className={classes.card_genre_label} />
                   <Stack direction={"row"} alignItems={"center"} spacing={1}>
                     <img src={solar} width={"20px"} height={"20px"} />
                     <Grid>

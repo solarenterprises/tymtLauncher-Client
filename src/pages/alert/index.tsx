@@ -11,20 +11,13 @@ type Anchor = "right";
 const Alertindex = ({ viewAlert, setViewAlert }: propsAlertType) => {
   const [state, setState] = useState({ right: false });
   const classes = ChatStyle();
-  const toggleDrawer =
-    (anchor: Anchor, open: boolean) =>
-    (event: React.KeyboardEvent | React.MouseEvent) => {
-      if (
-        event &&
-        event.type === "keydown" &&
-        ((event as React.KeyboardEvent).key === "Tab" ||
-          (event as React.KeyboardEvent).key === "Shift")
-      ) {
-        return;
-      }
+  const toggleDrawer = (anchor: Anchor, open: boolean) => (event: React.KeyboardEvent | React.MouseEvent) => {
+    if (event && event.type === "keydown" && ((event as React.KeyboardEvent).key === "Tab" || (event as React.KeyboardEvent).key === "Shift")) {
+      return;
+    }
 
-      setState({ ...state, [anchor]: open });
-    };
+    setState({ ...state, [anchor]: open });
+  };
 
   return (
     <SwipeableDrawer
@@ -40,11 +33,7 @@ const Alertindex = ({ viewAlert, setViewAlert }: propsAlertType) => {
       }}
     >
       <Box className={classes.collaps_pan}>
-        <img
-          src={closeicon}
-          className={classes.close_icon}
-          onClick={() => setViewAlert(false)}
-        />
+        <img src={closeicon} className={classes.close_icon} onClick={() => setViewAlert(false)} />
       </Box>
       <Box className={classes.main_pan}>
         <Alertmain />

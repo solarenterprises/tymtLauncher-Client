@@ -19,10 +19,7 @@
   }
 
   &::-webkit-scrollbar-track {
-    background: var(
-      --bg-stroke-white-10-stroke-default,
-      rgba(255, 255, 255, 0.1)
-    );
+    background: var(--bg-stroke-white-10-stroke-default, rgba(255, 255, 255, 0.1));
     border-radius: 100px;
   }
 

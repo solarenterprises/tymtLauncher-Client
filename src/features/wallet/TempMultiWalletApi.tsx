@@ -3,10 +3,7 @@ import tymtCore from "../../lib/core/tymtCore";
 import solarIcon from "../../assets/chains/solar.svg";
 
 import { Identities, Managers } from "@solar-network/crypto";
-import {
-  Hash,
-  HashAlgorithms,
-} from "@solar-network/crypto/dist/crypto/index.js";
+import { Hash, HashAlgorithms } from "@solar-network/crypto/dist/crypto/index.js";
 
 import tymtStorage from "../../lib/Storage";
 import { chainEnum, chainIconMap } from "../../types/walletTypes";
@@ -24,39 +21,21 @@ export const getCredentials = async (mnemonic: string) => {
   return signature;
 };
 
-export const getTempAddressesFromMnemonic = async (
-  payload: MnemonicPayload
-) => {
+export const getTempAddressesFromMnemonic = async (payload: MnemonicPayload) => {
   const { mnemonic } = payload;
 
   const signature = await getCredentials(mnemonic.normalize("NFD"));
   tymtStorage.set(`tempD53Password`, JSON.stringify({ password: signature }));
 
-  const solarAddr = await tymtCore.Blockchains.solar.wallet.getAddress(
-    mnemonic
-  );
+  const solarAddr = await tymtCore.Blockchains.solar.wallet.getAddress(mnemonic);
   const bscAddr = await tymtCore.Blockchains.bsc.wallet.getAddress(mnemonic);
-  const ethereumAddr = await tymtCore.Blockchains.eth.wallet.getAddress(
-    mnemonic
-  );
-  const bitcoinAddr = await tymtCore.Blockchains.btc.wallet.getAddress(
-    mnemonic
-  );
-  const solanaAddr = await tymtCore.Blockchains.solana.wallet.getAddress(
-    mnemonic
-  );
-  const polygonAddr = await tymtCore.Blockchains.polygon.wallet.getAddress(
-    mnemonic
-  );
-  const avalancheAddr = await tymtCore.Blockchains.avalanche.wallet.getAddress(
-    mnemonic
-  );
-  const arbitrumAddr = await tymtCore.Blockchains.arbitrum.wallet.getAddress(
-    mnemonic
-  );
-  const optimismAddr = await tymtCore.Blockchains.op.wallet.getAddress(
-    mnemonic
-  );
+  const ethereumAddr = await tymtCore.Blockchains.eth.wallet.getAddress(mnemonic);
+  const bitcoinAddr = await tymtCore.Blockchains.btc.wallet.getAddress(mnemonic);
+  const solanaAddr = await tymtCore.Blockchains.solana.wallet.getAddress(mnemonic);
+  const polygonAddr = await tymtCore.Blockchains.polygon.wallet.getAddress(mnemonic);
+  const avalancheAddr = await tymtCore.Blockchains.avalanche.wallet.getAddress(mnemonic);
+  const arbitrumAddr = await tymtCore.Blockchains.arbitrum.wallet.getAddress(mnemonic);
+  const optimismAddr = await tymtCore.Blockchains.op.wallet.getAddress(mnemonic);
 
   return {
     Ethereum: {

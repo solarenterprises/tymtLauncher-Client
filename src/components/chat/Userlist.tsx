@@ -2,29 +2,18 @@ import { Box, Grid, Stack } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import Avatar from "../home/Avatar";
 import { propsUserlistType, selecteduserType } from "../../types/chatTypes";
-import {
-  getSelectedUser,
-  setSelectedUsertoDelete,
-} from "../../features/chat/Chat-selecteduserSlice";
+import { getSelectedUser, setSelectedUsertoDelete } from "../../features/chat/Chat-selecteduserSlice";
 import { useEffect, useRef } from "react";
 import { createContactAsync } from "../../features/chat/ContactListSlice";
 import { AppDispatch } from "../../store";
 import { setCurrentPartner } from "../../features/chat/CurrentPartnerSlice";
 import { useSocket } from "../../providers/SocketProvider";
 
-const Userlist = ({
-  user,
-  index,
-  numberofunreadmessages,
-  setShowContextMenu,
-  setContextMenuPosition,
-  setView,
-}: propsUserlistType) => {
+const Userlist = ({ user, index, numberofunreadmessages, setShowContextMenu, setContextMenuPosition, setView }: propsUserlistType) => {
   const { askEncryptionKey } = useSocket();
 
   const dispatch = useDispatch<AppDispatch>();
-  const selectedUserToDeleteStore: selecteduserType =
-    useSelector(getSelectedUser);
+  const selectedUserToDeleteStore: selecteduserType = useSelector(getSelectedUser);
 
   const selectedUserToDeleteStoreRef = useRef(selectedUserToDeleteStore);
 
@@ -46,10 +35,7 @@ const Userlist = ({
       })
     );
     const handleClickOutsideContextMenu = (event) => {
-      if (
-        !event.target.closest(".context_menu_block") &&
-        !event.target.closest(".context_menu_delete")
-      ) {
+      if (!event.target.closest(".context_menu_block") && !event.target.closest(".context_menu_delete")) {
         setShowContextMenu(false);
         document.removeEventListener("click", handleClickOutsideContextMenu);
       }
@@ -114,25 +100,10 @@ const Userlist = ({
         onContextMenu={(e) => handleContextMenu(e, user._id)}
         onClick={handleBoxClick}
       >
-        <Avatar
-          onlineStatus={user.onlineStatus}
-          userid={user._id}
-          size={40}
-          status={user.notificationStatus}
-        />
-        <Stack
-          flexDirection={"row"}
-          alignItems={"center"}
-          justifyContent={"space-between"}
-          display={"flex"}
-          sx={{ marginLeft: "25px", width: "320px" }}
-        >
+        <Avatar onlineStatus={user.onlineStatus} userid={user._id} size={40} status={user.notificationStatus} />
+        <Stack flexDirection={"row"} alignItems={"center"} justifyContent={"space-between"} display={"flex"} sx={{ marginLeft: "25px", width: "320px" }}>
           <Box>
-            <Stack
-              direction={"column"}
-              justifyContent={"flex-start"}
-              spacing={1}
-            >
+            <Stack direction={"column"} justifyContent={"flex-start"} spacing={1}>
               <Box className={"fs-16 white"}>{user?.nickName}</Box>
               <Box className={"fs-12-light gray"}>{user?.sxpAddress}</Box>
             </Stack>

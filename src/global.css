@@ -148,10 +148,5 @@ button {
 }
 
 .navbar.scrolled {
-  background-color: rgba(
-    0,
-    0,
-    0,
-    0.8
-  ); /* Change background color when scrolled */
+  background-color: rgba(0, 0, 0, 0.8); /* Change background color when scrolled */
 }

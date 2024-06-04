@@ -62,12 +62,14 @@ const ChooseChainDrawer = ({ view, setView }: props) => {
   } = useNotification();
 
   useEffect(() => {
-    dispatch(
-      refreshBalancesAsync({
-        _multiWalletStore: wallets,
-      })
-    ).then(() => dispatch(refreshCurrencyAsync()));
-  }, [dispatch]);
+    if (view) {
+      dispatch(
+        refreshBalancesAsync({
+          _multiWalletStore: wallets,
+        })
+      ).then(() => dispatch(refreshCurrencyAsync()));
+    }
+  }, [dispatch, view]);
 
   const selectChain = useCallback((data: IChain) => {
     const udpateData = { ...data, currentToken: "chain" };

@@ -1,20 +1,10 @@
-import React, {
-  createContext,
-  useContext,
-  useState,
-  ReactNode,
-  useEffect,
-} from "react";
+import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import AlertComp from "../components/AlertComp";
 import { useSelector } from "react-redux";
 import { selectNotification } from "../features/settings/NotificationSlice";
 import { notificationType } from "../types/settingTypes";
 import { useLocation } from "react-router-dom";
-import {
-  isPermissionGranted,
-  requestPermission,
-  sendNotification,
-} from "@tauri-apps/api/notification";
+import { isPermissionGranted, requestPermission, sendNotification } from "@tauri-apps/api/notification";
 import notiIcon from "../assets/main/32x32.png";
 import { decrypt } from "../lib/api/Encrypt";
 import { selectEncryptionKeyStore } from "../features/chat/Chat-encryptionkeySlice";
@@ -44,9 +34,7 @@ interface NotificationProviderProps {
   children: ReactNode;
 }
 
-export const NotificationProvider: React.FC<NotificationProviderProps> = ({
-  children,
-}) => {
+export const NotificationProvider: React.FC<NotificationProviderProps> = ({ children }) => {
   const location = useLocation();
   const { t } = useTranslation();
   const [notificationOpen, setNotificationOpen] = useState<boolean>(false);
@@ -57,9 +45,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
 
   const notificationStore: notificationType = useSelector(selectNotification);
 
-  const encryptionStore: encryptionkeyStoreType = useSelector(
-    selectEncryptionKeyStore
-  );
+  const encryptionStore: encryptionkeyStoreType = useSelector(selectEncryptionKeyStore);
 
   useEffect(() => {
     const init = async () => {
@@ -77,9 +63,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
           console.log("encryptionStore", encryptionStore);
           console.log("senderId", senderId);
           console.log("notiLink", notificationLink);
-          const decryptedmessage: string = existkey
-            ? await decrypt(notificationDetail, existkey)
-            : t("not-13_cannot-decrypt");
+          const decryptedmessage: string = existkey ? await decrypt(notificationDetail, existkey) : t("not-13_cannot-decrypt");
           sendNotification({
             title: notificationTitle,
             body: decryptedmessage,
@@ -98,14 +82,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
     if (notificationOpen && notificationStore.alert) {
       init();
     }
-  }, [
-    notificationStatus,
-    notificationLink,
-    notificationOpen,
-    notificationTitle,
-    notificationDetail,
-    notificationStore.alert,
-  ]);
+  }, [notificationStatus, notificationLink, notificationOpen, notificationTitle, notificationDetail, notificationStore.alert]);
 
   return (
     <NotificationContext.Provider
@@ -119,11 +96,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
     >
       {children}
       <AlertComp
-        open={
-          notificationStore.alert && location.pathname !== "/d53-transaction"
-            ? notificationOpen
-            : false
-        }
+        open={notificationStore.alert && location.pathname !== "/d53-transaction" ? notificationOpen : false}
         status={notificationStatus}
         title={notificationTitle}
         detail={notificationDetail}

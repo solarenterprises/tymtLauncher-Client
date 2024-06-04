@@ -1,15 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import {
-  FormControl,
-  InputLabel,
-  Input,
-  IconButton,
-  Tooltip,
-  Box,
-  Stack,
-} from "@mui/material";
+import { FormControl, InputLabel, Input, IconButton, Tooltip, Box, Stack } from "@mui/material";
 
 import InputAdornment from "@mui/material/InputAdornment";
 import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
@@ -18,36 +10,18 @@ import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 
 import { propsInputTypes } from "../../types/commonTypes";
 
-const InputText = ({
-  id,
-  label,
-  type,
-  name,
-  setValue,
-  value,
-  onChange,
-  onBlur,
-  error,
-  onIconButtonClick,
-  onAddressButtonClick,
-}: propsInputTypes) => {
+const InputText = ({ id, label, type, name, setValue, value, onChange, onBlur, error, onIconButtonClick, onAddressButtonClick }: propsInputTypes) => {
   const { t } = useTranslation();
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const handleClickShowPassword = () => setShowPassword((show) => !show);
-  const handleMouseDownPassword = (
-    event: React.MouseEvent<HTMLButtonElement>
-  ) => {
+  const handleMouseDownPassword = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
   };
 
   return (
     <>
       {type === "text" && (
-        <FormControl
-          className="input-text"
-          sx={{ width: "100%" }}
-          variant="standard"
-        >
+        <FormControl className="input-text" sx={{ width: "100%" }} variant="standard">
           <InputLabel
             htmlFor={id}
             sx={{
@@ -90,11 +64,7 @@ const InputText = ({
         </FormControl>
       )}
       {type === "mnemonic" && (
-        <FormControl
-          className="input-text"
-          sx={{ width: "100%" }}
-          variant="standard"
-        >
+        <FormControl className="input-text" sx={{ width: "100%" }} variant="standard">
           <InputLabel
             htmlFor={id}
             sx={{
@@ -173,22 +143,12 @@ const InputText = ({
                 border: "1px solid rgb(71, 76, 76)",
               }}
             >
-              <Box className="fs-16-regular white">
-                {t("cca-4_your-password-must")}
-              </Box>
+              <Box className="fs-16-regular white">{t("cca-4_your-password-must")}</Box>
               <Stack>
-                <Box className="fs-14-regular light">
-                  • {t("cca-5_at-least-8")}
-                </Box>
-                <Box className="fs-14-regular light">
-                  • {t("cca-6_one-uppercase-letter")}
-                </Box>
-                <Box className="fs-14-regular light">
-                  • {t("cca-7_one-lowercase-letter")}
-                </Box>
-                <Box className="fs-14-regular light">
-                  • {t("cca-8_one-number-character")}
-                </Box>
+                <Box className="fs-14-regular light">• {t("cca-5_at-least-8")}</Box>
+                <Box className="fs-14-regular light">• {t("cca-6_one-uppercase-letter")}</Box>
+                <Box className="fs-14-regular light">• {t("cca-7_one-lowercase-letter")}</Box>
+                <Box className="fs-14-regular light">• {t("cca-8_one-number-character")}</Box>
               </Stack>
             </Stack>
           }
@@ -202,11 +162,7 @@ const InputText = ({
             },
           }}
         >
-          <FormControl
-            sx={{ width: "100%" }}
-            variant="standard"
-            className="input-text"
-          >
+          <FormControl sx={{ width: "100%" }} variant="standard" className="input-text">
             <InputLabel
               htmlFor={id}
               sx={{
@@ -244,11 +200,7 @@ const InputText = ({
                     className={"icon-button"}
                     tabIndex={-1}
                   >
-                    {showPassword ? (
-                      <VisibilityOutlinedIcon className={"icon-button"} />
-                    ) : (
-                      <VisibilityOffOutlinedIcon className={"icon-button"} />
-                    )}
+                    {showPassword ? <VisibilityOutlinedIcon className={"icon-button"} /> : <VisibilityOffOutlinedIcon className={"icon-button"} />}
                   </IconButton>
                 </InputAdornment>
               }
@@ -272,11 +224,7 @@ const InputText = ({
         </Tooltip>
       )}
       {type === "address" && (
-        <FormControl
-          className="input-text"
-          sx={{ width: "100%" }}
-          variant="standard"
-        >
+        <FormControl className="input-text" sx={{ width: "100%" }} variant="standard">
           <InputLabel
             htmlFor={id}
             sx={{
@@ -307,20 +255,10 @@ const InputText = ({
             error={error}
             endAdornment={
               <InputAdornment position="end">
-                <IconButton
-                  onClick={onIconButtonClick}
-                  onMouseDown={handleMouseDownPassword}
-                  className={"icon-button"}
-                  tabIndex={-1}
-                >
+                <IconButton onClick={onIconButtonClick} onMouseDown={handleMouseDownPassword} className={"icon-button"} tabIndex={-1}>
                   <ContentCopyIcon className={"icon-button"} />
                 </IconButton>
-                <IconButton
-                  onClick={onAddressButtonClick}
-                  onMouseDown={handleMouseDownPassword}
-                  className={"icon-button"}
-                  tabIndex={-1}
-                >
+                <IconButton onClick={onAddressButtonClick} onMouseDown={handleMouseDownPassword} className={"icon-button"} tabIndex={-1}>
                   <i className="pi pi-book icon-button" />
                 </IconButton>
               </InputAdornment>

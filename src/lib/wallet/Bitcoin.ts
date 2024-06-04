@@ -32,11 +32,7 @@ class Bitcoin implements IWallet {
       if (!privateKey) {
         throw new Error("Failed to obtain private key");
       }
-      const keyPair = bip32.fromPrivateKey(
-        privateKey,
-        child.chainCode,
-        networks.testnet
-      );
+      const keyPair = bip32.fromPrivateKey(privateKey, child.chainCode, networks.testnet);
       return keyPair;
     } else {
       child = root.derivePath("m/84'/0'/0'/0/0");
@@ -44,11 +40,7 @@ class Bitcoin implements IWallet {
       if (!privateKey) {
         throw new Error("Failed to obtain private key");
       }
-      const keyPair = bip32.fromPrivateKey(
-        privateKey,
-        child.chainCode,
-        networks.bitcoin
-      );
+      const keyPair = bip32.fromPrivateKey(privateKey, child.chainCode, networks.bitcoin);
       return keyPair;
     }
   }
@@ -73,9 +65,7 @@ class Bitcoin implements IWallet {
   static async getBalance(addr: string): Promise<number> {
     try {
       if (net_name === "mainnet") {
-        const result = await axios.get(
-          `${btc_api_url}/q/addressbalance/${addr}`
-        );
+        const result = await axios.get(`${btc_api_url}/q/addressbalance/${addr}`);
         if (result.status === 200) {
           const balance = parseFloat(result.data);
           const bitcoins = balance / 1e8;
@@ -101,9 +91,7 @@ class Bitcoin implements IWallet {
   static async getTransactions(addr: string, page: number): Promise<any> {
     try {
       if (net_name === "mainnet") {
-        const apiURL = `${btc_api_url}/rawaddr/${addr}?offset=${
-          (page - 1) * 15
-        }limit=15`;
+        const apiURL = `${btc_api_url}/rawaddr/${addr}?offset=${(page - 1) * 15}limit=15`;
         const response: any = await tauriFetch(apiURL, {
           method: "GET",
           timeout: 30,
@@ -118,9 +106,7 @@ class Bitcoin implements IWallet {
         console.error("Failed to get BTC transactions: unknown error");
         return [];
       } else {
-        const txs = await (
-          await fetch(`${btc_api_url}/address/${addr}/txs?limit=10`)
-        ).json();
+        const txs = await (await fetch(`${btc_api_url}/address/${addr}/txs?limit=10`)).json();
         return txs;
       }
     } catch {
@@ -133,20 +119,14 @@ class Bitcoin implements IWallet {
     return validate(address);
   }
 
-  static async sendTransaction(
-    passphrase: string,
-    tx: { recipients: IRecipient[]; fee: string; vendorField?: string }
-  ) {
+  static async sendTransaction(passphrase: string, tx: { recipients: IRecipient[]; fee: string; vendorField?: string }) {
     if (tx.recipients.length) {
       try {
         const seed = await mnemonicToSeed(passphrase);
         const bip32 = BIP32Factory(ecc);
-        const network =
-          net_name === "mainnet" ? networks.bitcoin : networks.testnet;
+        const network = net_name === "mainnet" ? networks.bitcoin : networks.testnet;
         const root = bip32.fromSeed(seed, network);
-        const account = root.derivePath(
-          net_name === "mainnet" ? "m/84'/0'/0'/0/0" : "m/44'/1'/0'/0/0"
-        );
+        const account = root.derivePath(net_name === "mainnet" ? "m/84'/0'/0'/0/0" : "m/44'/1'/0'/0/0");
         const psbt = new Psbt({ network });
 
         const myAddress = payments.p2wpkh({
@@ -169,21 +149,15 @@ class Bitcoin implements IWallet {
         tx.recipients.forEach((recipient) => {
           psbt.addOutput({
             address: recipient.address,
-            value: (Number(recipient.amount) *
-              10 ** Number(recipient.tokenDecimals)) as number,
+            value: (Number(recipient.amount) * 10 ** Number(recipient.tokenDecimals)) as number,
           });
         });
 
         // Transaction fee calculation
-        const multiWalletStore: multiWalletType = JSON.parse(
-          await tymtStorage.get(`multiWallet`)
-        );
+        const multiWalletStore: multiWalletType = JSON.parse(await tymtStorage.get(`multiWallet`));
         const btcPriceUSD = multiWalletStore.Bitcoin.chain.price;
         const feeSat = ((Number(tx.fee) / Number(btcPriceUSD)) * 1e8) as number;
-        const sumUTXOSat = utxos.reduce(
-          (total, utxo) => total + utxo.amount,
-          0
-        );
+        const sumUTXOSat = utxos.reduce((total, utxo) => total + utxo.amount, 0);
         if (feeSat >= sumUTXOSat) {
           const noti: INotification = {
             status: "failed",
@@ -229,20 +203,14 @@ class Bitcoin implements IWallet {
     }
   }
 
-  static async sendTransactionAPI(
-    passphrase: string,
-    tx: { recipients: IRecipient[]; fee: string; vendorField?: string }
-  ) {
+  static async sendTransactionAPI(passphrase: string, tx: { recipients: IRecipient[]; fee: string; vendorField?: string }) {
     if (tx.recipients.length) {
       try {
         const seed = await mnemonicToSeed(passphrase);
         const bip32 = BIP32Factory(ecc);
-        const network =
-          net_name === "mainnet" ? networks.bitcoin : networks.testnet;
+        const network = net_name === "mainnet" ? networks.bitcoin : networks.testnet;
         const root = bip32.fromSeed(seed, network);
-        const account = root.derivePath(
-          net_name === "mainnet" ? "m/84'/0'/0'/0/0" : "m/44'/1'/0'/0/0"
-        );
+        const account = root.derivePath(net_name === "mainnet" ? "m/84'/0'/0'/0/0" : "m/44'/1'/0'/0/0");
         const psbt = new Psbt({ network });
 
         const myAddress = payments.p2wpkh({
@@ -265,21 +233,15 @@ class Bitcoin implements IWallet {
         tx.recipients.forEach((recipient) => {
           psbt.addOutput({
             address: recipient.address,
-            value: (Number(recipient.amount) *
-              10 ** Number(recipient.tokenDecimals)) as number,
+            value: (Number(recipient.amount) * 10 ** Number(recipient.tokenDecimals)) as number,
           });
         });
 
         // Transaction fee calculation
-        const multiWalletStore: multiWalletType = JSON.parse(
-          await tymtStorage.get(`multiWallet`)
-        );
+        const multiWalletStore: multiWalletType = JSON.parse(await tymtStorage.get(`multiWallet`));
         const btcPriceUSD = multiWalletStore.Bitcoin.chain.price;
         const feeSat = ((Number(tx.fee) / Number(btcPriceUSD)) * 1e8) as number;
-        const sumUTXOSat = utxos.reduce(
-          (total, utxo) => total + utxo.amount,
-          0
-        );
+        const sumUTXOSat = utxos.reduce((total, utxo) => total + utxo.amount, 0);
         if (feeSat >= sumUTXOSat) {
           const noti: INotification = {
             status: "failed",
@@ -327,10 +289,7 @@ class Bitcoin implements IWallet {
 
   static async broadcastTransaction(txHex: string): Promise<any> {
     try {
-      const networkUrl =
-        net_name === "mainnet"
-          ? "https://blockstream.info/api/tx"
-          : "https://blockstream.info/testnet/api/tx";
+      const networkUrl = net_name === "mainnet" ? "https://blockstream.info/api/tx" : "https://blockstream.info/testnet/api/tx";
       const { data } = await axios.post(networkUrl, txHex, {
         headers: { "Content-Type": "text/plain" },
       });

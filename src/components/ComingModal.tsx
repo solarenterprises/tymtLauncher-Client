@@ -1,5 +1,4 @@
 import { Box, Stack, Modal } from "@mui/material";
-
 import closeIcon from "../assets/settings/x-icon.svg";
 import logo from "../assets/main/foxhead-comingsoon.png";
 import { tymt_version } from "../configs";
@@ -25,29 +24,12 @@ const ComingModal = ({ open, setOpen }: props) => {
       }}
     >
       <Box className="modal-content oauth-modal">
-        <img
-          src={closeIcon}
-          alt="close icon"
-          className="close-icon"
-          onClick={() => setOpen(false)}
-        />
-        <Stack
-          direction={"column"}
-          justifyContent={"center"}
-          alignItems={"center"}
-          textAlign={"center"}
-          gap={"10px"}
-        >
+        <img src={closeIcon} alt="close icon" className="close-icon" onClick={() => setOpen(false)} />
+        <Stack direction={"column"} justifyContent={"center"} alignItems={"center"} textAlign={"center"} gap={"10px"}>
           <Box className="center-align">
             <img width={200} src={logo} />
           </Box>
-          <Stack
-            direction={"column"}
-            justifyContent={"center"}
-            alignItems={"center"}
-            textAlign={"center"}
-            gap={"10px"}
-          >
+          <Stack direction={"column"} justifyContent={"center"} alignItems={"center"} textAlign={"center"} gap={"10px"}>
             <Box className="fs-h3 white">{`tymtLauncher v${tymt_version}`}</Box>
             <Box className="fs-h3 white">{`(April 29th, 2024 released)`}</Box>
           </Stack>

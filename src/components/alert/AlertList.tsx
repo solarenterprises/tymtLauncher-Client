@@ -29,17 +29,11 @@ const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
   const dispatch = useDispatch<AppDispatch>();
   const accountStore: accountType = useSelector(getAccount);
   const contactListStore: IContactList = useSelector(getContactList);
-  const senderUser = contactListStore.contacts.find(
-    (user) => user._id === detail.note?.sender
-  );
-  const encryptionKeyStore: encryptionkeyStoreType = useSelector(
-    selectEncryptionKeyStore
-  );
+  const senderUser = contactListStore.contacts.find((user) => user._id === detail.note?.sender);
+  const encryptionKeyStore: encryptionkeyStoreType = useSelector(selectEncryptionKeyStore);
 
   const [logo, setLogo] = useState<any>();
-  const [decryptedMessage, setDecryptedMessage] = useState<string>(
-    "Unable to decode message #tymt114#"
-  );
+  const [decryptedMessage, setDecryptedMessage] = useState<string>("Unable to decode message #tymt114#");
 
   useEffect(() => {
     const key = encryptionKeyStore.encryption_Keys[detail.note?.sender];
@@ -152,51 +146,22 @@ const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
         }}
       >
         <Stack direction={"column"}>
-          <Stack
-            direction={"row"}
-            justifyContent={"space-between"}
-            alignItems={"center"}
-          >
+          <Stack direction={"row"} justifyContent={"space-between"} alignItems={"center"}>
             <Stack direction={"row"} gap={"8px"} alignItems={"center"}>
               <img src={logo} />
-              <Box className={"fs-h4 white"}>
-                {title === "chat"
-                  ? senderUser?.nickName
-                  : title === "Friend Request"
-                  ? t("not-9_friend-request")
-                  : title}
-              </Box>
+              <Box className={"fs-h4 white"}>{title === "chat" ? senderUser?.nickName : title === "Friend Request" ? t("not-9_friend-request") : title}</Box>
             </Stack>
-            {read === "unread" && (
-              <img src={unreaddot} width={"12px"} height={"12px"} />
-            )}
-            {read === "read" && (
-              <img src={readdot} width={"12px"} height={"12px"} />
-            )}
+            {read === "unread" && <img src={unreaddot} width={"12px"} height={"12px"} />}
+            {read === "read" && <img src={readdot} width={"12px"} height={"12px"} />}
           </Stack>
-          <Box
-            className={"fs-16-regular white"}
-            marginTop={"12px"}
-            sx={{ textWrap: "wrap" }}
-          >
-            {title === "update" &&
-              (detail.note?.message.length > 100
-                ? detail.note?.message.substring(0, 100) + "..."
-                : detail.note?.message)}
-            {title === "chat" &&
-            decryptedMessage !== "Unable to decode message #tymt114#" &&
-            decryptedMessage.length > 100
+          <Box className={"fs-16-regular white"} marginTop={"12px"} sx={{ textWrap: "wrap" }}>
+            {title === "update" && (detail.note?.message.length > 100 ? detail.note?.message.substring(0, 100) + "..." : detail.note?.message)}
+            {title === "chat" && decryptedMessage !== "Unable to decode message #tymt114#" && decryptedMessage.length > 100
               ? decryptedMessage.substring(0, 100) + "..."
               : decryptedMessage}
-            {title === "chat" &&
-              decryptedMessage === "Unable to decode message #tymt114#" && (
-                <ThreeDots
-                  height="25px"
-                  width={"40px"}
-                  radius={5}
-                  color={`white`}
-                />
-              )}
+            {title === "chat" && decryptedMessage === "Unable to decode message #tymt114#" && (
+              <ThreeDots height="25px" width={"40px"} radius={5} color={`white`} />
+            )}
             {/* {title === "Friend Request" &&
               detail.note.status === "pending" &&
               t("not-10_fr-intro")}

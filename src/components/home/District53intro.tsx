@@ -1,28 +1,21 @@
 import { useState, useEffect } from "react";
 import { Button, Grid, Box, Stack } from "@mui/material";
-
 import "swiper/css";
 import "swiper/css/pagination";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { useTranslation } from "react-i18next";
 import homeStyles from "../../styles/homeStyles";
 import "../../fonts/Cobe/Cobe-Regular.ttf";
-
 import districteffect from "../../assets/main/districteffect.svg";
 import districteffect1 from "../../assets/main/districteffect1.svg";
 import districteffect2 from "../../assets/main/districteffect2.svg";
-
 import { downloadGame, isInstalled } from "../../lib/api/Downloads";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch } from "../../store";
-import {
-  getProcess,
-  setProcess,
-} from "../../features/home/InstallprocessSlice";
+import { getProcess, setProcess } from "../../features/home/InstallprocessSlice";
 import { processType } from "../../types/homeTypes";
 import Games from "../../lib/game/Game";
 import D53Modal from "./D53Modal";
-
 import { useNotification } from "../../providers/NotificationProvider";
 
 interface props {
@@ -36,13 +29,7 @@ const District53intro = ({ setImage }: props) => {
   const [installed, setInstalled] = useState(false);
   const [d53Open, setD53Open] = useState<boolean>(false);
 
-  const {
-    setNotificationStatus,
-    setNotificationTitle,
-    setNotificationDetail,
-    setNotificationOpen,
-    setNotificationLink,
-  } = useNotification();
+  const { setNotificationStatus, setNotificationTitle, setNotificationDetail, setNotificationOpen, setNotificationLink } = useNotification();
 
   const dispatch = useDispatch<AppDispatch>();
   const processStore: processType = useSelector(getProcess);
@@ -126,12 +113,7 @@ const District53intro = ({ setImage }: props) => {
             {t("hom-6_intro")}
           </Box>
           <Grid xs={12}>
-            <Stack
-              direction={"row"}
-              alignItems={"start"}
-              spacing={2}
-              marginTop={"16px"}
-            >
+            <Stack direction={"row"} alignItems={"start"} spacing={2} marginTop={"16px"}>
               <Grid xs={12}>
                 <Button
                   fullWidth
@@ -163,9 +145,7 @@ const District53intro = ({ setImage }: props) => {
                         if (!downloadable) {
                           setNotificationStatus("failed");
                           setNotificationTitle(t("alt-5_os-not-support"));
-                          setNotificationDetail(
-                            t("alt-6_os-not-support-intro")
-                          );
+                          setNotificationDetail(t("alt-6_os-not-support-intro"));
                           setNotificationOpen(true);
                           setNotificationLink(null);
                         } else {
@@ -190,12 +170,8 @@ const District53intro = ({ setImage }: props) => {
                   }}
                 >
                   {installed && t("hom-7_play-game")}
-                  {!processStore.inprogress &&
-                    !installed &&
-                    t("hom-20_install-game")}
-                  {processStore.inprogress &&
-                    !installed &&
-                    t("hom-21_downloading")}
+                  {!processStore.inprogress && !installed && t("hom-20_install-game")}
+                  {processStore.inprogress && !installed && t("hom-21_downloading")}
                 </Button>
               </Grid>
             </Stack>

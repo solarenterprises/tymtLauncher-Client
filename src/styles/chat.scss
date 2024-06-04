@@ -14,8 +14,7 @@ $Main-Red: #ef4444;
   transform: translate(-50%, -50%);
   border-radius: var(--Angle-Small, #{$Angle-Small});
   backdrop-filter: blur(20px);
-  border: 1px solid
-    var(--bg-stroke-white-20-modal-stroke, #{$bg-stroke-white-20-modal-stroke});
+  border: 1px solid var(--bg-stroke-white-20-modal-stroke, #{$bg-stroke-white-20-modal-stroke});
   background: rgba(11, 11, 11, 0.4);
   padding: 20px;
   justify-content: center;
@@ -34,8 +33,7 @@ $Main-Red: #ef4444;
   transform: translate(-50%, -50%);
   border-radius: var(--Angle-Small, #{$Angle-Small});
   backdrop-filter: blur(20px);
-  border: 1px solid
-    var(--bg-stroke-white-20-modal-stroke, #{$bg-stroke-white-20-modal-stroke});
+  border: 1px solid var(--bg-stroke-white-20-modal-stroke, #{$bg-stroke-white-20-modal-stroke});
   background: rgba(11, 11, 11, 0.4);
   padding: 20px;
   display: flex;
@@ -92,16 +90,10 @@ $Main-Red: #ef4444;
   backdrop-filter: blur(20px);
   background: rgba(11, 11, 11, 0.4);
   &:hover {
-    background: var(
-      --bg-stroke-blue-stroke-default-10,
-      rgba(82, 225, 242, 0.1)
-    );
+    background: var(--bg-stroke-blue-stroke-default-10, rgba(82, 225, 242, 0.1));
   }
   &:active {
-    background: var(
-      --bg-stroke-white-10-stroke-default,
-      rgba(255, 255, 255, 0.1)
-    );
+    background: var(--bg-stroke-white-10-stroke-default, rgba(255, 255, 255, 0.1));
   }
 }
 
@@ -115,16 +107,10 @@ $Main-Red: #ef4444;
   background: rgba(11, 11, 11, 0.4);
   backdrop-filter: blur(20px);
   &:hover {
-    background: var(
-      --bg-stroke-blue-stroke-default-10,
-      rgba(82, 225, 242, 0.1)
-    );
+    background: var(--bg-stroke-blue-stroke-default-10, rgba(82, 225, 242, 0.1));
   }
   &:active {
-    background: var(
-      --bg-stroke-white-10-stroke-default,
-      rgba(255, 255, 255, 0.1)
-    );
+    background: var(--bg-stroke-white-10-stroke-default, rgba(255, 255, 255, 0.1));
   }
 }
 
@@ -136,16 +122,10 @@ $Main-Red: #ef4444;
   backdrop-filter: blur(20px);
   background: rgba(11, 11, 11, 0.4);
   &:hover {
-    background: var(
-      --bg-stroke-blue-stroke-default-10,
-      rgba(82, 225, 242, 0.1)
-    );
+    background: var(--bg-stroke-blue-stroke-default-10, rgba(82, 225, 242, 0.1));
   }
   &:active {
-    background: var(
-      --bg-stroke-white-10-stroke-default,
-      rgba(255, 255, 255, 0.1)
-    );
+    background: var(--bg-stroke-white-10-stroke-default, rgba(255, 255, 255, 0.1));
   }
 }
 

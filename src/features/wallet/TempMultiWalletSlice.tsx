@@ -27,10 +27,7 @@ const initialState = {
   msg: "",
 };
 
-export const getTempAddressesFromMnemonicAsync = createAsyncThunk(
-  "tempMultiWallet/getTempAddressesFromMnemonic",
-  getTempAddressesFromMnemonic
-);
+export const getTempAddressesFromMnemonicAsync = createAsyncThunk("tempMultiWallet/getTempAddressesFromMnemonic", getTempAddressesFromMnemonic);
 
 export const tempMultiWalletSlice = createSlice({
   name: "tempMultiWallet",
@@ -46,14 +43,11 @@ export const tempMultiWalletSlice = createSlice({
       .addCase(getTempAddressesFromMnemonicAsync.pending, (state) => {
         state.status = "loading";
       })
-      .addCase(
-        getTempAddressesFromMnemonicAsync.fulfilled,
-        (state, action: PayloadAction<any>) => {
-          state.data = { ...state.data, ...action.payload };
-          tymtStorage.set(`tempMultiWallet`, JSON.stringify(state.data));
-          state.status = "succeeded";
-        }
-      )
+      .addCase(getTempAddressesFromMnemonicAsync.fulfilled, (state, action: PayloadAction<any>) => {
+        state.data = { ...state.data, ...action.payload };
+        tymtStorage.set(`tempMultiWallet`, JSON.stringify(state.data));
+        state.status = "succeeded";
+      })
       .addCase(getTempAddressesFromMnemonicAsync.rejected, (state) => {
         state.status = "failed";
       });

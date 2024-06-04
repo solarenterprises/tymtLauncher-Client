@@ -1,31 +1,15 @@
 import { useTranslation } from "react-i18next";
 import numeral from "numeral";
-
-import {
-  Grid,
-  Box,
-  Divider,
-  Stack,
-  Button,
-  Pagination,
-  IconButton,
-  Tooltip,
-} from "@mui/material";
-
+import { Grid, Box, Divider, Stack, Button, Pagination, IconButton, Tooltip } from "@mui/material";
 import accountIcon from "../../assets/wallet/account.svg";
 import { useEffect, useState } from "react";
 import Solar from "../../lib/wallet/Solar";
 import { formatDecimal } from "../../lib/helper";
 import PasswordModal from "../../components/PasswordModal";
 import { openLink } from "../../lib/api/Downloads";
-
 import refreshIcon from "../../assets/wallet/refresh-icon.svg";
 import SolarAPI from "../../lib/api/SolarAPI";
-import {
-  ICurrency,
-  IVotingData,
-  multiWalletType,
-} from "../../types/walletTypes";
+import { ICurrency, IVotingData, multiWalletType } from "../../types/walletTypes";
 import { useDispatch, useSelector } from "react-redux";
 import { getMultiWallet } from "../../features/wallet/MultiWalletSlice";
 import InputVoteBox from "../../components/wallet/InputVoteBox";
@@ -59,13 +43,7 @@ const WalletVote = () => {
   const symbol: string = currencySymbols[currencyStore.current];
   const dispatch = useDispatch<AppDispatch>();
 
-  const {
-    setNotificationStatus,
-    setNotificationTitle,
-    setNotificationDetail,
-    setNotificationOpen,
-    setNotificationLink,
-  } = useNotification();
+  const { setNotificationStatus, setNotificationTitle, setNotificationDetail, setNotificationOpen, setNotificationLink } = useNotification();
 
   const SolarGet53Delegates = () => {
     const query1 = {
@@ -82,10 +60,7 @@ const WalletVote = () => {
       page: 1,
       limit: 1,
     };
-    return SolarAPI.getData(
-      query2,
-      `wallets/${multiWalletStore.Solar.chain.wallet}/votes`
-    );
+    return SolarAPI.getData(query2, `wallets/${multiWalletStore.Solar.chain.wallet}/votes`);
   };
 
   const SolarGetAllDelegates = async () => {
@@ -107,9 +82,7 @@ const WalletVote = () => {
         orderBy: "address:asc",
       });
     }
-    const res2: any[] = await Promise.all(
-      queries.map((query) => Solar.getDelegates(query, "delegates"))
-    );
+    const res2: any[] = await Promise.all(queries.map((query) => Solar.getDelegates(query, "delegates")));
     let res3: any[] = res1.data.data;
     for (let i = 0; i < res2.length; i++) {
       res3 = [...res3, ...res2[i].data.data];
@@ -125,12 +98,7 @@ const WalletVote = () => {
     try {
       setCurrentPage(1);
 
-      const [res1, res2, res3, res4] = await Promise.all([
-        SolarGet53Delegates(),
-        SolarGetMyVotingData(),
-        SolarGetAllDelegates(),
-        SolarGetBlockchain(),
-      ]);
+      const [res1, res2, res3, res4] = await Promise.all([SolarGet53Delegates(), SolarGetMyVotingData(), SolarGetAllDelegates(), SolarGetBlockchain()]);
 
       setData(res1.data.data);
       setTotalPage(res1.data.meta.pageCount);
@@ -141,14 +109,8 @@ const WalletVote = () => {
         setVotingData({});
         setOriginalVotingData({});
       }
-      const newTotalVoted: number = res3.reduce(
-        (sum, element) => sum + element.votesReceived.votes / 1e8,
-        0
-      );
-      const newTotalRewards: number = res3.reduce(
-        (sum, element) => sum + element.forged.total / 1e8,
-        0
-      );
+      const newTotalVoted: number = res3.reduce((sum, element) => sum + element.votesReceived.votes / 1e8, 0);
+      const newTotalRewards: number = res3.reduce((sum, element) => sum + element.forged.total / 1e8, 0);
       setTotalVoted(newTotalVoted);
       setTotalRewards(newTotalRewards);
       setLatestBlock(res4.data.data.block.height);
@@ -208,16 +170,10 @@ const WalletVote = () => {
 
   useEffect(() => {
     const valuesArray = Object.values(votingData);
-    const sumOfValues = valuesArray.reduce(
-      (accumulator, currentValue) => accumulator + currentValue,
-      0
-    );
+    const sumOfValues = valuesArray.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
     setSumVoting(sumOfValues);
-    const filteredDictionary = Object.fromEntries(
-      Object.entries(votingData).filter(([_key, value]) => value !== 0)
-    );
-    if (!compareDictionaries(originalVotingData, filteredDictionary))
-      setVoteChanged(true);
+    const filteredDictionary = Object.fromEntries(Object.entries(votingData).filter(([_key, value]) => value !== 0));
+    if (!compareDictionaries(originalVotingData, filteredDictionary)) setVoteChanged(true);
     else setVoteChanged(false);
   }, [votingData]);
 
@@ -256,14 +212,8 @@ const WalletVote = () => {
       } else {
         try {
           const BPArray = await SolarGetAllDelegates();
-          const newTotalVoted = BPArray.reduce(
-            (sum, element) => sum + element.votesReceived.votes / 1e8,
-            0
-          );
-          const newTotalRewards = BPArray.reduce(
-            (sum, element) => sum + element.forged.total / 1e8,
-            0
-          );
+          const newTotalVoted = BPArray.reduce((sum, element) => sum + element.votesReceived.votes / 1e8, 0);
+          const newTotalRewards = BPArray.reduce((sum, element) => sum + element.forged.total / 1e8, 0);
           setTotalVoted(newTotalVoted);
           setTotalRewards(newTotalRewards);
         } catch (err) {
@@ -282,31 +232,16 @@ const WalletVote = () => {
     <>
       <Grid container marginBottom={"30px"}>
         <Grid item xs={12}>
-          <Stack
-            direction={"row"}
-            justifyContent={"space-between"}
-            width={"100%"}
-          >
+          <Stack direction={"row"} justifyContent={"space-between"} width={"100%"}>
             <Stack spacing={"24px"} mb={"32px"}>
               <Box className="fs-h1 white">{t("wal-16_vote-your-sxp")}</Box>
-              <Box className="fs-16-regular light">
-                {t("wal-17_vote-for-solar")}
-              </Box>
+              <Box className="fs-16-regular light">{t("wal-17_vote-for-solar")}</Box>
             </Stack>
             <Stack>
               <Box className="fs-18-regular light">{t("set-4_balance")}</Box>
               <Stack direction={"row"} spacing={"4px"} alignItems={"center"}>
-                <Box
-                  component={"img"}
-                  src={solarIcon}
-                  width={"24px"}
-                  height={"24px"}
-                />
-                <Box className="fs-32-italic white">
-                  {numeral(multiWalletStore.Solar.chain.balance).format(
-                    "0,0.0000"
-                  )}
-                </Box>
+                <Box component={"img"} src={solarIcon} width={"24px"} height={"24px"} />
+                <Box className="fs-32-italic white">{numeral(multiWalletStore.Solar.chain.balance).format("0,0.0000")}</Box>
               </Stack>
             </Stack>
           </Stack>
@@ -320,12 +255,8 @@ const WalletVote = () => {
         </Grid>
         <Grid item xs={12} container justifyContent={"center"}>
           <Stack padding={"24px 40px"}>
-            <Box className="fs-16-regular light t-center">
-              {t("wal-52_latest-block")}
-            </Box>
-            <Box className="fs-34-bold white t-center">{`${numeral(
-              latestBlock
-            ).format("0,0")}`}</Box>
+            <Box className="fs-16-regular light t-center">{t("wal-52_latest-block")}</Box>
+            <Box className="fs-34-bold white t-center">{`${numeral(latestBlock).format("0,0")}`}</Box>
           </Stack>
           <Stack padding={"32px 24px"}>
             <Box
@@ -336,12 +267,8 @@ const WalletVote = () => {
             />
           </Stack>
           <Stack padding={"24px 40px"}>
-            <Box className="fs-16-regular light t-center">
-              {t("wal-18_total-voted")}
-            </Box>
-            <Box className="fs-34-bold white t-center">{`${symbol} ${numeral(
-              totalVoted * Number(reserve)
-            ).format("0,0")}`}</Box>
+            <Box className="fs-16-regular light t-center">{t("wal-18_total-voted")}</Box>
+            <Box className="fs-34-bold white t-center">{`${symbol} ${numeral(totalVoted * Number(reserve)).format("0,0")}`}</Box>
           </Stack>
           <Stack padding={"32px 24px"}>
             <Box
@@ -352,12 +279,8 @@ const WalletVote = () => {
             />
           </Stack>
           <Stack padding={"24px 40px"}>
-            <Box className="fs-16-regular light t-center">
-              {t("wal-19_total-rewards")}
-            </Box>
-            <Box className="fs-34-bold beach t-center">{`+${symbol} ${numeral(
-              totalRewards * Number(reserve)
-            ).format("0,0")}`}</Box>
+            <Box className="fs-16-regular light t-center">{t("wal-19_total-rewards")}</Box>
+            <Box className="fs-34-bold beach t-center">{`+${symbol} ${numeral(totalRewards * Number(reserve)).format("0,0")}`}</Box>
           </Stack>
           <Stack padding={"32px 24px"}>
             <Box
@@ -368,65 +291,30 @@ const WalletVote = () => {
             />
           </Stack>
           <Stack padding={"24px 40px"}>
-            <Box className="fs-16-regular light t-center">
-              {t("wal-51_sxp-price")}
-            </Box>
-            <Box className="fs-34-bold white t-center">{`${symbol} ${numeral(
-              Number(multiWalletStore.Solar.chain.price) * Number(reserve)
-            ).format("0,0.00")}`}</Box>
+            <Box className="fs-16-regular light t-center">{t("wal-51_sxp-price")}</Box>
+            <Box className="fs-34-bold white t-center">{`${symbol} ${numeral(Number(multiWalletStore.Solar.chain.price) * Number(reserve)).format(
+              "0,0.00"
+            )}`}</Box>
           </Stack>
         </Grid>
         <Grid item xs={12}>
           <Box className="wallet-form-card br-16" padding={"24px"}>
             <Stack>
-              <Stack
-                direction={"row"}
-                alignItems={"center"}
-                justifyContent={"space-between"}
-              >
+              <Stack direction={"row"} alignItems={"center"} justifyContent={"space-between"}>
                 <Stack direction={"row"} alignItems={"center"} spacing={"64px"}>
-                  <Stack
-                    direction={"row"}
-                    alignItems={"center"}
-                    spacing={"8px"}
-                  >
-                    <Box className="fs-16-regular light">
-                      {t("wal-18_total-voted")}
-                    </Box>
-                    <Box
-                      className={`fs-18-bold ${
-                        sumVoting === 0 || sumVoting === 100 ? "white" : "red"
-                      }`}
-                    >{`${numeral(sumVoting).format("0,0.00")}
+                  <Stack direction={"row"} alignItems={"center"} spacing={"8px"}>
+                    <Box className="fs-16-regular light">{t("wal-18_total-voted")}</Box>
+                    <Box className={`fs-18-bold ${sumVoting === 0 || sumVoting === 100 ? "white" : "red"}`}>{`${numeral(sumVoting).format("0,0.00")}
                     %`}</Box>
                   </Stack>
-                  <Stack
-                    direction={"row"}
-                    alignItems={"center"}
-                    spacing={"8px"}
-                  >
-                    <Box className="fs-16-regular light">
-                      {t("wal-20_remaining")}
-                    </Box>
-                    <Box
-                      className={`fs-18-bold ${
-                        sumVoting === 0 || sumVoting === 100 ? "white" : "red"
-                      }`}
-                    >{`${numeral(100 - sumVoting).format("0,0.00")}
+                  <Stack direction={"row"} alignItems={"center"} spacing={"8px"}>
+                    <Box className="fs-16-regular light">{t("wal-20_remaining")}</Box>
+                    <Box className={`fs-18-bold ${sumVoting === 0 || sumVoting === 100 ? "white" : "red"}`}>{`${numeral(100 - sumVoting).format("0,0.00")}
                     %`}</Box>
                   </Stack>
-                  <Stack
-                    direction={"row"}
-                    alignItems={"center"}
-                    spacing={"8px"}
-                  >
-                    <Box className="fs-16-regular light">
-                      {t("wal-21_votes")}
-                    </Box>
-                    <Box className="fs-18-bold white">{`${
-                      Object.values(votingData).filter((value) => value !== 0)
-                        .length
-                    }/53`}</Box>
+                  <Stack direction={"row"} alignItems={"center"} spacing={"8px"}>
+                    <Box className="fs-16-regular light">{t("wal-21_votes")}</Box>
+                    <Box className="fs-18-bold white">{`${Object.values(votingData).filter((value) => value !== 0).length}/53`}</Box>
                   </Stack>
                 </Stack>
                 <Stack direction={"row"} alignItems={"center"}>
@@ -444,9 +332,7 @@ const WalletVote = () => {
                             border: "1px solid rgb(71, 76, 76)",
                           }}
                         >
-                          <Box className="fs-16-regular white">
-                            {t("sto-35_refresh")}
-                          </Box>
+                          <Box className="fs-16-regular white">{t("sto-35_refresh")}</Box>
                         </Stack>
                       }
                       PopperProps={{
@@ -464,10 +350,7 @@ const WalletVote = () => {
                           handleRefreshClick();
                         }}
                       >
-                        <img
-                          src={refreshIcon}
-                          className="wallet-icon-button-icon"
-                        />
+                        <img src={refreshIcon} className="wallet-icon-button-icon" />
                       </IconButton>
                     </Tooltip>
                   </Stack>
@@ -478,17 +361,9 @@ const WalletVote = () => {
                     }}
                     mr={"11px"}
                   />
-                  <Button
-                    className="red-button"
-                    onClick={() => setOpen(true)}
-                    disabled={
-                      !voteChanged || (sumVoting !== 0 && sumVoting !== 100)
-                    }
-                  >
+                  <Button className="red-button" onClick={() => setOpen(true)} disabled={!voteChanged || (sumVoting !== 0 && sumVoting !== 100)}>
                     <Box className="fs-18-bold white" padding={"10px 18px"}>
-                      {voteChanged && sumVoting === 0
-                        ? t("wal-47_cancel-vote")
-                        : t("wal-23_vote-now")}
+                      {voteChanged && sumVoting === 0 ? t("wal-47_cancel-vote") : t("wal-23_vote-now")}
                     </Box>
                   </Button>
                 </Stack>
@@ -504,17 +379,13 @@ const WalletVote = () => {
                   <Box className="fs-14-regular light">{t("wal-24_tx#")}</Box>
                 </Grid>
                 <Grid item xs={3.5}>
-                  <Box className="fs-14-regular light">
-                    {t("wal-25_account")}
-                  </Box>
+                  <Box className="fs-14-regular light">{t("wal-25_account")}</Box>
                 </Grid>
                 <Grid item xs={1.5}>
                   <Box className="fs-14-regular light">{t("wal-26_block")}</Box>
                 </Grid>
                 <Grid item xs={2}>
-                  <Box className="fs-14-regular light">
-                    {t("wal-28_rewards-earned")}
-                  </Box>
+                  <Box className="fs-14-regular light">{t("wal-28_rewards-earned")}</Box>
                 </Grid>
                 <Grid item xs={2.5}>
                   <Box className="fs-14-regular light">{t("wal-29_vote")}</Box>
@@ -529,11 +400,7 @@ const WalletVote = () => {
                   sx={{
                     height: "74px",
                     textTransform: "none",
-                    borderLeft:
-                      Object.keys(votingData).includes(item.username) &&
-                      votingData[item.username] !== 0
-                        ? "5px solid #EF4444"
-                        : "none",
+                    borderLeft: Object.keys(votingData).includes(item.username) && votingData[item.username] !== 0 ? "5px solid #EF4444" : "none",
                   }}
                   onDoubleClick={() => {
                     openLink(`https://solarscan.com/wallet/${item.username}`);
@@ -542,23 +409,12 @@ const WalletVote = () => {
                   <Stack width={"100%"}>
                     <Grid container>
                       <Grid item xs={0.3}>
-                        <Stack
-                          direction={"row"}
-                          alignItems={"center"}
-                          height={"74px"}
-                        >
-                          <Box className="fs-14-regular light t-left">
-                            {(currentPage - 1) * 53 + index + 1}.
-                          </Box>
+                        <Stack direction={"row"} alignItems={"center"} height={"74px"}>
+                          <Box className="fs-14-regular light t-left">{(currentPage - 1) * 53 + index + 1}.</Box>
                         </Stack>
                       </Grid>
                       <Grid item xs={3.5}>
-                        <Stack
-                          direction={"row"}
-                          alignItems={"center"}
-                          height={"74px"}
-                          spacing={"8px"}
-                        >
+                        <Stack direction={"row"} alignItems={"center"} height={"74px"} spacing={"8px"}>
                           <Box
                             component={"img"}
                             src={`https://assets.solarscan.com/avatars/${item.address}.jpg`}
@@ -573,14 +429,8 @@ const WalletVote = () => {
                             }}
                           />
                           <Stack spacing={"8px"}>
-                            <Box className="fs-18-regular white">
-                              {item.username}
-                            </Box>
-                            <Stack
-                              direction={"row"}
-                              alignItems={"center"}
-                              spacing={"8px"}
-                            >
+                            <Box className="fs-18-regular white">{item.username}</Box>
+                            <Stack direction={"row"} alignItems={"center"} spacing={"8px"}>
                               {currentPage === 1 && (
                                 <Box
                                   className="fs-12-light white"
@@ -603,82 +453,40 @@ const WalletVote = () => {
                                   padding: "4px 8px",
                                 }}
                               >
-                                {`${item.votesReceived.voters} ${t(
-                                  "wal-59_voters"
-                                )}`}
+                                {`${item.votesReceived.voters} ${t("wal-59_voters")}`}
                               </Box>
                             </Stack>
                           </Stack>
                         </Stack>
                       </Grid>
                       <Grid item xs={1.5}>
-                        <Stack
-                          direction={"row"}
-                          alignItems={"center"}
-                          height={"74px"}
-                        >
-                          <Box className="fs-18-regular white t-left">
-                            {item.blocks.produced}
-                          </Box>
+                        <Stack direction={"row"} alignItems={"center"} height={"74px"}>
+                          <Box className="fs-18-regular white t-left">{item.blocks.produced}</Box>
                         </Stack>
                       </Grid>
                       <Grid item xs={2}>
-                        <Stack
-                          direction={"row"}
-                          alignItems={"center"}
-                          height={"74px"}
-                        >
+                        <Stack direction={"row"} alignItems={"center"} height={"74px"}>
                           <Stack>
-                            <Box className="fs-18-regular white t-left">
-                              {`${numeral(
-                                formatDecimal(item.forged.total ?? 0)
-                              ).format("0,0")} SXP`}
-                            </Box>
+                            <Box className="fs-18-regular white t-left">{`${numeral(formatDecimal(item.forged.total ?? 0)).format("0,0")} SXP`}</Box>
                             <Box className="fs-12-regular light t-left">
-                              {`${numeral(
-                                (item.forged.total * Number(reserve)) / 1e8
-                              ).format("0,0.00")} ${symbol}`}
+                              {`${numeral((item.forged.total * Number(reserve)) / 1e8).format("0,0.00")} ${symbol}`}
                             </Box>
                           </Stack>
                         </Stack>
                       </Grid>
                       <Grid item xs={2.5}>
-                        <Stack
-                          direction={"row"}
-                          alignItems={"center"}
-                          height={"74px"}
-                        >
+                        <Stack direction={"row"} alignItems={"center"} height={"74px"}>
                           <Stack>
-                            <Box className="fs-18-regular white t-left">
-                              {numeral(
-                                formatDecimal(item.votesReceived.votes ?? 0)
-                              ).format("0,0")}
-                            </Box>
-                            <Box className="fs-12-regular light t-left">
-                              {item.votesReceived.percent} %
-                            </Box>
+                            <Box className="fs-18-regular white t-left">{numeral(formatDecimal(item.votesReceived.votes ?? 0)).format("0,0")}</Box>
+                            <Box className="fs-12-regular light t-left">{item.votesReceived.percent} %</Box>
                           </Stack>
                         </Stack>
                       </Grid>
                       <Grid item xs={2.2}>
-                        <Stack
-                          direction={"row"}
-                          alignItems={"center"}
-                          height={"74px"}
-                        >
-                          <Box
-                            className="wallet-form-card-hover br-16 blur"
-                            padding={"0px 16px"}
-                            height={"54px"}
-                          >
+                        <Stack direction={"row"} alignItems={"center"} height={"74px"}>
+                          <Box className="wallet-form-card-hover br-16 blur" padding={"0px 16px"} height={"54px"}>
                             <Stack direction={"row"} alignItems={"center"}>
-                              <InputVoteBox
-                                id={item.username}
-                                label={""}
-                                align="right"
-                                value={votingData}
-                                onChange={setVotingData}
-                              />
+                              <InputVoteBox id={item.username} label={""} align="right" value={votingData} onChange={setVotingData} />
                               <Box className="fs-18-regular light">%</Box>
                             </Stack>
                           </Box>
@@ -718,13 +526,7 @@ const WalletVote = () => {
             </Stack>
           </Box>
         </Grid>
-        <PasswordModal
-          open={open}
-          setOpen={setOpen}
-          voteAsset={Object.fromEntries(
-            Object.entries(votingData).filter(([_key, value]) => value !== 0)
-          )}
-        />
+        <PasswordModal open={open} setOpen={setOpen} voteAsset={Object.fromEntries(Object.entries(votingData).filter(([_key, value]) => value !== 0))} />
       </Grid>
     </>
   );

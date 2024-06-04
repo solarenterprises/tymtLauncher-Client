@@ -23,21 +23,10 @@ const Library = () => {
 
   return (
     <AnimatePresence mode="wait">
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-      >
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
         <Grid item xs={12} sx={{ display: "flex", flexDirection: "column" }}>
           <Box className={"fs-60-bold white"}>{t("hom-3_library")}</Box>
-          <Grid
-            item
-            xs={12}
-            container
-            display={"flex"}
-            marginTop={"48px"}
-            justifyContent={"space-between"}
-          >
+          <Grid item xs={12} container display={"flex"} marginTop={"48px"} justifyContent={"space-between"}>
             <LibrarymodeBtn status={status} setStatus={setStatus} />
             <Multichainbtn />
           </Grid>

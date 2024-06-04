@@ -1,5 +1,4 @@
 import { Box } from "@mui/material";
-
 import { ThreeDots } from "react-loader-spinner";
 
 const Loading = () => {

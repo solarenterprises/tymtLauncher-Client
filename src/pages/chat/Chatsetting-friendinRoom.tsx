@@ -24,25 +24,13 @@ const ChatfriendinRoom = ({ view, setView }: propsType) => {
     <>
       {view === "chatroom-friend" && (
         <Stack direction={"column"}>
-          <Stack
-            flexDirection={"row"}
-            justifyContent={"flex-start"}
-            gap={"10px"}
-            alignItems={"center"}
-            textAlign={"center"}
-            sx={{ padding: "20px" }}
-          >
+          <Stack flexDirection={"row"} justifyContent={"flex-start"} gap={"10px"} alignItems={"center"} textAlign={"center"} sx={{ padding: "20px" }}>
             <Button className={"common-btn"}>
-              <Box
-                className={"center-align"}
-                onClick={() => setView("chatroom-chatsetting")}
-              >
+              <Box className={"center-align"} onClick={() => setView("chatroom-chatsetting")}>
                 <img src={backIcon} />
               </Box>
             </Button>
-            <Box className={"fs-h3 white"}>
-              {t("set-24_receiving-friend-request")}
-            </Box>
+            <Box className={"fs-h3 white"}>{t("set-24_receiving-friend-request")}</Box>
           </Stack>
           <Divider variant="middle" sx={{ backgroundColor: "#FFFFFF1A" }} />
           <Stack direction={"column"} justifyContent={""}>
@@ -53,21 +41,12 @@ const ChatfriendinRoom = ({ view, setView }: propsType) => {
                 setFriend("anyone");
               }}
             >
-              <Stack
-                direction={"row"}
-                justifyContent={"space-between"}
-                textAlign={"center"}
-              >
+              <Stack direction={"row"} justifyContent={"space-between"} textAlign={"center"}>
                 <Box className={"fs-h4 white"}>{t("set-23_anyone")}</Box>
-                <Box className={"center-align"}>
-                  {data.friend == "anyone" && <img src={checkImg} />}
-                </Box>
+                <Box className={"center-align"}>{data.friend == "anyone" && <img src={checkImg} />}</Box>
               </Stack>
             </Button>
-            <Divider
-              variant="fullWidth"
-              sx={{ backgroundColor: "#FFFFFF1A" }}
-            />
+            <Divider variant="fullWidth" sx={{ backgroundColor: "#FFFFFF1A" }} />
             <Button
               className={"common-btn"}
               sx={{ padding: "20px" }}
@@ -75,21 +54,12 @@ const ChatfriendinRoom = ({ view, setView }: propsType) => {
                 setFriend("noone");
               }}
             >
-              <Stack
-                direction={"row"}
-                justifyContent={"space-between"}
-                textAlign={"center"}
-              >
+              <Stack direction={"row"} justifyContent={"space-between"} textAlign={"center"}>
                 <Box className={"fs-h4 white"}>{t("set-26_no-one")}</Box>
-                <Box className={"center-align"}>
-                  {data.friend == "noone" && <img src={checkImg} />}
-                </Box>
+                <Box className={"center-align"}>{data.friend == "noone" && <img src={checkImg} />}</Box>
               </Stack>
             </Button>
-            <Divider
-              variant="fullWidth"
-              sx={{ backgroundColor: "#FFFFFF1A" }}
-            />
+            <Divider variant="fullWidth" sx={{ backgroundColor: "#FFFFFF1A" }} />
           </Stack>
         </Stack>
       )}

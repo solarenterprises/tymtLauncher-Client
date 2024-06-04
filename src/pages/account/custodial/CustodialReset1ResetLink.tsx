@@ -28,12 +28,7 @@ const CustodialReset1ResetLink = () => {
     <>
       <Grid container className="basic-container">
         <Grid item xs={12} container justifyContent={"center"}>
-          <Stack
-            direction={"row"}
-            alignItems={"center"}
-            justifyContent={"center"}
-            gap={"64px"}
-          >
+          <Stack direction={"row"} alignItems={"center"} justifyContent={"center"} gap={"64px"}>
             <Stack alignItems={"center"} justifyContent={"center"}>
               <Grid container justifyContent={"center"}>
                 <Grid
@@ -46,30 +41,16 @@ const CustodialReset1ResetLink = () => {
                 >
                   <Grid item xs={12} container justifyContent={"space-between"}>
                     <Back onClick={handleBackClick} />
-                    <Stepper
-                      all={2}
-                      now={1}
-                      texts={[t("cca-46_reset-password"), ""]}
-                    />
+                    <Stepper all={2} now={1} texts={[t("cca-46_reset-password"), ""]} />
                   </Grid>
                   <Grid item xs={12} mt={"80px"}>
                     <AccountHeader title={t("cca-46_reset-password")} />
                   </Grid>
                   <Grid item xs={12} mt={"48px"}>
-                    <AccountIconBar
-                      icon={email}
-                      text={t("cca-48_check-your-box")}
-                      line={2}
-                      secondaryText={t("cca-17_check-your-6")}
-                    />
+                    <AccountIconBar icon={email} text={t("cca-48_check-your-box")} line={2} secondaryText={t("cca-17_check-your-6")} />
                   </Grid>
                   <Grid item xs={12} mt={"32px"}>
-                    <AccountIconBar
-                      icon={link}
-                      text={t("cca-50_if-dont-receive")}
-                      line={2}
-                      secondaryText={t("cca-51_contact-our-support")}
-                    />
+                    <AccountIconBar icon={link} text={t("cca-50_if-dont-receive")} line={2} secondaryText={t("cca-51_contact-our-support")} />
                   </Grid>
                   <Grid item xs={12} mt={"48px"}>
                     <AccountNextButton

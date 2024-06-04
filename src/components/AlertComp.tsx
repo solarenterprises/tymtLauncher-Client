@@ -3,9 +3,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
-
 import Slide from "@mui/material/Slide";
-
 import CommonStyles from "../styles/commonStyles";
 import failedIcon from "../assets/alert/failed-icon.svg";
 import successIcon from "../assets/alert/success-icon.svg";
@@ -39,14 +37,7 @@ function SlideTransition(props) {
   return <Slide {...props} direction="left" />;
 }
 
-const AlertComp = ({
-  open,
-  status,
-  title,
-  detail,
-  setOpen,
-  link,
-}: propsAlertTypes) => {
+const AlertComp = ({ open, status, title, detail, setOpen, link }: propsAlertTypes) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const classname = CommonStyles();
@@ -54,21 +45,14 @@ const AlertComp = ({
 
   const contactListStore: IContactList = useSelector(getContactList);
 
-  const senderId =
-    title === "Friend Request"
-      ? detail.note?.sender
-      : searchParams.get("senderId");
-  const senderUser = contactListStore.contacts.find(
-    (user) => user._id === senderId
-  );
+  const senderId = title === "Friend Request" ? detail.note?.sender : searchParams.get("senderId");
+  const senderUser = contactListStore.contacts.find((user) => user._id === senderId);
 
   const dispatch = useDispatch();
   // const currentPartnerStore: IContact = useSelector(getCurrentPartner);
   // const friendListStore: IContactList = useSelector(getFriendlist);
   // const accountStore: accountType = useSelector(getAccount);
-  const existkey: string = useSelector((state) =>
-    selectEncryptionKeyByUserId(state, senderId)
-  );
+  const existkey: string = useSelector((state) => selectEncryptionKeyByUserId(state, senderId));
 
   const [border, setBorder] = useState("");
   const [bg, setBg] = useState("");
@@ -77,9 +61,7 @@ const AlertComp = ({
 
   useEffect(() => {
     const decryptmessage = async () => {
-      const decryptedmessage: string = existkey
-        ? await decrypt(detail, existkey)
-        : t("not-13_cannot-decrypt");
+      const decryptedmessage: string = existkey ? await decrypt(detail, existkey) : t("not-13_cannot-decrypt");
       setMessage(decryptedmessage);
     };
     decryptmessage();
@@ -199,20 +181,10 @@ const AlertComp = ({
               <Stack direction={"column"} gap={"8px"}>
                 <Box className={"fs-h4 white"}>{title}</Box>
                 <Box className={"fs-16-regular white"}>
-                  {status === "message" &&
-                    (message.length > 100
-                      ? message.substring(0, 100) + "..."
-                      : message)}
-                  {status === "alert" &&
-                    title === "Friend Request" &&
-                    t("not-10_fr-intro")}
-                  {!(
-                    status === "message" ||
-                    (status === "alert" && title === "Friend Request")
-                  ) &&
-                    (detail.length > 100
-                      ? detail.substring(0, 100) + "..."
-                      : detail)}
+                  {status === "message" && (message.length > 100 ? message.substring(0, 100) + "..." : message)}
+                  {status === "alert" && title === "Friend Request" && t("not-10_fr-intro")}
+                  {!(status === "message" || (status === "alert" && title === "Friend Request")) &&
+                    (detail.length > 100 ? detail.substring(0, 100) + "..." : detail)}
                 </Box>
               </Stack>
             </Stack>

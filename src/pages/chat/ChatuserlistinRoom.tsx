@@ -1,14 +1,6 @@
 import { useSelector, useDispatch } from "react-redux";
 import { useCallback, useState } from "react";
-import {
-  Box,
-  Grid,
-  Stack,
-  Button,
-  Divider,
-  InputAdornment,
-  TextField,
-} from "@mui/material";
+import { Box, Grid, Stack, Button, Divider, InputAdornment, TextField } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import nocontact from "../../assets/chat/nocontact.png";
 import settingicon from "../../assets/chat/settings.svg";
@@ -25,10 +17,7 @@ import { debounce } from "lodash";
 import { IAlertList } from "../../types/alertTypes";
 import FRcontextmenu from "../../components/chat/FRcontextmenu";
 import Userlist from "../../components/chat/Userlist";
-import {
-  deleteContactAsync,
-  getContactList,
-} from "../../features/chat/ContactListSlice";
+import { deleteContactAsync, getContactList } from "../../features/chat/ContactListSlice";
 import { AppDispatch } from "../../store";
 import { searchUsers } from "../../features/chat/ContactListApi";
 import { getAlertList } from "../../features/alert/AlertListSlice";
@@ -108,12 +97,7 @@ const ChatuserlistinRoom = ({ view, setView }: propsType) => {
             <Box className={"fs-24-bold white"} marginTop={"0px"}>
               {t("cha-1_chat")}
             </Box>
-            <Stack
-              flexDirection={"row"}
-              justifyContent={"space-between"}
-              alignItems={"center"}
-              marginTop={"30px"}
-            >
+            <Stack flexDirection={"row"} justifyContent={"space-between"} alignItems={"center"} marginTop={"30px"}>
               <TextField
                 className={classes.search_bar}
                 color="secondary"
@@ -138,12 +122,7 @@ const ChatuserlistinRoom = ({ view, setView }: propsType) => {
                           onClick={() => setSearchValue("")}
                           style={{ cursor: "pointer" }}
                         >
-                          <path
-                            d="M17 7L7 17M7 7L17 17"
-                            stroke="white"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
+                          <path d="M17 7L7 17M7 7L17 17" stroke="white" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
                       )}
                     </InputAdornment>
@@ -187,28 +166,15 @@ const ChatuserlistinRoom = ({ view, setView }: propsType) => {
                     }}
                   ></img>
                 </Grid>
-                <Box
-                  className={"fs-20-regular white"}
-                  textAlign={"center"}
-                  marginRight={"10%"}
-                >
+                <Box className={"fs-20-regular white"} textAlign={"center"} marginRight={"10%"}>
                   {t("cha-2_you-havenot-friends")}
                 </Box>
               </>
             ) : (
               <>
-                {(searchvalue === ""
-                  ? contactListStore.contacts
-                  : searchedresult
-                )?.map((user, index) => {
+                {(searchvalue === "" ? contactListStore.contacts : searchedresult)?.map((user, index) => {
                   const count =
-                    searchvalue === ""
-                      ? alertListStore.unread?.filter(
-                          (alert) =>
-                            alert.note.sender === user._id &&
-                            alert.alertType === "chat"
-                        ).length
-                      : 0;
+                    searchvalue === "" ? alertListStore.unread?.filter((alert) => alert.note.sender === user._id && alert.alertType === "chat").length : 0;
                   const numberofunreadmessages = count;
                   return (
                     <Userlist
@@ -237,11 +203,7 @@ const ChatuserlistinRoom = ({ view, setView }: propsType) => {
                     contextMenuPosition={contextMenuPosition}
                   />
                 )}
-                <BlockModal
-                  openBlockModal={openBlockModal}
-                  setOpenBlockModal={setOpenBlockModal}
-                  roommode={true}
-                />
+                <BlockModal openBlockModal={openBlockModal} setOpenBlockModal={setOpenBlockModal} roommode={true} />
                 <DeleteModal
                   openDeleteModal={openDeleteModal}
                   setOpenDeleteModal={setOpenDeleteModal}

@@ -21,49 +21,32 @@ class Avalanche implements IWallet {
     const change = node.deriveChild(0);
     const childNode = change.deriveChild(0);
     const childWallet = childNode.getWallet();
-    const wallet = new ethers.Wallet(
-      childWallet.getPrivateKey().toString("hex")
-    );
+    const wallet = new ethers.Wallet(childWallet.getPrivateKey().toString("hex"));
     return wallet;
   }
 
   static async getAddress(mnemonic: string): Promise<string> {
-    const wallet = await Avalanche.getWalletFromMnemonic(
-      mnemonic.normalize("NFD")
-    );
+    const wallet = await Avalanche.getWalletFromMnemonic(mnemonic.normalize("NFD"));
     return wallet.address;
   }
 
   static async getBalance(addr: string): Promise<number> {
     try {
       const customProvider = new ethers.JsonRpcProvider(avax_rpc_url);
-      return (
-        parseFloat(ethers.formatEther(await customProvider.getBalance(addr))) /
-        1e9 /
-        1e9
-      );
+      return parseFloat(ethers.formatEther(await customProvider.getBalance(addr))) / 1e9 / 1e9;
     } catch {
       return 0;
     }
   }
 
-  static async getTokenBalance(
-    addr: string,
-    tokens: IToken[]
-  ): Promise<IGetTokenBalanceRes[]> {
+  static async getTokenBalance(addr: string, tokens: IToken[]): Promise<IGetTokenBalanceRes[]> {
     try {
       let result: IGetTokenBalanceRes[] = [];
       for (let i = 0; i < tokens.length; i++) {
         const tokenContractAddress = tokens[i].address;
-        const tokenAbi = [
-          "function balanceOf(address owner) view returns (uint256)",
-        ];
+        const tokenAbi = ["function balanceOf(address owner) view returns (uint256)"];
         const customProvider = new ethers.JsonRpcProvider(avax_rpc_url);
-        const tokenContract = new ethers.Contract(
-          tokenContractAddress,
-          tokenAbi,
-          customProvider
-        );
+        const tokenContract = new ethers.Contract(tokenContractAddress, tokenAbi, customProvider);
         if (net_name === "testnet") {
           result.push({
             cmc: tokens[i].cmc,
@@ -72,9 +55,7 @@ class Avalanche implements IWallet {
         } else {
           result.push({
             cmc: tokens[i].cmc,
-            balance:
-              parseFloat(await tokenContract.balanceOf(addr)) /
-              10 ** (tokens[i].decimals as number),
+            balance: parseFloat(await tokenContract.balanceOf(addr)) / 10 ** (tokens[i].decimals as number),
           });
         }
       }
@@ -118,10 +99,7 @@ class Avalanche implements IWallet {
     }
   }
 
-  static async sendTransaction(
-    passphrase: string,
-    tx: { recipients: any[]; fee: string; vendorField?: string }
-  ) {
+  static async sendTransaction(passphrase: string, tx: { recipients: any[]; fee: string; vendorField?: string }) {
     if (tx.recipients.length > 0) {
       try {
         let wallet = await Avalanche.getWalletFromMnemonic(passphrase);

@@ -196,8 +196,7 @@ const Games: { [key: string]: Game } = {
       en: "Veloren is in development and it's not related to Solar or tymt. If you need any more information, please check out here.",
       jp: "Velorenは開発中であり、Solarやtymtとは関係ありません。さらに詳しい情報が必要な場合は、こちらをご覧ください。",
     },
-    warningLink:
-      "https://discord.com/invite/veloren-community-449602562165833758",
+    warningLink: "https://discord.com/invite/veloren-community-449602562165833758",
     release: "July 1, 2023",
     developers: "Kristoffer Anderson",
     publisher: "veloren.net",

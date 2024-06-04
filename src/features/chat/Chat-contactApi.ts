@@ -7,7 +7,3 @@
 //   sxpAddress: string;
 //   password: string;
 // }
-
-
-
-

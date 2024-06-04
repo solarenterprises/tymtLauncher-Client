@@ -3,19 +3,11 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { Box, Divider, Button, Stack } from "@mui/material";
-import {
-  ChatHistoryType,
-  IContact,
-  encryptionkeyStoreType,
-  propsType,
-} from "../../types/chatTypes";
+import { ChatHistoryType, IContact, encryptionkeyStoreType, propsType } from "../../types/chatTypes";
 import { accountType } from "../../types/accountTypes";
 import { chatType } from "../../types/settingTypes";
 import { getAccount } from "../../features/account/AccountSlice";
-import {
-  getChatHistory,
-  setChatHistory,
-} from "../../features/chat/Chat-historySlice";
+import { getChatHistory, setChatHistory } from "../../features/chat/Chat-historySlice";
 import { selectChat } from "../../features/settings/ChatSlice";
 import { selectEncryptionKeyStore } from "../../features/chat/Chat-encryptionkeySlice";
 import maximize from "../../assets/chat/maximize.svg";
@@ -30,10 +22,7 @@ import { useSocket } from "../../providers/SocketProvider";
 import { AppDispatch } from "../../store";
 import _ from "lodash";
 import InfiniteScroll from "react-infinite-scroll-component";
-import {
-  setMountedFalse,
-  setMountedTrue,
-} from "../../features/chat/Chat-intercomSupportSlice";
+import { setMountedFalse, setMountedTrue } from "../../features/chat/Chat-intercomSupportSlice";
 import { ThreeDots } from "react-loader-spinner";
 import { Chatdecrypt } from "../../lib/api/ChatEncrypt";
 import { useTranslation } from "react-i18next";
@@ -73,11 +62,8 @@ const Chatbox = ({ view, setView }: propsType) => {
   const currentPartnerStore: IContact = useSelector(getCurrentPartner);
   const chatHistoryStore: ChatHistoryType = useSelector(getChatHistory);
   const chatStore: chatType = useSelector(selectChat);
-  const encryptionKeyStore: encryptionkeyStoreType = useSelector(
-    selectEncryptionKeyStore
-  );
-  const currentKey =
-    encryptionKeyStore.encryption_Keys[currentPartnerStore._id];
+  const encryptionKeyStore: encryptionkeyStoreType = useSelector(selectEncryptionKeyStore);
+  const currentKey = encryptionKeyStore.encryption_Keys[currentPartnerStore._id];
 
   const accountStoreRef = useRef(accountStore);
   const currentPartnerStoreRef = useRef(currentPartnerStore);
@@ -115,16 +101,11 @@ const Chatbox = ({ view, setView }: propsType) => {
       if (accountStoreRef.current.uid && currentPartnerStoreRef.current._id) {
         if (!hasMoreRef.current) return;
         const query = {
-          room_user_ids: [
-            accountStoreRef.current.uid,
-            currentPartnerStoreRef.current._id,
-          ],
+          room_user_ids: [accountStoreRef.current.uid, currentPartnerStoreRef.current._id],
           pagination: { page: pageRef.current, pageSize: 20 },
         };
         if (!processedPagesRef.current.has(pageRef.current)) {
-          setProcessedPages(
-            new Set(processedPagesRef.current.add(pageRef.current))
-          );
+          setProcessedPages(new Set(processedPagesRef.current.add(pageRef.current)));
           socket.current.emit("get-messages-by-room", JSON.stringify(query));
           console.log("Chatbox > socket.current.emit > get-messages-by-room");
         }
@@ -148,10 +129,7 @@ const Chatbox = ({ view, setView }: propsType) => {
         socket.current.on("messages-by-room", async (result) => {
           console.log("Chatbox > socket.current.on > messages-by-room", result);
           if (result && result.data.length > 0) {
-            if (
-              chatStoreRef.current.message === "anyone" ||
-              chatStoreRef.current.message === "friend"
-            ) {
+            if (chatStoreRef.current.message === "anyone" || chatStoreRef.current.message === "friend") {
               if (pageRef.current === 1) {
                 dispatch(
                   setChatHistory({
@@ -161,10 +139,7 @@ const Chatbox = ({ view, setView }: propsType) => {
               } else if (pageRef.current > 1) {
                 dispatch(
                   setChatHistory({
-                    messages: [
-                      ...chatHistoryStoreRef.current.messages,
-                      ...result.data,
-                    ],
+                    messages: [...chatHistoryStoreRef.current.messages, ...result.data],
                   })
                 );
               }
@@ -202,9 +177,7 @@ const Chatbox = ({ view, setView }: propsType) => {
 
     if (messageDate.setHours(0, 0, 0, 0) === today.setHours(0, 0, 0, 0)) {
       return "Today";
-    } else if (
-      messageDate.setHours(0, 0, 0, 0) === yesterday.setHours(0, 0, 0, 0)
-    ) {
+    } else if (messageDate.setHours(0, 0, 0, 0) === yesterday.setHours(0, 0, 0, 0)) {
       return "Yesterday";
     } else {
       return messageDate.toLocaleDateString("en-US", options);
@@ -232,16 +205,14 @@ const Chatbox = ({ view, setView }: propsType) => {
   const scrollref = useRef<HTMLDivElement>(null);
 
   const Scroll = () => {
-    const { offsetHeight, scrollHeight, scrollTop } =
-      scrollref.current as HTMLDivElement;
+    const { offsetHeight, scrollHeight, scrollTop } = scrollref.current as HTMLDivElement;
     if (scrollHeight <= scrollTop + offsetHeight + 100) {
       scrollref.current?.scrollTo(0, scrollHeight);
     }
   };
 
   useEffect(() => {
-    if (scrollref.current && valueRef.current === "" && view === "chatbox")
-      Scroll();
+    if (scrollref.current && valueRef.current === "" && view === "chatbox") Scroll();
   }, [valueRef.current, view]);
 
   return (
@@ -268,18 +239,9 @@ const Chatbox = ({ view, setView }: propsType) => {
                   size={50}
                   status={currentPartnerStore.notificationStatus}
                 />
-                <Stack
-                  marginLeft={"16px"}
-                  justifyContent={"flex-start"}
-                  direction={"column"}
-                  spacing={1}
-                >
-                  <Box className={"fs-18-bold white"}>
-                    {currentPartnerStore.nickName}
-                  </Box>
-                  <Box className={"fs-12-regular gray"}>
-                    {currentPartnerStore.sxpAddress}
-                  </Box>
+                <Stack marginLeft={"16px"} justifyContent={"flex-start"} direction={"column"} spacing={1}>
+                  <Box className={"fs-18-bold white"}>{currentPartnerStore.nickName}</Box>
+                  <Box className={"fs-12-regular gray"}>{currentPartnerStore.sxpAddress}</Box>
                 </Stack>
               </Stack>
             </Stack>
@@ -313,13 +275,7 @@ const Chatbox = ({ view, setView }: propsType) => {
           </Box>
 
           {/* Message inbox */}
-          <Box
-            className={"scroll_bar_chatbox"}
-            display={"flex"}
-            flexDirection={"column"}
-            ref={scrollref}
-            id={"container"}
-          >
+          <Box className={"scroll_bar_chatbox"} display={"flex"} flexDirection={"column"} ref={scrollref} id={"container"}>
             <Box sx={{ width: "100%", flex: "1 1 auto" }}></Box>
 
             <InfiniteScroll
@@ -329,11 +285,7 @@ const Chatbox = ({ view, setView }: propsType) => {
               dataLength={chatHistoryStore.messages.length} //This is important field to render the next data
               next={fetchMessages}
               hasMore={hasMore}
-              loader={
-                <Box className={"fs-14-regular white t-center"}>
-                  {t("cha-32_loading")}
-                </Box>
-              }
+              loader={<Box className={"fs-14-regular white t-center"}>{t("cha-32_loading")}</Box>}
               // endMessage={
               //   <Box className={"fs-14-regular white t-center"}>
               //     {t("cha-33_you-seen-all")}
@@ -343,200 +295,114 @@ const Chatbox = ({ view, setView }: propsType) => {
               refreshFunction={fetchMessages}
               pullDownToRefresh
               pullDownToRefreshThreshold={50}
-              pullDownToRefreshContent={
-                <Box className={"fs-14-regular white t-center"}>
-                  &#8595; {t("cha-34_pull-down")}
-                </Box>
-              }
-              releaseToRefreshContent={
-                <Box className={"fs-14-regular white t-center"}>
-                  &#8593; {t("cha-35_release-to-refresh")}
-                </Box>
-              }
+              pullDownToRefreshContent={<Box className={"fs-14-regular white t-center"}>&#8595; {t("cha-34_pull-down")}</Box>}
+              releaseToRefreshContent={<Box className={"fs-14-regular white t-center"}>&#8593; {t("cha-35_release-to-refresh")}</Box>}
             >
-              {[...chatHistoryStore.messages]
-                .reverse()
-                ?.map((message, index) => {
-                  const isSameDay = (date1, date2) => {
-                    return (
-                      date1.getFullYear() === date2.getFullYear() &&
-                      date1.getMonth() === date2.getMonth() &&
-                      date1.getDate() === date2.getDate()
-                    );
-                  };
+              {[...chatHistoryStore.messages].reverse()?.map((message, index) => {
+                const isSameDay = (date1, date2) => {
+                  return date1.getFullYear() === date2.getFullYear() && date1.getMonth() === date2.getMonth() && date1.getDate() === date2.getDate();
+                };
 
-                  const isFirstMessageOfDay = () => {
-                    if (index === 0) return true;
+                const isFirstMessageOfDay = () => {
+                  if (index === 0) return true;
 
-                    const previousMessageDate = new Date(
-                      [...chatHistoryStore.messages].reverse()[
-                        index - 1
-                      ]?.createdAt
-                    );
-                    const currentMessageDate = new Date(message.createdAt);
+                  const previousMessageDate = new Date([...chatHistoryStore.messages].reverse()[index - 1]?.createdAt);
+                  const currentMessageDate = new Date(message.createdAt);
 
-                    return !isSameDay(previousMessageDate, currentMessageDate);
-                  };
+                  return !isSameDay(previousMessageDate, currentMessageDate);
+                };
 
-                  const timeline = isFirstMessageOfDay()
-                    ? formatDateDifference(message.createdAt)
-                    : null;
+                const timeline = isFirstMessageOfDay() ? formatDateDifference(message.createdAt) : null;
 
-                  const isSameSender = (id1, id2) => {
-                    return id1 === id2;
-                  };
+                const isSameSender = (id1, id2) => {
+                  return id1 === id2;
+                };
 
-                  const detectLastMessageofStack = () => {
-                    const nextMessageSender = [
-                      ...chatHistoryStore.messages,
-                    ].reverse()[index + 1]?.sender_id;
-                    const currentMessageSender = [
-                      ...chatHistoryStore.messages,
-                    ].reverse()[index]?.sender_id;
+                const detectLastMessageofStack = () => {
+                  const nextMessageSender = [...chatHistoryStore.messages].reverse()[index + 1]?.sender_id;
+                  const currentMessageSender = [...chatHistoryStore.messages].reverse()[index]?.sender_id;
 
-                    return !isSameSender(
-                      nextMessageSender,
-                      currentMessageSender
-                    );
-                  };
+                  return !isSameSender(nextMessageSender, currentMessageSender);
+                };
 
-                  const isLastMessageofStack = detectLastMessageofStack();
-                  const decryptedmessage = decryptMessage(message.message);
+                const isLastMessageofStack = detectLastMessageofStack();
+                const decryptedmessage = decryptMessage(message.message);
 
-                  return (
-                    <>
-                      {/* Existing Box for rendering the message */}
-                      <Box
-                        className={"bubblecontainer"}
-                        key={`${index}-${message.createdAt}`}
+                return (
+                  <>
+                    {/* Existing Box for rendering the message */}
+                    <Box className={"bubblecontainer"} key={`${index}-${message.createdAt}`}>
+                      {timeline && decryptedmessage !== "Unable to decode message #tymt114#" && <OrLinechat timeline={timeline} />}
+                      <Stack
+                        flexDirection={"row"}
+                        alignItems={"flex-end"}
+                        marginTop={"10px"}
+                        gap={"15px"}
+                        justifyContent={message.sender_id === accountStore.uid ? "flex-end" : "flex-start"}
                       >
-                        {timeline &&
-                          decryptedmessage !==
-                            "Unable to decode message #tymt114#" && (
-                            <OrLinechat timeline={timeline} />
-                          )}
-                        <Stack
-                          flexDirection={"row"}
-                          alignItems={"flex-end"}
-                          marginTop={"10px"}
-                          gap={"15px"}
-                          justifyContent={
-                            message.sender_id === accountStore.uid
-                              ? "flex-end"
-                              : "flex-start"
-                          }
-                        >
-                          {message.sender_id === accountStore.uid && (
-                            <>
-                              <Box
-                                className={
-                                  isLastMessageofStack
-                                    ? "fs-14-regular white bubble-lastmessage-unexpanded"
-                                    : "fs-14-regular white bubble"
-                                }
-                              >
-                                {decryptedmessage !==
-                                "Unable to decode message #tymt114#" ? (
-                                  <>
-                                    {decryptedmessage
-                                      .split("\n")
-                                      .map((line) => (
-                                        <React.Fragment>
-                                          {line}
-                                          <br />
-                                        </React.Fragment>
-                                      ))}
-                                    <Box
-                                      className={
-                                        "fs-14-light timestamp-inbubble"
-                                      }
-                                      sx={{ alignSelf: "flex-end" }}
-                                      color={"rgba(11, 11, 11, 0.7)"}
-                                    >
-                                      {new Date(
-                                        message.createdAt
-                                      ).toLocaleString("en-US", {
-                                        hour: "2-digit",
-                                        minute: "2-digit",
-                                      })}
-                                    </Box>
-                                  </>
-                                ) : (
-                                  <>
-                                    <ThreeDots
-                                      height="23px"
-                                      width={"40px"}
-                                      radius={4}
-                                      color={`white`}
-                                    />
-                                  </>
-                                )}
-                              </Box>
-                            </>
-                          )}
-                          {message.sender_id !== accountStore.uid && (
-                            <>
-                              <Box
-                                className={
-                                  isLastMessageofStack
-                                    ? "fs-14-regular white bubble-partner-lastmessage"
-                                    : "fs-14-regular white bubble-partner"
-                                }
-                              >
-                                {decryptedmessage !==
-                                "Unable to decode message #tymt114#" ? (
-                                  <>
-                                    {decryptedmessage
-                                      .split("\n")
-                                      .map((line) => (
-                                        <React.Fragment>
-                                          {line}
-                                          <br />
-                                        </React.Fragment>
-                                      ))}
-                                    <Box
-                                      className={
-                                        "fs-14-light timestamp-inbubble"
-                                      }
-                                      sx={{ alignSelf: "flex-end" }}
-                                      color={"rgba(11, 11, 11, 0.7)"}
-                                    >
-                                      {new Date(
-                                        message.createdAt
-                                      ).toLocaleString("en-US", {
-                                        hour: "2-digit",
-                                        minute: "2-digit",
-                                      })}
-                                    </Box>
-                                  </>
-                                ) : (
-                                  <>
-                                    <ThreeDots
-                                      height="23px"
-                                      width={"40px"}
-                                      radius={4}
-                                      color={`white`}
-                                    />
-                                  </>
-                                )}
-                              </Box>
-                            </>
-                          )}
-                        </Stack>
-                      </Box>
-                    </>
-                  );
-                })}
+                        {message.sender_id === accountStore.uid && (
+                          <>
+                            <Box className={isLastMessageofStack ? "fs-14-regular white bubble-lastmessage-unexpanded" : "fs-14-regular white bubble"}>
+                              {decryptedmessage !== "Unable to decode message #tymt114#" ? (
+                                <>
+                                  {decryptedmessage.split("\n").map((line) => (
+                                    <React.Fragment>
+                                      {line}
+                                      <br />
+                                    </React.Fragment>
+                                  ))}
+                                  <Box className={"fs-14-light timestamp-inbubble"} sx={{ alignSelf: "flex-end" }} color={"rgba(11, 11, 11, 0.7)"}>
+                                    {new Date(message.createdAt).toLocaleString("en-US", {
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                    })}
+                                  </Box>
+                                </>
+                              ) : (
+                                <>
+                                  <ThreeDots height="23px" width={"40px"} radius={4} color={`white`} />
+                                </>
+                              )}
+                            </Box>
+                          </>
+                        )}
+                        {message.sender_id !== accountStore.uid && (
+                          <>
+                            <Box className={isLastMessageofStack ? "fs-14-regular white bubble-partner-lastmessage" : "fs-14-regular white bubble-partner"}>
+                              {decryptedmessage !== "Unable to decode message #tymt114#" ? (
+                                <>
+                                  {decryptedmessage.split("\n").map((line) => (
+                                    <React.Fragment>
+                                      {line}
+                                      <br />
+                                    </React.Fragment>
+                                  ))}
+                                  <Box className={"fs-14-light timestamp-inbubble"} sx={{ alignSelf: "flex-end" }} color={"rgba(11, 11, 11, 0.7)"}>
+                                    {new Date(message.createdAt).toLocaleString("en-US", {
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                    })}
+                                  </Box>
+                                </>
+                              ) : (
+                                <>
+                                  <ThreeDots height="23px" width={"40px"} radius={4} color={`white`} />
+                                </>
+                              )}
+                            </Box>
+                          </>
+                        )}
+                      </Stack>
+                    </Box>
+                  </>
+                );
+              })}
             </InfiniteScroll>
             <div id={"emptyblock"}></div>
           </Box>
 
           {/* Input field section */}
-          <Chatinputfield
-            value={value}
-            setValue={setValue}
-            keyperuser={currentKey}
-          />
+          <Chatinputfield value={value} setValue={setValue} keyperuser={currentKey} />
         </Box>
       )}
     </>

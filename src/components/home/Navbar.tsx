@@ -3,33 +3,18 @@ import { useTranslation } from "react-i18next";
 import { useCallback, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
-import {
-  Grid,
-  Button,
-  TextField,
-  InputAdornment,
-  Stack,
-  Box,
-  Tooltip,
-} from "@mui/material";
+import { Grid, Button, TextField, InputAdornment, Stack, Box, Tooltip } from "@mui/material";
 import Chatindex from "../../pages/chat";
-
 import newlogo from "../../assets/main/newlogo.png";
 import newlogohead from "../../assets/main/newlogohead.png";
 import searchlg from "../../assets/main/searchlg.svg";
 import Settings from "../../pages/settings";
 import Back from "./Back";
 import Avatar from "./Avatar";
-
 import { notificationType } from "../../types/settingTypes";
 import { PaginationType } from "../../types/homeTypes";
 import { TymtlogoType } from "../../types/homeTypes";
-import {
-  accountType,
-  custodialType,
-  nonCustodialType,
-  walletEnum,
-} from "../../types/accountTypes";
+import { accountType, custodialType, nonCustodialType, walletEnum } from "../../types/accountTypes";
 import { IChain } from "../../types/walletTypes";
 import { getAccount } from "../../features/account/AccountSlice";
 import { getNonCustodial } from "../../features/account/NonCustodialSlice";
@@ -68,10 +53,7 @@ const Navbar = () => {
   const nonCustodialStore: nonCustodialType = useSelector(getNonCustodial);
   const custodialStore: custodialType = useSelector(getCustodial);
   const chain: IChain = useSelector(getChain);
-  const userStore =
-    account.wallet === walletEnum.noncustodial
-      ? nonCustodialStore
-      : custodialStore;
+  const userStore = account.wallet === walletEnum.noncustodial ? nonCustodialStore : custodialStore;
   const alertListStore: IAlertList = useSelector(getAlertList);
   const { t } = useTranslation();
   const [showSetting, setShowSetting] = useState(false);
@@ -127,37 +109,15 @@ const Navbar = () => {
 
   return (
     <>
-      <Grid
-        item
-        width={"95%"}
-        className="navbar"
-        container
-        sx={{ backdropFilter: "blur(30px)" }}
-      >
+      <Grid item width={"95%"} className="navbar" container sx={{ backdropFilter: "blur(30px)" }}>
         {currentlogo.isDrawerExpanded === true && (
-          <img
-            src={newlogo}
-            alt={"tymtlogo-1"}
-            loading="lazy"
-            style={{ cursor: "pointer" }}
-            onClick={() => navigate("/home")}
-          />
+          <img src={newlogo} alt={"tymtlogo-1"} loading="lazy" style={{ cursor: "pointer" }} onClick={() => navigate("/home")} />
         )}
         {currentlogo.isDrawerExpanded === false && (
-          <img
-            src={newlogohead}
-            alt={"tymtlogo-2"}
-            loading="lazy"
-            style={{ cursor: "pointer" }}
-            onClick={() => navigate("/home")}
-          />
+          <img src={newlogohead} alt={"tymtlogo-2"} loading="lazy" style={{ cursor: "pointer" }} onClick={() => navigate("/home")} />
         )}
 
-        <Stack
-          flexDirection={"row"}
-          alignItems={"center"}
-          sx={{ position: "fixed", left: "20%" }}
-        >
+        <Stack flexDirection={"row"} alignItems={"center"} sx={{ position: "fixed", left: "20%" }}>
           {location.pathname.indexOf("home") === -1 && (
             <Back
               onClick={() => {
@@ -181,23 +141,9 @@ const Navbar = () => {
                 endAdornment: (
                   <InputAdornment position="end">
                     {value !== "" && (
-                      <Button
-                        className={"clear_filter"}
-                        onClick={() => setValue("")}
-                      >
-                        <svg
-                          width="24"
-                          height="24"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            d="M17 7L7 17M7 7L17 17"
-                            stroke="white"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
+                      <Button className={"clear_filter"} onClick={() => setValue("")}>
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M17 7L7 17M7 7L17 17" stroke="white" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
                       </Button>
                     )}
@@ -225,9 +171,7 @@ const Navbar = () => {
                   border: "1px solid rgb(71, 76, 76)",
                 }}
               >
-                <Box className="fs-16-regular white">
-                  {t("tol-8_solar-card")}
-                </Box>
+                <Box className="fs-16-regular white">{t("tol-8_solar-card")}</Box>
               </Stack>
             }
             PopperProps={{
@@ -292,9 +236,7 @@ const Navbar = () => {
               className="button_navbar_common"
               onClick={() => {
                 navigate("/wallet");
-                dispatch(
-                  setCurrentPage({ ...currentpage, index: 3, page: "wallet" })
-                );
+                dispatch(setCurrentPage({ ...currentpage, index: 3, page: "wallet" }));
               }}
             >
               <svg
@@ -351,9 +293,7 @@ const Navbar = () => {
                 setShowAlert(!showAlert);
               }}
             >
-              {alertListStore.unread.length > 0 && (
-                <span className={"notification_dot"}></span>
-              )}
+              {alertListStore.unread.length > 0 && <span className={"notification_dot"}></span>}
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="24"
@@ -446,51 +386,20 @@ const Navbar = () => {
               </svg>
             </Button>
           </Tooltip>
-          <Button
-            className="button_navbar_profile"
-            onClick={() => setShowSetting(!showSetting)}
-          >
-            <Stack
-              direction={"row"}
-              alignItems={"center"}
-              marginLeft={"0px"}
-              justifyContent={"left"}
-              spacing={"8px"}
-              height={"32px"}
-            >
-              <Avatar
-                userid={account.uid}
-                size={32}
-                ischain={true}
-                onlineStatus={true}
-                status={!notification.alert ? "donotdisturb" : "online"}
-              />
-              <Stack
-                direction={"column"}
-                width={"110px"}
-                alignItems={"flex-start"}
-              >
-                <Box className={"fs-16-regular white"}>
-                  {userStore.nickname.length > 11
-                    ? `${userStore.nickname.substring(0, 10)}...`
-                    : userStore.nickname}
-                </Box>
+          <Button className="button_navbar_profile" onClick={() => setShowSetting(!showSetting)}>
+            <Stack direction={"row"} alignItems={"center"} marginLeft={"0px"} justifyContent={"left"} spacing={"8px"} height={"32px"}>
+              <Avatar userid={account.uid} size={32} ischain={true} onlineStatus={true} status={!notification.alert ? "donotdisturb" : "online"} />
+              <Stack direction={"column"} width={"110px"} alignItems={"flex-start"}>
+                <Box className={"fs-16-regular white"}>{userStore.nickname.length > 11 ? `${userStore.nickname.substring(0, 10)}...` : userStore.nickname}</Box>
                 <Box className={"fs-14-regular light"}>
-                  {`${chain?.chain.wallet.substring(
-                    0,
-                    5
-                  )}...${chain?.chain.wallet.substring(
-                    chain?.chain.wallet.length - 4
-                  )}`}
+                  {`${chain?.chain.wallet.substring(0, 5)}...${chain?.chain.wallet.substring(chain?.chain.wallet.length - 4)}`}
                 </Box>
               </Stack>
             </Stack>
           </Button>
         </Grid>
         <Settings view={showSetting} setView={setView} />
-        {location.pathname.indexOf("chat") === -1 && (
-          <Chatindex viewChat={showChat} setViewChat={setChat} />
-        )}
+        {location.pathname.indexOf("chat") === -1 && <Chatindex viewChat={showChat} setViewChat={setChat} />}
         <Alertindex viewAlert={showAlert} setViewAlert={setAlert} />
       </Grid>
       <ComingModal open={coming} setOpen={setComing} />

@@ -2,15 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
-import {
-  Box,
-  Divider,
-  Stack,
-  TextField,
-  InputAdornment,
-  Grid,
-  Button,
-} from "@mui/material";
+import { Box, Divider, Stack, TextField, InputAdornment, Grid, Button } from "@mui/material";
 import { debounce } from "lodash";
 import ChatStyle from "../../styles/ChatStyles";
 import searchlg from "../../assets/searchlg.svg";
@@ -20,12 +12,7 @@ import BlockModal from "../../components/chat/BlockModal";
 import DeleteModal from "../../components/chat/DeleteModal";
 // import RequestModal from "../../components/chat/RequestModal";
 // import { useSocket } from "../../providers/SocketProvider";
-import {
-  IContactList,
-  propsType,
-  selecteduserType,
-  userType,
-} from "../../types/chatTypes";
+import { IContactList, propsType, selecteduserType, userType } from "../../types/chatTypes";
 import { accountType } from "../../types/accountTypes";
 import { getSelectedUser } from "../../features/chat/Chat-selecteduserSlice";
 import { getAccount } from "../../features/account/AccountSlice";
@@ -82,8 +69,7 @@ const Chatmain = ({ view, setView }: propsType) => {
   const dispatch = useDispatch<AppDispatch>();
   const contactListStore: IContactList = useSelector(getContactList);
 
-  const selectedUserToDeleteStore: selecteduserType =
-    useSelector(getSelectedUser);
+  const selectedUserToDeleteStore: selecteduserType = useSelector(getSelectedUser);
   const accountStore: accountType = useSelector(getAccount);
   const alertListStore: IAlertList = useSelector(getAlertList);
 
@@ -153,12 +139,7 @@ const Chatmain = ({ view, setView }: propsType) => {
               <Box className={"fs-24-bold white"} marginTop={"0px"}>
                 {t("cha-1_chat")}
               </Box>
-              <Stack
-                flexDirection={"row"}
-                justifyContent={"space-between"}
-                alignItems={"center"}
-                marginTop={"30px"}
-              >
+              <Stack flexDirection={"row"} justifyContent={"space-between"} alignItems={"center"} marginTop={"30px"}>
                 <ThemeProvider theme={theme}>
                   <TextField
                     className={classes.search_bar}
@@ -184,12 +165,7 @@ const Chatmain = ({ view, setView }: propsType) => {
                               onClick={() => setValue("")}
                               style={{ cursor: "pointer" }}
                             >
-                              <path
-                                d="M17 7L7 17M7 7L17 17"
-                                stroke="white"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                              />
+                              <path d="M17 7L7 17M7 7L17 17" stroke="white" strokeLinecap="round" strokeLinejoin="round" />
                             </svg>
                           )}
                         </InputAdornment>
@@ -227,10 +203,7 @@ const Chatmain = ({ view, setView }: propsType) => {
               {contactListStore?.contacts?.length === 0 && value === "" ? (
                 <>
                   <Grid container sx={{ justifyContent: "center" }}>
-                    <img
-                      src={nocontact}
-                      style={{ marginTop: "40%", display: "block" }}
-                    ></img>
+                    <img src={nocontact} style={{ marginTop: "40%", display: "block" }}></img>
                   </Grid>
                   <Box className={"fs-20-regular white"} textAlign={"center"}>
                     {t("cha-2_you-havenot-friends")}
@@ -238,18 +211,9 @@ const Chatmain = ({ view, setView }: propsType) => {
                 </>
               ) : (
                 <>
-                  {(value === ""
-                    ? contactListStore?.contacts
-                    : searchedresult
-                  )?.map((user, index) => {
+                  {(value === "" ? contactListStore?.contacts : searchedresult)?.map((user, index) => {
                     const count =
-                      value === ""
-                        ? alertListStore.unread?.filter(
-                            (alert) =>
-                              alert.note.sender === user._id &&
-                              alert.alertType === "chat"
-                          ).length
-                        : 0;
+                      value === "" ? alertListStore.unread?.filter((alert) => alert.note.sender === user._id && alert.alertType === "chat").length : 0;
                     const numberofunreadmessages = count;
 
                     return (
@@ -279,11 +243,7 @@ const Chatmain = ({ view, setView }: propsType) => {
                       contextMenuPosition={contextMenuPosition}
                     />
                   )}
-                  <BlockModal
-                    openBlockModal={openBlockModal}
-                    setOpenBlockModal={setOpenBlockModal}
-                    roommode={false}
-                  />
+                  <BlockModal openBlockModal={openBlockModal} setOpenBlockModal={setOpenBlockModal} roommode={false} />
                   <DeleteModal
                     openDeleteModal={openDeleteModal}
                     setOpenDeleteModal={setOpenDeleteModal}

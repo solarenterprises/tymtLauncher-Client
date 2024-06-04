@@ -1,20 +1,10 @@
 import tymtCore from "../../lib/core/tymtCore";
-
 import solarIcon from "../../assets/chains/solar.svg";
 import PriceAPI from "../../lib/api/PriceAPI";
-
 import { Identities, Managers } from "@solar-network/crypto";
-import {
-  Hash,
-  HashAlgorithms,
-} from "@solar-network/crypto/dist/crypto/index.js";
-
+import { Hash, HashAlgorithms } from "@solar-network/crypto/dist/crypto/index.js";
 import tymtStorage from "../../lib/Storage";
-import {
-  chainEnum,
-  chainIconMap,
-  multiWalletType,
-} from "../../types/walletTypes";
+import { chainEnum, chainIconMap, multiWalletType } from "../../types/walletTypes";
 
 interface MnemonicPayload {
   mnemonic: string;
@@ -35,31 +25,15 @@ export const getAddressesFromMnemonic = async (payload: MnemonicPayload) => {
   const signature = await getCredentials(mnemonic.normalize("NFD"));
   tymtStorage.set(`d53Password`, JSON.stringify({ password: signature }));
 
-  const solarAddr = await tymtCore.Blockchains.solar.wallet.getAddress(
-    mnemonic
-  );
+  const solarAddr = await tymtCore.Blockchains.solar.wallet.getAddress(mnemonic);
   const bscAddr = await tymtCore.Blockchains.bsc.wallet.getAddress(mnemonic);
-  const ethereumAddr = await tymtCore.Blockchains.eth.wallet.getAddress(
-    mnemonic
-  );
-  const bitcoinAddr = await tymtCore.Blockchains.btc.wallet.getAddress(
-    mnemonic
-  );
-  const solanaAddr = await tymtCore.Blockchains.solana.wallet.getAddress(
-    mnemonic
-  );
-  const polygonAddr = await tymtCore.Blockchains.polygon.wallet.getAddress(
-    mnemonic
-  );
-  const avalancheAddr = await tymtCore.Blockchains.avalanche.wallet.getAddress(
-    mnemonic
-  );
-  const arbitrumAddr = await tymtCore.Blockchains.arbitrum.wallet.getAddress(
-    mnemonic
-  );
-  const optimismAddr = await tymtCore.Blockchains.op.wallet.getAddress(
-    mnemonic
-  );
+  const ethereumAddr = await tymtCore.Blockchains.eth.wallet.getAddress(mnemonic);
+  const bitcoinAddr = await tymtCore.Blockchains.btc.wallet.getAddress(mnemonic);
+  const solanaAddr = await tymtCore.Blockchains.solana.wallet.getAddress(mnemonic);
+  const polygonAddr = await tymtCore.Blockchains.polygon.wallet.getAddress(mnemonic);
+  const avalancheAddr = await tymtCore.Blockchains.avalanche.wallet.getAddress(mnemonic);
+  const arbitrumAddr = await tymtCore.Blockchains.arbitrum.wallet.getAddress(mnemonic);
+  const optimismAddr = await tymtCore.Blockchains.op.wallet.getAddress(mnemonic);
 
   return {
     Ethereum: {
@@ -401,11 +375,7 @@ export const getAddressesFromMnemonic = async (payload: MnemonicPayload) => {
   };
 };
 
-export const refreshBalances = async ({
-  _multiWalletStore,
-}: {
-  _multiWalletStore: multiWalletType;
-}) => {
+export const refreshBalances = async ({ _multiWalletStore }: { _multiWalletStore: multiWalletType }) => {
   const solarAddr = _multiWalletStore.Solar.chain.wallet;
   const binanceAddr = _multiWalletStore.Binance.chain.wallet;
   const ethereumAddr = _multiWalletStore.Ethereum.chain.wallet;
@@ -416,91 +386,27 @@ export const refreshBalances = async ({
   const bitcoinAddr = _multiWalletStore.Bitcoin.chain.wallet;
   const solanaAddr = _multiWalletStore.Solana.chain.wallet;
 
-  const ethereum_value_p = PriceAPI.getTokenPrice("ethereum");
-  const weth_value_p = PriceAPI.getTokenPrice("wrapped-ether-mantle-bridge");
-  const tether_value_p = PriceAPI.getTokenPrice("tether");
-  const usdcoin_value_p = PriceAPI.getTokenPrice("usd-coin");
-  const binancecoin_value_p = PriceAPI.getTokenPrice("binancecoin");
-  const wbnb_value_p = PriceAPI.getTokenPrice("wbnb");
-  const binanceusd_value_p = PriceAPI.getTokenPrice("binance-usd");
-  const maticnetwork_value_p = PriceAPI.getTokenPrice("matic-network");
-  const wmatic_value_p = PriceAPI.getTokenPrice("wmatic");
-  const maticaaveusdc_value_p = PriceAPI.getTokenPrice("matic-aave-usdc");
-  const avalanche2_value_p = PriceAPI.getTokenPrice("avalanche-2");
-  const arbitrum_value_p = PriceAPI.getTokenPrice("arbitrum");
-  const usdd_value_p = PriceAPI.getTokenPrice("usdd");
-  const optimism_value_p = PriceAPI.getTokenPrice("optimism");
-  const solar_value_p = PriceAPI.getTokenPrice("swipe");
-  const bitcoin_value_p = PriceAPI.getTokenPrice("bitcoin");
-  const solana_value_p = PriceAPI.getTokenPrice("solana");
+  const value_p = PriceAPI.getAllTokenPrices();
 
-  const ethereum_bal_p = tymtCore.Blockchains.eth.wallet.getTokenBalance(
-    ethereumAddr,
-    _multiWalletStore.Ethereum.tokens
-  );
+  const ethereum_bal_p = tymtCore.Blockchains.eth.wallet.getTokenBalance(ethereumAddr, _multiWalletStore.Ethereum.tokens);
+  const binance_bal_p = tymtCore.Blockchains.bsc.wallet.getTokenBalance(binanceAddr, _multiWalletStore.Binance.tokens);
+  const polygon_bal_p = tymtCore.Blockchains.polygon.wallet.getTokenBalance(polygonAddr, _multiWalletStore.Polygon.tokens);
+  const arbitrum_bal_p = tymtCore.Blockchains.arbitrum.wallet.getTokenBalance(arbitrumAddr, _multiWalletStore.Arbitrum.tokens);
+  const avalanche_bal_p = tymtCore.Blockchains.avalanche.wallet.getTokenBalance(avalancheAddr, _multiWalletStore.Avalanche.tokens);
+  const optimism_bal_p = tymtCore.Blockchains.op.wallet.getTokenBalance(optimismAddr, _multiWalletStore.Optimism.tokens);
 
-  const binance_bal_p = tymtCore.Blockchains.bsc.wallet.getTokenBalance(
-    binanceAddr,
-    _multiWalletStore.Binance.tokens
-  );
-
-  const polygon_bal_p = tymtCore.Blockchains.polygon.wallet.getTokenBalance(
-    polygonAddr,
-    _multiWalletStore.Polygon.tokens
-  );
-
-  const arbitrum_bal_p = tymtCore.Blockchains.arbitrum.wallet.getTokenBalance(
-    arbitrumAddr,
-    _multiWalletStore.Arbitrum.tokens
-  );
-
-  const avalanche_bal_p = tymtCore.Blockchains.avalanche.wallet.getTokenBalance(
-    avalancheAddr,
-    _multiWalletStore.Avalanche.tokens
-  );
-
-  const optimism_bal_p = tymtCore.Blockchains.op.wallet.getTokenBalance(
-    optimismAddr,
-    _multiWalletStore.Optimism.tokens
-  );
-
-  const ethereum_native_p =
-    tymtCore.Blockchains.eth.wallet.getBalance(ethereumAddr);
-  const binance_native_p =
-    tymtCore.Blockchains.bsc.wallet.getBalance(binanceAddr);
-  const polygon_native_p =
-    tymtCore.Blockchains.polygon.wallet.getBalance(polygonAddr);
-  const avalanche_native_p =
-    tymtCore.Blockchains.avalanche.wallet.getBalance(avalancheAddr);
-  const arbitrum_native_p =
-    tymtCore.Blockchains.arbitrum.wallet.getBalance(arbitrumAddr);
-  const optimism_native_p =
-    tymtCore.Blockchains.op.wallet.getBalance(optimismAddr);
-  const solar_native_p =
-    tymtCore.Blockchains.solar.wallet.getBalance(solarAddr);
-  const bitcoin_native_p =
-    tymtCore.Blockchains.btc.wallet.getBalance(bitcoinAddr);
-  const solana_native_p =
-    tymtCore.Blockchains.solana.wallet.getBalance(solanaAddr);
+  const ethereum_native_p = tymtCore.Blockchains.eth.wallet.getBalance(ethereumAddr);
+  const binance_native_p = tymtCore.Blockchains.bsc.wallet.getBalance(binanceAddr);
+  const polygon_native_p = tymtCore.Blockchains.polygon.wallet.getBalance(polygonAddr);
+  const avalanche_native_p = tymtCore.Blockchains.avalanche.wallet.getBalance(avalancheAddr);
+  const arbitrum_native_p = tymtCore.Blockchains.arbitrum.wallet.getBalance(arbitrumAddr);
+  const optimism_native_p = tymtCore.Blockchains.op.wallet.getBalance(optimismAddr);
+  const solar_native_p = tymtCore.Blockchains.solar.wallet.getBalance(solarAddr);
+  const bitcoin_native_p = tymtCore.Blockchains.btc.wallet.getBalance(bitcoinAddr);
+  const solana_native_p = tymtCore.Blockchains.solana.wallet.getBalance(solanaAddr);
 
   const res = await Promise.all([
-    ethereum_value_p,
-    weth_value_p,
-    tether_value_p,
-    usdcoin_value_p,
-    binancecoin_value_p,
-    wbnb_value_p,
-    binanceusd_value_p,
-    maticnetwork_value_p,
-    wmatic_value_p,
-    maticaaveusdc_value_p,
-    avalanche2_value_p,
-    arbitrum_value_p,
-    usdd_value_p,
-    optimism_value_p,
-    solar_value_p,
-    bitcoin_value_p,
-    solana_value_p,
+    value_p,
     ethereum_bal_p,
     binance_bal_p,
     polygon_bal_p,
@@ -517,38 +423,40 @@ export const refreshBalances = async ({
     bitcoin_native_p,
     solana_native_p,
   ]);
-  const ethereum_value = res[0];
-  const weth_value = res[1];
-  const tether_value = res[2];
-  const usdcoin_value = res[3];
-  const binancecoin_value = res[4];
-  const wbnb_value = res[5];
-  const binanceusd_value = res[6];
-  const maticnetwork_value = res[7];
-  const wmatic_value = res[8];
-  const maticaaveusdc_value = res[9];
-  const avalanche2_value = res[10];
-  const arbitrum_value = res[11];
-  const usdd_value = res[12];
-  const optimism_value = res[13];
-  const solar_value = res[14];
-  const bitcoin_value = res[15];
-  const solana_value = res[16];
-  const ethereum_bal = res[17];
-  const binance_bal = res[18];
-  const polygon_bal = res[19];
-  const arbitrum_bal = res[20];
-  const avalanche_bal = res[21];
-  const optimism_bal = res[22];
-  const ethereum_native = Number(res[23]);
-  const binance_native = Number(res[24]);
-  const polygon_native = Number(res[25]);
-  const avalanche_native = Number(res[26]);
-  const arbitrum_native = Number(res[27]);
-  const optimism_native = Number(res[28]);
-  const solar_native = Number(res[29]);
-  const bitcoin_native = Number(res[30]);
-  const solana_native = Number(res[31]);
+
+  const ethereum_value = res[0]?.find((element) => element.cmc === "ethereum")?.price ?? 0;
+  const weth_value = res[0]?.find((element) => element.cmc === "wrapped-ether-mantle-bridge")?.price ?? 0;
+  const tether_value = res[0]?.find((element) => element.cmc === "tether")?.price ?? 0;
+  const usdcoin_value = res[0]?.find((element) => element.cmc === "usd-coin")?.price ?? 0;
+  const binancecoin_value = res[0]?.find((element) => element.cmc === "binancecoin")?.price ?? 0;
+  const wbnb_value = res[0]?.find((element) => element.cmc === "wbnb")?.price ?? 0;
+  const binanceusd_value = res[0]?.find((element) => element.cmc === "binance-usd")?.price ?? 0;
+  const maticnetwork_value = res[0]?.find((element) => element.cmc === "matic-network")?.price ?? 0;
+  const wmatic_value = res[0]?.find((element) => element.cmc === "wmatic")?.price ?? 0;
+  const maticaaveusdc_value = res[0]?.find((element) => element.cmc === "matic-aave-usdc")?.price ?? 0;
+  const avalanche2_value = res[0]?.find((element) => element.cmc === "avalanche-2")?.price ?? 0;
+  const arbitrum_value = res[0]?.find((element) => element.cmc === "arbitrum")?.price ?? 0;
+  const usdd_value = res[0]?.find((element) => element.cmc === "usdd")?.price ?? 0;
+  const optimism_value = res[0]?.find((element) => element.cmc === "optimism")?.price ?? 0;
+  const solar_value = res[0]?.find((element) => element.cmc === "swipe")?.price ?? 0;
+  const bitcoin_value = res[0]?.find((element) => element.cmc === "bitcoin")?.price ?? 0;
+  const solana_value = res[0]?.find((element) => element.cmc === "solana")?.price ?? 0;
+
+  const ethereum_bal = res[1];
+  const binance_bal = res[2];
+  const polygon_bal = res[3];
+  const arbitrum_bal = res[4];
+  const avalanche_bal = res[5];
+  const optimism_bal = res[6];
+  const ethereum_native = Number(res[7]);
+  const binance_native = Number(res[8]);
+  const polygon_native = Number(res[9]);
+  const avalanche_native = Number(res[10]);
+  const arbitrum_native = Number(res[11]);
+  const optimism_native = Number(res[12]);
+  const solar_native = Number(res[13]);
+  const bitcoin_native = Number(res[14]);
+  const solana_native = Number(res[15]);
 
   const result = {
     Ethereum: {
@@ -562,8 +470,8 @@ export const refreshBalances = async ({
         website: "https://ethereum.org/",
         chainId: 1,
         wallet: ethereumAddr,
-        balance: ethereum_native,
-        price: Number(ethereum_value),
+        balance: ethereum_native ?? 0,
+        price: Number(ethereum_value ?? 0),
         cmc: "ethereum",
       },
       tokens: [
@@ -575,12 +483,8 @@ export const refreshBalances = async ({
           name: "WETH",
           symbol: "WETH",
           website: "https://weth.io/",
-          balance: Number(
-            ethereum_bal.find(
-              (element) => element.cmc === "wrapped-ether-mantle-bridge"
-            ).balance
-          ),
-          price: Number(weth_value),
+          balance: Number(ethereum_bal?.find((element) => element.cmc === "wrapped-ether-mantle-bridge")?.balance ?? 0),
+          price: Number(weth_value ?? 0),
           cmc: "wrapped-ether-mantle-bridge",
         },
         {
@@ -591,10 +495,8 @@ export const refreshBalances = async ({
           name: "Tether",
           symbol: "USDT",
           website: "https://tether.to",
-          balance: Number(
-            ethereum_bal.find((element) => element.cmc === "tether").balance
-          ),
-          price: Number(tether_value),
+          balance: Number(ethereum_bal?.find((element) => element.cmc === "tether")?.balance ?? 0),
+          price: Number(tether_value ?? 0),
           cmc: "tether",
         },
         {
@@ -605,10 +507,8 @@ export const refreshBalances = async ({
           name: "USD Coin",
           symbol: "USDC",
           website: "https://centre.io/usdc",
-          balance: Number(
-            ethereum_bal.find((element) => element.cmc === "usd-coin").balance
-          ),
-          price: Number(usdcoin_value),
+          balance: Number(ethereum_bal?.find((element) => element.cmc === "usd-coin")?.balance ?? 0),
+          price: Number(usdcoin_value ?? 0),
           cmc: "usd-coin",
         },
       ],
@@ -625,8 +525,8 @@ export const refreshBalances = async ({
         website: null,
         chainId: 56,
         wallet: binanceAddr,
-        balance: binance_native,
-        price: Number(binancecoin_value),
+        balance: binance_native ?? 0,
+        price: Number(binancecoin_value ?? 0),
         cmc: "binancecoin",
       },
       tokens: [
@@ -638,10 +538,8 @@ export const refreshBalances = async ({
           name: "Wrapped BNB",
           symbol: "WBNB.BNB",
           website: "https://binance.org",
-          balance: Number(
-            binance_bal.find((element) => element.cmc === "wbnb").balance
-          ),
-          price: Number(wbnb_value),
+          balance: Number(binance_bal?.find((element) => element.cmc === "wbnb")?.balance ?? 0),
+          price: Number(wbnb_value ?? 0),
           cmc: "wbnb",
         },
         {
@@ -652,10 +550,8 @@ export const refreshBalances = async ({
           name: "BNB pegged BUSD",
           symbol: "BUSD.BNB",
           website: "https://paxos.com/busd",
-          balance: Number(
-            binance_bal.find((element) => element.cmc === "binance-usd").balance
-          ),
-          price: Number(binanceusd_value),
+          balance: Number(binance_bal?.find((element) => element.cmc === "binance-usd")?.balance ?? 0),
+          price: Number(binanceusd_value ?? 0),
           cmc: "binance-usd",
         },
       ],
@@ -672,8 +568,8 @@ export const refreshBalances = async ({
         website: "https://polygon.technology/solutions/polygon-pos/",
         chainId: 137,
         wallet: polygonAddr,
-        balance: polygon_native,
-        price: Number(maticnetwork_value),
+        balance: polygon_native ?? 0,
+        price: Number(maticnetwork_value ?? 0),
         cmc: "matic-network",
       },
       tokens: [
@@ -685,10 +581,8 @@ export const refreshBalances = async ({
           name: "Wrapped MATIC",
           symbol: "WMATIC.MATIC",
           website: "https://polygon.technology",
-          balance: Number(
-            polygon_bal.find((element) => element.cmc === "wmatic").balance
-          ),
-          price: Number(wmatic_value),
+          balance: Number(polygon_bal?.find((element) => element.cmc === "wmatic")?.balance ?? 0),
+          price: Number(wmatic_value ?? 0),
           cmc: "wmatic",
         },
         {
@@ -699,11 +593,8 @@ export const refreshBalances = async ({
           name: "USD Coin",
           symbol: "USDC.MATIC",
           website: "https://centre.io/usdc",
-          balance: Number(
-            polygon_bal.find((element) => element.cmc === "matic-aave-usdc")
-              .balance
-          ),
-          price: Number(maticaaveusdc_value),
+          balance: Number(polygon_bal?.find((element) => element.cmc === "matic-aave-usdc")?.balance ?? 0),
+          price: Number(maticaaveusdc_value ?? 0),
           cmc: "matic-aave-usdc",
         },
         {
@@ -714,10 +605,8 @@ export const refreshBalances = async ({
           name: "Tether USD",
           symbol: "USDT.MATIC",
           website: "https://tether.to",
-          balance: Number(
-            polygon_bal.find((element) => element.cmc === "tether").balance
-          ),
-          price: Number(tether_value),
+          balance: Number(polygon_bal?.find((element) => element.cmc === "tether")?.balance ?? 0),
+          price: Number(tether_value ?? 0),
           cmc: "tether",
         },
       ],
@@ -734,8 +623,8 @@ export const refreshBalances = async ({
         website: "http://avax.network",
         chainId: 43114,
         wallet: avalancheAddr,
-        balance: avalanche_native,
-        price: Number(avalanche2_value),
+        balance: avalanche_native ?? 0,
+        price: Number(avalanche2_value ?? 0),
         cmc: "avalanche-2",
       },
       tokens: [
@@ -747,10 +636,8 @@ export const refreshBalances = async ({
           name: "USD Coin",
           symbol: "USDC.AVAX",
           website: "https://www.centre.io/",
-          balance: Number(
-            avalanche_bal.find((element) => element.cmc === "usd-coin").balance
-          ),
-          price: Number(usdcoin_value),
+          balance: Number(avalanche_bal?.find((element) => element.cmc === "usd-coin")?.balance ?? 0),
+          price: Number(usdcoin_value ?? 0),
           cmc: "usd-coin",
         },
       ],
@@ -767,8 +654,8 @@ export const refreshBalances = async ({
         website: "https://offchainlabs.com",
         chainId: 42161,
         wallet: arbitrumAddr,
-        balance: arbitrum_native,
-        price: Number(arbitrum_value),
+        balance: arbitrum_native ?? 0,
+        price: Number(arbitrum_value ?? 0),
         cmc: "arbitrum",
       },
       tokens: [
@@ -780,10 +667,8 @@ export const refreshBalances = async ({
           name: "Tether USD",
           symbol: "USDT.ARBETH",
           website: "https://tether.to/",
-          balance: Number(
-            arbitrum_bal.find((element) => element.cmc === "tether").balance
-          ),
-          price: Number(tether_value),
+          balance: Number(arbitrum_bal?.find((element) => element.cmc === "tether")?.balance ?? 0),
+          price: Number(tether_value ?? 0),
           cmc: "tether",
         },
         {
@@ -794,10 +679,8 @@ export const refreshBalances = async ({
           name: "USD Coin",
           symbol: "USDC.ARBETH",
           website: "https://www.centre.io/usdc",
-          balance: Number(
-            arbitrum_bal.find((element) => element.cmc === "usd-coin").balance
-          ),
-          price: Number(usdcoin_value),
+          balance: Number(arbitrum_bal?.find((element) => element.cmc === "usd-coin")?.balance ?? 0),
+          price: Number(usdcoin_value ?? 0),
           cmc: "usd-coin",
         },
         {
@@ -808,10 +691,8 @@ export const refreshBalances = async ({
           name: "Decentralized USD",
           symbol: "USDD.ARBETH",
           website: "https://usdd.io/",
-          balance: Number(
-            arbitrum_bal.find((element) => element.cmc === "usdd").balance
-          ),
-          price: Number(usdd_value),
+          balance: Number(arbitrum_bal?.find((element) => element.cmc === "usdd")?.balance ?? 0),
+          price: Number(usdd_value ?? 0),
           cmc: "usdd",
         },
       ],
@@ -828,8 +709,8 @@ export const refreshBalances = async ({
         website: "https://www.optimism.io/",
         chainId: 10,
         wallet: optimismAddr,
-        balance: optimism_native,
-        price: Number(optimism_value),
+        balance: optimism_native ?? 0,
+        price: Number(optimism_value ?? 0),
         cmc: "optimism",
       },
       tokens: [
@@ -841,10 +722,8 @@ export const refreshBalances = async ({
           name: "USD Coin",
           symbol: "USDC.OETH",
           website: "https://www.centre.io/",
-          balance: Number(
-            optimism_bal.find((element) => element.cmc === "usd-coin").balance
-          ),
-          price: Number(usdcoin_value),
+          balance: Number(optimism_bal?.find((element) => element.cmc === "usd-coin")?.balance ?? 0),
+          price: Number(usdcoin_value ?? 0),
           cmc: "usd-coin",
         },
         {
@@ -855,10 +734,8 @@ export const refreshBalances = async ({
           name: "Tether USD",
           symbol: "USDT.OETH",
           website: "https://tether.to/",
-          balance: Number(
-            optimism_bal.find((element) => element.cmc === "tether").balance
-          ),
-          price: Number(tether_value),
+          balance: Number(optimism_bal?.find((element) => element.cmc === "tether")?.balance ?? 0),
+          price: Number(tether_value ?? 0),
           cmc: "tether",
         },
       ],
@@ -875,8 +752,8 @@ export const refreshBalances = async ({
         website: "https://solar.org/",
         chainId: 0,
         wallet: solarAddr,
-        balance: solar_native,
-        price: Number(solar_value),
+        balance: solar_native ?? 0,
+        price: Number(solar_value ?? 0),
         cmc: "swipe",
       },
       tokens: [],
@@ -893,8 +770,8 @@ export const refreshBalances = async ({
         website: "https://bitcoin.org/",
         chainId: 0,
         wallet: bitcoinAddr,
-        balance: bitcoin_native,
-        price: Number(bitcoin_value),
+        balance: bitcoin_native ?? 0,
+        price: Number(bitcoin_value ?? 0),
         cmc: "bitcoin",
       },
       tokens: [],
@@ -911,8 +788,8 @@ export const refreshBalances = async ({
         website: "https://solana.com/",
         chainId: 0,
         wallet: solanaAddr,
-        balance: solana_native,
-        price: Number(solana_value),
+        balance: solana_native ?? 0,
+        price: Number(solana_value ?? 0),
         cmc: "solana",
       },
       tokens: [],

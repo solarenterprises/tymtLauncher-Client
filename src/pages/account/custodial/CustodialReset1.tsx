@@ -34,11 +34,7 @@ const CustodialReset1 = () => {
       email: Yup.string()
         .email(t("cca-62_invalid-email-address"))
         .required(t("cca-63_required"))
-        .test(
-          "equals",
-          "Wrong email",
-          (value) => value === custodialStore.email
-        ),
+        .test("equals", "Wrong email", (value) => value === custodialStore.email),
     }),
     onSubmit: () => {
       navigate("/custodial/reset/1/reset-link");
@@ -53,12 +49,7 @@ const CustodialReset1 = () => {
     <>
       <Grid container className="basic-container">
         <Grid item xs={12} container justifyContent={"center"}>
-          <Stack
-            direction={"row"}
-            alignItems={"center"}
-            justifyContent={"center"}
-            gap={"64px"}
-          >
+          <Stack direction={"row"} alignItems={"center"} justifyContent={"center"} gap={"64px"}>
             <Stack alignItems={"center"} justifyContent={"center"}>
               <Grid container justifyContent={"center"}>
                 <Grid
@@ -71,22 +62,12 @@ const CustodialReset1 = () => {
                 >
                   <Grid item xs={12} container justifyContent={"space-between"}>
                     <Back onClick={handleBackClick} />
-                    <Stepper
-                      all={2}
-                      now={1}
-                      texts={[t("cca-46_reset-password"), ""]}
-                    />
+                    <Stepper all={2} now={1} texts={[t("cca-46_reset-password"), ""]} />
                   </Grid>
                   <Grid item xs={12} mt={"80px"}>
-                    <AccountHeader
-                      title={t("cca-46_reset-password")}
-                      text={t("cca-47_enter-your-email")}
-                    />
+                    <AccountHeader title={t("cca-46_reset-password")} text={t("cca-47_enter-your-email")} />
                   </Grid>
-                  <form
-                    onSubmit={formik.handleSubmit}
-                    style={{ width: "100%" }}
-                  >
+                  <form onSubmit={formik.handleSubmit} style={{ width: "100%" }}>
                     <Grid item xs={12} mt={"48px"}>
                       <InputText
                         id="custodial-login-email"
@@ -96,11 +77,7 @@ const CustodialReset1 = () => {
                         value={formik.values.email}
                         onChange={formik.handleChange}
                         onBlur={formik.handleBlur}
-                        error={
-                          formik.touched.email && formik.errors.email
-                            ? true
-                            : false
-                        }
+                        error={formik.touched.email && formik.errors.email ? true : false}
                       />
                     </Grid>
                     <Grid
@@ -111,18 +88,10 @@ const CustodialReset1 = () => {
                         padding: "0px 6px",
                       }}
                     >
-                      {formik.touched.email && formik.errors.email && (
-                        <Box className={"fs-16-regular red"}>
-                          {formik.errors.email}
-                        </Box>
-                      )}
+                      {formik.touched.email && formik.errors.email && <Box className={"fs-16-regular red"}>{formik.errors.email}</Box>}
                     </Grid>
                     <Grid item xs={12} mt={"48px"}>
-                      <AccountNextButton
-                        text={t("cca-41_next")}
-                        isSubmit={true}
-                        disabled={formik.errors.email ? true : false}
-                      />
+                      <AccountNextButton text={t("cca-41_next")} isSubmit={true} disabled={formik.errors.email ? true : false} />
                     </Grid>
                   </form>
 

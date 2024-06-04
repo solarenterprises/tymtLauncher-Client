@@ -24,8 +24,7 @@
   .MuiInputBase-root {
     height: 44px;
     border-radius: var(--Angle-Number, 32px);
-    border: 1px solid
-      var(--bg-stroke-white-20-modal-stroke, rgba(255, 255, 255, 0.2));
+    border: 1px solid var(--bg-stroke-white-20-modal-stroke, rgba(255, 255, 255, 0.2));
     background: var(--bg-stroke-icon-button-bg-10, rgba(128, 128, 128, 0.1));
     background-blend-mode: luminosity;
     font-family: "Cobe";
@@ -37,10 +36,7 @@
   }
   &:hover {
     background-color: var(--Windows-Glass, rgba(128, 128, 128, 0.3));
-    border-radius: var(
-      --Angle-Number,
-      32px
-    ); // This will make it turn gray on hover
+    border-radius: var(--Angle-Number, 32px); // This will make it turn gray on hover
   }
 
   &:covered {
@@ -96,18 +92,12 @@
     z-index: 11;
     color: #52e1f21a;
     &:hover {
-      background-color: var(
-        --bg-stroke-icon-button-bg-10,
-        rgba(128, 128, 128, 0.1)
-      );
+      background-color: var(--bg-stroke-icon-button-bg-10, rgba(128, 128, 128, 0.1));
       border: 2px solid var(--Stroke-linear-Hover, rgba(255, 255, 255, 0.1));
     }
 
     &:active {
-      background: var(
-        --bg-stroke-icon-button-bg-active-30,
-        rgba(128, 128, 128, 0.3)
-      );
+      background: var(--bg-stroke-icon-button-bg-active-30, rgba(128, 128, 128, 0.3));
     }
   }
 }
@@ -132,16 +122,10 @@
     background-blend-mode: luminosity;
     backdrop-filter: blur(50px);
     &:hover {
-      background-color: var(
-        --bg-stroke-icon-button-bg-10,
-        rgba(128, 128, 128, 0.1)
-      );
+      background-color: var(--bg-stroke-icon-button-bg-10, rgba(128, 128, 128, 0.1));
     }
     &:active {
-      background: var(
-        --bg-stroke-icon-button-bg-active-30,
-        rgba(128, 128, 128, 0.3)
-      );
+      background: var(--bg-stroke-icon-button-bg-active-30, rgba(128, 128, 128, 0.3));
     }
     position: relative;
   }
@@ -204,17 +188,11 @@
     background-blend-mode: luminosity;
     backdrop-filter: blur(50px);
     &:hover {
-      background-color: var(
-        --bg-stroke-icon-button-bg-10,
-        rgba(128, 128, 128, 0.1)
-      );
+      background-color: var(--bg-stroke-icon-button-bg-10, rgba(128, 128, 128, 0.1));
       border: 2px solid var(--Stroke-linear-Hover, rgba(255, 255, 255, 0.1));
     }
     &:active {
-      background: var(
-        --bg-stroke-icon-button-bg-active-30,
-        rgba(128, 128, 128, 0.3)
-      );
+      background: var(--bg-stroke-icon-button-bg-active-30, rgba(128, 128, 128, 0.3));
     }
   }
   // Add more translated styles as needed
@@ -286,11 +264,7 @@
   height: 259px;
   flex-shrink: 0;
   border-radius: 46px;
-  background: linear-gradient(
-    180deg,
-    rgba(246, 242, 192, 0.6) 0%,
-    rgba(246, 226, 122, 0) 100%
-  );
+  background: linear-gradient(180deg, rgba(246, 242, 192, 0.6) 0%, rgba(246, 226, 122, 0) 100%);
   filter: blur(100px);
   position: absolute;
   z-index: -1;
@@ -308,18 +282,12 @@
   backdrop-filter: blur(50px);
 
   &:hover {
-    background-color: var(
-      --bg-stroke-icon-button-bg-10,
-      rgba(128, 128, 128, 0.1)
-    );
+    background-color: var(--bg-stroke-icon-button-bg-10, rgba(128, 128, 128, 0.1));
     border: 2px solid var(--Stroke-linear-Hover, rgba(255, 255, 255, 0.1));
   }
 
   &:active {
-    background: var(
-      --bg-stroke-icon-button-bg-active-30,
-      rgba(128, 128, 128, 0.3)
-    );
+    background: var(--bg-stroke-icon-button-bg-active-30, rgba(128, 128, 128, 0.3));
   }
 }
 
@@ -347,10 +315,7 @@
     padding: 0px;
 
     &:hover {
-      background-color: var(
-        --bg-stroke-icon-button-bg-10,
-        rgba(128, 128, 128, 0.1)
-      );
+      background-color: var(--bg-stroke-icon-button-bg-10, rgba(128, 128, 128, 0.1));
       border: 1px solid var(--Stroke-linear-Hover, rgba(255, 255, 255, 0.1));
     }
   }
@@ -402,18 +367,12 @@
   cursor: pointer;
 
   &:hover {
-    background-color: var(
-      --bg-stroke-icon-button-bg-10,
-      rgba(128, 128, 128, 0.1)
-    );
+    background-color: var(--bg-stroke-icon-button-bg-10, rgba(128, 128, 128, 0.1));
     border: 1px solid var(--Stroke-linear-Hover, rgba(255, 255, 255, 0.1));
   }
 
   &:active {
-    background: var(
-      --bg-stroke-icon-button-bg-active-30,
-      rgba(128, 128, 128, 0.3)
-    );
+    background: var(--bg-stroke-icon-button-bg-active-30, rgba(128, 128, 128, 0.3));
   }
 }
 
@@ -472,10 +431,7 @@
   position: relative;
 
   &:hover {
-    background-color: var(
-      --bg-stroke-icon-button-bg-10,
-      rgba(128, 128, 128, 0.1)
-    );
+    background-color: var(--bg-stroke-icon-button-bg-10, rgba(128, 128, 128, 0.1));
     border: 1px solid var(--Stroke-linear-Hover, rgba(255, 255, 255, 0.1));
   }
 }
@@ -500,10 +456,7 @@
   position: relative;
 
   &:hover {
-    background-color: var(
-      --bg-stroke-icon-button-bg-10,
-      rgba(128, 128, 128, 0.1)
-    );
+    background-color: var(--bg-stroke-icon-button-bg-10, rgba(128, 128, 128, 0.1));
     border: 1px solid var(--Stroke-linear-Hover, rgba(255, 255, 255, 0.1));
   }
 }

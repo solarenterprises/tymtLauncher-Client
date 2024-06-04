@@ -1,7 +1,5 @@
 import { useNavigate } from "react-router-dom";
-
 import { Grid, Button, Box, Stack } from "@mui/material";
-
 import Games from "../../lib/game/Game";
 
 const Tymtshow = ({ image }: any) => {
@@ -44,11 +42,7 @@ const Tymtshow = ({ image }: any) => {
                   }}
                   loading="lazy"
                 />
-                <Box
-                  className={"fs-14-light white t-center"}
-                  textTransform={"none"}
-                  sx={{ whiteSpace: "nowrap", padding: "0px 20px" }}
-                >
+                <Box className={"fs-14-light white t-center"} textTransform={"none"} sx={{ whiteSpace: "nowrap", padding: "0px 20px" }}>
                   {Games[rowKey].name}
                 </Box>
               </Stack>

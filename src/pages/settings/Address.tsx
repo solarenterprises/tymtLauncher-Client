@@ -9,10 +9,7 @@ import editIcon from "../../assets/settings/edit-icon.svg";
 import deleteIcon from "../../assets/settings/trash-icon.svg";
 import InputText from "../../components/account/InputText";
 import emptyImg from "../../assets/settings/empty-address.svg";
-import {
-  selectAddress,
-  setAddress,
-} from "../../features/settings/AddressSlice";
+import { selectAddress, setAddress } from "../../features/settings/AddressSlice";
 import { useCallback, useState } from "react";
 import { propsType, addressType } from "../../types/settingTypes";
 
@@ -28,13 +25,7 @@ const Address = ({ view, setView }: propsType) => {
   const classname = SettingStyle();
   const { t } = useTranslation();
 
-  const {
-    setNotificationStatus,
-    setNotificationTitle,
-    setNotificationDetail,
-    setNotificationOpen,
-    setNotificationLink,
-  } = useNotification();
+  const { setNotificationStatus, setNotificationTitle, setNotificationDetail, setNotificationOpen, setNotificationLink } = useNotification();
 
   const updateAddress = useCallback(() => {
     setStatus("normal");
@@ -83,36 +74,20 @@ const Address = ({ view, setView }: propsType) => {
       {view === "address" && (
         <Stack direction={"column"}>
           <input type="file" id="file-input" style={{ display: "none" }} />
-          <Stack
-            flexDirection={"row"}
-            justifyContent={"flex-start"}
-            gap={"10px"}
-            alignItems={"center"}
-            textAlign={"center"}
-            sx={{ padding: "20px" }}
-          >
+          <Stack flexDirection={"row"} justifyContent={"flex-start"} gap={"10px"} alignItems={"center"} textAlign={"center"} sx={{ padding: "20px" }}>
             <Button className="common-btn">
               {status === "normal" && (
-                <Button
-                  className={"setting-back-button"}
-                  onClick={() => setView("wallet")}
-                >
+                <Button className={"setting-back-button"} onClick={() => setView("wallet")}>
                   <Box component={"img"} src={backIcon}></Box>
                 </Button>
               )}
               {status === "add" && (
-                <Button
-                  className={"setting-back-button"}
-                  onClick={() => setStatus("normal")}
-                >
+                <Button className={"setting-back-button"} onClick={() => setStatus("normal")}>
                   <Box component={"img"} src={backIcon}></Box>
                 </Button>
               )}
               {status === "edit" && (
-                <Button
-                  className={"setting-back-button"}
-                  onClick={() => setStatus("normal")}
-                >
+                <Button className={"setting-back-button"} onClick={() => setStatus("normal")}>
                   <Box component={"img"} src={backIcon}></Box>
                 </Button>
               )}
@@ -127,29 +102,13 @@ const Address = ({ view, setView }: propsType) => {
           {status === "normal" && (
             <>
               {data.length === 0 && (
-                <Stack
-                  direction={"column"}
-                  justifyContent={"center"}
-                  textAlign={"center"}
-                  alignItems={"center"}
-                  paddingTop={"20%"}
-                >
+                <Stack direction={"column"} justifyContent={"center"} textAlign={"center"} alignItems={"center"} paddingTop={"20%"}>
                   <Box>
                     <img src={emptyImg} />
                   </Box>
-                  <Box className="fs-h4 white">
-                    {t("set-63_address-book-empty")}
-                  </Box>
-                  <Box
-                    padding={"20px"}
-                    width={"90%"}
-                    sx={{ position: "absolute", bottom: "30px" }}
-                  >
-                    <Button
-                      fullWidth
-                      className={classname.action_button}
-                      onClick={() => setStatus("add")}
-                    >
+                  <Box className="fs-h4 white">{t("set-63_address-book-empty")}</Box>
+                  <Box padding={"20px"} width={"90%"} sx={{ position: "absolute", bottom: "30px" }}>
+                    <Button fullWidth className={classname.action_button} onClick={() => setStatus("add")}>
                       {t("set-62_add-address")}
                     </Button>
                   </Box>
@@ -160,67 +119,29 @@ const Address = ({ view, setView }: propsType) => {
                   {data.map((item, index) => (
                     <>
                       <Box key={index}>
-                        <Stack
-                          direction={"row"}
-                          justifyContent={"space-between"}
-                          textAlign={"center"}
-                          padding={"30px"}
-                        >
-                          <Stack
-                            direction={"column"}
-                            justifyContent={"flex-start"}
-                            gap={1}
-                            textAlign={"left"}
-                          >
+                        <Stack direction={"row"} justifyContent={"space-between"} textAlign={"center"} padding={"30px"}>
+                          <Stack direction={"column"} justifyContent={"flex-start"} gap={1} textAlign={"left"}>
                             <Box className="fs-h4 white">{item.name}</Box>
-                            <Box className="fs-16-regular gray">
-                              {item.address}
-                            </Box>
+                            <Box className="fs-16-regular gray">{item.address}</Box>
                           </Stack>
-                          <Stack
-                            className="center-align"
-                            direction={"row"}
-                            gap={1}
-                          >
-                            <Box
-                              sx={{ display: "flex" }}
-                              className="common-btn"
-                              onClick={() => editAddress(index)}
-                            >
-                              <Tooltip
-                                title={t("set-82_edit")}
-                                classes={{ tooltip: classname.tooltip }}
-                              >
+                          <Stack className="center-align" direction={"row"} gap={1}>
+                            <Box sx={{ display: "flex" }} className="common-btn" onClick={() => editAddress(index)}>
+                              <Tooltip title={t("set-82_edit")} classes={{ tooltip: classname.tooltip }}>
                                 <img src={editIcon} />
                               </Tooltip>
                             </Box>
-                            <Box
-                              sx={{ display: "flex" }}
-                              className="common-btn"
-                              onClick={() => deleteAddress(index)}
-                            >
-                              <Tooltip
-                                title={t("set-83_delete")}
-                                classes={{ tooltip: classname.tooltip }}
-                              >
+                            <Box sx={{ display: "flex" }} className="common-btn" onClick={() => deleteAddress(index)}>
+                              <Tooltip title={t("set-83_delete")} classes={{ tooltip: classname.tooltip }}>
                                 <img src={deleteIcon} />
                               </Tooltip>
                             </Box>
                           </Stack>
                         </Stack>
-                        <Divider
-                          variant="middle"
-                          sx={{ backgroundColor: "#FFFFFF1A" }}
-                        />
+                        <Divider variant="middle" sx={{ backgroundColor: "#FFFFFF1A" }} />
                       </Box>
                     </>
                   ))}
-                  <Box
-                    padding={"20px"}
-                    width={"90%"}
-                    sx={{ position: "absolute", bottom: "30px" }}
-                    onClick={() => setStatus("add")}
-                  >
+                  <Box padding={"20px"} width={"90%"} sx={{ position: "absolute", bottom: "30px" }} onClick={() => setStatus("add")}>
                     <Button fullWidth className={classname.action_button}>
                       {t("set-62_add-address")}
                     </Button>
@@ -233,27 +154,13 @@ const Address = ({ view, setView }: propsType) => {
             <>
               <Stack className={classname.border_container} margin={"20px"}>
                 <Box padding={"10px"}>
-                  <InputText
-                    setValue={setName}
-                    id="address-name"
-                    type="text"
-                    label={t("set-64_name-for-wallet")}
-                  />
+                  <InputText setValue={setName} id="address-name" type="text" label={t("set-64_name-for-wallet")} />
                 </Box>
                 <Box padding={"10px"}>
-                  <InputText
-                    setValue={setInfo}
-                    id="address-wallet"
-                    type="mnemonic"
-                    label={t("set-65_recipient-address")}
-                  />
+                  <InputText setValue={setInfo} id="address-wallet" type="mnemonic" label={t("set-65_recipient-address")} />
                 </Box>
               </Stack>
-              <Box
-                padding={"20px"}
-                width={"90%"}
-                sx={{ position: "absolute", bottom: "30px" }}
-              >
+              <Box padding={"20px"} width={"90%"} sx={{ position: "absolute", bottom: "30px" }}>
                 <Button
                   fullWidth
                   className={classname.action_button}
@@ -271,34 +178,14 @@ const Address = ({ view, setView }: propsType) => {
             <>
               <Stack className={classname.border_container} margin={"20px"}>
                 <Box padding={"10px"}>
-                  <InputText
-                    setValue={setName}
-                    id="address-name"
-                    type="text"
-                    label={t("set-64_name-for-wallet")}
-                    value={name}
-                  />
+                  <InputText setValue={setName} id="address-name" type="text" label={t("set-64_name-for-wallet")} value={name} />
                 </Box>
                 <Box padding={"10px"}>
-                  <InputText
-                    setValue={setInfo}
-                    id="address-wallet"
-                    type="mnemonic"
-                    label={t("set-65_recipient-address")}
-                    value={info}
-                  />
+                  <InputText setValue={setInfo} id="address-wallet" type="mnemonic" label={t("set-65_recipient-address")} value={info} />
                 </Box>
               </Stack>
-              <Box
-                padding={"20px"}
-                width={"90%"}
-                sx={{ position: "absolute", bottom: "30px" }}
-              >
-                <Button
-                  fullWidth
-                  className={classname.action_button}
-                  onClick={() => updateAddress()}
-                >
+              <Box padding={"20px"} width={"90%"} sx={{ position: "absolute", bottom: "30px" }}>
+                <Button fullWidth className={classname.action_button} onClick={() => updateAddress()}>
                   {t("set-57_save")}
                 </Button>
               </Box>

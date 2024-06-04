@@ -30,7 +30,7 @@ const OtpInput = ({ value, setValue }: props) => {
                 backgroundColor: "rgb(49, 53, 53)",
                 padding: "6px 8px",
                 borderRadius: "32px",
-                border: "1px solid rgb(71, 76, 76)"
+                border: "1px solid rgb(71, 76, 76)",
               }}
             >
               <Box className="fs-16-regular white">{t("cca-61_paste")}</Box>
@@ -40,9 +40,9 @@ const OtpInput = ({ value, setValue }: props) => {
             sx: {
               [`& .MuiTooltip-tooltip`]: {
                 backgroundColor: "transparent", // Set the background color to transparent
-                boxShadow: "none" // Remove any shadow
-              }
-            }
+                boxShadow: "none", // Remove any shadow
+              },
+            },
           }}
         >
           <IconButton
@@ -64,27 +64,23 @@ const OtpInput = ({ value, setValue }: props) => {
           sx={{
             "& .MuiOtpInput-TextField": {
               borderRadius: "8px",
-              border:
-                "1px solid var(--bg-stroke-white-10-stroke-default, rgba(255, 255, 255, 0.10))",
-              background:
-                "var(--bg-stroke-icon-button-bg-10, rgba(128, 128, 128, 0.10))",
+              border: "1px solid var(--bg-stroke-white-10-stroke-default, rgba(255, 255, 255, 0.10))",
+              background: "var(--bg-stroke-icon-button-bg-10, rgba(128, 128, 128, 0.10))",
               backgroundBlendMode: "luminosity",
               backdropFilter: "blur(50px)",
               "&:hover": {
-                border:
-                  "1px solid var(--bg-stroke-white-20-modal-stroke, rgba(255, 255, 255, 0.20))",
-                background:
-                  "var(--bg-stroke-icon-button-bg-active-30, rgba(128, 128, 128, 0.30))"
-              }
+                border: "1px solid var(--bg-stroke-white-20-modal-stroke, rgba(255, 255, 255, 0.20))",
+                background: "var(--bg-stroke-icon-button-bg-active-30, rgba(128, 128, 128, 0.30))",
+              },
             },
             "& .MuiOutlinedInput-notchedOutline": {
-              borderWidth: "0px !important"
+              borderWidth: "0px !important",
             },
             "& .MuiInputBase-input": {
               color: "white",
               fontFamily: "Cobe-Bold",
-              fontSize: "20px"
-            }
+              fontSize: "20px",
+            },
           }}
         />
       </Grid>

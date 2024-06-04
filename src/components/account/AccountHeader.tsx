@@ -13,7 +13,7 @@ const AccountHeader = ({ title, text }: props) => {
           className={"fs-h1 white"}
           sx={{
             leadingTrim: "both",
-            textEdge: "cap"
+            textEdge: "cap",
           }}
         >
           {title}

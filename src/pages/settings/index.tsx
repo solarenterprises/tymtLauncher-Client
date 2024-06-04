@@ -2,7 +2,6 @@ import { Box, SwipeableDrawer } from "@mui/material";
 import { useState } from "react";
 import SettingStyle from "../../styles/SettingStyle";
 import closeImg from "../../assets/settings/collaps-close-btn.svg";
-
 import Main from "./Main";
 import Chain from "./Chain";
 import General from "./General";
@@ -30,20 +29,13 @@ const Settings = ({ view, setView }: propsSettingType) => {
   const [state, setState] = useState({ right: false });
   const [panel, setPanel] = useState("main");
 
-  const toggleDrawer =
-    (anchor: Anchor, open: boolean) =>
-    (event: React.KeyboardEvent | React.MouseEvent) => {
-      if (
-        event &&
-        event.type === "keydown" &&
-        ((event as React.KeyboardEvent).key === "Tab" ||
-          (event as React.KeyboardEvent).key === "Shift")
-      ) {
-        return;
-      }
+  const toggleDrawer = (anchor: Anchor, open: boolean) => (event: React.KeyboardEvent | React.MouseEvent) => {
+    if (event && event.type === "keydown" && ((event as React.KeyboardEvent).key === "Tab" || (event as React.KeyboardEvent).key === "Shift")) {
+      return;
+    }
 
-      setState({ ...state, [anchor]: open });
-    };
+    setState({ ...state, [anchor]: open });
+  };
 
   return (
     <SwipeableDrawer
@@ -55,16 +47,12 @@ const Settings = ({ view, setView }: propsSettingType) => {
       classes={{ paper: classname.setting_container }}
       slotProps={{
         backdrop: {
-          onClick: toggleDrawer("right", false)
-        }
+          onClick: toggleDrawer("right", false),
+        },
       }}
     >
       <Box className={classname.collaps_pan}>
-        <img
-          src={closeImg}
-          className={classname.close_icon}
-          onClick={() => setView(false)}
-        />
+        <img src={closeImg} className={classname.close_icon} onClick={() => setView(false)} />
       </Box>
       <Box className={classname.setting_pan}>
         <Main view={panel} setView={setPanel} />

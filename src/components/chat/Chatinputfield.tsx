@@ -1,14 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { useCallback, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import {
-  Box,
-  Button,
-  Divider,
-  InputAdornment,
-  Popover,
-  TextField,
-} from "@mui/material";
+import { Box, Button, Divider, InputAdornment, Popover, TextField } from "@mui/material";
 import TextareaAutosize from "@mui/material/TextareaAutosize";
 import emotion from "../../assets/chat/emotion.svg";
 import send from "../../assets/chat/chatframe.svg";
@@ -16,18 +9,10 @@ import { ThemeProvider, createTheme } from "@mui/material/styles";
 import ChatStyle from "../../styles/ChatStyles";
 import EmojiPicker, { SkinTones } from "emoji-picker-react";
 import { useSocket } from "../../providers/SocketProvider";
-import {
-  ChatHistoryType,
-  IContact,
-  encryptionkeyStoreType,
-  propsChatinputfieldType,
-} from "../../types/chatTypes";
+import { ChatHistoryType, IContact, encryptionkeyStoreType, propsChatinputfieldType } from "../../types/chatTypes";
 import { accountType } from "../../types/accountTypes";
 import { getAccount } from "../../features/account/AccountSlice";
-import {
-  getChatHistory,
-  setChatHistory,
-} from "../../features/chat/Chat-historySlice";
+import { getChatHistory, setChatHistory } from "../../features/chat/Chat-historySlice";
 import { encrypt } from "../../lib/api/Encrypt";
 import { selectEncryptionKeyStore } from "../../features/chat/Chat-encryptionkeySlice";
 import { getCurrentPartner } from "../../features/chat/CurrentPartnerSlice";
@@ -46,11 +31,7 @@ const theme = createTheme({
   },
 });
 
-const Chatinputfield = ({
-  value,
-  keyperuser,
-  setValue,
-}: propsChatinputfieldType) => {
+const Chatinputfield = ({ value, keyperuser, setValue }: propsChatinputfieldType) => {
   const { socket } = useSocket();
   const { t } = useTranslation();
   const classes = ChatStyle();
@@ -59,9 +40,7 @@ const Chatinputfield = ({
   const accountStore: accountType = useSelector(getAccount);
   const currentPartnerStore: IContact = useSelector(getCurrentPartner);
   const chatHistoryStore: ChatHistoryType = useSelector(getChatHistory);
-  const encryptionKeyStore: encryptionkeyStoreType = useSelector(
-    selectEncryptionKeyStore
-  );
+  const encryptionKeyStore: encryptionkeyStoreType = useSelector(selectEncryptionKeyStore);
 
   const [anchorEl, setAnchorEl] = useState(null);
   const [EmojiLibraryOpen, setIsEmojiLibraryOpen] = useState(false);
@@ -133,12 +112,7 @@ const Chatinputfield = ({
         }, 0);
       } else if (e.key === "Enter") {
         e.preventDefault();
-        console.log(
-          "debug",
-          encryptionKeyStore,
-          currentPartnerStore,
-          encryptionKeyStore.encryption_Keys[currentPartnerStore._id]
-        );
+        console.log("debug", encryptionKeyStore, currentPartnerStore, encryptionKeyStore.encryption_Keys[currentPartnerStore._id]);
         if (encryptionKeyStore.encryption_Keys[currentPartnerStore._id]) {
           await sendMessage();
         }
@@ -173,10 +147,7 @@ const Chatinputfield = ({
             ),
             endAdornment: (
               <InputAdornment position="start">
-                <Button
-                  className={classes.emoji_button}
-                  onClick={handleEmojiClick}
-                >
+                <Button className={classes.emoji_button} onClick={handleEmojiClick}>
                   <img
                     src={emotion}
                     style={{
@@ -230,12 +201,7 @@ const Chatinputfield = ({
           },
         }}
       >
-        <EmojiPicker
-          className={classes.emojipicker}
-          onEmojiClick={handleEmojiSelect}
-          defaultSkinTone={SkinTones.LIGHT}
-          autoFocusSearch={true}
-        />
+        <EmojiPicker className={classes.emojipicker} onEmojiClick={handleEmojiSelect} defaultSkinTone={SkinTones.LIGHT} autoFocusSearch={true} />
       </Popover>
     </Box>
   );

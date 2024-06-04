@@ -40,9 +40,7 @@ const FRcontextmenu = ({
                 backdropFilter: "blur(10px)",
               }}
               onClick={() => {
-                setIsClickedBlock(!isClickedBlock),
-                  setOpenBlockModal(true),
-                  setShowContextMenu(false);
+                setIsClickedBlock(!isClickedBlock), setOpenBlockModal(true), setShowContextMenu(false);
               }}
             >
               {t("cha-4_block")}
@@ -55,9 +53,7 @@ const FRcontextmenu = ({
                 backdropFilter: "blur(10px)",
               }}
               onClick={() => {
-                setIsClickedDelete(!isClickedDelete),
-                  setOpenDeleteModal(true),
-                  setShowContextMenu(false);
+                setIsClickedDelete(!isClickedDelete), setOpenDeleteModal(true), setShowContextMenu(false);
               }}
             >
               {t("cha-5_delete-chat")}
@@ -72,9 +68,7 @@ const FRcontextmenu = ({
                 backdropFilter: "blur(10px)",
               }}
               onClick={() => {
-                setIsClickedRequest(!isClickedRequest),
-                  setOpenRequestModal(true),
-                  setShowContextMenu(false);
+                setIsClickedRequest(!isClickedRequest), setOpenRequestModal(true), setShowContextMenu(false);
               }}
             >
               {t("cha-20_send-request")}

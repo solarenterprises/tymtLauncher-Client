@@ -26,11 +26,7 @@ import tymt2 from "../../../assets/account/tymt2.png";
 import wallet from "../../../assets/account/wallet.png";
 
 import "../../../global.css";
-import {
-  accountType,
-  loginEnum,
-  nonCustodialType,
-} from "../../../types/accountTypes";
+import { accountType, loginEnum, nonCustodialType } from "../../../types/accountTypes";
 import { getNonCustodial } from "../../../features/account/NonCustodialSlice";
 import { decrypt } from "../../../lib/api/Encrypt";
 import { setMnemonic } from "../../../features/account/MnemonicSlice";
@@ -49,26 +45,11 @@ const NonCustodialLogIn1 = () => {
     validationSchema: Yup.object({
       password: Yup.string()
         .required(t("cca-63_required"))
-        .test(
-          "checks",
-          t("cca-65_please-signup-import"),
-          (_value) =>
-            nonCustodialStore.password !== "" &&
-            nonCustodialStore.mnemonic !== ""
-        )
-        .test(
-          "equals",
-          t("cca-60_wrong-password"),
-          (value) =>
-            createKeccakHash("keccak256").update(value).digest("hex") ===
-            nonCustodialStore.password
-        ),
+        .test("checks", t("cca-65_please-signup-import"), (_value) => nonCustodialStore.password !== "" && nonCustodialStore.mnemonic !== "")
+        .test("equals", t("cca-60_wrong-password"), (value) => createKeccakHash("keccak256").update(value).digest("hex") === nonCustodialStore.password),
     }),
     onSubmit: async () => {
-      const mnemonic = await decrypt(
-        nonCustodialStore.mnemonic,
-        formik.values.password
-      );
+      const mnemonic = await decrypt(nonCustodialStore.mnemonic, formik.values.password);
       dispatch(setMnemonic({ mnemonic: mnemonic }));
       navigate("/confirm-information");
     },
@@ -86,12 +67,7 @@ const NonCustodialLogIn1 = () => {
     <>
       <Grid container className="basic-container">
         <Grid item xs={12} container justifyContent={"center"}>
-          <Stack
-            direction={"row"}
-            alignItems={"center"}
-            justifyContent={"center"}
-            gap={"64px"}
-          >
+          <Stack direction={"row"} alignItems={"center"} justifyContent={"center"} gap={"64px"}>
             <Stack alignItems={"center"} justifyContent={"center"}>
               <Grid container justifyContent={"center"}>
                 <Grid
@@ -104,23 +80,13 @@ const NonCustodialLogIn1 = () => {
                 >
                   <Grid item xs={12} container justifyContent={"space-between"}>
                     <Back onClick={handleBackClick} />
-                    <Stepper
-                      all={2}
-                      now={1}
-                      texts={[t("ncl-1_password"), "Try"]}
-                    />
+                    <Stepper all={2} now={1} texts={[t("ncl-1_password"), "Try"]} />
                   </Grid>
 
                   <Grid item xs={12} mt={"80px"}>
-                    <AccountHeader
-                      title={t("ncl-2_welcome-back")}
-                      text={t("ncl-3_decentralised-non-custodial")}
-                    />
+                    <AccountHeader title={t("ncl-2_welcome-back")} text={t("ncl-3_decentralised-non-custodial")} />
                   </Grid>
-                  <form
-                    onSubmit={formik.handleSubmit}
-                    style={{ width: "100%" }}
-                  >
+                  <form onSubmit={formik.handleSubmit} style={{ width: "100%" }}>
                     <Grid item xs={12} mt={"48px"}>
                       <InputText
                         id="non-custodial-login"
@@ -130,11 +96,7 @@ const NonCustodialLogIn1 = () => {
                         value={formik.values.password}
                         onChange={formik.handleChange}
                         onBlur={formik.handleBlur}
-                        error={
-                          formik.touched.password && formik.errors.password
-                            ? true
-                            : false
-                        }
+                        error={formik.touched.password && formik.errors.password ? true : false}
                       />
                     </Grid>
                     <Grid
@@ -145,32 +107,20 @@ const NonCustodialLogIn1 = () => {
                         padding: "0px 6px",
                       }}
                     >
-                      {formik.touched.password && formik.errors.password && (
-                        <Box className={"fs-16-regular red"}>
-                          {formik.errors.password}
-                        </Box>
-                      )}
+                      {formik.touched.password && formik.errors.password && <Box className={"fs-16-regular red"}>{formik.errors.password}</Box>}
                     </Grid>
                     <Grid item xs={12} mt={"12px"}>
                       <ForgotYourPassword />
                     </Grid>
                     <Grid item xs={12} mt={"40px"}>
-                      <AccountNextButton
-                        text={t("ncl-6_next")}
-                        isSubmit={true}
-                        disabled={formik.errors.password ? true : false}
-                      />
+                      <AccountNextButton text={t("ncl-6_next")} isSubmit={true} disabled={formik.errors.password ? true : false} />
                     </Grid>
                   </form>
                   <Grid item xs={12} mt={"48px"}>
                     <OrLine />
                   </Grid>
                   <Grid item xs={12} mt={"48px"}>
-                    <AccountButton
-                      src={wallet}
-                      text={t("ncl-8_import-wallet")}
-                      onClick={() => navigate("/non-custodial/login/2")}
-                    />
+                    <AccountButton src={wallet} text={t("ncl-8_import-wallet")} onClick={() => navigate("/non-custodial/login/2")} />
                   </Grid>
                   <Grid item xs={12} mt={"50px"}>
                     <DontHaveAccount />

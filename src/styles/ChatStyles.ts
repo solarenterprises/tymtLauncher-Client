@@ -68,10 +68,8 @@ const ChatStyle = makeStyles({
     "& .MuiInputBase-root": {
       height: "44px",
       borderRadius: "var(--Angle-Number, 32px)",
-      border:
-        "1px solid var(--bg-stroke-white-20-modal-stroke, rgba(255, 255, 255, 0.20))",
-      background:
-        "var(--bg-stroke-icon-button-bg-10, rgba(128, 128, 128, 0.10))",
+      border: "1px solid var(--bg-stroke-white-20-modal-stroke, rgba(255, 255, 255, 0.20))",
+      background: "var(--bg-stroke-icon-button-bg-10, rgba(128, 128, 128, 0.10))",
       backgroundBlendMode: "luminosity",
       fontFamily: "Cobe",
       color: "var(--Basic-Light, #AFAFAF)",
@@ -101,10 +99,8 @@ const ChatStyle = makeStyles({
         minHeight: "25px", // Set the minimum height for the input field
       },
       borderRadius: "var(--Angle-Number, 32px)",
-      border:
-        "1px solid var(--bg-stroke-white-20-modal-stroke, rgba(255, 255, 255, 0.20))",
-      background:
-        "var(--bg-stroke-icon-button-bg-10, rgba(128, 128, 128, 0.10))",
+      border: "1px solid var(--bg-stroke-white-20-modal-stroke, rgba(255, 255, 255, 0.20))",
+      background: "var(--bg-stroke-icon-button-bg-10, rgba(128, 128, 128, 0.10))",
       backgroundBlendMode: "luminosity",
       fontFamily: "Cobe",
       color: "var(--Basic-Light, #AFAFAF)",
@@ -192,8 +188,7 @@ const ChatStyle = makeStyles({
     "&::-webkit-scrollbar-track": {
       cursor: "pointer",
       borderRadius: "100px",
-      background:
-        "var(--bg-stroke-white-10-stroke-default, rgba(255, 255, 255, 0.10))",
+      background: "var(--bg-stroke-white-10-stroke-default, rgba(255, 255, 255, 0.10))",
     },
     "&::-webkit-scrollbar-thumb": {
       borderRadius: "100px",
@@ -210,7 +205,7 @@ const ChatStyle = makeStyles({
     marginBottom: "0px",
     // height: "calc(100vh - 200px)",
     paddingRight: "10px",
-    scrollBehavior:"smooth",
+    scrollBehavior: "smooth",
     "&::-webkit-scrollbar": {
       borderRadius: "100px",
       width: "5px",
@@ -218,8 +213,7 @@ const ChatStyle = makeStyles({
     },
     "&::-webkit-scrollbar-track": {
       borderRadius: "100px",
-      background:
-        "var(--bg-stroke-white-10-stroke-default, rgba(255, 255, 255, 0.10))",
+      background: "var(--bg-stroke-white-10-stroke-default, rgba(255, 255, 255, 0.10))",
     },
     "&::-webkit-scrollbar-thumb": {
       cursor: "pointer",

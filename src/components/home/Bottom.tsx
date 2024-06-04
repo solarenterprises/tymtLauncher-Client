@@ -38,7 +38,7 @@ const Bottom = () => {
           zIndex: 1,
         }}
       /> */}
-      <div className={"red-blur-static"}/>
+      <div className={"red-blur-static"} />
       {/* <img
         src={gradient2}
         style={{
@@ -62,9 +62,7 @@ const Bottom = () => {
           transform: "translate(-50%, -50%)",
         }}
       >
-        <Box className={"fs-38-bold white t-center"}>
-          {t("hom-12_explore-our-store")}
-        </Box>
+        <Box className={"fs-38-bold white t-center"}>{t("hom-12_explore-our-store")}</Box>
         <Box className={"fs-18-light white t-center"} width={"353px"}>
           {t("hom-13_browse-by")}
         </Box>

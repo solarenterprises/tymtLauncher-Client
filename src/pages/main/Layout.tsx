@@ -14,14 +14,10 @@ const Layout = () => {
 
   useEffect(() => {
     if (location.pathname.indexOf("wallet") !== -1) {
-      setBackground(
-        "var(--BG, linear-gradient(180deg, #342223 0%, #0B0B0B 100%))"
-      );
+      setBackground("var(--BG, linear-gradient(180deg, #342223 0%, #0B0B0B 100%))");
       setDisplay("none");
     } else {
-      setBackground(
-        "var(--BG, linear-gradient(180deg, #0E1E20 0%, #0B0B0B 100%))"
-      );
+      setBackground("var(--BG, linear-gradient(180deg, #0E1E20 0%, #0B0B0B 100%))");
       setDisplay("block");
     }
   }, [location]);

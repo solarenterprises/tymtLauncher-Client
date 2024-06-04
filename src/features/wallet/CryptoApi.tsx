@@ -36,22 +36,13 @@ export const sendCoin = async ({ chain, data }: ISendCoin): Promise<any> => {
   const rpc_url = getRPCUrl(chain);
   const passphrase = await decrypt(nonCustodialStore.mnemonic, data.passphrase);
   if (chain.chain.symbol === "SXP") {
-    const res = await tymtCore.Blockchains.solar.wallet.sendTransaction(
-      passphrase,
-      tx
-    );
+    const res = await tymtCore.Blockchains.solar.wallet.sendTransaction(passphrase, tx);
     return res;
   } else if (chain.chain.symbol === "BTC") {
-    const res = await tymtCore.Blockchains.btc.wallet.sendTransaction(
-      passphrase,
-      tx
-    );
+    const res = await tymtCore.Blockchains.btc.wallet.sendTransaction(passphrase, tx);
     return res;
   } else if (chain.chain.symbol === "SOL") {
-    const res = await tymtCore.Blockchains.solana.wallet.sendTransaction(
-      passphrase,
-      tx
-    );
+    const res = await tymtCore.Blockchains.solana.wallet.sendTransaction(passphrase, tx);
     return res;
   } else if (chain.currentToken === "chain" || chain.currentToken == "") {
     const chaintx = { recipients: data.recipients, fee: data.fee };
@@ -105,17 +96,11 @@ export async function walletTransaction(data: { chain: IChain; page: number }) {
   if (data.chain.chain.symbol === "SXP") {
     return await Solar.getTransactions(data.chain.chain.wallet, data.page);
   } else if (data.chain.chain.symbol === "BTC") {
-    return await tymtCore.Blockchains.btc.wallet.getTransactions(
-      data.chain.chain.wallet,
-      data.page
-    );
+    return await tymtCore.Blockchains.btc.wallet.getTransactions(data.chain.chain.wallet, data.page);
   } else if (data.chain.chain.symbol === "AVAX") {
     return await Avalanche.getTransactions(data.chain.chain.wallet, data.page);
   } else if (data.chain.chain.symbol === "SOL") {
-    return await tymtCore.Blockchains.solana.wallet.getTransactions(
-      data.chain.chain.wallet,
-      data.page
-    );
+    return await tymtCore.Blockchains.solana.wallet.getTransactions(data.chain.chain.wallet, data.page);
   } else {
     if (data.chain.currentToken == "chain" || data.chain.currentToken == "") {
       const url = getTransactionUrl(data.chain, data.page);

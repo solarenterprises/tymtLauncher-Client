@@ -1,10 +1,7 @@
 import { Box, Button, Divider, Stack } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  selectNotification,
-  setNotification,
-} from "../../features/settings/NotificationSlice";
+import { selectNotification, setNotification } from "../../features/settings/NotificationSlice";
 import backIcon from "../../assets/settings/back-icon.svg";
 import SwitchComp from "../../components/SwitchComp";
 import arrowImg from "../../assets/settings/arrow-right.svg";
@@ -23,10 +20,7 @@ const Notification = ({ view, setView }: propsType) => {
 
   const putUserStatus = useCallback(async () => {
     try {
-      await updateUsernotificationStatus(
-        accountStore.uid,
-        notificationStore.alert
-      );
+      await updateUsernotificationStatus(accountStore.uid, notificationStore.alert);
     } catch (err) {
       console.log(err);
     }
@@ -56,36 +50,16 @@ const Notification = ({ view, setView }: propsType) => {
     <>
       {view === "notification" && (
         <Stack direction={"column"}>
-          <Stack
-            flexDirection={"row"}
-            justifyContent={"flex-start"}
-            gap={"10px"}
-            alignItems={"center"}
-            textAlign={"center"}
-            sx={{ padding: "20px" }}
-          >
-            <Button
-              className={"setting-back-button"}
-              onClick={() => setView("general")}
-            >
+          <Stack flexDirection={"row"} justifyContent={"flex-start"} gap={"10px"} alignItems={"center"} textAlign={"center"} sx={{ padding: "20px" }}>
+            <Button className={"setting-back-button"} onClick={() => setView("general")}>
               <Box component={"img"} src={backIcon}></Box>
             </Button>
             <Box className="fs-h3 white">{t("set-48_notifications")}</Box>
           </Stack>
           <Divider variant="middle" sx={{ backgroundColor: "#FFFFFF1A" }} />
           <Stack direction={"column"} justifyContent={""}>
-            <Stack
-              direction={"row"}
-              justifyContent={"space-between"}
-              textAlign={"center"}
-              padding={"20px"}
-            >
-              <Stack
-                direction={"column"}
-                justifyContent={"flex-start"}
-                gap={1}
-                textAlign={"left"}
-              >
+            <Stack direction={"row"} justifyContent={"space-between"} textAlign={"center"} padding={"20px"}>
+              <Stack direction={"column"} justifyContent={"flex-start"} gap={1} textAlign={"left"}>
                 <Box className="fs-h5 white">{t("set-37_alerts")}</Box>
                 <Box
                   className="fs-14-regular gray"
@@ -96,13 +70,7 @@ const Notification = ({ view, setView }: propsType) => {
                   {t("set-38_alert-detail")}
                 </Box>
               </Stack>
-              <Stack
-                direction={"row"}
-                justifyContent={"flex-end"}
-                textAlign={"center"}
-                gap={1}
-                alignItems={"center"}
-              >
+              <Stack direction={"row"} justifyContent={"flex-end"} textAlign={"center"} gap={1} alignItems={"center"}>
                 <SwitchComp
                   checked={notificationStore.alert}
                   onClick={() => {
@@ -111,22 +79,9 @@ const Notification = ({ view, setView }: propsType) => {
                 />
               </Stack>
             </Stack>
-            <Divider
-              variant="fullWidth"
-              sx={{ backgroundColor: "#FFFFFF1A" }}
-            />
-            <Stack
-              direction={"row"}
-              justifyContent={"space-between"}
-              textAlign={"center"}
-              padding={"20px"}
-            >
-              <Stack
-                direction={"column"}
-                justifyContent={"flex-start"}
-                gap={1}
-                textAlign={"left"}
-              >
+            <Divider variant="fullWidth" sx={{ backgroundColor: "#FFFFFF1A" }} />
+            <Stack direction={"row"} justifyContent={"space-between"} textAlign={"center"} padding={"20px"}>
+              <Stack direction={"column"} justifyContent={"flex-start"} gap={1} textAlign={"left"}>
                 <Box className="fs-h5 white">{t("set-39_updates")}</Box>
                 <Box
                   className="fs-14-regular gray"
@@ -137,13 +92,7 @@ const Notification = ({ view, setView }: propsType) => {
                   {t("set-40_update-detail")}
                 </Box>
               </Stack>
-              <Stack
-                direction={"row"}
-                justifyContent={"flex-end"}
-                textAlign={"center"}
-                gap={1}
-                alignItems={"center"}
-              >
+              <Stack direction={"row"} justifyContent={"flex-end"} textAlign={"center"} gap={1} alignItems={"center"}>
                 <SwitchComp
                   checked={notificationStore.update}
                   onClick={() => {
@@ -153,22 +102,9 @@ const Notification = ({ view, setView }: propsType) => {
                 />
               </Stack>
             </Stack>
-            <Divider
-              variant="fullWidth"
-              sx={{ backgroundColor: "#FFFFFF1A" }}
-            />
-            <Stack
-              direction={"row"}
-              justifyContent={"space-between"}
-              textAlign={"center"}
-              padding={"20px"}
-            >
-              <Stack
-                direction={"column"}
-                justifyContent={"flex-start"}
-                gap={1}
-                textAlign={"left"}
-              >
+            <Divider variant="fullWidth" sx={{ backgroundColor: "#FFFFFF1A" }} />
+            <Stack direction={"row"} justifyContent={"space-between"} textAlign={"center"} padding={"20px"}>
+              <Stack direction={"column"} justifyContent={"flex-start"} gap={1} textAlign={"left"}>
                 <Box className="fs-h5 white">{t("set-41_sound")}</Box>
                 <Box
                   className="fs-14-regular gray"
@@ -179,13 +115,7 @@ const Notification = ({ view, setView }: propsType) => {
                   {t("set-42_sound-detail")}
                 </Box>
               </Stack>
-              <Stack
-                direction={"row"}
-                justifyContent={"flex-end"}
-                textAlign={"center"}
-                gap={1}
-                alignItems={"center"}
-              >
+              <Stack direction={"row"} justifyContent={"flex-end"} textAlign={"center"} gap={1} alignItems={"center"}>
                 <SwitchComp
                   checked={notificationStore.sound}
                   onClick={() => {
@@ -195,10 +125,7 @@ const Notification = ({ view, setView }: propsType) => {
                 />
               </Stack>
             </Stack>
-            <Divider
-              variant="fullWidth"
-              sx={{ backgroundColor: "#FFFFFF1A" }}
-            />
+            <Divider variant="fullWidth" sx={{ backgroundColor: "#FFFFFF1A" }} />
             <Button
               className="common-btn"
               sx={{ padding: "20px" }}
@@ -208,15 +135,8 @@ const Notification = ({ view, setView }: propsType) => {
               disabled={true}
             >
               <Stack direction={"column"} gap={"10px"}>
-                <Stack
-                  direction={"column"}
-                  justifyContent={"flex-start"}
-                  gap={"5px"}
-                  textAlign={"left"}
-                >
-                  <Box className="fs-h5 white">
-                    {t("set-43_enable-notification")}
-                  </Box>
+                <Stack direction={"column"} justifyContent={"flex-start"} gap={"5px"} textAlign={"left"}>
+                  <Box className="fs-h5 white">{t("set-43_enable-notification")}</Box>
                   <Box
                     className="fs-14-regular gray"
                     sx={{
@@ -226,11 +146,7 @@ const Notification = ({ view, setView }: propsType) => {
                     {t("set-44_enable-notification-detail")}
                   </Box>
                 </Stack>
-                <Stack
-                  direction={"row"}
-                  justifyContent={"space-between"}
-                  textAlign={"center"}
-                >
+                <Stack direction={"row"} justifyContent={"space-between"} textAlign={"center"}>
                   <Box className="fs-h4 white">
                     {notificationStore.hour} {t("set-45_h")}
                   </Box>
@@ -240,10 +156,7 @@ const Notification = ({ view, setView }: propsType) => {
                 </Stack>
               </Stack>
             </Button>
-            <Divider
-              variant="fullWidth"
-              sx={{ backgroundColor: "#FFFFFF1A" }}
-            />
+            <Divider variant="fullWidth" sx={{ backgroundColor: "#FFFFFF1A" }} />
           </Stack>
         </Stack>
       )}

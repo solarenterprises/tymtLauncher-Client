@@ -11,9 +11,7 @@ interface FullscreenProviderProps {
   children: ReactNode;
 }
 
-export const FullscreenProvider: React.FC<FullscreenProviderProps> = ({
-  children,
-}) => {
+export const FullscreenProvider: React.FC<FullscreenProviderProps> = ({ children }) => {
   useEffect(() => {
     const handleKeyDown = async (e: KeyboardEvent) => {
       if (e.key === "F11") {
@@ -31,9 +29,5 @@ export const FullscreenProvider: React.FC<FullscreenProviderProps> = ({
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  return (
-    <FullscreenContext.Provider value={{}}>
-      {children}
-    </FullscreenContext.Provider>
-  );
+  return <FullscreenContext.Provider value={{}}>{children}</FullscreenContext.Provider>;
 };

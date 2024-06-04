@@ -1,21 +1,11 @@
-import React, {
-  createContext,
-  useContext,
-  useEffect,
-  ReactNode,
-  useRef,
-} from "react";
+import React, { createContext, useContext, useEffect, ReactNode, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-
 import { listen } from "@tauri-apps/api/event";
 import { open } from "@tauri-apps/api/shell";
 import { appWindow } from "@tauri-apps/api/window";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch } from "../store";
-import {
-  selectNotification,
-  setNotification,
-} from "../features/settings/NotificationSlice";
+import { selectNotification, setNotification } from "../features/settings/NotificationSlice";
 import { notificationType } from "../types/settingTypes";
 import { accountType } from "../types/accountTypes";
 import { getAccount } from "../features/account/AccountSlice";
@@ -47,10 +37,7 @@ export const TrayProvider: React.FC<TrayProviderProps> = ({ children }) => {
     accountStoreRef.current = accountStore;
   }, [accountStore]);
 
-  const callSetTrayItemsEnabled = async (
-    itemIds: String[],
-    enabled: boolean
-  ) => {
+  const callSetTrayItemsEnabled = async (itemIds: String[], enabled: boolean) => {
     try {
       await invoke("set_tray_items_enabled", { itemIds, enabled });
     } catch (error) {
@@ -98,15 +85,10 @@ export const TrayProvider: React.FC<TrayProviderProps> = ({ children }) => {
       console.log(event.payload as string);
     });
 
-    const unlisten_disable_notifications = listen(
-      "disable_notifications",
-      (event) => {
-        dispatch(
-          setNotification({ ...notificationStoreRef.current, alert: false })
-        );
-        console.log(event.payload as string);
-      }
-    );
+    const unlisten_disable_notifications = listen("disable_notifications", (event) => {
+      dispatch(setNotification({ ...notificationStoreRef.current, alert: false }));
+      console.log(event.payload as string);
+    });
 
     return () => {
       unlisten_wallet.then((unlistenFn) => unlistenFn());

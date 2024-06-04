@@ -2,12 +2,7 @@ import { IWallet } from "./IWallet";
 import { ethers } from "ethers";
 import * as ethereumjsWallet from "ethereumjs-wallet";
 import * as bip39 from "bip39";
-import {
-  matic_api_key,
-  matic_api_url,
-  matic_rpc_url,
-  net_name,
-} from "../../configs";
+import { matic_api_key, matic_api_url, matic_rpc_url, net_name } from "../../configs";
 import { IToken, IGetTokenBalanceRes } from "../../types/walletTypes";
 
 class Polygon implements IWallet {
@@ -25,38 +20,25 @@ class Polygon implements IWallet {
     const change = node.deriveChild(0);
     const childNode = change.deriveChild(0);
     const childWallet = childNode.getWallet();
-    const wallet = new ethers.Wallet(
-      childWallet.getPrivateKey().toString("hex")
-    );
+    const wallet = new ethers.Wallet(childWallet.getPrivateKey().toString("hex"));
     return wallet;
   }
 
   static async getAddress(mnemonic: string): Promise<string> {
-    const wallet = await Polygon.getWalletFromMnemonic(
-      mnemonic.normalize("NFD")
-    );
+    const wallet = await Polygon.getWalletFromMnemonic(mnemonic.normalize("NFD"));
     return wallet.address;
   }
 
   static async getBalance(addr: string): Promise<number> {
     try {
-      const result = (
-        await (
-          await fetch(
-            `${matic_api_url}?module=account&action=balance&address=${addr}&apikey=${matic_api_key}`
-          )
-        ).json()
-      ).result;
+      const result = (await (await fetch(`${matic_api_url}?module=account&action=balance&address=${addr}&apikey=${matic_api_key}`)).json()).result;
       return (result as number) / 1e9 / 1e9;
     } catch {
       return 0;
     }
   }
 
-  static async getTokenBalance(
-    addr: string,
-    tokens: IToken[]
-  ): Promise<IGetTokenBalanceRes[]> {
+  static async getTokenBalance(addr: string, tokens: IToken[]): Promise<IGetTokenBalanceRes[]> {
     try {
       let result: IGetTokenBalanceRes[] = [];
       for (let i = 0; i < tokens.length; i++) {
@@ -101,10 +83,7 @@ class Polygon implements IWallet {
     }
   }
 
-  static async sendTransaction(
-    passphrase: string,
-    tx: { recipients: any[]; fee: string; vendorField?: string }
-  ) {
+  static async sendTransaction(passphrase: string, tx: { recipients: any[]; fee: string; vendorField?: string }) {
     if (tx.recipients.length > 0) {
       try {
         let wallet = await Polygon.getWalletFromMnemonic(passphrase);

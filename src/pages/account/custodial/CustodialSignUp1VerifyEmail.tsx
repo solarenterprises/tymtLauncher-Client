@@ -28,12 +28,7 @@ const CustodialSignUp1VerifyEmail = () => {
     <>
       <Grid container className="basic-container">
         <Grid item xs={12} container justifyContent={"center"}>
-          <Stack
-            direction={"row"}
-            alignItems={"center"}
-            justifyContent={"center"}
-            gap={"64px"}
-          >
+          <Stack direction={"row"} alignItems={"center"} justifyContent={"center"} gap={"64px"}>
             <Stack alignItems={"center"} justifyContent={"center"}>
               <Grid container justifyContent={"center"}>
                 <Grid
@@ -46,30 +41,16 @@ const CustodialSignUp1VerifyEmail = () => {
                 >
                   <Grid item xs={12} container justifyContent={"space-between"}>
                     <Back onClick={handleBackClick} />
-                    <Stepper
-                      all={3}
-                      now={1}
-                      texts={[t("ncca-1_create-account"), "", ""]}
-                    />
+                    <Stepper all={3} now={1} texts={[t("ncca-1_create-account"), "", ""]} />
                   </Grid>
                   <Grid item xs={12} mt={"80px"}>
                     <AccountHeader title={t("cca-15_verify-your-email")} />
                   </Grid>
                   <Grid item xs={12} mt={"48px"}>
-                    <AccountIconBar
-                      icon={email}
-                      text={t("cca-16_verify-your-email")}
-                      line={2}
-                      secondaryText={t("cca-17_check-your-6")}
-                    />
+                    <AccountIconBar icon={email} text={t("cca-16_verify-your-email")} line={2} secondaryText={t("cca-17_check-your-6")} />
                   </Grid>
                   <Grid item xs={12} mt={"32px"}>
-                    <AccountIconBar
-                      icon={link}
-                      text={t("cca-18_welcome-aboard")}
-                      line={2}
-                      secondaryText={t("cca-19_click-verification-link")}
-                    />
+                    <AccountIconBar icon={link} text={t("cca-18_welcome-aboard")} line={2} secondaryText={t("cca-19_click-verification-link")} />
                   </Grid>
                   <Grid item xs={12} mt={"48px"}>
                     <AccountNextButton

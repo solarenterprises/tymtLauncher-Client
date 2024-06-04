@@ -8,6 +8,7 @@ import bitcoinIcon from "../assets/chains/bitcoin.svg";
 import polygonIcon from "../assets/chains/polygon.svg";
 import arbitrumoneIcon from "../assets/chains/arbitrum.svg";
 import { multiWalletType } from "../types/walletTypes";
+
 export const chains: multiWalletType = {
   Ethereum: {
     chain: {

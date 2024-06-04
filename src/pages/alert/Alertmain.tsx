@@ -24,9 +24,7 @@ const Alertmain = () => {
   // const dispatch = useDispatch();
 
   const alertListStore: IAlertList = useSelector(getAlertList);
-  const encryptionKeyStore: encryptionkeyStoreType = useSelector(
-    selectEncryptionKeyStore
-  );
+  const encryptionKeyStore: encryptionkeyStoreType = useSelector(selectEncryptionKeyStore);
 
   const [page, setPage] = useState<string>("unread");
 
@@ -42,12 +40,7 @@ const Alertmain = () => {
         <Box className={"fs-24-bold white"} marginTop={"0px"}>
           {t("not-1_notifications")}
         </Box>
-        <Stack
-          marginTop={"24px"}
-          direction={"row"}
-          alignItems={"center"}
-          justifyContent={"space-between"}
-        >
+        <Stack marginTop={"24px"} direction={"row"} alignItems={"center"} justifyContent={"space-between"}>
           <Stack direction={"row"} alignItems={"center"} gap={"5px"}>
             <Button
               className="read-status-button"
@@ -55,15 +48,8 @@ const Alertmain = () => {
                 setPage("unread");
               }}
             >
-              <Stack
-                display={"flex"}
-                direction={"row"}
-                alignItems={"center"}
-                gap={"8px"}
-              >
-                <Box className={"fs-18-regular gray"}>
-                  {alertListStore.unread.length}
-                </Box>
+              <Stack display={"flex"} direction={"row"} alignItems={"center"} gap={"8px"}>
+                <Box className={"fs-18-regular gray"}>{alertListStore.unread.length}</Box>
                 <Box className={"fs-18-regular gray"}>{t("not-2_unread")}</Box>
                 <img src={unreaddot} width={"8px"} height={"8px"} />
               </Stack>
@@ -74,15 +60,8 @@ const Alertmain = () => {
                 setPage("read");
               }}
             >
-              <Stack
-                display={"flex"}
-                direction={"row"}
-                alignItems={"center"}
-                gap={"8px"}
-              >
-                <Box className={"fs-18-regular gray"}>
-                  {alertListStore.read.length}
-                </Box>
+              <Stack display={"flex"} direction={"row"} alignItems={"center"} gap={"8px"}>
+                <Box className={"fs-18-regular gray"}>{alertListStore.read.length}</Box>
                 <Box className={"fs-18-regular gray"}> {t("not-3_read")}</Box>
                 <img src={readdot} width={"8px"} height={"8px"} />
               </Stack>
@@ -103,21 +82,14 @@ const Alertmain = () => {
           {page === "unread" &&
             [...alertListStore.unread].reverse().map((alert, index) => {
               if (alert.alertType === "chat") {
-                const key =
-                  encryptionKeyStore.encryption_Keys[alert?.note?.sender];
+                const key = encryptionKeyStore.encryption_Keys[alert?.note?.sender];
                 if (!key) askEncryptionKey(alert?.note?.sender);
               }
               return (
                 <AlertList
                   key={`${alert._id}-${index}`}
                   status={alert.alertType === "chat" ? "message" : "alert"}
-                  title={
-                    alert.alertType === "friend-request"
-                      ? "Friend Request"
-                      : alert.alertType === "chat"
-                      ? `chat`
-                      : t("not-8_update-notification")
-                  }
+                  title={alert.alertType === "friend-request" ? "Friend Request" : alert.alertType === "chat" ? `chat` : t("not-8_update-notification")}
                   detail={alert}
                   read={"unread"}
                 />
@@ -126,21 +98,14 @@ const Alertmain = () => {
           {page === "read" &&
             [...alertListStore.read].reverse().map((alert, index) => {
               if (alert.alertType === "chat") {
-                const key =
-                  encryptionKeyStore.encryption_Keys[alert?.note?.sender];
+                const key = encryptionKeyStore.encryption_Keys[alert?.note?.sender];
                 if (!key) askEncryptionKey(alert?.note?.sender);
               }
               return (
                 <AlertList
                   key={`${alert._id}-${index}`}
                   status={alert.alertType === "chat" ? "message" : "alert"}
-                  title={
-                    alert.alertType === "friend-request"
-                      ? "Friend Request"
-                      : alert.alertType === "chat"
-                      ? `chat`
-                      : t("not-8_update-notification")
-                  }
+                  title={alert.alertType === "friend-request" ? "Friend Request" : alert.alertType === "chat" ? `chat` : t("not-8_update-notification")}
                   detail={alert}
                   read={"read"}
                 />

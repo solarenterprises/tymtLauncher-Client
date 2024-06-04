@@ -32,9 +32,7 @@ const friendListSlice = createSlice({
       tymtStorage.set(`friendList`, JSON.stringify(action.payload));
     },
     deleteOneFromFriendList(state, action) {
-      state.data.contacts = state.data.contacts.filter(
-        (_: any, index: any) => index !== action.payload
-      );
+      state.data.contacts = state.data.contacts.filter((_: any, index: any) => index !== action.payload);
     },
     addOneToFriendList(state, action) {
       state.data.contacts = [...state.data.contacts, action.payload];
@@ -44,7 +42,6 @@ const friendListSlice = createSlice({
 });
 
 export const getFriendList = (state: any) => state.friendList.data;
-export const { setFriendList, deleteOneFromFriendList, addOneToFriendList } =
-  friendListSlice.actions;
+export const { setFriendList, deleteOneFromFriendList, addOneToFriendList } = friendListSlice.actions;
 
 export default friendListSlice.reducer;

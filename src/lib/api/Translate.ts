@@ -8,9 +8,7 @@ export const i18nGoogle = {
 };
 
 export const translateString = async (origin: string) => {
-  const languageStore: languageType = JSON.parse(
-    await tymtStorage.get(`language`)
-  );
+  const languageStore: languageType = JSON.parse(await tymtStorage.get(`language`));
   const i18nLang = languageStore.language;
   let translatedMessage: string = "";
   const refinedOrigin = origin.replace(/[&#]/g, " ");

@@ -5,18 +5,11 @@ import backIcon from "../../assets/settings/back-icon.svg";
 import arrowImg from "../../assets/settings/arrow-right.svg";
 import { selectChat } from "../../features/settings/ChatSlice";
 import SwitchComp from "../../components/SwitchComp";
-import {
-  propsType,
-  chatType,
-  notificationType,
-} from "../../types/settingTypes";
+import { propsType, chatType, notificationType } from "../../types/settingTypes";
 import { accountType } from "../../types/accountTypes";
 import { getAccount } from "../../features/account/AccountSlice";
 import { useNotification } from "../../providers/NotificationProvider";
-import {
-  selectNotification,
-  setNotification,
-} from "../../features/settings/NotificationSlice";
+import { selectNotification, setNotification } from "../../features/settings/NotificationSlice";
 import { useEffect, useRef } from "react";
 import { updateUsernotificationStatus } from "../../features/chat/ContactListApi";
 
@@ -38,20 +31,11 @@ const Chat = ({ view, setView }: propsType) => {
     notificationStoreRef.current = notificationStore;
   }, [notificationStore]);
 
-  const {
-    setNotificationStatus,
-    setNotificationTitle,
-    setNotificationDetail,
-    setNotificationOpen,
-    setNotificationLink,
-  } = useNotification();
+  const { setNotificationStatus, setNotificationTitle, setNotificationDetail, setNotificationOpen, setNotificationLink } = useNotification();
 
   const putUserStatus = async () => {
     try {
-      await updateUsernotificationStatus(
-        accountStoreRef.current.uid,
-        notificationStoreRef.current.alert
-      );
+      await updateUsernotificationStatus(accountStoreRef.current.uid, notificationStoreRef.current.alert);
       dispatch(
         setNotification({
           ...notificationStoreRef.current,
@@ -67,72 +51,34 @@ const Chat = ({ view, setView }: propsType) => {
     <>
       {view === "chat" && (
         <Stack direction={"column"}>
-          <Stack
-            flexDirection={"row"}
-            justifyContent={"flex-start"}
-            gap={"10px"}
-            alignItems={"center"}
-            textAlign={"center"}
-            padding={"20px"}
-          >
-            <Button
-              className={"setting-back-button"}
-              onClick={() => setView("general")}
-            >
+          <Stack flexDirection={"row"} justifyContent={"flex-start"} gap={"10px"} alignItems={"center"} textAlign={"center"} padding={"20px"}>
+            <Button className={"setting-back-button"} onClick={() => setView("general")}>
               <Box component={"img"} src={backIcon}></Box>
             </Button>
             <Box className="fs-h3 white">{t("set-18_chat-settings")}</Box>
           </Stack>
           <Divider variant="middle" sx={{ backgroundColor: "#FFFFFF1A" }} />
           <Stack direction={"column"} justifyContent={""}>
-            <Stack
-              direction={"row"}
-              justifyContent={"space-between"}
-              textAlign={"center"}
-              padding={"20px"}
-            >
-              <Stack
-                direction={"column"}
-                justifyContent={"flex-start"}
-                textAlign={"left"}
-                gap={1}
-              >
+            <Stack direction={"row"} justifyContent={"space-between"} textAlign={"center"} padding={"20px"}>
+              <Stack direction={"column"} justifyContent={"flex-start"} textAlign={"left"} gap={1}>
                 <Box className="fs-h5 white">{t("set-19_do-not-disturb")}</Box>
-                <Box className="fs-14-regular gray">
-                  {t("set-20_disable-all-notifications")}
-                </Box>
+                <Box className="fs-14-regular gray">{t("set-20_disable-all-notifications")}</Box>
               </Stack>
-              <Stack
-                direction={"row"}
-                justifyContent={"flex-end"}
-                textAlign={"center"}
-                gap={1}
-              >
+              <Stack direction={"row"} justifyContent={"flex-end"} textAlign={"center"} gap={1}>
                 <SwitchComp
                   checked={!notificationStore.alert}
                   onClick={() => {
                     putUserStatus();
                     setNotificationStatus("success");
-                    setNotificationTitle(
-                      !notificationStore.alert
-                        ? t("cha-28_not-disturb-disabled")
-                        : t("cha-29_not-disturb-enabled")
-                    );
-                    setNotificationDetail(
-                      !notificationStore.alert
-                        ? t("cha-30_disabled-not-disturb")
-                        : t("cha-31_switched-not-disturb")
-                    );
+                    setNotificationTitle(!notificationStore.alert ? t("cha-28_not-disturb-disabled") : t("cha-29_not-disturb-enabled"));
+                    setNotificationDetail(!notificationStore.alert ? t("cha-30_disabled-not-disturb") : t("cha-31_switched-not-disturb"));
                     setNotificationOpen(true);
                     setNotificationLink(null);
                   }}
                 />
               </Stack>
             </Stack>
-            <Divider
-              variant="fullWidth"
-              sx={{ backgroundColor: "#FFFFFF1A" }}
-            />
+            <Divider variant="fullWidth" sx={{ backgroundColor: "#FFFFFF1A" }} />
             <Button
               className="common-btn"
               onClick={() => {
@@ -140,23 +86,11 @@ const Chat = ({ view, setView }: propsType) => {
               }}
             >
               <Stack direction={"column"} gap={"10px"} padding={"10px"}>
-                <Stack
-                  direction={"column"}
-                  justifyContent={"flex-start"}
-                  textAlign={"left"}
-                >
-                  <Box className="fs-h5 white">
-                    {t("set-21_receive-messages")}
-                  </Box>
-                  <Box className="fs-14-regular gray">
-                    {t("set-22_pick-who-message")}
-                  </Box>
+                <Stack direction={"column"} justifyContent={"flex-start"} textAlign={"left"}>
+                  <Box className="fs-h5 white">{t("set-21_receive-messages")}</Box>
+                  <Box className="fs-14-regular gray">{t("set-22_pick-who-message")}</Box>
                 </Stack>
-                <Stack
-                  direction={"row"}
-                  justifyContent={"space-between"}
-                  textAlign={"center"}
-                >
+                <Stack direction={"row"} justifyContent={"space-between"} textAlign={"center"}>
                   <Box className="fs-h4 white">
                     {chatStore.message == "anyone" && t("set-23_anyone")}
                     {chatStore.message == "noone" && t("set-26_no-one")}
@@ -168,10 +102,7 @@ const Chat = ({ view, setView }: propsType) => {
                 </Stack>
               </Stack>
             </Button>
-            <Divider
-              variant="fullWidth"
-              sx={{ backgroundColor: "#FFFFFF1A" }}
-            />
+            <Divider variant="fullWidth" sx={{ backgroundColor: "#FFFFFF1A" }} />
             <Button
               className="common-btn"
               sx={{ padding: "20px" }}
@@ -180,24 +111,11 @@ const Chat = ({ view, setView }: propsType) => {
               }}
             >
               <Stack direction={"column"} gap={"10px"}>
-                <Stack
-                  direction={"column"}
-                  justifyContent={"flex-start"}
-                  gap={"5px"}
-                  textAlign={"left"}
-                >
-                  <Box className="fs-h5 white">
-                    {t("set-24_receiving-friend-request")}
-                  </Box>
-                  <Box className="fs-14-regular gray">
-                    {t("set-25_pick-who-friend")}
-                  </Box>
+                <Stack direction={"column"} justifyContent={"flex-start"} gap={"5px"} textAlign={"left"}>
+                  <Box className="fs-h5 white">{t("set-24_receiving-friend-request")}</Box>
+                  <Box className="fs-14-regular gray">{t("set-25_pick-who-friend")}</Box>
                 </Stack>
-                <Stack
-                  direction={"row"}
-                  justifyContent={"space-between"}
-                  textAlign={"center"}
-                >
+                <Stack direction={"row"} justifyContent={"space-between"} textAlign={"center"}>
                   <Box className="fs-h4 white">
                     {chatStore.friend == "anyone" && t("set-23_anyone")}
                     {chatStore.friend == "noone" && t("set-26_no-one")}
@@ -208,10 +126,7 @@ const Chat = ({ view, setView }: propsType) => {
                 </Stack>
               </Stack>
             </Button>
-            <Divider
-              variant="fullWidth"
-              sx={{ backgroundColor: "#FFFFFF1A" }}
-            />
+            <Divider variant="fullWidth" sx={{ backgroundColor: "#FFFFFF1A" }} />
           </Stack>
         </Stack>
       )}

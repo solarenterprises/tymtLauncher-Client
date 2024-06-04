@@ -20,26 +20,16 @@ const ComingSoonD53 = () => {
             zIndex: -1,
           }}
         />
-        <Grid
-          xs={12}
-          container
-          sx={{ justifyContent: "space-between", alignItems: "center" }}
-        >
+        <Grid xs={12} container sx={{ justifyContent: "space-between", alignItems: "center" }}>
           <Box className={"fs-38-bold"} color={"white"} textTransform={"none"}>
             {t("hom-11_coming-soon")}
           </Box>
         </Grid>
 
-        <Box
-          sx={{ justifyContent: "center", display: "flex", marginTop: "32px" }}
-        >
+        <Box sx={{ justifyContent: "center", display: "flex", marginTop: "32px" }}>
           <img src={foxhead} width={"220px"} />
         </Box>
-        <Box
-          className={"fs-24-regular white"}
-          textAlign={"center"}
-          marginBottom={"30px"}
-        >
+        <Box className={"fs-24-regular white"} textAlign={"center"} marginBottom={"30px"}>
           {t("hom-19_more-games")}
         </Box>
       </Box>
