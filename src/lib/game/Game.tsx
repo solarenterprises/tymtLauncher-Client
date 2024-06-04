@@ -40,6 +40,11 @@ export type PlatformFile =
     }
   | undefined;
 
+export type PlatformFileForOS = {
+  prod: PlatformFile;
+  dev?: PlatformFile;
+};
+
 export type Sentence = { [key: string]: string };
 
 export type Game = {
@@ -61,9 +66,9 @@ export type Game = {
   introduction: Sentence;
   heroes: Sentence;
   executables: {
-    windows64: PlatformFile;
-    macos: PlatformFile;
-    linux: PlatformFile;
+    windows64: PlatformFileForOS;
+    macos: PlatformFileForOS;
+    linux: PlatformFileForOS;
   };
   warning: Sentence;
   warningLink: string;
@@ -101,20 +106,32 @@ const Games: { [key: string]: Game } = {
     },
     executables: {
       linux: {
-        url: "https://github.com/district53/minetest/releases/download/5.9.0.001/District53-5.9.0.001-x86_64.AppImage",
-        type: "appimage",
-        exePath: "/tmp.AppImage",
+        prod: {
+          url: "https://github.com/district53/minetest/releases/download/5.9.0.001/District53-5.9.0.001-x86_64.AppImage",
+          type: "appimage",
+          exePath: "/tmp.AppImage",
+        },
       },
       macos: {
-        url: "",
-        type: "zip",
-        exePath: "",
+        prod: {
+          url: "",
+          type: "zip",
+          exePath: "",
+        },
       },
       windows64: {
-        url: "https://github.com/district53/minetest/releases/download/5.9.0.001/District53_5.9.0.001_win_x64.zip",
-        type: "zip",
-        file: "minetest",
-        exePath: "/bin/District53.exe",
+        prod: {
+          url: "https://github.com/district53/minetest/releases/download/5.9.0.001/District53_5.9.0.001_win_x64.zip",
+          type: "zip",
+          file: "minetest",
+          exePath: "/bin/District53.exe",
+        },
+        dev: {
+          url: "https://dev.district53.io:2000/build-15-win.zip",
+          type: "zip",
+          file: "minetest",
+          exePath: "/bin/District53.exe",
+        },
       },
     },
     warning: {
@@ -153,20 +170,26 @@ const Games: { [key: string]: Game } = {
     },
     executables: {
       linux: {
-        url: "https://download.veloren.net/latest/linux/x86_64/nightly",
-        type: "zip",
-        exePath: "/veloren-voxygen",
+        prod: {
+          url: "https://download.veloren.net/latest/linux/x86_64/nightly",
+          type: "zip",
+          exePath: "/veloren-voxygen",
+        },
       },
       macos: {
-        url: "https://download.veloren.net/latest/macos/x86_64/nightly",
-        type: "zip",
-        exePath: "/veloren-voxygen",
+        prod: {
+          url: "https://download.veloren.net/latest/macos/x86_64/nightly",
+          type: "zip",
+          exePath: "/veloren-voxygen",
+        },
       },
       windows64: {
-        url: "https://download.veloren.net/latest/windows/x86_64/nightly",
-        type: "zip",
-        file: "minetest",
-        exePath: "/veloren-voxygen.exe",
+        prod: {
+          url: "https://download.veloren.net/latest/windows/x86_64/nightly",
+          type: "zip",
+          file: "minetest",
+          exePath: "/veloren-voxygen.exe",
+        },
       },
     },
     warning: {
@@ -206,19 +229,25 @@ const Games: { [key: string]: Game } = {
     },
     executables: {
       linux: {
-        url: "https://github.com/redeclipse/deploy/releases/download/appimage_continuous_stable/redeclipse-stable-x86_64.AppImage",
-        type: "appimage",
-        exePath: "/tmp.AppImage",
+        prod: {
+          url: "https://github.com/redeclipse/deploy/releases/download/appimage_continuous_stable/redeclipse-stable-x86_64.AppImage",
+          type: "appimage",
+          exePath: "/tmp.AppImage",
+        },
       },
       macos: {
-        url: "https://github.com/redeclipse/base/releases/download/v2.0.0/redeclipse_2.0.0_mac.tar.bz2",
-        type: "tar.bz2",
-        exePath: "/redeclipse.app",
+        prod: {
+          url: "https://github.com/redeclipse/base/releases/download/v2.0.0/redeclipse_2.0.0_mac.tar.bz2",
+          type: "tar.bz2",
+          exePath: "/redeclipse.app",
+        },
       },
       windows64: {
-        url: "https://github.com/redeclipse/base/releases/download/v2.0.0/redeclipse_2.0.0_win.zip",
-        type: "zip",
-        exePath: "/redeclipse.bat",
+        prod: {
+          url: "https://github.com/redeclipse/base/releases/download/v2.0.0/redeclipse_2.0.0_win.zip",
+          type: "zip",
+          exePath: "/redeclipse.bat",
+        },
       },
     },
     warning: {

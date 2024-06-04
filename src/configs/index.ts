@@ -1,5 +1,3 @@
-export const net_name = import.meta.env.VITE_APP_NETWORK_NAME;
-
 export const secret_key_aes = import.meta.env.VITE_APP_SECRET_KEY_AES;
 
 export const chat_socket_addr = import.meta.env.VITE_APP_SOCKET_ADDR;
@@ -135,5 +133,9 @@ export const pol_scan_path =
 export const socket_backend_url = import.meta.env.VITE_APP_SOCKET_BACKEND_URL;
 
 export const local_server_port = import.meta.env.VITE_APP_LOCAL_SERVER_PORT;
+
+export const net_name = import.meta.env.VITE_APP_NETWORK_NAME;
+
+export const production_version = import.meta.env.VITE_APP_PRODUCTION_VERSION;
 
 export const tymt_version = import.meta.env.VITE_APP_TYMT_VERSION;

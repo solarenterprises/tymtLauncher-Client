@@ -1,10 +1,18 @@
-import { exists /*, readDir */, readTextFile } from "@tauri-apps/api/fs";
+import {
+  exists,
+  readDir,
+  // readTextFile,
+} from "@tauri-apps/api/fs";
 import { appDataDir } from "@tauri-apps/api/path";
 import { type } from "@tauri-apps/api/os";
 import { invoke } from "@tauri-apps/api/tauri";
 import { open } from "@tauri-apps/api/shell";
 import Games from "../game/Game";
-import { local_server_port, tymt_version } from "../../configs";
+import {
+  local_server_port,
+  production_version,
+  tymt_version,
+} from "../../configs";
 import { ISaltToken } from "../../types/accountTypes";
 import tymtStorage from "../Storage";
 
@@ -31,6 +39,9 @@ export async function downloadAndUnzipWindows(url: string, targetDir: string) {
   return invoke("download_and_unzip_windows", {
     url: url,
     target: targetDir,
+    authorization: `Basic ${btoa(
+      "dev:shine skype sherry occupant python cure urology phantom broadband overlying groin sensation"
+    )}`,
   });
 }
 
@@ -111,26 +122,38 @@ export async function downloadGame(game_key: string) {
   let url = "";
   switch (platform) {
     case "Linux":
-      url = game.executables.linux.url;
+      url = production_version
+        ? game.executables.linux.prod.url
+        : game.executables.linux.dev?.url ?? "";
       break;
     case "Darwin":
-      url = game.executables.macos.url;
+      url = production_version
+        ? game.executables.macos.prod.url
+        : game.executables.macos.dev?.url ?? "";
       break;
     case "Windows_NT":
-      url = game.executables.windows64.url;
+      url = production_version
+        ? game.executables.windows64.prod.url
+        : game.executables.windows64.dev?.url ?? "";
       break;
   }
-  if (url === "") {
+  if (!url) {
     return false;
   }
   switch (platform) {
     case "Linux":
-      switch (game.executables.linux.type) {
+      switch (
+        production_version
+          ? game.executables.linux.prod.type
+          : game.executables.linux.dev?.type ?? ""
+      ) {
         case "zip":
           await downloadAndUnzipLinux(
             url,
             `/v${tymt_version}/games/${game_key}`,
-            game.executables.linux.exePath
+            production_version
+              ? game.executables.linux.prod.exePath
+              : game.executables.linux.dev?.exePath ?? ""
           );
           break;
         case "appimage":
@@ -142,19 +165,27 @@ export async function downloadGame(game_key: string) {
       }
       break;
     case "Darwin":
-      switch (game.executables.macos.type) {
+      switch (
+        production_version
+          ? game.executables.macos.prod.type
+          : game.executables.macos.dev?.type ?? ""
+      ) {
         case "zip":
           await downloadAndUnzipMacOS(
             url,
             `/v${tymt_version}/games/${game_key}`,
-            game.executables.macos.exePath
+            production_version
+              ? game.executables.macos.prod.exePath
+              : game.executables.macos.dev?.exePath ?? ""
           );
           break;
         case "tar.bz2":
           await downloadAndUntarbz2MacOS(
             url,
             `/v${tymt_version}/games/${game_key}`,
-            game.executables.macos.exePath
+            production_version
+              ? game.executables.macos.prod.exePath
+              : game.executables.macos.dev?.exePath ?? ""
           );
           break;
       }
@@ -167,14 +198,12 @@ export async function downloadGame(game_key: string) {
 }
 
 export async function isInstalled(game_key: string) {
-  // try {
-  //   await readDir(`${await appDataDir()}v${tymt_version}/games/${game_key}`);
-  //   return true;
-  // } catch (error) {
-  //   return false;
-  // }
-  console.log(game_key);
-  return true;
+  try {
+    await readDir(`${await appDataDir()}v${tymt_version}/games/${game_key}`);
+    return true;
+  } catch (error) {
+    return false;
+  }
 }
 
 export async function runGame(game_key: string, serverIp?: string) {
@@ -184,22 +213,25 @@ export async function runGame(game_key: string, serverIp?: string) {
     const platform = await type();
     switch (platform) {
       case "Linux":
-        exePath = Games[game_key].executables.linux.exePath;
+        exePath = production_version
+          ? Games[game_key].executables.linux.prod.exePath
+          : Games[game_key].executables.linux.dev?.exePath ?? "";
         break;
       case "Darwin":
-        exePath = Games[game_key].executables.macos.exePath;
+        exePath = production_version
+          ? Games[game_key].executables.macos.prod.exePath
+          : Games[game_key].executables.macos.dev?.exePath ?? "";
         break;
       case "Windows_NT":
-        exePath = Games[game_key].executables.windows64.exePath;
+        exePath = production_version
+          ? Games[game_key].executables.windows64.prod.exePath
+          : Games[game_key].executables.windows64.dev?.exePath ?? "";
         break;
     }
-    // let url = dataDir + `v${tymt_version}/games/${game_key}` + exePath;
-    console.log("dataDir", dataDir);
-    console.log("exePath", exePath);
-    const filePath: string = dataDir + `games.config.json`;
-    let configJson = JSON.parse(await readTextFile(filePath));
-    let url = configJson[game_key].path;
-    console.log("configJson", configJson, url);
+    let url = dataDir + `v${tymt_version}/games/${game_key}` + exePath;
+    // const filePath: string = dataDir + `games.config.json`;
+    // let configJson = JSON.parse(await readTextFile(filePath));
+    // let url = configJson[game_key].path;
     if (!(await exists(url))) {
       return false;
     }
@@ -217,7 +249,11 @@ export async function runGame(game_key: string, serverIp?: string) {
       const launcherUrl = `http://localhost:${local_server_port}`;
       switch (platform) {
         case "Linux":
-          switch (Games[game_key].executables.linux.type) {
+          switch (
+            production_version
+              ? Games[game_key].executables.linux.prod.type
+              : Games[game_key].executables.linux.dev?.type ?? ""
+          ) {
             case "appimage":
               url += ` --appimage-extract-and-run --address ${d53_server} --port ${d53_port} --launcher_url ${launcherUrl} --token ${token} --go`;
               break;
