@@ -1,27 +1,22 @@
 import { Box, Button, Stack } from "@mui/material";
 import { useState } from "react";
-import {
-  // useDispatch,
-  useSelector,
-} from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import unreaddot from "../../assets/alert/unreaddot.svg";
 import readdot from "../../assets/alert/readdot.svg";
 import AlertList from "../../components/alert/AlertList";
 import { IAlertList } from "../../types/alertTypes";
-import {
-  getAlertList,
-  // updateAllAlertReadStatusAsync,
-} from "../../features/alert/AlertListSlice";
+import { getAlertList, updateAllAlertReadStatusAsync } from "../../features/alert/AlertListSlice";
 import { encryptionkeyStoreType } from "../../types/chatTypes";
 import { selectEncryptionKeyStore } from "../../features/chat/Chat-encryptionkeySlice";
 import { useSocket } from "../../providers/SocketProvider";
+import { AppDispatch } from "../../store";
 
 const Alertmain = () => {
   const { t } = useTranslation();
   const { askEncryptionKey } = useSocket();
 
-  // const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
 
   const alertListStore: IAlertList = useSelector(getAlertList);
   const encryptionKeyStore: encryptionkeyStoreType = useSelector(selectEncryptionKeyStore);
@@ -70,7 +65,7 @@ const Alertmain = () => {
           <Button
             className="modal_btn_left_fr"
             onClick={() => {
-              // dispatch(updateAllAlertReadStatusAsync());
+              dispatch(updateAllAlertReadStatusAsync());
             }}
           >
             <Box className={"fs-18-bold"} color={"var(--Main-Blue, #52E1F2)"}>

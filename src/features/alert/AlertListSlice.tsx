@@ -8,7 +8,7 @@ import {
   fetchReadAlertList,
   fetchUnreadAlertList,
   updateAlertReadStatus,
-  // updateAllAlertReadStatus,
+  updateAllAlertReadStatus,
 } from "./AlertListApi";
 
 const init: IAlertList = {
@@ -41,10 +41,7 @@ export const fetchUnreadAlertListAsync = createAsyncThunk("alertList/fetchUnread
 export const fetchAlertListAsync = createAsyncThunk("alertList/fetchAlertList", fetchAlertList);
 export const fetchCountUnreadAlertListAsync = createAsyncThunk("alertList/fetchCountUnreadAlertList", fetchCountUnreadAlertList);
 export const updateAlertReadStatusAsync = createAsyncThunk("alertList/updateAlertReadStatus", updateAlertReadStatus);
-// export const updateAllAlertReadStatusAsync = createAsyncThunk(
-//   "alertList/updateAllAlertReadStatus",
-//   updateAllAlertReadStatus
-// );
+export const updateAllAlertReadStatusAsync = createAsyncThunk("alertList/updateAllAlertReadStatus", updateAllAlertReadStatus);
 
 export const alertListSlice = createSlice({
   name: "alertList",
@@ -103,22 +100,19 @@ export const alertListSlice = createSlice({
         // save to storage
         tymtStorage.set(`alertList`, JSON.stringify(state.data));
         state.status = "alertList";
+      })
+      .addCase(updateAllAlertReadStatusAsync.pending, (state) => {
+        state.status = "pending";
+      })
+      .addCase(updateAllAlertReadStatusAsync.fulfilled, (state, action: PayloadAction<any>) => {
+        if (!action.payload) {
+          return;
+        }
+        state.data.read = [...state.data.read, ...state.data.unread];
+        state.data.unread = [];
+        tymtStorage.set(`alertList`, JSON.stringify(state.data));
+        state.status = "alertList";
       });
-    // .addCase(updateAllAlertReadStatusAsync.pending, (state) => {
-    //   state.status = "pending";
-    // })
-    // .addCase(
-    //   updateAllAlertReadStatusAsync.fulfilled,
-    //   (state, action: PayloadAction<any>) => {
-    //     if (!action.payload) {
-    //       return;
-    //     }
-    //     state.data.read = [...state.data.read, ...action.payload];
-    //     state.data.unread = [];
-    //     tymtStorage.set(`alertList`, JSON.stringify(state.data));
-    //     state.status = "alertList";
-    //   }
-    // );
   },
 });
 

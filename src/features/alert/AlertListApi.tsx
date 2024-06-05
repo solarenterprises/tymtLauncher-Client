@@ -129,33 +129,31 @@ export const updateAlertReadStatus = async (payload: updateAlertReadStatusPayloa
   }
 };
 
-// export const updateAllAlertReadStatus = async (userid: string) => {
-//   try {
-//     const saltTokenStore: ISaltToken = JSON.parse(tymtStorage.get(`saltToken`));
-//     const res = await axios.put(
-//       `${tymt_backend_url}/alerts/add-reader/${alert_id}`,
-//       {
-//         reader: `${userid}`,
-//       },
-//       {
-//         headers: {
-//           "x-token": saltTokenStore.token,
-//           "Content-Type": "application/json",
-//         },
-//       }
-//     );
-//     if (res?.status === 200) {
-//       console.log("updateAllAlertReadStatus");
-//       return res?.data?.result;
-//     } else {
-//       console.log("updateAllAlertReadStatus res.status !== 200");
-//       return null;
-//     }
-//   } catch (err) {
-//     console.error("Failed to updateAllAlertReadStatus: ", err);
-//     return null;
-//   }
-// };
+export const updateAllAlertReadStatus = async () => {
+  try {
+    const saltTokenStore: ISaltToken = JSON.parse(tymtStorage.get(`saltToken`));
+    const res = await axios.put(
+      `${tymt_backend_url}/alerts/all-alerts-unread`,
+      {},
+      {
+        headers: {
+          "x-token": saltTokenStore.token,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    if (res?.status === 200 && res?.data?.msg === "All unread alerts are successfully read") {
+      console.log("updateAllAlertReadStatus");
+      return true;
+    } else {
+      console.log("updateAllAlertReadStatus res.status !== 200");
+      return false;
+    }
+  } catch (err) {
+    console.error("Failed to updateAllAlertReadStatus: ", err);
+    return false;
+  }
+};
 
 // export const approveFriendRequest = async (
 //   alert_id: string,
