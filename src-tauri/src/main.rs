@@ -63,6 +63,7 @@ async fn main() -> std::io::Result<()> {
                 download_and_untarbz2_macos,
                 download_and_unzip_windows,
                 run_exe,
+                run_url_args,
                 run_linux,
                 run_macos,
                 run_app_macos,
@@ -1121,6 +1122,35 @@ fn run_exe(url: String) {
     match command.spawn() {
         Ok(_) => println!("Process started successfully"),
         Err(e) => eprintln!("Failed to start process: {}", e),
+    }
+}
+
+#[tauri::command]
+fn run_url_args(url: String, args: String) {
+    println!("{}", url);
+    println!("{}", args);
+
+    let parts: Vec<&str> = args.split_whitespace().collect();
+
+    if args.is_empty() {
+        println!("No command provided");
+        let mut command = Command::new(url);
+
+        match command.spawn() {
+            Ok(_) => println!("Process started successfully"),
+            Err(e) => eprintln!("Failed to start process: {}", e),
+        }
+    } else {
+        let mut command = Command::new(url);
+
+        for arg in parts {
+            command.arg(arg);
+        }
+
+        match command.spawn() {
+            Ok(_) => println!("Process started successfully"),
+            Err(e) => eprintln!("Failed to start process: {}", e),
+        }
     }
 }
 

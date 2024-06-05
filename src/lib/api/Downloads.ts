@@ -11,6 +11,7 @@ import Games from "../game/Game";
 import { local_server_port, production_version, tymt_version } from "../../configs";
 import { ISaltToken } from "../../types/accountTypes";
 import tymtStorage from "../Storage";
+import path from "path";
 
 export async function downloadAppImageLinux(url: string, targetDir: string) {
   return invoke("download_appimage_linux", {
@@ -92,6 +93,13 @@ export async function runAppMacOS(url: string) {
 export async function runUrl(url: string) {
   return invoke("run_exe", {
     url: url,
+  });
+}
+
+export async function runUrlArgs(url: string, args: string) {
+  return invoke("run_url_args", {
+    url: url,
+    args: args,
   });
 }
 
@@ -179,7 +187,8 @@ export async function runGame(game_key: string, serverIp?: string) {
         exePath = production_version === "prod" ? Games[game_key].executables.windows64.prod.exePath : Games[game_key].executables.windows64.dev?.exePath ?? "";
         break;
     }
-    let url = dataDir + `v${tymt_version}/games/${game_key}` + exePath;
+    let url = path.join(dataDir, `v${tymt_version}`, `games`, game_key, exePath);
+    let args = "";
     // const filePath: string = dataDir + `games.config.json`;
     // let configJson = JSON.parse(await readTextFile(filePath));
     // let url = configJson[game_key].path;
@@ -202,30 +211,20 @@ export async function runGame(game_key: string, serverIp?: string) {
         case "Linux":
           switch (production_version === "prod" ? Games[game_key].executables.linux.prod.type : Games[game_key].executables.linux.dev?.type ?? "") {
             case "appimage":
-              url += ` --appimage-extract-and-run --address ${d53_server} --port ${d53_port} --launcher_url ${launcherUrl} --token ${token} --go`;
+              args = `--appimage-extract-and-run --address ${d53_server} --port ${d53_port} --launcher_url ${launcherUrl} --token ${token} --go`;
               break;
             case "zip":
               break;
           }
           break;
         case "Windows_NT":
-          url += ` --address ${d53_server} --port ${d53_port} --launcher_url ${launcherUrl} --token ${token} --go`;
+          args = `--address ${d53_server} --port ${d53_port} --launcher_url ${launcherUrl} --token ${token} --go`;
           break;
         case "Darwin":
-          break;
-      }
-    } else {
-      switch (platform) {
-        case "Linux":
-          break;
-        case "Darwin":
-          await runAppMacOS(url);
-          return true;
-        case "Windows_NT":
           break;
       }
     }
-    await runUrl(url);
+    await runUrlArgs(url, args);
     return true;
   } catch (err) {
     console.log(err);
