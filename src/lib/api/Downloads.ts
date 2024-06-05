@@ -223,6 +223,16 @@ export async function runGame(game_key: string, serverIp?: string) {
         case "Darwin":
           break;
       }
+    } else {
+      switch (platform) {
+        case "Linux":
+          break;
+        case "Darwin":
+          await runAppMacOS(url);
+          return true;
+        case "Windows_NT":
+          break;
+      }
     }
     await runUrlArgs(url, args);
     return true;
