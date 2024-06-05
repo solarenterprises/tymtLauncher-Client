@@ -26,3 +26,9 @@ export interface IAlertList {
   read: IAlert[];
   unread: IAlert[];
 }
+
+export interface IFetchAlertListParam {
+  userId: string;
+  page: number;
+  limit: number;
+}

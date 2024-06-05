@@ -2,12 +2,12 @@ import axios from "axios";
 import { tymt_backend_url } from "../../configs";
 import { ISaltToken } from "../../types/accountTypes";
 import tymtStorage from "../../lib/Storage";
-import { IAlertList } from "../../types/alertTypes";
+import { IAlertList, IFetchAlertListParam } from "../../types/alertTypes";
 
-export const fetchUnreadAlertList = async (userid: string) => {
+export const fetchUnreadAlertList = async ({ userId, page, limit }: IFetchAlertListParam) => {
   try {
     const saltTokenStore: ISaltToken = JSON.parse(tymtStorage.get(`saltToken`));
-    const res = await axios.get(`${tymt_backend_url}/alerts/alerts-unread-for-user/${userid}`, {
+    const res = await axios.get(`${tymt_backend_url}/alerts/alerts-unread-for-user/${userId}?page=${page}&limit=${limit}`, {
       headers: {
         "x-token": saltTokenStore.token,
         "Content-Type": "application/json",
@@ -19,7 +19,7 @@ export const fetchUnreadAlertList = async (userid: string) => {
         unread: res?.data?.result,
       };
     } else {
-      console.log("fetchUnreadAlertList res.status !== 200");
+      console.log("fetchUnreadAlertList", res?.status);
       return {
         unread: [],
       };
@@ -32,10 +32,10 @@ export const fetchUnreadAlertList = async (userid: string) => {
   }
 };
 
-export const fetchReadAlertList = async (userid: string) => {
+export const fetchReadAlertList = async ({ userId, page, limit }: IFetchAlertListParam) => {
   try {
     const saltTokenStore: ISaltToken = JSON.parse(tymtStorage.get(`saltToken`));
-    const res = await axios.get(`${tymt_backend_url}/alerts/alerts-read-for-user/${userid}`, {
+    const res = await axios.get(`${tymt_backend_url}/alerts/alerts-read-for-user/${userId}?page=${page}&limit=${limit}`, {
       headers: {
         "x-token": saltTokenStore.token,
         "Content-Type": "application/json",
@@ -60,9 +60,14 @@ export const fetchReadAlertList = async (userid: string) => {
   }
 };
 
-export const fetchAlertList = async (userid: string) => {
+export const fetchAlertList = async (userId: string) => {
   try {
-    const res = await Promise.all([fetchUnreadAlertList(userid), fetchReadAlertList(userid)]);
+    const param: IFetchAlertListParam = {
+      userId: userId,
+      page: 1,
+      limit: 20,
+    };
+    const res = await Promise.all([fetchUnreadAlertList(param), fetchReadAlertList(param)]);
     const res1: IAlertList = {
       unread: res[0]?.unread,
       read: res[1]?.read,

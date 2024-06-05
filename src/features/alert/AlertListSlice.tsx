@@ -70,7 +70,10 @@ export const alertListSlice = createSlice({
         state.status = "pending";
       })
       .addCase(fetchReadAlertListAsync.fulfilled, (state, action: PayloadAction<any>) => {
-        state.data = { ...state.data, ...action.payload };
+        if (!action.payload && !action.payload.read) {
+          console.error("Failed to fetchReadAlertListSync: action.payload.read undefined");
+        }
+        state.data = { ...state.data, read: [...state.data.read, ...action.payload.read] };
         tymtStorage.set(`alertList`, JSON.stringify(state.data));
         state.status = "alertList";
       })
@@ -78,7 +81,10 @@ export const alertListSlice = createSlice({
         state.status = "pending";
       })
       .addCase(fetchUnreadAlertListAsync.fulfilled, (state, action: PayloadAction<any>) => {
-        state.data = { ...state.data, ...action.payload };
+        if (!action.payload && !action.payload.read) {
+          console.error("Failed to fetchUnreadAlertListSync: action.payload.read undefined");
+        }
+        state.data = { ...state.data, unread: [...state.data.unread, ...action.payload.unread] };
         tymtStorage.set(`alertList`, JSON.stringify(state.data));
         state.status = "alertList";
       })
@@ -108,7 +114,7 @@ export const alertListSlice = createSlice({
         if (!action.payload) {
           return;
         }
-        state.data.read = [...state.data.read, ...state.data.unread];
+        state.data.read = [];
         state.data.unread = [];
         tymtStorage.set(`alertList`, JSON.stringify(state.data));
         state.status = "alertList";

@@ -111,7 +111,7 @@ const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
     <>
       <Box
         sx={{
-          width: "100%",
+          width: "95%",
           cursor: "pointer",
           "&:hover": {
             backgroundColor: "#ffffff1a",

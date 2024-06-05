@@ -442,9 +442,11 @@ const WalletD53Transaction = () => {
                 borderTop: "1px solid rgba(255, 255, 255, 0.10)",
               }}
             />
-            <Stack direction={"row"} alignItems={"center"} justifyContent={"space-between"}>
+            <Stack direction={"row"} justifyContent={"space-between"}>
               <Box className={"fs-16-regular light"}>{t("wal-69_memo")}</Box>
-              <Box className={"fs-16-regular white t-right"}>{memo}</Box>
+              <Box className={"fs-16-regular white t-right"} sx={{ textWrap: "wrap" }}>
+                {memo}
+              </Box>
             </Stack>
             <Stack direction={"row"} alignItems={"center"} justifyContent={"space-between"}>
               <Box className={"fs-16-regular light"}>{t("wal-62_recipient")}</Box>
