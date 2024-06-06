@@ -6,6 +6,7 @@ import { accountType } from "../types/accountTypes";
 import { getAccount } from "../features/account/AccountSlice";
 import { fetchAlertListAsync } from "../features/alert/AlertListSlice";
 import { fetchContactListAsync } from "../features/chat/ContactListSlice";
+import { fetchFriendListAsync } from "../features/chat/FriendListSlice";
 
 const AlertProvider = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -15,6 +16,7 @@ const AlertProvider = () => {
     if (accountStore.isLoggedIn) {
       dispatch(fetchAlertListAsync(accountStore.uid));
       dispatch(fetchContactListAsync());
+      dispatch(fetchFriendListAsync());
     }
   }, [accountStore]);
 

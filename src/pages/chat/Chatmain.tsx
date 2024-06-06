@@ -23,6 +23,7 @@ import { createContactAsync, deleteContactAsync, getContactList } from "../../fe
 import { AppDispatch } from "../../store";
 import { getAlertList } from "../../features/alert/AlertListSlice";
 import { searchUsers } from "../../features/chat/ContactListApi";
+import { createFriendAsync, getFriendList } from "../../features/chat/FriendListSlice";
 
 const theme = createTheme({
   palette: {
@@ -64,13 +65,14 @@ const Chatmain = ({ view, setView }: propsType) => {
 
   const dispatch = useDispatch<AppDispatch>();
   const contactListStore: IContactList = useSelector(getContactList);
-
+  const friendListStore: IContactList = useSelector(getFriendList);
   const selectedUserToDeleteStore: selecteduserType = useSelector(getSelectedUser);
   const accountStore: accountType = useSelector(getAccount);
   const alertListStore: IAlertList = useSelector(getAlertList);
 
   const selectedUserToDeleteStoreRef = useRef(selectedUserToDeleteStore);
   const accountStoreRef = useRef(accountStore);
+  const friendListStoreRef = useRef(friendListStore);
 
   useEffect(() => {
     selectedUserToDeleteStoreRef.current = selectedUserToDeleteStore;
@@ -78,6 +80,9 @@ const Chatmain = ({ view, setView }: propsType) => {
   useEffect(() => {
     accountStoreRef.current = accountStore;
   }, [accountStore]);
+  useEffect(() => {
+    friendListStoreRef.current = friendListStore;
+  }, [friendListStore]);
 
   const deleteSelectedUser = async () => {
     dispatch(deleteContactAsync(selectedUserToDeleteStoreRef.current.id));
@@ -85,17 +90,29 @@ const Chatmain = ({ view, setView }: propsType) => {
   };
 
   const sendRequest = async () => {
-    const data = {
-      alertType: "friend-request",
-      note: {
-        sender: `${accountStoreRef.current.uid}`,
-        status: "pending",
-      },
-      receivers: [selectedUserToDeleteStoreRef.current.id],
-    };
-    socket.current.emit("post-alert", JSON.stringify(data));
-    setOpenRequestModal(false);
-    dispatch(createContactAsync(selectedUserToDeleteStoreRef.current.id));
+    try {
+      if (friendListStoreRef.current.contacts.find((element) => element._id === selectedUserToDeleteStoreRef.current.id)) {
+        console.log("sendRequest: already in the friend list!");
+        return;
+      }
+      const data = {
+        alertType: "friend-request",
+        note: {
+          sender: `${accountStoreRef.current.uid}`,
+          status: "pending",
+        },
+        receivers: [selectedUserToDeleteStoreRef.current.id],
+      };
+      socket.current.emit("post-alert", JSON.stringify(data));
+      setOpenRequestModal(false);
+      // To avoid heavy load, one by one
+      dispatch(createContactAsync(selectedUserToDeleteStoreRef.current.id)).then(() => {
+        dispatch(createFriendAsync(selectedUserToDeleteStoreRef.current.id));
+      });
+      console.log("sendRequest");
+    } catch (err) {
+      console.error("Failed to sendRequest: ", err);
+    }
   };
 
   const debouncedFilterUsers = debounce(async (value: string) => {

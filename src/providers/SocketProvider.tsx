@@ -19,11 +19,10 @@ import {
 import { getSocketHash } from "../features/chat/SocketHashSlice";
 import { Outlet } from "react-router-dom";
 import { AppDispatch } from "../store";
-import { getFriendList, setFriendList } from "../features/chat/FriendListSlice";
+import { createFriendAsync, getFriendList } from "../features/chat/FriendListSlice";
 import { selectChat } from "../features/settings/ChatSlice";
 import { chatType, notificationType } from "../types/settingTypes";
 import { setChatHistory, getChatHistory } from "../features/chat/Chat-historySlice";
-
 import { useNotification } from "./NotificationProvider";
 import { selectNotification } from "../features/settings/NotificationSlice";
 import { addEncryptionKey, selectEncryptionKeyStore } from "../features/chat/Chat-encryptionkeySlice";
@@ -36,11 +35,15 @@ import { addOneToUnreadList } from "../features/alert/AlertListSlice";
 interface SocketContextType {
   socket: MutableRefObject<Socket>;
   askEncryptionKey: (recipientId: string) => void;
+  approveFriendRequest: (alert: IAlert) => void;
+  declineFriendRequest: (alert: IAlert) => void;
 }
 
 const SocketContext = createContext<SocketContextType>({
   socket: undefined,
   askEncryptionKey: (_) => {},
+  approveFriendRequest: (_) => {},
+  declineFriendRequest: (_) => {},
 });
 
 export const useSocket = () => useContext(SocketContext);
@@ -177,97 +180,75 @@ export const SocketProvider = () => {
 
             if (!socket.current.hasListeners("alert-posted")) {
               socket.current.on("alert-posted", async (alert: IAlert) => {
-                console.log("socket.current.on > alert-posted", alert);
-                const handleIncomingRequest = async () => {
-                  if (alert.alertType === "friend-request") {
-                    if (chatStoreRef.current.friend === "anyone" && alert.receivers[0] === accountStore.uid) {
-                      const senderId = alert.note?.sender;
-                      const senderInChatUserlist = contactListStoreRef.current.contacts.find((user) => user._id === senderId);
-                      if (senderInChatUserlist) {
-                        dispatch(addOneToUnreadList(alert));
-                        setNotificationOpen(true);
-                        setNotificationStatus("alert");
-                        setNotificationTitle("Friend Request");
-                        setNotificationDetail(alert);
-                        setNotificationLink(null);
-                      } else {
-                        dispatch(createContactAsync(senderId)).then(() => {
-                          setNotificationOpen(true);
-                          setNotificationStatus("alert");
-                          setNotificationTitle("Friend Request");
-                          setNotificationDetail(alert);
-                          setNotificationLink(null);
-                        });
-                      }
-                    } else {
-                    }
-                  } else if (
-                    notificationStoreRef.current.alert &&
-                    alert.alertType !== "chat" &&
-                    alert.receivers.find((userid) => userid === accountStore.uid)
-                  ) {
-                    dispatch(addOneToUnreadList(alert));
-
-                    setNotificationOpen(true);
-                    setNotificationStatus("alert");
-                    setNotificationTitle(`${alert.alertType}`);
-                    setNotificationDetail(`${alert.note.detail}`);
-                    setNotificationLink(null);
-                  } else if (
-                    notificationStoreRef.current.alert &&
-                    alert.alertType === "chat" &&
-                    alert.receivers.find((userid) => userid === accountStore.uid)
-                  ) {
-                    dispatch(addOneToUnreadList(alert));
-                    const key = encryptionKeyStoreRef.current.encryption_Keys[alert.note?.sender];
-                    if (!key) askEncryptionKey(alert.note?.sender);
+                console.log("socket.current.on > alert-posted");
+                if (!alert || !alert.alertType || !alert.note?.sender || !alert.note?.detail) {
+                  console.error("Alert wrong format!", alert);
+                  return;
+                }
+                if (alert.alertType === "friend-request") {
+                  const senderId = alert.note?.sender ?? "";
+                  const senderInContactList = contactListStoreRef.current.contacts.find((element) => element._id === senderId);
+                  const senderInFriendList = friendListStoreRef.current.contacts.find((element) => element._id === senderId);
+                  if (senderInFriendList) {
+                    console.log("Sender is already in my friend list!");
+                    return;
                   }
-                };
-                handleIncomingRequest();
+                  if (!senderInContactList) {
+                    dispatch(createContactAsync(senderId));
+                  }
+                  dispatch(addOneToUnreadList(alert));
+                  setNotificationOpen(true);
+                  setNotificationStatus("alert");
+                  setNotificationTitle("Friend Request");
+                  setNotificationDetail(alert.note?.detail ?? "");
+                  setNotificationLink(null);
+                } else if (alert.alertType !== "chat") {
+                  dispatch(addOneToUnreadList(alert));
+                  setNotificationOpen(true);
+                  setNotificationStatus("alert");
+                  setNotificationTitle(`${alert.alertType}`);
+                  setNotificationDetail(`${alert.note.detail}`);
+                  setNotificationLink(null);
+                } else if (alert.alertType === "chat") {
+                  dispatch(addOneToUnreadList(alert));
+                  const key = encryptionKeyStoreRef.current.encryption_Keys[alert.note?.sender];
+                  if (!key) askEncryptionKey(alert.note?.sender);
+                }
               });
             }
 
             if (!socket.current.hasListeners("alert-updated")) {
               socket.current.on("alert-updated", async (alert: IAlert) => {
                 console.log("socket.current.on > alert-updated", alert);
-                const handleIncomingUpdatedAlert = () => {
-                  if (
-                    alert.alertType === "friend-request" &&
-                    (alert.note.sender === accountStoreRef.current.uid || alert.receivers[0] === accountStoreRef.current.uid)
-                  ) {
-                    {
-                      if (notificationStoreRef.current.alert) {
-                        dispatch(addOneToUnreadList(alert));
-
-                        setNotificationOpen(true);
-                        setNotificationStatus("alert");
-                        setNotificationTitle(`Friend request ${alert.note.status}`);
-                        setNotificationDetail(`Friend request accepted`);
-                        setNotificationLink(null);
-                      }
-                      if (alert.note.sender === accountStoreRef.current.uid && alert.note.status === "accepted") {
-                        const senderInFriendList = friendListStoreRef.current.contacts.find((user) => user._id === alert.receivers[0]);
-                        if (senderInFriendList) return;
-                        const senderInChatUserlist = contactListStoreRef.current.contacts.find((user) => user._id === alert.receivers[0]);
-                        if (!senderInChatUserlist) return;
-                        const updatedFriendlist: IContact[] = [...friendListStoreRef.current.contacts, senderInChatUserlist];
-                        dispatch(setFriendList({ contacts: updatedFriendlist }));
-                      }
+                if (alert.alertType === "friend-request") {
+                  dispatch(addOneToUnreadList(alert));
+                  setNotificationOpen(true);
+                  setNotificationStatus("alert");
+                  setNotificationTitle(`Friend request ${alert.note.status}`);
+                  setNotificationDetail(`Friend request accepted`);
+                  setNotificationLink(null);
+                  if (alert.note?.status && alert.note?.status === "accepted") {
+                    const senderInFriendList = friendListStoreRef.current.contacts.find((user) => user._id === alert.receivers[0]);
+                    if (senderInFriendList) {
+                      console.log("Already in my friend list!");
+                      return;
                     }
-                  } else {
-                    if (notificationStoreRef.current.alert && alert.receivers.find((userid) => userid === accountStoreRef.current.uid)) {
-                      dispatch(addOneToUnreadList(alert));
-
-                      setNotificationOpen(true);
-                      setNotificationStatus("alert");
-                      setNotificationTitle(`${alert.alertType}`);
-                      setNotificationDetail(`${alert.note.detail}`);
-                      setNotificationLink(null);
-                    } else {
+                    const senderInContactList = contactListStoreRef.current.contacts.find((user) => user._id === alert.receivers[0]);
+                    if (!senderInContactList) {
+                      console.log("createContactAsync");
+                      dispatch(createContactAsync(alert.receivers[0]));
                     }
+                    console.log("createFriendAsync");
+                    dispatch(createFriendAsync(alert.receivers[0]));
                   }
-                };
-                handleIncomingUpdatedAlert();
+                } else {
+                  dispatch(addOneToUnreadList(alert));
+                  setNotificationOpen(true);
+                  setNotificationStatus("alert");
+                  setNotificationTitle(`${alert.alertType}`);
+                  setNotificationDetail(`${alert.note.detail}`);
+                  setNotificationLink(null);
+                }
               });
             }
 
@@ -362,11 +343,45 @@ export const SocketProvider = () => {
     [accountStore, encryptionKeyStore]
   );
 
+  const approveFriendRequest = (alert: IAlert) => {
+    try {
+      console.log("approveFriendRequest");
+      if (socket.current && socket.current.connected) {
+        const data = {
+          id: alert._id,
+          note: { sender: alert.note.sender, status: "accepted" },
+          receivers: alert.receivers,
+        };
+        socket.current.emit("update-alert", JSON.stringify(data));
+      }
+    } catch (err) {
+      console.error("Failed to approveFriendRequest: ", err);
+    }
+  };
+
+  const declineFriendRequest = (alert: IAlert) => {
+    try {
+      console.log("declineFriendRequest");
+      if (socket.current && socket.current.connected) {
+        const data = {
+          id: alert._id,
+          note: { sender: alert.note.sender, status: "rejected" },
+          receivers: alert.receivers,
+        };
+        socket.current.emit("update-alert", JSON.stringify(data));
+      }
+    } catch (err) {
+      console.error("Failed to declineFriendRequest: ", err);
+    }
+  };
+
   return (
     <SocketContext.Provider
       value={{
         socket,
         askEncryptionKey,
+        approveFriendRequest,
+        declineFriendRequest,
       }}
     >
       <Outlet />
