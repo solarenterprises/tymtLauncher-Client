@@ -16,8 +16,8 @@ export const fetchUnreadAlertList = async ({ userId, page, limit }: IFetchAlertL
     if (res?.status === 200) {
       console.log("fetchUnreadAlertList");
       return {
-        unread: res?.data?.unreadAlerts,
-        unreadCount: 0,
+        unread: res?.data?.unreadAlerts ?? [],
+        unreadCount: res?.data?.unreadCount ?? 0,
       };
     } else {
       console.log("fetchUnreadAlertList", res?.status);
@@ -47,8 +47,8 @@ export const fetchReadAlertList = async ({ userId, page, limit }: IFetchAlertLis
     if (res?.status === 200) {
       console.log("fetchReadAlertList");
       return {
-        read: res?.data?.readAlerts,
-        readCount: res?.data?.readCount,
+        read: res?.data?.readAlerts ?? [],
+        readCount: res?.data?.readCount ?? 0,
       };
     } else {
       console.log("fetchReadAlertList res.status !== 200");

@@ -17,6 +17,7 @@ export async function downloadAppImageLinux(url: string, targetDir: string) {
   return invoke("download_appimage_linux", {
     url: url,
     target: targetDir,
+    authorization: `Basic ${btoa("dev:shine skype sherry occupant python cure urology phantom broadband overlying groin sensation")}`,
   });
 }
 

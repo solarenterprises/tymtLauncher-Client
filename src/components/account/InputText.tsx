@@ -1,13 +1,10 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-
 import { FormControl, InputLabel, Input, IconButton, Tooltip, Box, Stack } from "@mui/material";
-
 import InputAdornment from "@mui/material/InputAdornment";
 import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import VisibilityOffOutlinedIcon from "@mui/icons-material/VisibilityOffOutlined";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
-
 import { propsInputTypes } from "../../types/commonTypes";
 
 const InputText = ({ id, label, type, name, setValue, value, onChange, onBlur, error, onIconButtonClick, onAddressButtonClick }: propsInputTypes) => {
@@ -18,6 +15,12 @@ const InputText = ({ id, label, type, name, setValue, value, onChange, onBlur, e
     event.preventDefault();
   };
 
+  const checkCapsLock = (event: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const capsLockOn: boolean = event.getModifierState("CapsLock");
+    if (capsLockOn) {
+      alert(t("wc-27_caps-lock-on"));
+    }
+  };
   return (
     <>
       {type === "text" && (
@@ -122,35 +125,37 @@ const InputText = ({ id, label, type, name, setValue, value, onChange, onBlur, e
       {type === "password" && (
         <Tooltip
           title={
-            <Stack
-              spacing={"10px"}
-              sx={{
-                marginTop:
-                  label === "Your password"
-                    ? "-42px"
-                    : label === "Repeat Password"
-                    ? "-42px"
-                    : label === "Password"
-                    ? "25px"
-                    : label === t("set-75_your-new-password")
-                    ? "30px"
-                    : label === "Your New Password"
-                    ? "30px"
-                    : "-42px",
-                backgroundColor: "rgb(49, 53, 53)",
-                padding: "16px",
-                borderRadius: "16px",
-                border: "1px solid rgb(71, 76, 76)",
-              }}
-            >
-              <Box className="fs-16-regular white">{t("cca-4_your-password-must")}</Box>
-              <Stack>
-                <Box className="fs-14-regular light">• {t("cca-5_at-least-8")}</Box>
-                <Box className="fs-14-regular light">• {t("cca-6_one-uppercase-letter")}</Box>
-                <Box className="fs-14-regular light">• {t("cca-7_one-lowercase-letter")}</Box>
-                <Box className="fs-14-regular light">• {t("cca-8_one-number-character")}</Box>
+            !value && (
+              <Stack
+                spacing={"10px"}
+                sx={{
+                  marginTop:
+                    label === "Your password"
+                      ? "-42px"
+                      : label === "Repeat Password"
+                      ? "-42px"
+                      : label === "Password"
+                      ? "25px"
+                      : label === t("set-75_your-new-password")
+                      ? "30px"
+                      : label === "Your New Password"
+                      ? "30px"
+                      : "-42px",
+                  backgroundColor: "rgb(49, 53, 53)",
+                  padding: "16px",
+                  borderRadius: "16px",
+                  border: "1px solid rgb(71, 76, 76)",
+                }}
+              >
+                <Box className="fs-16-regular white">{t("cca-4_your-password-must")}</Box>
+                <Stack>
+                  <Box className="fs-14-regular light">• {t("cca-5_at-least-8")}</Box>
+                  <Box className="fs-14-regular light">• {t("cca-6_one-uppercase-letter")}</Box>
+                  <Box className="fs-14-regular light">• {t("cca-7_one-lowercase-letter")}</Box>
+                  <Box className="fs-14-regular light">• {t("cca-8_one-number-character")}</Box>
+                </Stack>
               </Stack>
-            </Stack>
+            )
           }
           PopperProps={{
             sx: {
@@ -218,6 +223,9 @@ const InputText = ({ id, label, type, name, setValue, value, onChange, onBlur, e
                 "& input[type='password']::-ms-clear": {
                   display: "none",
                 },
+              }}
+              onKeyUp={(e) => {
+                checkCapsLock(e);
               }}
             />
           </FormControl>

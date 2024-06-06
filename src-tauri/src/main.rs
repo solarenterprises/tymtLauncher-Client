@@ -615,7 +615,8 @@ fn copy_dir_all(src: impl AsRef<Path>, dst: impl AsRef<Path>) -> io::Result<()> 
 async fn download_appimage_linux(
     app_handle: tauri::AppHandle,
     url: String,
-    target: String
+    target: String,
+    authorization: Option<String>
 ) -> bool {
     let app_dir = app_handle
         .path_resolver()
@@ -625,7 +626,19 @@ async fn download_appimage_linux(
         .into_string()
         .to_owned()
         .unwrap();
-    let response = reqwest::get(&url).await.unwrap();
+
+    let client = Client::new();
+    let response = if let Some(auth) = authorization {
+        client
+            .get(&url)
+            .header(header::CONTENT_TYPE, "application/json")
+            .header(header::AUTHORIZATION, format!("{}", auth))
+            .send().await
+            .unwrap()
+    } else {
+        client.get(&url).send().await.unwrap()
+    };
+
     let location = (app_dir.to_string() + &target + "/tmp.AppImage").to_owned();
 
     println!("{}", location);

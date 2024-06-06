@@ -1,4 +1,4 @@
-import { Stack, Box, Divider } from "@mui/material";
+import { Stack, Box, Divider, Button } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useTranslation } from "react-i18next";
@@ -21,9 +21,12 @@ import unreaddot from "../../assets/alert/unreaddot.svg";
 import readdot from "../../assets/alert/readdot.svg";
 import { selectEncryptionKeyStore } from "../../features/chat/Chat-encryptionkeySlice";
 import { Chatdecrypt } from "../../lib/api/ChatEncrypt";
+import Avatar from "../home/Avatar";
+import { useSocket } from "../../providers/SocketProvider";
 
 const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
   const { t } = useTranslation();
+  const { approveFriendRequest, declineFriendRequest } = useSocket();
   const navigate = useNavigate();
 
   const dispatch = useDispatch<AppDispatch>();
@@ -41,53 +44,6 @@ const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
       setDecryptedMessage(Chatdecrypt(detail.note?.message, key));
     }
   }, [encryptionKeyStore]);
-
-  // const addFriend = async () => {
-  //   const senderId = title === "Friend Request" ? detail.note?.sender : null;
-  //   const senderInFriendList = friendListStore.contacts.find(
-  //     (user) => user._id === senderId
-  //   );
-  //   if (senderInFriendList) return;
-  //   const senderInContactList = contactListStore.contacts.find(
-  //     (user) => user._id === senderId
-  //   );
-  //   if (!senderInContactList) return;
-  //   dispatch(addOneToFriendList(senderInContactList));
-  // };
-
-  // const approveFR = () => {
-  //   const data = {
-  //     id: detail._id,
-  //     note: { sender: detail.note.sender, status: "accepted" },
-  //     receivers: detail.receivers,
-  //   };
-  //   socket.current.emit("update-alert", JSON.stringify(data));
-  //   const updatealert = {
-  //     id: detail._id,
-  //     reader: detail.note.sender,
-  //   };
-  //   console.log("update-FR-alert", updatealert);
-  //   socket.current.emit("add-reader-alert", JSON.stringify(updatealert));
-  // };
-
-  // const declineFR = () => {
-  //   const data = {
-  //     id: detail._id,
-  //     note: { sender: detail.note.sender, status: "rejected" },
-  //     receivers: detail.receivers,
-  //   };
-  //   console.log("rejecting data", data);
-  //   const updatealert = {
-  //     id: detail._id,
-  //     reader: detail.note.sender,
-  //   };
-  //   socket.current.emit("add-reader-alert", JSON.stringify(updatealert));
-  //   socket.current.emit("update-alert", JSON.stringify(data));
-  // };
-
-  // const updateContact = async (_id) => {
-  //   dispatch(createContactAsync(_id));
-  // };
 
   useEffect(() => {
     if (status == "failed") {
@@ -162,43 +118,24 @@ const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
             {title === "chat" && decryptedMessage === "Unable to decode message #tymt114#" && (
               <ThreeDots height="25px" width={"40px"} radius={5} color={`white`} />
             )}
-            {/* {title === "Friend Request" &&
-              detail.note.status === "pending" &&
-              t("not-10_fr-intro")}
-            {title === "Friend Request" &&
-              detail.note.status === "accepted" &&
-              t("not-11_fr-accept")}
-            {title === "Friend Request" &&
-              detail.note.status === "rejected" &&
-              t("not-12_fr-reject")} */}
+            {title === "Friend Request" && detail.note.status === "pending" && t("not-10_fr-intro")}
+            {title === "Friend Request" && detail.note.status === "accepted" && t("not-11_fr-accept")}
+            {title === "Friend Request" && detail.note.status === "rejected" && t("not-12_fr-reject")}
           </Box>
-          {/* {title === "Friend Request" && detail.note.status === "pending" && (
+          {title === "Friend Request" && detail.note.status === "pending" && (
             <>
-              <Stack
-                display={"flex"}
-                direction={"row"}
-                justifyContent={"space-between"}
-                marginTop={"12px"}
-              >
+              <Stack display={"flex"} direction={"row"} justifyContent={"space-between"} marginTop={"12px"}>
                 <Stack direction={"row"} alignItems={"center"} gap={"7px"}>
-                  <Avatar
-                    onlineStatus={senderUser?.onlineStatus}
-                    userid={senderUser?._id}
-                    size={40}
-                    status={senderUser?.notificationStatus}
-                  />
+                  <Avatar onlineStatus={senderUser?.onlineStatus} userid={senderUser?._id} size={40} status={senderUser?.notificationStatus} />
                   <Box className={"fs-18-regular white"}>
-                    {senderUser?.nickName.length > 14
-                      ? `${senderUser?.nickName.substring(0, 13)}...`
-                      : senderUser?.nickName}
+                    {senderUser?.nickName.length > 14 ? `${senderUser?.nickName.substring(0, 13)}...` : senderUser?.nickName}
                   </Box>
                 </Stack>
                 <Stack direction={"row"} alignItems={"center"} gap={"16px"}>
                   <Button
                     className="modal_btn_right"
                     onClick={() => {
-                      addFriend();
-                      approveFR();
+                      approveFriendRequest(detail);
                     }}
                   >
                     <Box className={"fs-18-bold white"}>{t("not-5_add")}</Box>
@@ -206,20 +143,17 @@ const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
                   <Button
                     className="modal_btn_left_fr"
                     onClick={() => {
-                      declineFR();
+                      declineFriendRequest(detail);
                     }}
                   >
-                    <Box
-                      className={"fs-18-bold"}
-                      color={"var(--Main-Blue, #52E1F2)"}
-                    >
+                    <Box className={"fs-18-bold"} color={"var(--Main-Blue, #52E1F2)"}>
                       {t("not-6_decline")}
                     </Box>
                   </Button>
                 </Stack>
               </Stack>
             </>
-          )} */}
+          )}
           <Divider
             sx={{
               backgroundColor: "#FFFFFF1A",

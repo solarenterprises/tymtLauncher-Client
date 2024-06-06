@@ -12,18 +12,18 @@ import BlockModal from "../../components/chat/BlockModal";
 import DeleteModal from "../../components/chat/DeleteModal";
 import RequestModal from "../../components/chat/RequestModal";
 import { useSocket } from "../../providers/SocketProvider";
-import { IContactList, propsType, selecteduserType, userType } from "../../types/chatTypes";
+import { IAlert, IContactList, propsType, selecteduserType, userType } from "../../types/chatTypes";
 import { accountType } from "../../types/accountTypes";
 import { getSelectedUser } from "../../features/chat/Chat-selecteduserSlice";
 import { getAccount } from "../../features/account/AccountSlice";
 import { IAlertList } from "../../types/alertTypes";
 import FRcontextmenu from "../../components/chat/FRcontextmenu";
 import Userlist from "../../components/chat/Userlist";
-import { createContactAsync, deleteContactAsync, getContactList } from "../../features/chat/ContactListSlice";
+import { deleteContactAsync, getContactList } from "../../features/chat/ContactListSlice";
 import { AppDispatch } from "../../store";
 import { getAlertList } from "../../features/alert/AlertListSlice";
 import { searchUsers } from "../../features/chat/ContactListApi";
-import { createFriendAsync, getFriendList } from "../../features/chat/FriendListSlice";
+import { getFriendList } from "../../features/chat/FriendListSlice";
 
 const theme = createTheme({
   palette: {
@@ -89,13 +89,13 @@ const Chatmain = ({ view, setView }: propsType) => {
     setOpenDeleteModal(false);
   };
 
-  const sendRequest = async () => {
+  const sendFriendRequest = async () => {
     try {
       if (friendListStoreRef.current.contacts.find((element) => element._id === selectedUserToDeleteStoreRef.current.id)) {
-        console.log("sendRequest: already in the friend list!");
+        console.log("sendFriendRequest: already in the friend list!");
         return;
       }
-      const data = {
+      const data: IAlert = {
         alertType: "friend-request",
         note: {
           sender: `${accountStoreRef.current.uid}`,
@@ -105,13 +105,9 @@ const Chatmain = ({ view, setView }: propsType) => {
       };
       socket.current.emit("post-alert", JSON.stringify(data));
       setOpenRequestModal(false);
-      // To avoid heavy load, one by one
-      dispatch(createContactAsync(selectedUserToDeleteStoreRef.current.id)).then(() => {
-        dispatch(createFriendAsync(selectedUserToDeleteStoreRef.current.id));
-      });
-      console.log("sendRequest");
+      console.log("sendFriendRequest");
     } catch (err) {
-      console.error("Failed to sendRequest: ", err);
+      console.error("Failed to sendFriendRequest: ", err);
     }
   };
 
@@ -266,7 +262,7 @@ const Chatmain = ({ view, setView }: propsType) => {
                   <RequestModal
                     openRequestModal={openRequestModal}
                     setOpenRequestModal={setOpenRequestModal}
-                    sendFriendRequest={sendRequest}
+                    sendFriendRequest={sendFriendRequest}
                     roommode={false}
                   />
                 </>

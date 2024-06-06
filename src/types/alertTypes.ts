@@ -13,7 +13,7 @@ export interface propsAlertType {
 export interface propsAlertListType {
   status: string;
   title: string;
-  detail: any;
+  detail: IAlert;
   read: string;
 }
 

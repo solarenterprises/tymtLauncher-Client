@@ -343,37 +343,46 @@ export const SocketProvider = () => {
     [accountStore, encryptionKeyStore]
   );
 
-  const approveFriendRequest = (alert: IAlert) => {
-    try {
-      console.log("approveFriendRequest");
-      if (socket.current && socket.current.connected) {
-        const data = {
-          id: alert._id,
-          note: { sender: alert.note.sender, status: "accepted" },
-          receivers: alert.receivers,
-        };
-        socket.current.emit("update-alert", JSON.stringify(data));
+  const approveFriendRequest = useCallback(
+    (alert: IAlert) => {
+      try {
+        console.log("approveFriendRequest");
+        if (socket.current && socket.current.connected) {
+          const data = {
+            alertType: "friend-request",
+            note: { sender: accountStore.uid, status: "accepted" },
+            receivers: [alert.note.sender],
+          };
+          socket.current.emit("post-alert", JSON.stringify(data));
+          dispatch(createContactAsync(alert.note.sender)).then(() => {
+            dispatch(createFriendAsync(alert.note.sender));
+          });
+        }
+      } catch (err) {
+        console.error("Failed to approveFriendRequest: ", err);
       }
-    } catch (err) {
-      console.error("Failed to approveFriendRequest: ", err);
-    }
-  };
+    },
+    [accountStore]
+  );
 
-  const declineFriendRequest = (alert: IAlert) => {
-    try {
-      console.log("declineFriendRequest");
-      if (socket.current && socket.current.connected) {
-        const data = {
-          id: alert._id,
-          note: { sender: alert.note.sender, status: "rejected" },
-          receivers: alert.receivers,
-        };
-        socket.current.emit("update-alert", JSON.stringify(data));
+  const declineFriendRequest = useCallback(
+    (alert: IAlert) => {
+      try {
+        console.log("declineFriendRequest");
+        if (socket.current && socket.current.connected) {
+          const data = {
+            alertType: "friend-request",
+            note: { sender: accountStore.uid, status: "rejected" },
+            receivers: [alert.note.sender],
+          };
+          socket.current.emit("post-alert", JSON.stringify(data));
+        }
+      } catch (err) {
+        console.error("Failed to declineFriendRequest: ", err);
       }
-    } catch (err) {
-      console.error("Failed to declineFriendRequest: ", err);
-    }
-  };
+    },
+    [accountStore]
+  );
 
   return (
     <SocketContext.Provider

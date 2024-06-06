@@ -2,16 +2,11 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
-
 import createKeccakHash from "keccak";
-
 import { getAccount, setAccount } from "../../../features/account/AccountSlice";
-
 import { useFormik } from "formik";
 import * as Yup from "yup";
-
 import { Grid, Box, Stack } from "@mui/material";
-
 import Back from "../../../components/account/Back";
 import AccountHeader from "../../../components/account/AccountHeader";
 import InputText from "../../../components/account/InputText";
@@ -21,15 +16,13 @@ import AccountButton from "../../../components/account/AccountButton";
 import ForgotYourPassword from "../../../components/account/ForgotYourPassword";
 import Stepper from "../../../components/account/Stepper";
 import DontHaveAccount from "../../../components/account/DontHaveAccount";
-
 import tymt2 from "../../../assets/account/tymt2.png";
 import wallet from "../../../assets/account/wallet.png";
-
-import "../../../global.css";
 import { accountType, loginEnum, nonCustodialType } from "../../../types/accountTypes";
 import { getNonCustodial } from "../../../features/account/NonCustodialSlice";
 import { decrypt } from "../../../lib/api/Encrypt";
 import { setMnemonic } from "../../../features/account/MnemonicSlice";
+import "../../../global.css";
 
 const NonCustodialLogIn1 = () => {
   const navigate = useNavigate();

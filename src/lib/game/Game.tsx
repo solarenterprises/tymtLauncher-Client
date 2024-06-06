@@ -111,6 +111,11 @@ const Games: { [key: string]: Game } = {
           type: "appimage",
           exePath: "/tmp.AppImage",
         },
+        dev: {
+          url: "http://dev.district53.io:2000/District53-5.9.0.2-x86_64.AppImage",
+          type: "appimage",
+          exePath: "/tmp.AppImage",
+        },
       },
       macos: {
         prod: {
