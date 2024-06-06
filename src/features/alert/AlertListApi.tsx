@@ -16,18 +16,21 @@ export const fetchUnreadAlertList = async ({ userId, page, limit }: IFetchAlertL
     if (res?.status === 200) {
       console.log("fetchUnreadAlertList");
       return {
-        unread: res?.data?.result,
+        unread: res?.data?.unreadAlerts,
+        unreadCount: 0,
       };
     } else {
       console.log("fetchUnreadAlertList", res?.status);
       return {
         unread: [],
+        unreadCount: 0,
       };
     }
   } catch (err) {
     console.error("Failed to fetchUnreadAlertList: ", err);
     return {
       unread: [],
+      unreadCount: 0,
     };
   }
 };
@@ -44,18 +47,21 @@ export const fetchReadAlertList = async ({ userId, page, limit }: IFetchAlertLis
     if (res?.status === 200) {
       console.log("fetchReadAlertList");
       return {
-        read: res?.data?.result,
+        read: res?.data?.readAlerts,
+        readCount: res?.data?.readCount,
       };
     } else {
       console.log("fetchReadAlertList res.status !== 200");
       return {
         read: [],
+        readCount: 0,
       };
     }
   } catch (err) {
     console.error("Failed to fetchReadAlertList: ", err);
     return {
       read: [],
+      readCount: 0,
     };
   }
 };
@@ -70,12 +76,20 @@ export const fetchAlertList = async (userId: string) => {
     const res = await Promise.all([fetchUnreadAlertList(param), fetchReadAlertList(param)]);
     const res1: IAlertList = {
       unread: res[0]?.unread,
+      unreadCount: res[0]?.unreadCount,
       read: res[1]?.read,
+      readCount: res[1]?.readCount,
     };
     console.log("fetchAlertList");
     return res1;
   } catch (err) {
     console.error("Failed to getAlertList: ", err);
+    return {
+      read: [],
+      readCount: 0,
+      unread: [],
+      unreadCount: 0,
+    };
   }
 };
 

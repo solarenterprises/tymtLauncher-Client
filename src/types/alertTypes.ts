@@ -25,6 +25,8 @@ export interface propsAlertListType {
 export interface IAlertList {
   read: IAlert[];
   unread: IAlert[];
+  readCount: number;
+  unreadCount: number;
 }
 
 export interface IFetchAlertListParam {

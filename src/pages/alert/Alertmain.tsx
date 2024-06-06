@@ -109,8 +109,8 @@ const Alertmain = () => {
               }}
             >
               <Stack display={"flex"} direction={"row"} alignItems={"center"} gap={"8px"}>
-                <Box className={"fs-18-regular gray"}>{alertListStore.unread.length}</Box>
-                <Box className={"fs-18-regular gray"}>{t("not-2_unread")}</Box>
+                <Box className={"fs-14-regular gray"}>{alertListStore.unreadCount}</Box>
+                <Box className={"fs-14-regular gray"}>{t("not-2_unread")}</Box>
                 <img src={unreaddot} width={"8px"} height={"8px"} />
               </Stack>
             </Button>
@@ -121,8 +121,8 @@ const Alertmain = () => {
               }}
             >
               <Stack display={"flex"} direction={"row"} alignItems={"center"} gap={"8px"}>
-                <Box className={"fs-18-regular gray"}>{alertListStore.read.length}</Box>
-                <Box className={"fs-18-regular gray"}> {t("not-3_read")}</Box>
+                <Box className={"fs-14-regular gray"}>{alertListStore.readCount}</Box>
+                <Box className={"fs-14-regular gray"}> {t("not-3_read")}</Box>
                 <img src={readdot} width={"8px"} height={"8px"} />
               </Stack>
             </Button>

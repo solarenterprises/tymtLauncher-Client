@@ -13,7 +13,9 @@ import {
 
 const init: IAlertList = {
   read: [],
+  readCount: 0,
   unread: [],
+  unreadCount: 0,
 };
 
 const loadAlertList: () => IAlertList = () => {
@@ -53,6 +55,7 @@ export const alertListSlice = createSlice({
     },
     addOneToUnreadList: (state, action) => {
       state.data.unread = [...state.data.unread, action.payload];
+      state.data.unreadCount = state.data.unreadCount + 1;
       tymtStorage.set(`alertList`, JSON.stringify(state.data));
     },
   },
@@ -73,7 +76,7 @@ export const alertListSlice = createSlice({
         if (!action.payload && !action.payload.read) {
           console.error("Failed to fetchReadAlertListSync: action.payload.read undefined");
         }
-        state.data = { ...state.data, read: [...state.data.read, ...action.payload.read] };
+        state.data = { ...state.data, read: [...state.data.read, ...action.payload.read], readCount: action.payload.readCount };
         tymtStorage.set(`alertList`, JSON.stringify(state.data));
         state.status = "alertList";
       })
@@ -84,7 +87,7 @@ export const alertListSlice = createSlice({
         if (!action.payload && !action.payload.read) {
           console.error("Failed to fetchUnreadAlertListSync: action.payload.read undefined");
         }
-        state.data = { ...state.data, unread: [...state.data.unread, ...action.payload.unread] };
+        state.data = { ...state.data, unread: [...state.data.unread, ...action.payload.unread], unreadCount: action.payload.unreadCount };
         tymtStorage.set(`alertList`, JSON.stringify(state.data));
         state.status = "alertList";
       })
@@ -92,18 +95,13 @@ export const alertListSlice = createSlice({
         state.status = "pending";
       })
       .addCase(updateAlertReadStatusAsync.fulfilled, (state, action: PayloadAction<any>) => {
-        if (!action.payload) {
+        if (!action?.payload || !action?.payload?._id) {
+          console.error("Failed to updateAlertReadStatusAsync: action.payload undefined");
           return;
         }
-        // add to read
-        state.data.read = [...state.data.read, action.payload];
-        // find and remove from unread
-        const target = state.data.unread.find((element) => element._id === action.payload._id);
-        if (!target) return;
-        const index = state.data.unread.indexOf(target);
-        if (index < 0) return;
-        state.data.unread.splice(index, 1);
-        // save to storage
+        state.data.unread = state.data.unread.filter((element) => element._id !== action.payload._id);
+        state.data.readCount = state.data.readCount + 1;
+        state.data.unreadCount = state.data.unreadCount - 1;
         tymtStorage.set(`alertList`, JSON.stringify(state.data));
         state.status = "alertList";
       })
