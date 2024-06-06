@@ -10,8 +10,8 @@ import settingicon from "../../assets/chat/settings.svg";
 import nocontact from "../../assets/chat/nocontact.png";
 import BlockModal from "../../components/chat/BlockModal";
 import DeleteModal from "../../components/chat/DeleteModal";
-// import RequestModal from "../../components/chat/RequestModal";
-// import { useSocket } from "../../providers/SocketProvider";
+import RequestModal from "../../components/chat/RequestModal";
+import { useSocket } from "../../providers/SocketProvider";
 import { IContactList, propsType, selecteduserType, userType } from "../../types/chatTypes";
 import { accountType } from "../../types/accountTypes";
 import { getSelectedUser } from "../../features/chat/Chat-selecteduserSlice";
@@ -19,11 +19,7 @@ import { getAccount } from "../../features/account/AccountSlice";
 import { IAlertList } from "../../types/alertTypes";
 import FRcontextmenu from "../../components/chat/FRcontextmenu";
 import Userlist from "../../components/chat/Userlist";
-import {
-  // createContactAsync,
-  deleteContactAsync,
-  getContactList,
-} from "../../features/chat/ContactListSlice";
+import { createContactAsync, deleteContactAsync, getContactList } from "../../features/chat/ContactListSlice";
 import { AppDispatch } from "../../store";
 import { getAlertList } from "../../features/alert/AlertListSlice";
 import { searchUsers } from "../../features/chat/ContactListApi";
@@ -43,7 +39,7 @@ const theme = createTheme({
 
 const Chatmain = ({ view, setView }: propsType) => {
   const classes = ChatStyle();
-  // const { socket } = useSocket();
+  const { socket } = useSocket();
   const { t } = useTranslation();
 
   const [value, setValue] = useState<string>("");
@@ -54,7 +50,7 @@ const Chatmain = ({ view, setView }: propsType) => {
   const [showContextMenu, setShowContextMenu] = useState(false);
   const [openBlockModal, setOpenBlockModal] = useState(false);
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
-  // const [openRequestModal, setOpenRequestModal] = useState(false);
+  const [openRequestModal, setOpenRequestModal] = useState(false);
   const [contextMenuPosition, setContextMenuPosition] = useState({
     x: 0,
     y: 0,
@@ -88,19 +84,19 @@ const Chatmain = ({ view, setView }: propsType) => {
     setOpenDeleteModal(false);
   };
 
-  // const sendRequest = async () => {
-  //   const data = {
-  //     alertType: "friend-request",
-  //     note: {
-  //       sender: `${accountStoreRef.current.uid}`,
-  //       status: "pending",
-  //     },
-  //     receivers: [selectedUserToDeleteStoreRef.current.id],
-  //   };
-  //   socket.current.emit("post-alert", JSON.stringify(data));
-  //   setOpenRequestModal(false);
-  //   dispatch(createContactAsync(selectedUserToDeleteStoreRef.current.id));
-  // };
+  const sendRequest = async () => {
+    const data = {
+      alertType: "friend-request",
+      note: {
+        sender: `${accountStoreRef.current.uid}`,
+        status: "pending",
+      },
+      receivers: [selectedUserToDeleteStoreRef.current.id],
+    };
+    socket.current.emit("post-alert", JSON.stringify(data));
+    setOpenRequestModal(false);
+    dispatch(createContactAsync(selectedUserToDeleteStoreRef.current.id));
+  };
 
   const debouncedFilterUsers = debounce(async (value: string) => {
     setSearchedresult(await searchUsers(value));
@@ -238,7 +234,7 @@ const Chatmain = ({ view, setView }: propsType) => {
                       setShowContextMenu={setShowContextMenu}
                       setIsClickedDelete={setIsClickedDelete}
                       setOpenDeleteModal={setOpenDeleteModal}
-                      // setOpenRequestModal={setOpenRequestModal}
+                      setOpenRequestModal={setOpenRequestModal}
                       setIsClickedRequest={setIsClickedRequest}
                       contextMenuPosition={contextMenuPosition}
                     />
@@ -250,12 +246,12 @@ const Chatmain = ({ view, setView }: propsType) => {
                     deleteSelectedUser={deleteSelectedUser}
                     roommode={false}
                   />
-                  {/* <RequestModal
+                  <RequestModal
                     openRequestModal={openRequestModal}
                     setOpenRequestModal={setOpenRequestModal}
                     sendFriendRequest={sendRequest}
                     roommode={false}
-                  /> */}
+                  />
                 </>
               )}
             </Box>

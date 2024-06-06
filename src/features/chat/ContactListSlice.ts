@@ -10,16 +10,11 @@ const init: IContactList = {
 
 const loadContactList: () => IContactList = () => {
   const data = tymtStorage.get(`contactList`);
-  if (!data) {
+  if (!data || !compareJSONStructure(JSON.parse(data), init)) {
     tymtStorage.set(`contactList`, JSON.stringify(init));
     return init;
   } else {
-    if (compareJSONStructure(JSON.parse(data), init)) {
-      return JSON.parse(data);
-    } else {
-      tymtStorage.set(`contactList`, JSON.stringify(init));
-      return init;
-    }
+    return JSON.parse(data);
   }
 };
 
@@ -29,9 +24,9 @@ const initialState = {
   msg: "",
 };
 
-export const fetchContactListAsync = createAsyncThunk("alertList/fetchContactListAsync", fetchContactList);
-export const createContactAsync = createAsyncThunk("alertList/createContact", createContact);
-export const deleteContactAsync = createAsyncThunk("alertList/deleteContact", deleteContact);
+export const fetchContactListAsync = createAsyncThunk("contactList/fetchContactListAsync", fetchContactList);
+export const createContactAsync = createAsyncThunk("contactList/createContactAsync", createContact);
+export const deleteContactAsync = createAsyncThunk("contactList/deleteContactAsync", deleteContact);
 
 export const contactListSlice = createSlice({
   name: "contactList",
@@ -44,7 +39,7 @@ export const contactListSlice = createSlice({
     updateOneInContactList: (state, action) => {
       const index = state.data.contacts.findIndex((element) => element._id === action.payload.id);
       if (index < 0) {
-        console.error("Failed to updateOneInContactList: not found the contact in contactList");
+        console.error("Failed to updateOneInContactList: can't find the contact in contactList");
         return;
       }
       state.data.contacts[index] = action.payload;
