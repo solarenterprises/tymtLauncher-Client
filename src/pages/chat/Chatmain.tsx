@@ -104,11 +104,11 @@ const Chatmain = ({ view, setView }: propsType) => {
         receivers: [selectedUserToDeleteStoreRef.current.id],
       };
       socket.current.emit("post-alert", JSON.stringify(data));
-      setOpenRequestModal(false);
       console.log("sendFriendRequest");
     } catch (err) {
       console.error("Failed to sendFriendRequest: ", err);
     }
+    setOpenRequestModal(false);
   };
 
   const debouncedFilterUsers = debounce(async (value: string) => {

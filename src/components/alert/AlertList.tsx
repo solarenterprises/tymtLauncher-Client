@@ -1,5 +1,5 @@
 import { Stack, Box, Divider, Button } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
@@ -10,7 +10,7 @@ import { getAccount } from "../../features/account/AccountSlice";
 import { ThreeDots } from "react-loader-spinner";
 import { updateAlertReadStatusAsync } from "../../features/alert/AlertListSlice";
 import { AppDispatch } from "../../store";
-import { getContactList } from "../../features/chat/ContactListSlice";
+import { createContactAsync, getContactList } from "../../features/chat/ContactListSlice";
 import { setCurrentPartner } from "../../features/chat/CurrentPartnerSlice";
 import failedIcon from "../../assets/alert/failed-icon.svg";
 import successIcon from "../../assets/alert/success-icon.svg";
@@ -23,6 +23,7 @@ import { selectEncryptionKeyStore } from "../../features/chat/Chat-encryptionkey
 import { Chatdecrypt } from "../../lib/api/ChatEncrypt";
 import Avatar from "../home/Avatar";
 import { useSocket } from "../../providers/SocketProvider";
+import { createFriendAsync } from "../../features/chat/FriendListSlice";
 
 const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
   const { t } = useTranslation();
@@ -63,6 +64,45 @@ const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
     }
   }, [status]);
 
+  const handleAlertClick = useCallback(() => {
+    try {
+      if (title === "chat") {
+        navigate(`/chat?senderId=${detail.note?.sender}`);
+        dispatch(
+          setCurrentPartner({
+            _id: senderUser?._id,
+            nickName: senderUser?.nickName,
+            avatar: senderUser?.avatar,
+            lang: senderUser?.lang,
+            sxpAddress: senderUser?.sxpAddress,
+            onlineStatus: senderUser?.onlineStatus,
+            notificationStatus: senderUser?.notificationStatus,
+          })
+        );
+        dispatch(
+          updateAlertReadStatusAsync({
+            alertId: detail?._id,
+            userId: accountStore.uid,
+          })
+        );
+      } else if (title === "Friend Request") {
+        dispatch(
+          updateAlertReadStatusAsync({
+            alertId: detail?._id,
+            userId: accountStore.uid,
+          })
+        );
+        if (detail?.note?.status && detail?.note?.status === "accepted") {
+          dispatch(createContactAsync(detail?.note?.sender)).then(() => {
+            dispatch(createFriendAsync(detail?.note?.sender));
+          });
+        }
+      }
+    } catch (err) {
+      console.error("Failed to click on alertList: ", err);
+    }
+  }, [title, detail, senderUser, accountStore]);
+
   return (
     <>
       <Box
@@ -74,32 +114,7 @@ const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
           },
           padding: "16px 4px 0px 4px",
         }}
-        onClick={() => {
-          try {
-            if (title === "chat") {
-              navigate(`/chat?senderId=${detail.note?.sender}`);
-              dispatch(
-                setCurrentPartner({
-                  _id: senderUser?._id,
-                  nickName: senderUser?.nickName,
-                  avatar: senderUser?.avatar,
-                  lang: senderUser?.lang,
-                  sxpAddress: senderUser?.sxpAddress,
-                  onlineStatus: senderUser?.onlineStatus,
-                  notificationStatus: senderUser?.notificationStatus,
-                })
-              );
-              dispatch(
-                updateAlertReadStatusAsync({
-                  alertId: detail?._id,
-                  userId: accountStore.uid,
-                })
-              );
-            }
-          } catch (err) {
-            console.error("Failed to click on alertList: ", err);
-          }
-        }}
+        onClick={handleAlertClick}
       >
         <Stack direction={"column"}>
           <Stack direction={"row"} justifyContent={"space-between"} alignItems={"center"}>
@@ -112,9 +127,11 @@ const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
           </Stack>
           <Box className={"fs-16-regular white"} marginTop={"12px"} sx={{ textWrap: "wrap" }}>
             {title === "update" && (detail.note?.message.length > 100 ? detail.note?.message.substring(0, 100) + "..." : detail.note?.message)}
-            {title === "chat" && decryptedMessage !== "Unable to decode message #tymt114#" && decryptedMessage.length > 100
-              ? decryptedMessage.substring(0, 100) + "..."
-              : decryptedMessage}
+            {title === "chat" &&
+              decryptedMessage !== "Unable to decode message #tymt114#" &&
+              decryptedMessage.length > 100 &&
+              decryptedMessage.substring(0, 100) + "..."}
+            {title === "chat" && decryptedMessage !== "Unable to decode message #tymt114#" && decryptedMessage.length <= 100 && decryptedMessage}
             {title === "chat" && decryptedMessage === "Unable to decode message #tymt114#" && (
               <ThreeDots height="25px" width={"40px"} radius={5} color={`white`} />
             )}
