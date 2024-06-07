@@ -10,8 +10,12 @@ import { getAccount } from "../../features/account/AccountSlice";
 import { ThreeDots } from "react-loader-spinner";
 import { updateAlertReadStatusAsync } from "../../features/alert/AlertListSlice";
 import { AppDispatch } from "../../store";
-import { createContactAsync, getContactList } from "../../features/chat/ContactListSlice";
+import { getContactList } from "../../features/chat/ContactListSlice";
 import { setCurrentPartner } from "../../features/chat/CurrentPartnerSlice";
+import { selectEncryptionKeyStore } from "../../features/chat/Chat-encryptionkeySlice";
+import { Chatdecrypt } from "../../lib/api/ChatEncrypt";
+import { useSocket } from "../../providers/SocketProvider";
+import Avatar from "../home/Avatar";
 import failedIcon from "../../assets/alert/failed-icon.svg";
 import successIcon from "../../assets/alert/success-icon.svg";
 import warnnigIcon from "../../assets/alert/warnning-icon.svg";
@@ -19,11 +23,6 @@ import alertIcon from "../../assets/alert/alert-icon.png";
 import messageIcon from "../../assets/alert/message-icon.svg";
 import unreaddot from "../../assets/alert/unreaddot.svg";
 import readdot from "../../assets/alert/readdot.svg";
-import { selectEncryptionKeyStore } from "../../features/chat/Chat-encryptionkeySlice";
-import { Chatdecrypt } from "../../lib/api/ChatEncrypt";
-import Avatar from "../home/Avatar";
-import { useSocket } from "../../providers/SocketProvider";
-import { createFriendAsync } from "../../features/chat/FriendListSlice";
 
 const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
   const { t } = useTranslation();
@@ -92,11 +91,6 @@ const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
             userId: accountStore.uid,
           })
         );
-        if (detail?.note?.status && detail?.note?.status === "accepted") {
-          dispatch(createContactAsync(detail?.note?.sender)).then(() => {
-            dispatch(createFriendAsync(detail?.note?.sender));
-          });
-        }
       }
     } catch (err) {
       console.error("Failed to click on alertList: ", err);

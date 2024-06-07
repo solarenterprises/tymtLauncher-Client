@@ -19,11 +19,11 @@ import { getAccount } from "../../features/account/AccountSlice";
 import { IAlertList } from "../../types/alertTypes";
 import FRcontextmenu from "../../components/chat/FRcontextmenu";
 import Userlist from "../../components/chat/Userlist";
-import { deleteContactAsync, getContactList } from "../../features/chat/ContactListSlice";
+import { createContactAsync, deleteContactAsync, getContactList } from "../../features/chat/ContactListSlice";
 import { AppDispatch } from "../../store";
 import { getAlertList } from "../../features/alert/AlertListSlice";
 import { searchUsers } from "../../features/chat/ContactListApi";
-import { getFriendList } from "../../features/chat/FriendListSlice";
+import { createFriendAsync, getFriendList } from "../../features/chat/FriendListSlice";
 
 const theme = createTheme({
   palette: {
@@ -104,6 +104,9 @@ const Chatmain = ({ view, setView }: propsType) => {
         receivers: [selectedUserToDeleteStoreRef.current.id],
       };
       socket.current.emit("post-alert", JSON.stringify(data));
+      dispatch(createContactAsync(selectedUserToDeleteStoreRef.current.id)).then(() => {
+        dispatch(createFriendAsync(selectedUserToDeleteStoreRef.current.id));
+      });
       console.log("sendFriendRequest");
     } catch (err) {
       console.error("Failed to sendFriendRequest: ", err);
