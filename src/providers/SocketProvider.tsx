@@ -127,9 +127,9 @@ export const SocketProvider = () => {
                 async (message: ChatMessageType) => {
                   console.log("socket.current.on > message-posted");
                   const senderId = message.sender_id;
-                  const senderInChatUserlist = contactListStoreRef.current.contacts.find((user) => user._id === senderId);
-                  const senderInChatFriendlist = friendListStoreRef.current.contacts.find((user) => user._id === senderId);
-                  if (message.sender_id === currentPartnerStoreRef.current._id && message.recipient_id === accountStoreRef.current.uid) {
+                  const senderInContactLst = contactListStoreRef.current.contacts.find((user) => user._id === senderId);
+                  const senderInFriendlist = friendListStoreRef.current.contacts.find((user) => user._id === senderId);
+                  if (message.sender_id === currentPartnerStoreRef.current._id) {
                     if (chatStoreRef.current.message === "anyone") {
                       const updatedHistory = [message, ...chatHistoryStoreRef.current.messages];
                       dispatch(
@@ -137,14 +137,13 @@ export const SocketProvider = () => {
                           messages: updatedHistory,
                         })
                       );
-                    } else if (chatStoreRef.current.message === "friend" && senderInChatFriendlist) {
+                    } else if (chatStoreRef.current.message === "friend" && senderInFriendlist) {
                       const updatedHistory = [message, ...chatHistoryStoreRef.current.messages];
                       dispatch(setChatHistory({ messages: updatedHistory }));
                     }
-                  }
-                  if (message.recipient_id === accountStoreRef.current.uid) {
+                  } else {
                     if (chatStoreRef.current.message === "anyone") {
-                      if (!senderInChatUserlist) {
+                      if (!senderInContactLst) {
                         const senderName = await getsenderName(message.sender_id);
                         dispatch(createContactAsync(message.sender_id)).then(() => {
                           setNotificationOpen(true);
@@ -154,7 +153,7 @@ export const SocketProvider = () => {
                           setNotificationLink(`/chat?senderId=${message.sender_id}`);
                         });
                       } else {
-                        const senderName = senderInChatUserlist.nickName;
+                        const senderName = senderInContactLst.nickName;
 
                         setNotificationOpen(true);
                         setNotificationStatus("message");
@@ -163,8 +162,8 @@ export const SocketProvider = () => {
                         setNotificationLink(`/chat?senderId=${message.sender_id}`);
                       }
                     } else if (chatStoreRef.current.message === "friend") {
-                      if (senderInChatFriendlist) {
-                        const senderName = senderInChatFriendlist.nickName;
+                      if (senderInFriendlist) {
+                        const senderName = senderInFriendlist.nickName;
 
                         setNotificationOpen(true);
                         setNotificationStatus("message");

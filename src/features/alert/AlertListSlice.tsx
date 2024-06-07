@@ -101,9 +101,12 @@ export const alertListSlice = createSlice({
           console.error("Failed to updateAlertReadStatusAsync: action.payload undefined");
           return;
         }
+        const target = state.data.unread.find((element) => element._id === action.payload._id);
+        if (!target) return;
         state.data.unread = state.data.unread.filter((element) => element._id !== action.payload._id);
-        state.data.readCount = state.data.readCount + 1;
         state.data.unreadCount = state.data.unreadCount - 1;
+        state.data.read = [...state.data.read, target];
+        state.data.readCount = state.data.readCount + 1;
         tymtStorage.set(`alertList`, JSON.stringify(state.data));
         state.status = "alertList";
       })
@@ -126,8 +129,12 @@ export const alertListSlice = createSlice({
         if (!action.payload) {
           return;
         }
-        state.data.read = [...state.data.read];
-        state.data.unread = [...state.data.unread];
+        const target = state.data.unread.find((element) => element._id === action.payload._id);
+        if (!target) return;
+        state.data.unread = state.data.unread.filter((element) => element._id !== action.payload._id);
+        state.data.unreadCount = state.data.unreadCount - 1;
+        state.data.read = [...state.data.read, target];
+        state.data.readCount = state.data.readCount + 1;
         tymtStorage.set(`alertList`, JSON.stringify(state.data));
         state.status = "alertList";
       });

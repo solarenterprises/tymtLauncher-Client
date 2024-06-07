@@ -191,14 +191,14 @@ export const updateFriendRequest = async ({ alertId, status }: IUpdateFriendRequ
     );
     if (res?.status === 200) {
       console.log("updateFriendRequest");
-      return true;
+      return res?.data?.result;
     } else {
       console.log("updateFriendRequest: ", res?.status);
-      return false;
+      return null;
     }
   } catch (err) {
     console.error("Failed to updateFriendRequest: ", err);
-    return false;
+    return null;
   }
 };
 
