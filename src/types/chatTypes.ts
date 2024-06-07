@@ -94,6 +94,7 @@ export interface IContactList {
 }
 
 export interface ChatMessageType {
+  _id: string;
   sender_id: string;
   recipient_id: string;
   room_id: string;

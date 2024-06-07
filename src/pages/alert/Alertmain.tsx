@@ -33,40 +33,23 @@ const Alertmain = () => {
 
   const [alertStatus, setAlertStatus] = useState<string>("unread");
   const [page, setPage] = useState<number>(1);
-  // const [hasMore, setHasMore] = useState<boolean>(true);
 
   const fetchMoreAlert = useCallback(() => {
     try {
-      // if (!hasMore) {
-      //   console.log("No more alerts");
-      //   return;
-      // }
       if (alertStatus === "read") {
         const param: IFetchAlertListParam = {
           userId: accountStore.uid,
-          page: page + 1,
+          page: Math.floor(alertListStore.read.length / 20) + 1,
           limit: 20,
         };
-        setPage((prev) => prev + 1);
-        // const previousReadLength = [...alertListStore.read].length;
-        dispatch(fetchReadAlertListAsync(param)).then(() => {
-          // if (alertListStore.read.length === previousReadLength) {
-          //   setHasMore(false);
-          // }
-        });
+        dispatch(fetchReadAlertListAsync(param));
       } else {
         const param: IFetchAlertListParam = {
           userId: accountStore.uid,
-          page: page + 1,
+          page: Math.floor(alertListStore.unread.length / 20) + 1,
           limit: 20,
         };
-        setPage((prev) => prev + 1);
-        // const previousUnreadLength = [...alertListStore.unread].length;
-        dispatch(fetchUnreadAlertListAsync(param)).then(() => {
-          // if (alertListStore.unread.length === previousUnreadLength) {
-          //   setHasMore(false);
-          // }
-        });
+        dispatch(fetchUnreadAlertListAsync(param));
       }
       console.log("fetchMoreAlert: ", `page: ${page + 1}`, `hasMore: true`);
     } catch (err) {
@@ -76,14 +59,12 @@ const Alertmain = () => {
 
   useEffect(() => {
     setPage(1);
-    // setHasMore(true);
     dispatch(fetchAlertListAsync(accountStore.uid));
   }, [alertStatus, accountStore]);
 
   const handleMarkAllAsReadClick = () => {
     dispatch(updateAllAlertReadStatusAsync()).then(() => {
       setPage(1);
-      // setHasMore(true);
       dispatch(fetchAlertListAsync(accountStore.uid));
     });
   };
@@ -154,7 +135,7 @@ const Alertmain = () => {
             releaseToRefreshContent={<Box className={"fs-14-regular white t-center"}>&#8593; {t("cha-35_release-to-refresh")}</Box>}
           >
             {alertStatus === "unread" &&
-              [...alertListStore.unread].reverse().map((alert, index) => {
+              [...alertListStore.unread].map((alert, index) => {
                 if (alert.alertType === "chat") {
                   const key = encryptionKeyStore.encryption_Keys[alert?.note?.sender];
                   if (!key) askEncryptionKey(alert?.note?.sender);
@@ -170,7 +151,7 @@ const Alertmain = () => {
                 );
               })}
             {alertStatus === "read" &&
-              [...alertListStore.read].reverse().map((alert, index) => {
+              [...alertListStore.read].map((alert, index) => {
                 if (alert.alertType === "chat") {
                   const key = encryptionKeyStore.encryption_Keys[alert?.note?.sender];
                   if (!key) askEncryptionKey(alert?.note?.sender);

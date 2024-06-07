@@ -32,6 +32,7 @@ import { Chatdecrypt } from "../../lib/api/ChatEncrypt";
 import { useTranslation } from "react-i18next";
 import { getContactList } from "../../features/chat/ContactListSlice";
 import { getCurrentPartner } from "../../features/chat/CurrentPartnerSlice";
+import { addChatHistory } from "../../lib/api/JSONHelper";
 
 const theme = createTheme({
   palette: {
@@ -138,7 +139,7 @@ const Chatroom = () => {
         if (!hasMoreRef.current) return;
         const query = {
           room_user_ids: [accountStoreRef.current.uid, currentPartnerStoreRef.current._id],
-          pagination: { page: pageRef.current, pageSize: 20 },
+          pagination: { page: Math.floor(chatHistoryStoreRef.current.messages.length / 20) + 1, pageSize: 20 },
         };
         if (!processedPagesRef.current.has(pageRef.current)) {
           setProcessedPages(new Set(processedPagesRef.current.add(pageRef.current)));
@@ -175,7 +176,7 @@ const Chatroom = () => {
               } else if (pageRef.current > 1) {
                 dispatch(
                   setChatHistory({
-                    messages: [...chatHistoryStoreRef.current.messages, ...result.data],
+                    messages: addChatHistory([...chatHistoryStoreRef.current.messages], [...result.data]),
                   })
                 );
               }

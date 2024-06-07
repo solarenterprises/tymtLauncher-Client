@@ -23,7 +23,7 @@ import { createContactAsync, deleteContactAsync, getContactList } from "../../fe
 import { AppDispatch } from "../../store";
 import { getAlertList } from "../../features/alert/AlertListSlice";
 import { searchUsers } from "../../features/chat/ContactListApi";
-import { createFriendAsync, getFriendList } from "../../features/chat/FriendListSlice";
+import { createFriendAsync, deleteFriendAsync, getFriendList } from "../../features/chat/FriendListSlice";
 
 const theme = createTheme({
   palette: {
@@ -85,7 +85,14 @@ const Chatmain = ({ view, setView }: propsType) => {
   }, [friendListStore]);
 
   const deleteSelectedUser = async () => {
-    dispatch(deleteContactAsync(selectedUserToDeleteStoreRef.current.id));
+    try {
+      dispatch(deleteFriendAsync(selectedUserToDeleteStoreRef.current.id)).then(() => {
+        dispatch(deleteContactAsync(selectedUserToDeleteStoreRef.current.id));
+      });
+      console.log("deleteSelectedUser");
+    } catch (err) {
+      console.error("Failed to deleteSelectedUser: ", err);
+    }
     setOpenDeleteModal(false);
   };
 

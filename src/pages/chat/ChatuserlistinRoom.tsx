@@ -21,7 +21,7 @@ import { createContactAsync, deleteContactAsync, getContactList } from "../../fe
 import { AppDispatch } from "../../store";
 import { searchUsers } from "../../features/chat/ContactListApi";
 import { getAlertList } from "../../features/alert/AlertListSlice";
-import { createFriendAsync, getFriendList } from "../../features/chat/FriendListSlice";
+import { createFriendAsync, deleteFriendAsync, getFriendList } from "../../features/chat/FriendListSlice";
 import { accountType } from "../../types/accountTypes";
 import { getAccount } from "../../features/account/AccountSlice";
 import { useSocket } from "../../providers/SocketProvider";
@@ -65,7 +65,14 @@ const ChatuserlistinRoom = ({ view, setView }: propsType) => {
   };
 
   const deleteSelectedUser = useCallback(async () => {
-    dispatch(deleteContactAsync(selectedUserToDeleteStore.id));
+    try {
+      dispatch(deleteFriendAsync(selectedUserToDeleteStore.id)).then(() => {
+        dispatch(deleteContactAsync(selectedUserToDeleteStore.id));
+      });
+      console.log("deleteSelectedUser");
+    } catch (err) {
+      console.error("Failed to deleteSelectedUser: ", err);
+    }
     setOpenDeleteModal(false);
   }, [selectedUserToDeleteStore]);
 

@@ -1,7 +1,7 @@
 import { PayloadAction, createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import tymtStorage from "../../lib/Storage";
 import { IAlertList } from "../../types/alertTypes";
-import { compareJSONStructure } from "../../lib/api/JSONHelper";
+import { addAlertHistory, compareJSONStructure } from "../../lib/api/JSONHelper";
 import {
   fetchAlertList,
   fetchCountUnreadAlertList,
@@ -78,7 +78,8 @@ export const alertListSlice = createSlice({
         if (!action.payload && !action.payload.read) {
           console.error("Failed to fetchReadAlertListSync: action.payload.read undefined");
         }
-        state.data = { ...state.data, read: [...state.data.read, ...action.payload.read], readCount: action.payload.readCount };
+
+        state.data = { ...state.data, read: addAlertHistory([...action.payload.read], [...state.data.read]), readCount: action.payload.readCount };
         tymtStorage.set(`alertList`, JSON.stringify(state.data));
         state.status = "alertList";
       })
@@ -89,7 +90,7 @@ export const alertListSlice = createSlice({
         if (!action.payload && !action.payload.read) {
           console.error("Failed to fetchUnreadAlertListSync: action.payload.read undefined");
         }
-        state.data = { ...state.data, unread: [...state.data.unread, ...action.payload.unread], unreadCount: action.payload.unreadCount };
+        state.data = { ...state.data, unread: addAlertHistory([...action.payload.unread], [...state.data.unread]), unreadCount: action.payload.unreadCount };
         tymtStorage.set(`alertList`, JSON.stringify(state.data));
         state.status = "alertList";
       })
