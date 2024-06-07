@@ -9,6 +9,7 @@ import {
   fetchUnreadAlertList,
   updateAlertReadStatus,
   updateAllAlertReadStatus,
+  updateFriendRequest,
 } from "./AlertListApi";
 
 const init: IAlertList = {
@@ -44,6 +45,7 @@ export const fetchAlertListAsync = createAsyncThunk("alertList/fetchAlertList", 
 export const fetchCountUnreadAlertListAsync = createAsyncThunk("alertList/fetchCountUnreadAlertList", fetchCountUnreadAlertList);
 export const updateAlertReadStatusAsync = createAsyncThunk("alertList/updateAlertReadStatus", updateAlertReadStatus);
 export const updateAllAlertReadStatusAsync = createAsyncThunk("alertList/updateAllAlertReadStatus", updateAllAlertReadStatus);
+export const updateFriendRequestAsync = createAsyncThunk("alertList/updateFriendRequest", updateFriendRequest);
 
 export const alertListSlice = createSlice({
   name: "alertList",
@@ -114,6 +116,18 @@ export const alertListSlice = createSlice({
         }
         state.data.read = [];
         state.data.unread = [];
+        tymtStorage.set(`alertList`, JSON.stringify(state.data));
+        state.status = "alertList";
+      })
+      .addCase(updateFriendRequestAsync.pending, (state) => {
+        state.status = "pending";
+      })
+      .addCase(updateFriendRequestAsync.fulfilled, (state, action: PayloadAction<any>) => {
+        if (!action.payload) {
+          return;
+        }
+        state.data.read = [...state.data.read];
+        state.data.unread = [...state.data.unread];
         tymtStorage.set(`alertList`, JSON.stringify(state.data));
         state.status = "alertList";
       });

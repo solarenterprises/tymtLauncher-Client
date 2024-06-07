@@ -34,3 +34,8 @@ export interface IFetchAlertListParam {
   page: number;
   limit: number;
 }
+
+export interface IUpdateFriendRequest {
+  alertId: string;
+  status: string;
+}

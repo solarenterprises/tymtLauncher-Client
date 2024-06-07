@@ -2,7 +2,7 @@ import axios from "axios";
 import { tymt_backend_url } from "../../configs";
 import { ISaltToken } from "../../types/accountTypes";
 import tymtStorage from "../../lib/Storage";
-import { IAlertList, IFetchAlertListParam } from "../../types/alertTypes";
+import { IAlertList, IFetchAlertListParam, IUpdateFriendRequest } from "../../types/alertTypes";
 
 export const fetchUnreadAlertList = async ({ userId, page, limit }: IFetchAlertListParam) => {
   try {
@@ -170,6 +170,34 @@ export const updateAllAlertReadStatus = async () => {
     }
   } catch (err) {
     console.error("Failed to updateAllAlertReadStatus: ", err);
+    return false;
+  }
+};
+
+export const updateFriendRequest = async ({ alertId, status }: IUpdateFriendRequest) => {
+  try {
+    const saltTokenStore: ISaltToken = JSON.parse(tymtStorage.get(`saltToken`));
+    const res = await axios.put(
+      `${tymt_backend_url}/alerts/updateFriendRequest/${alertId}`,
+      {
+        status: status,
+      },
+      {
+        headers: {
+          "x-token": saltTokenStore.token,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    if (res?.status === 200) {
+      console.log("updateFriendRequest");
+      return true;
+    } else {
+      console.log("updateFriendRequest: ", res?.status);
+      return false;
+    }
+  } catch (err) {
+    console.error("Failed to updateFriendRequest: ", err);
     return false;
   }
 };

@@ -30,7 +30,7 @@ import { appWindow } from "@tauri-apps/api/window";
 import { getCurrentPartner } from "../features/chat/CurrentPartnerSlice";
 import { createContactAsync, getContactList, updateOneInContactList } from "../features/chat/ContactListSlice";
 import { getsenderName, generateRandomString } from "../features/chat/ContactListApi";
-import { addOneToUnreadList } from "../features/alert/AlertListSlice";
+import { addOneToUnreadList, updateFriendRequestAsync } from "../features/alert/AlertListSlice";
 
 interface SocketContextType {
   socket: MutableRefObject<Socket>;
@@ -181,7 +181,7 @@ export const SocketProvider = () => {
             if (!socket.current.hasListeners("alert-posted")) {
               socket.current.on("alert-posted", async (alert: IAlert) => {
                 console.log("socket.current.on > alert-posted");
-                if (!alert || !alert.alertType || !alert.note?.sender || !alert.note?.detail) {
+                if (!alert || !alert.alertType) {
                   console.error("Alert wrong format!", alert);
                   return;
                 }
@@ -354,8 +354,11 @@ export const SocketProvider = () => {
             receivers: [alert.note.sender],
           };
           socket.current.emit("post-alert", JSON.stringify(data));
-          dispatch(createContactAsync(alert.note.sender)).then(() => {
-            dispatch(createFriendAsync(alert.note.sender));
+          // To avoid spam
+          dispatch(updateFriendRequestAsync({ alertId: alert._id, status: "accepted" })).then(() => {
+            dispatch(createContactAsync(alert.note.sender)).then(() => {
+              dispatch(createFriendAsync(alert.note.sender));
+            });
           });
         }
       } catch (err) {
@@ -376,6 +379,7 @@ export const SocketProvider = () => {
             receivers: [alert.note.sender],
           };
           socket.current.emit("post-alert", JSON.stringify(data));
+          dispatch(updateFriendRequestAsync({ alertId: alert._id, status: "rejected" }));
         }
       } catch (err) {
         console.error("Failed to declineFriendRequest: ", err);
