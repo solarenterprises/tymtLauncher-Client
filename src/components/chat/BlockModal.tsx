@@ -17,6 +17,7 @@ const BlockModal = ({ openBlockModal, setOpenBlockModal, roommode }: propsBlockM
     try {
       if (blockListStore.contacts.find((element) => element._id === selectedUserStore.id)) {
         console.log("handleBlockClick: Already in the block list!");
+        setOpenBlockModal(false);
         return;
       }
       dispatch(createBlockAsync(selectedUserStore.id));

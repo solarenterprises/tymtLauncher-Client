@@ -51,6 +51,10 @@ const blockListSlice = createSlice({
         state.status = "pending";
       })
       .addCase(createBlockAsync.fulfilled, (state, action: PayloadAction<any>) => {
+        if (!action.payload) {
+          console.log("Failed to createBlockAsync:", action.payload);
+          return;
+        }
         state.data = { ...state.data, ...action.payload };
         tymtStorage.set(`blockList`, JSON.stringify(state.data));
         state.status = "blockList";
@@ -59,6 +63,10 @@ const blockListSlice = createSlice({
         state.status = "pending";
       })
       .addCase(deleteBlockAsync.fulfilled, (state, action: PayloadAction<any>) => {
+        if (!action.payload) {
+          console.log("Failed to deleteBlockAsync:", action.payload);
+          return;
+        }
         state.data = { ...state.data, ...action.payload };
         tymtStorage.set(`blockList`, JSON.stringify(state.data));
         state.status = "blockList";

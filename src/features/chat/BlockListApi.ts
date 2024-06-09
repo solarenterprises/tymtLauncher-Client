@@ -43,25 +43,18 @@ export const createBlock = async (_id: string) => {
         "Content-Type": "application/json",
       },
     });
-    if (res?.status === 200) {
+    if (res?.status === 200 && res?.data?.block) {
       console.log("createBlock");
-      if (res?.data?.block) {
-        return {
-          contacts: res?.data?.block,
-        };
-      }
-      return null;
+      return {
+        contacts: res?.data?.block,
+      };
     } else {
       console.log("createBlock: ", res?.status);
-      return {
-        contacts: [],
-      };
+      return null;
     }
   } catch (err) {
     console.error("Failed to createBlock: ", err);
-    return {
-      contacts: [],
-    };
+    return null;
   }
 };
 
@@ -77,21 +70,17 @@ export const deleteBlock = async (_id: string) => {
         block: _id,
       },
     });
-    if (res?.status === 200) {
+    if (res?.status === 200 && res?.data?.block) {
       console.log("deleteBlock");
       return {
         contacts: res?.data?.block,
       };
     } else {
       console.log("deleteBlock: ", res?.status);
-      return {
-        contacts: [],
-      };
+      return null;
     }
   } catch (err) {
     console.error("Failed to deleteBlock: ", err);
-    return {
-      contacts: [],
-    };
+    return null;
   }
 };

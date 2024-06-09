@@ -255,19 +255,33 @@ const Chatmain = ({ view, setView }: propsType) => {
                 marginBottom: "22px",
               }}
             />
-            <Tabs
-              value={tab}
-              onChange={handleTabChange}
-              indicatorColor="secondary"
-              textColor="inherit"
-              variant="fullWidth"
-              aria-label="full width tabs example"
-            >
-              <Tab label={<Box className={"fs-14-regular white t-center"}>{`Contacts`}</Box>} {...a11yProps(0)} />
-              <Tab label={<Box className={"fs-14-regular white t-center"}>{`Friends`}</Box>} {...a11yProps(1)} />
-              <Tab label={<Box className={"fs-14-regular white t-center"}>{`Block`}</Box>} {...a11yProps(2)} />
+            <Tabs value={tab} onChange={handleTabChange} indicatorColor="primary" textColor="inherit" variant="fullWidth" aria-label="full width tabs example">
+              <Tab
+                label={
+                  <Box className={"fs-14-regular white t-center"} sx={{ textTransform: "none" }}>
+                    {t("cha-36_contact")}
+                  </Box>
+                }
+                {...a11yProps(0)}
+              />
+              <Tab
+                label={
+                  <Box className={"fs-14-regular white t-center"} sx={{ textTransform: "none" }}>
+                    {t("cha-37_friend")}
+                  </Box>
+                }
+                {...a11yProps(1)}
+              />
+              <Tab
+                label={
+                  <Box className={"fs-14-regular white t-center"} sx={{ textTransform: "none" }}>
+                    {t("cha-38_block")}
+                  </Box>
+                }
+                {...a11yProps(2)}
+              />
             </Tabs>
-            <SwipeableViews axis={otheme.direction === "rtl" ? "x-reverse" : "x"} index={value} onChangeIndex={handleChangeIndex}>
+            <SwipeableViews axis={otheme.direction === "rtl" ? "x-reverse" : "x"} index={tab} onChangeIndex={handleChangeIndex} width={"100%"}>
               <TabPanel value={tab} index={0} dir={otheme.direction}>
                 <Box className={classes.scroll_bar}>
                   {contactListStore?.contacts?.length === 0 && value === "" ? (
