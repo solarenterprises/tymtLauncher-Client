@@ -17,7 +17,6 @@ import { IChain, ICurrency, multiWalletType } from "../../types/walletTypes";
 import SettingStyle from "../../styles/SettingStyle";
 import { getChain, setChainAsync } from "../../features/wallet/ChainSlice";
 import { AppDispatch } from "../../store";
-import { formatBalance } from "../../lib/helper";
 import Loading from "../../components/Loading";
 import ComingModal from "../../components/ComingModal";
 import { getCurrency, refreshCurrencyAsync } from "../../features/wallet/CurrencySlice";
@@ -26,6 +25,7 @@ import { useNotification } from "../../providers/NotificationProvider";
 import { walletType } from "../../types/settingTypes";
 import { selectWallet, setWallet } from "../../features/settings/WalletSlice";
 import { getTransactionsAsync, setTransasctions } from "../../features/wallet/CryptoSlice";
+import numeral from "numeral";
 
 const order = ["Solar", "Binance", "Ethereum", "Bitcoin", "Solana", "Polygon", "Avalanche", "Arbitrum", "Optimism"];
 
@@ -40,22 +40,23 @@ const Wallet = () => {
   const chain: IChain = useSelector(getChain);
   const currencyStore: ICurrency = useSelector(getCurrency);
   const [currentChain, setCurrentChain] = useState(chain.currentToken);
-  const [value, setValue] = useState(0);
   const [loading, setLoading] = useState<boolean>(false);
   const [comingSoon, setComingSoon] = useState<boolean>(false);
   const reserve = currencyStore.data[currencyStore.current];
   const symbol: string = currencySymbols[currencyStore.current];
+  const totalBalance: number =
+    Object.keys(wallets).reduce((acc, rowKey) => {
+      acc = acc + (wallets[rowKey]?.chain?.balance ?? 0) * (wallets[rowKey]?.chain?.price ?? 0);
+      acc =
+        acc +
+        wallets[rowKey].tokens.reduce((sub, token) => {
+          sub = sub + (token?.balance ?? 0) * (token?.price ?? 0);
+          return sub;
+        }, 0);
+      return acc;
+    }, 0) * (reserve as number);
 
   const { setNotificationStatus, setNotificationTitle, setNotificationDetail, setNotificationOpen, setNotificationLink } = useNotification();
-
-  useEffect(() => {
-    let sumValue = 0;
-    Object.keys(wallets).map((rowKey) => {
-      sumValue += wallets[rowKey].chain.balance * wallets[rowKey].chain.price;
-    });
-    setValue(sumValue * (reserve as number));
-    console.log("sumValue", sumValue, reserve);
-  }, [wallets, currentChain, currencyStore]);
 
   useEffect(() => {
     if (!walletStore.refreshed) {
@@ -173,7 +174,7 @@ const Wallet = () => {
                       </Stack>
                       <Stack direction={"row"} justifyContent={"flex-start"} gap={2}>
                         <Box className="fs-h4 white">{symbol}</Box>
-                        <Box className="fs-h2 white">{formatBalance(value)}</Box>
+                        <Box className="fs-h2 white">{numeral(totalBalance).format("0,0.00")}</Box>
                       </Stack>
                     </Stack>
                     <Stack direction={"row"} spacing={"32px"}>
