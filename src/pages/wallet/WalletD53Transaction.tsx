@@ -8,7 +8,7 @@ import { AppDispatch } from "../../store";
 import { setMountedFalse, setMountedTrue } from "../../features/chat/Chat-intercomSupportSlice";
 import { languageType, walletType } from "../../types/settingTypes";
 import { IChain, ICurrency, INative, IToken, chainEnum, chainIconMap, multiWalletType } from "../../types/walletTypes";
-import { getMultiWallet } from "../../features/wallet/MultiWalletSlice";
+import { getMultiWallet, refreshBalancesAsync } from "../../features/wallet/MultiWalletSlice";
 import { invoke } from "@tauri-apps/api/tauri";
 import { useTranslation } from "react-i18next";
 import { useFormik } from "formik";
@@ -16,7 +16,7 @@ import * as Yup from "yup";
 import { nonCustodialType } from "../../types/accountTypes";
 import { getNonCustodial } from "../../features/account/NonCustodialSlice";
 import createKeccakHash from "keccak";
-import { getCurrency } from "../../features/wallet/CurrencySlice";
+import { getCurrency, refreshCurrencyAsync } from "../../features/wallet/CurrencySlice";
 import { currencySymbols } from "../../consts/currency";
 import numeral from "numeral";
 import { selectWallet, setWallet } from "../../features/settings/WalletSlice";
@@ -126,6 +126,9 @@ const WalletD53Transaction = () => {
             res = action.payload as INotification;
             res.title = `Send ${chainStore.currentToken}`;
             emit("res-POST-/send-transaction", res);
+            dispatch(refreshBalancesAsync({ _multiWalletStore: multiWalletStore })).then(() => {
+              dispatch(refreshCurrencyAsync());
+            });
           }
         });
       }
