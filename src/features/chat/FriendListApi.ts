@@ -45,7 +45,7 @@ export const createFriend = async (_id: string) => {
     });
     if (res?.status === 200) {
       console.log("createFriend");
-      if (res?.data?.contacts) {
+      if (res?.data?.friends) {
         return {
           contacts: res?.data?.friends,
         };

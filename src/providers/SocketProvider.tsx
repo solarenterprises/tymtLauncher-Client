@@ -31,6 +31,7 @@ import { getCurrentPartner } from "../features/chat/CurrentPartnerSlice";
 import { createContactAsync, getContactList, updateOneInContactList } from "../features/chat/ContactListSlice";
 import { getsenderName, generateRandomString } from "../features/chat/ContactListApi";
 import { addOneToUnreadList, updateFriendRequestAsync } from "../features/alert/AlertListSlice";
+import { getBlockList } from "../features/chat/BlockListSlice";
 
 interface SocketContextType {
   socket: MutableRefObject<Socket>;
@@ -56,6 +57,7 @@ export const SocketProvider = () => {
   const socketHashStore: ISocketHash = useSelector(getSocketHash);
   const contactListStore: IContactList = useSelector(getContactList);
   const friendListStore: IContactList = useSelector(getFriendList);
+  const blockListStore: IContactList = useSelector(getBlockList);
   const currentPartnerStore: IContact = useSelector(getCurrentPartner);
   const chatStore: chatType = useSelector(selectChat);
   const chatHistoryStore: ChatHistoryType = useSelector(getChatHistory);
@@ -66,6 +68,7 @@ export const SocketProvider = () => {
   const socketHashStoreRef = useRef(socketHashStore);
   const contactListStoreRef = useRef(contactListStore);
   const friendListStoreRef = useRef(friendListStore);
+  const blockListStoreRef = useRef(blockListStore);
   const currentPartnerStoreRef = useRef(currentPartnerStore);
   const chatStoreRef = useRef(chatStore);
   const chatHistoryStoreRef = useRef(chatHistoryStore);
@@ -84,6 +87,9 @@ export const SocketProvider = () => {
   useEffect(() => {
     friendListStoreRef.current = friendListStore;
   }, [friendListStore]);
+  useEffect(() => {
+    blockListStoreRef.current = blockListStore;
+  }, [blockListStore]);
   useEffect(() => {
     currentPartnerStoreRef.current = currentPartnerStore;
   }, [currentPartnerStore]);
@@ -121,60 +127,59 @@ export const SocketProvider = () => {
             }
 
             if (!socket.current.hasListeners("message-posted")) {
-              socket.current.on(
-                "message-posted",
-
-                async (message: ChatMessageType) => {
-                  console.log("socket.current.on > message-posted");
-                  const senderId = message.sender_id;
-                  const senderInContactLst = contactListStoreRef.current.contacts.find((user) => user._id === senderId);
-                  const senderInFriendlist = friendListStoreRef.current.contacts.find((user) => user._id === senderId);
-                  if (message.sender_id === currentPartnerStoreRef.current._id) {
-                    if (chatStoreRef.current.message === "anyone") {
-                      const updatedHistory = [message, ...chatHistoryStoreRef.current.messages];
-                      dispatch(
-                        setChatHistory({
-                          messages: updatedHistory,
-                        })
-                      );
-                    } else if (chatStoreRef.current.message === "friend" && senderInFriendlist) {
-                      const updatedHistory = [message, ...chatHistoryStoreRef.current.messages];
-                      dispatch(setChatHistory({ messages: updatedHistory }));
+              socket.current.on("message-posted", async (message: ChatMessageType) => {
+                console.log("socket.current.on > message-posted");
+                const senderId = message.sender_id;
+                const senderInBlockList = blockListStoreRef.current.contacts.find((user) => user._id === senderId);
+                if (senderInBlockList) {
+                  console.log("Blocked by the block list!");
+                  return;
+                }
+                const senderInContactList = contactListStoreRef.current.contacts.find((user) => user._id === senderId);
+                const senderInFriendlist = friendListStoreRef.current.contacts.find((user) => user._id === senderId);
+                if (message.sender_id === currentPartnerStoreRef.current._id) {
+                  if (chatStoreRef.current.message === "anyone") {
+                    const updatedHistory = [message, ...chatHistoryStoreRef.current.messages];
+                    dispatch(
+                      setChatHistory({
+                        messages: updatedHistory,
+                      })
+                    );
+                  } else if (chatStoreRef.current.message === "friend" && senderInFriendlist) {
+                    const updatedHistory = [message, ...chatHistoryStoreRef.current.messages];
+                    dispatch(setChatHistory({ messages: updatedHistory }));
+                  }
+                } else {
+                  if (chatStoreRef.current.message === "anyone") {
+                    if (!senderInContactList) {
+                      const senderName = await getsenderName(message.sender_id);
+                      dispatch(createContactAsync(message.sender_id)).then(() => {
+                        setNotificationOpen(true);
+                        setNotificationStatus("message");
+                        setNotificationTitle(senderName);
+                        setNotificationDetail(message.message);
+                        setNotificationLink(`/chat?senderId=${message.sender_id}`);
+                      });
+                    } else {
+                      const senderName = senderInContactList.nickName;
+                      setNotificationOpen(true);
+                      setNotificationStatus("message");
+                      setNotificationTitle(senderName);
+                      setNotificationDetail(message.message);
+                      setNotificationLink(`/chat?senderId=${message.sender_id}`);
                     }
-                  } else {
-                    if (chatStoreRef.current.message === "anyone") {
-                      if (!senderInContactLst) {
-                        const senderName = await getsenderName(message.sender_id);
-                        dispatch(createContactAsync(message.sender_id)).then(() => {
-                          setNotificationOpen(true);
-                          setNotificationStatus("message");
-                          setNotificationTitle(senderName);
-                          setNotificationDetail(message.message);
-                          setNotificationLink(`/chat?senderId=${message.sender_id}`);
-                        });
-                      } else {
-                        const senderName = senderInContactLst.nickName;
-
-                        setNotificationOpen(true);
-                        setNotificationStatus("message");
-                        setNotificationTitle(senderName);
-                        setNotificationDetail(message.message);
-                        setNotificationLink(`/chat?senderId=${message.sender_id}`);
-                      }
-                    } else if (chatStoreRef.current.message === "friend") {
-                      if (senderInFriendlist) {
-                        const senderName = senderInFriendlist.nickName;
-
-                        setNotificationOpen(true);
-                        setNotificationStatus("message");
-                        setNotificationTitle(senderName);
-                        setNotificationDetail(message.message);
-                        setNotificationLink(`/chat?senderId=${message.sender_id}`);
-                      }
+                  } else if (chatStoreRef.current.message === "friend") {
+                    if (senderInFriendlist) {
+                      const senderName = senderInFriendlist.nickName;
+                      setNotificationOpen(true);
+                      setNotificationStatus("message");
+                      setNotificationTitle(senderName);
+                      setNotificationDetail(message.message);
+                      setNotificationLink(`/chat?senderId=${message.sender_id}`);
                     }
                   }
                 }
-              );
+              });
             }
 
             if (!socket.current.hasListeners("alert-posted")) {
@@ -184,8 +189,13 @@ export const SocketProvider = () => {
                   console.error("Alert wrong format!", alert);
                   return;
                 }
+                const senderId = alert.note?.sender ?? "";
+                const senderInBlockList = blockListStoreRef.current.contacts.find((element) => element._id === senderId);
+                if (senderInBlockList) {
+                  console.log("Blocked by the block list!");
+                  return;
+                }
                 if (alert.alertType === "friend-request") {
-                  const senderId = alert.note?.sender ?? "";
                   const senderInContactList = contactListStoreRef.current.contacts.find((element) => element._id === senderId);
                   const senderInFriendList = friendListStoreRef.current.contacts.find((element) => element._id === senderId);
                   if (senderInFriendList) {

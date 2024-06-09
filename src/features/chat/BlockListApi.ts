@@ -6,7 +6,7 @@ import tymtStorage from "../../lib/Storage";
 export const fetchBlockList = async () => {
   try {
     const saltTokenStore: ISaltToken = JSON.parse(tymtStorage.get(`saltToken`));
-    const res = await axios.get(`${tymt_backend_url}/users/friend/list`, {
+    const res = await axios.get(`${tymt_backend_url}/users/block/list`, {
       headers: {
         "x-token": saltTokenStore.token,
         "Content-Type": "application/json",
@@ -15,7 +15,7 @@ export const fetchBlockList = async () => {
     if (res?.status === 200) {
       console.log("fetchBlockList");
       return {
-        contacts: res?.data?.friends,
+        contacts: res?.data?.blocks,
       };
     } else {
       console.log("fetchBlockList: ", res?.status);
@@ -34,10 +34,10 @@ export const fetchBlockList = async () => {
 export const createBlock = async (_id: string) => {
   try {
     const saltTokenStore: ISaltToken = JSON.parse(tymtStorage.get(`saltToken`));
-    const friend = {
-      friend: _id,
+    const block = {
+      block: _id,
     };
-    const res = await axios.post(`${tymt_backend_url}/users/friend`, friend, {
+    const res = await axios.post(`${tymt_backend_url}/users/block`, block, {
       headers: {
         "x-token": saltTokenStore.token,
         "Content-Type": "application/json",
@@ -45,9 +45,9 @@ export const createBlock = async (_id: string) => {
     });
     if (res?.status === 200) {
       console.log("createBlock");
-      if (res?.data?.contacts) {
+      if (res?.data?.block) {
         return {
-          contacts: res?.data?.friends,
+          contacts: res?.data?.block,
         };
       }
       return null;
@@ -68,19 +68,19 @@ export const createBlock = async (_id: string) => {
 export const deleteBlock = async (_id: string) => {
   try {
     const saltTokenStore: ISaltToken = JSON.parse(tymtStorage.get(`saltToken`));
-    const res = await axios.delete(`${tymt_backend_url}/users/friend`, {
+    const res = await axios.delete(`${tymt_backend_url}/users/block`, {
       headers: {
         "x-token": saltTokenStore.token,
         "Content-Type": "application/json",
       },
       data: {
-        friend: _id,
+        block: _id,
       },
     });
     if (res?.status === 200) {
       console.log("deleteBlock");
       return {
-        contacts: res?.data?.friends,
+        contacts: res?.data?.block,
       };
     } else {
       console.log("deleteBlock: ", res?.status);

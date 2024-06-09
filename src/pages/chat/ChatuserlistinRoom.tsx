@@ -79,7 +79,7 @@ const ChatuserlistinRoom = ({ view, setView }: propsType) => {
   const sendFriendRequest = useCallback(async () => {
     try {
       if (friendListStore.contacts.find((element) => element._id === selectedUserToDeleteStore.id)) {
-        console.log("sendFriendRequest: already in the friend list!");
+        console.log("sendFriendRequest: Already in the friend list!");
         return;
       }
       const data: IAlert = {
