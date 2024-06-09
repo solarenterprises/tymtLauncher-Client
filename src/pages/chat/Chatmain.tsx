@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
-import { Box, Divider, Stack, TextField, InputAdornment, Grid, Button } from "@mui/material";
+import { Box, Divider, Stack, TextField, InputAdornment, Grid, Button, Tabs, Tab } from "@mui/material";
 import { debounce } from "lodash";
 import ChatStyle from "../../styles/ChatStyles";
 import searchlg from "../../assets/searchlg.svg";
@@ -24,6 +24,9 @@ import { AppDispatch } from "../../store";
 import { getAlertList } from "../../features/alert/AlertListSlice";
 import { searchUsers } from "../../features/chat/ContactListApi";
 import { createFriendAsync, deleteFriendAsync, getFriendList } from "../../features/chat/FriendListSlice";
+import SwipeableViews from "react-swipeable-views";
+import { useTheme } from "@mui/material/styles";
+import { getBlockList } from "../../features/chat/BlockListSlice";
 
 const theme = createTheme({
   palette: {
@@ -42,6 +45,7 @@ const Chatmain = ({ view, setView }: propsType) => {
   const classes = ChatStyle();
   const { socket } = useSocket();
   const { t } = useTranslation();
+  const otheme = useTheme();
 
   const [value, setValue] = useState<string>("");
   const [searchedresult, setSearchedresult] = useState<userType[]>([]);
@@ -56,6 +60,7 @@ const Chatmain = ({ view, setView }: propsType) => {
     x: 0,
     y: 0,
   });
+  const [tab, setTab] = useState<number>(0);
 
   const valueRef = useRef(value);
 
@@ -66,6 +71,7 @@ const Chatmain = ({ view, setView }: propsType) => {
   const dispatch = useDispatch<AppDispatch>();
   const contactListStore: IContactList = useSelector(getContactList);
   const friendListStore: IContactList = useSelector(getFriendList);
+  const blockListStore: IContactList = useSelector(getBlockList);
   const selectedUserToDeleteStore: selecteduserType = useSelector(getSelectedUser);
   const accountStore: accountType = useSelector(getAccount);
   const alertListStore: IAlertList = useSelector(getAlertList);
@@ -134,6 +140,38 @@ const Chatmain = ({ view, setView }: propsType) => {
       filterUsers(value);
     }
   }, [value, view]);
+
+  const handleTabChange = (_event: React.SyntheticEvent, index: number) => {
+    setTab(index);
+  };
+
+  function a11yProps(index: number) {
+    return {
+      id: `full-width-tab-${index}`,
+      "aria-controls": `full-width-tabpanel-${index}`,
+    };
+  }
+
+  interface TabPanelProps {
+    children?: React.ReactNode;
+    dir?: string;
+    index: number;
+    value: number;
+  }
+
+  function TabPanel(props: TabPanelProps) {
+    const { children, value, index, ...other } = props;
+
+    return (
+      <div role="tabpanel" hidden={value !== index} id={`full-width-tabpanel-${index}`} aria-labelledby={`full-width-tab-${index}`} {...other}>
+        {value === index && children}
+      </div>
+    );
+  }
+
+  const handleChangeIndex = (index: number) => {
+    setTab(index);
+  };
 
   return (
     <>
@@ -217,67 +255,207 @@ const Chatmain = ({ view, setView }: propsType) => {
                 marginBottom: "22px",
               }}
             />
-            {/* userlist section */}
-            <Box className={classes.scroll_bar}>
-              {contactListStore?.contacts?.length === 0 && value === "" ? (
-                <>
-                  <Grid container sx={{ justifyContent: "center" }}>
-                    <img src={nocontact} style={{ marginTop: "40%", display: "block" }}></img>
-                  </Grid>
-                  <Box className={"fs-20-regular white"} textAlign={"center"}>
-                    {t("cha-2_you-havenot-friends")}
-                  </Box>
-                </>
-              ) : (
-                <>
-                  {(value === "" ? contactListStore?.contacts : searchedresult)?.map((user, index) => {
-                    const count =
-                      value === "" ? alertListStore.unread?.filter((alert) => alert.note.sender === user._id && alert.alertType === "chat").length : 0;
-                    const numberofunreadmessages = count;
+            <Tabs
+              value={tab}
+              onChange={handleTabChange}
+              indicatorColor="secondary"
+              textColor="inherit"
+              variant="fullWidth"
+              aria-label="full width tabs example"
+            >
+              <Tab label={<Box className={"fs-14-regular white t-center"}>{`Contacts`}</Box>} {...a11yProps(0)} />
+              <Tab label={<Box className={"fs-14-regular white t-center"}>{`Friends`}</Box>} {...a11yProps(1)} />
+              <Tab label={<Box className={"fs-14-regular white t-center"}>{`Block`}</Box>} {...a11yProps(2)} />
+            </Tabs>
+            <SwipeableViews axis={otheme.direction === "rtl" ? "x-reverse" : "x"} index={value} onChangeIndex={handleChangeIndex}>
+              <TabPanel value={tab} index={0} dir={otheme.direction}>
+                <Box className={classes.scroll_bar}>
+                  {contactListStore?.contacts?.length === 0 && value === "" ? (
+                    <>
+                      <Grid container sx={{ justifyContent: "center" }}>
+                        <img src={nocontact} style={{ marginTop: "40%", display: "block" }}></img>
+                      </Grid>
+                      <Box className={"fs-20-regular white"} textAlign={"center"}>
+                        {t("cha-2_you-havenot-friends")}
+                      </Box>
+                    </>
+                  ) : (
+                    <>
+                      {(value === "" ? contactListStore?.contacts : searchedresult)?.map((user, index) => {
+                        const count =
+                          value === "" ? alertListStore.unread?.filter((alert) => alert.note.sender === user._id && alert.alertType === "chat").length : 0;
+                        const numberofunreadmessages = count;
 
-                    return (
-                      <Userlist
-                        user={user}
-                        index={index}
-                        numberofunreadmessages={numberofunreadmessages}
-                        setShowContextMenu={setShowContextMenu}
-                        setContextMenuPosition={setContextMenuPosition}
-                        setView={setView}
+                        return (
+                          <Userlist
+                            user={user}
+                            index={index}
+                            numberofunreadmessages={numberofunreadmessages}
+                            setShowContextMenu={setShowContextMenu}
+                            setContextMenuPosition={setContextMenuPosition}
+                            setView={setView}
+                          />
+                        );
+                      })}
+                      {showContextMenu && (
+                        <FRcontextmenu
+                          value={value}
+                          isClickedBlock={isClickedBlock}
+                          isClickedDelete={isClickedDelete}
+                          isClickedRequest={isClickedRequest}
+                          setIsClickedBlock={setIsClickedBlock}
+                          setOpenBlockModal={setOpenBlockModal}
+                          setShowContextMenu={setShowContextMenu}
+                          setIsClickedDelete={setIsClickedDelete}
+                          setOpenDeleteModal={setOpenDeleteModal}
+                          setOpenRequestModal={setOpenRequestModal}
+                          setIsClickedRequest={setIsClickedRequest}
+                          contextMenuPosition={contextMenuPosition}
+                        />
+                      )}
+                      <BlockModal openBlockModal={openBlockModal} setOpenBlockModal={setOpenBlockModal} roommode={false} />
+                      <DeleteModal
+                        openDeleteModal={openDeleteModal}
+                        setOpenDeleteModal={setOpenDeleteModal}
+                        deleteSelectedUser={deleteSelectedUser}
+                        roommode={false}
                       />
-                    );
-                  })}
-                  {showContextMenu && (
-                    <FRcontextmenu
-                      value={value}
-                      isClickedBlock={isClickedBlock}
-                      isClickedDelete={isClickedDelete}
-                      isClickedRequest={isClickedRequest}
-                      setIsClickedBlock={setIsClickedBlock}
-                      setOpenBlockModal={setOpenBlockModal}
-                      setShowContextMenu={setShowContextMenu}
-                      setIsClickedDelete={setIsClickedDelete}
-                      setOpenDeleteModal={setOpenDeleteModal}
-                      setOpenRequestModal={setOpenRequestModal}
-                      setIsClickedRequest={setIsClickedRequest}
-                      contextMenuPosition={contextMenuPosition}
-                    />
+                      <RequestModal
+                        openRequestModal={openRequestModal}
+                        setOpenRequestModal={setOpenRequestModal}
+                        sendFriendRequest={sendFriendRequest}
+                        roommode={false}
+                      />
+                    </>
                   )}
-                  <BlockModal openBlockModal={openBlockModal} setOpenBlockModal={setOpenBlockModal} roommode={false} />
-                  <DeleteModal
-                    openDeleteModal={openDeleteModal}
-                    setOpenDeleteModal={setOpenDeleteModal}
-                    deleteSelectedUser={deleteSelectedUser}
-                    roommode={false}
-                  />
-                  <RequestModal
-                    openRequestModal={openRequestModal}
-                    setOpenRequestModal={setOpenRequestModal}
-                    sendFriendRequest={sendFriendRequest}
-                    roommode={false}
-                  />
-                </>
-              )}
-            </Box>
+                </Box>
+              </TabPanel>
+              <TabPanel value={tab} index={1} dir={otheme.direction}>
+                <Box className={classes.scroll_bar}>
+                  {friendListStore?.contacts?.length === 0 && value === "" ? (
+                    <>
+                      <Grid container sx={{ justifyContent: "center" }}>
+                        <img src={nocontact} style={{ marginTop: "40%", display: "block" }}></img>
+                      </Grid>
+                      <Box className={"fs-20-regular white"} textAlign={"center"}>
+                        {t("cha-2_you-havenot-friends")}
+                      </Box>
+                    </>
+                  ) : (
+                    <>
+                      {(value === "" ? friendListStore?.contacts : searchedresult)?.map((user, index) => {
+                        const count =
+                          value === "" ? alertListStore.unread?.filter((alert) => alert.note.sender === user._id && alert.alertType === "chat").length : 0;
+                        const numberofunreadmessages = count;
+
+                        return (
+                          <Userlist
+                            user={user}
+                            index={index}
+                            numberofunreadmessages={numberofunreadmessages}
+                            setShowContextMenu={setShowContextMenu}
+                            setContextMenuPosition={setContextMenuPosition}
+                            setView={setView}
+                          />
+                        );
+                      })}
+                      {showContextMenu && (
+                        <FRcontextmenu
+                          value={value}
+                          isClickedBlock={isClickedBlock}
+                          isClickedDelete={isClickedDelete}
+                          isClickedRequest={isClickedRequest}
+                          setIsClickedBlock={setIsClickedBlock}
+                          setOpenBlockModal={setOpenBlockModal}
+                          setShowContextMenu={setShowContextMenu}
+                          setIsClickedDelete={setIsClickedDelete}
+                          setOpenDeleteModal={setOpenDeleteModal}
+                          setOpenRequestModal={setOpenRequestModal}
+                          setIsClickedRequest={setIsClickedRequest}
+                          contextMenuPosition={contextMenuPosition}
+                        />
+                      )}
+                      <BlockModal openBlockModal={openBlockModal} setOpenBlockModal={setOpenBlockModal} roommode={false} />
+                      <DeleteModal
+                        openDeleteModal={openDeleteModal}
+                        setOpenDeleteModal={setOpenDeleteModal}
+                        deleteSelectedUser={deleteSelectedUser}
+                        roommode={false}
+                      />
+                      <RequestModal
+                        openRequestModal={openRequestModal}
+                        setOpenRequestModal={setOpenRequestModal}
+                        sendFriendRequest={sendFriendRequest}
+                        roommode={false}
+                      />
+                    </>
+                  )}
+                </Box>
+              </TabPanel>
+              <TabPanel value={tab} index={2} dir={otheme.direction}>
+                <Box className={classes.scroll_bar}>
+                  {blockListStore?.contacts?.length === 0 && value === "" ? (
+                    <>
+                      <Grid container sx={{ justifyContent: "center" }}>
+                        <img src={nocontact} style={{ marginTop: "40%", display: "block" }}></img>
+                      </Grid>
+                      <Box className={"fs-20-regular white"} textAlign={"center"}>
+                        {t("cha-2_you-havenot-friends")}
+                      </Box>
+                    </>
+                  ) : (
+                    <>
+                      {(value === "" ? blockListStore?.contacts : searchedresult)?.map((user, index) => {
+                        const count =
+                          value === "" ? alertListStore.unread?.filter((alert) => alert.note.sender === user._id && alert.alertType === "chat").length : 0;
+                        const numberofunreadmessages = count;
+
+                        return (
+                          <Userlist
+                            user={user}
+                            index={index}
+                            numberofunreadmessages={numberofunreadmessages}
+                            setShowContextMenu={setShowContextMenu}
+                            setContextMenuPosition={setContextMenuPosition}
+                            setView={setView}
+                          />
+                        );
+                      })}
+                      {showContextMenu && (
+                        <FRcontextmenu
+                          value={value}
+                          isClickedBlock={isClickedBlock}
+                          isClickedDelete={isClickedDelete}
+                          isClickedRequest={isClickedRequest}
+                          setIsClickedBlock={setIsClickedBlock}
+                          setOpenBlockModal={setOpenBlockModal}
+                          setShowContextMenu={setShowContextMenu}
+                          setIsClickedDelete={setIsClickedDelete}
+                          setOpenDeleteModal={setOpenDeleteModal}
+                          setOpenRequestModal={setOpenRequestModal}
+                          setIsClickedRequest={setIsClickedRequest}
+                          contextMenuPosition={contextMenuPosition}
+                        />
+                      )}
+                      <BlockModal openBlockModal={openBlockModal} setOpenBlockModal={setOpenBlockModal} roommode={false} />
+                      <DeleteModal
+                        openDeleteModal={openDeleteModal}
+                        setOpenDeleteModal={setOpenDeleteModal}
+                        deleteSelectedUser={deleteSelectedUser}
+                        roommode={false}
+                      />
+                      <RequestModal
+                        openRequestModal={openRequestModal}
+                        setOpenRequestModal={setOpenRequestModal}
+                        sendFriendRequest={sendFriendRequest}
+                        roommode={false}
+                      />
+                    </>
+                  )}
+                </Box>
+              </TabPanel>
+            </SwipeableViews>
+            {/* userlist section */}
           </Box>
         </>
       )}
