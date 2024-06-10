@@ -66,9 +66,10 @@ export type Game = {
   introduction: Sentence;
   heroes: Sentence;
   executables: {
-    windows64: PlatformFileForOS;
-    macos: PlatformFileForOS;
-    linux: PlatformFileForOS;
+    windows64?: PlatformFileForOS;
+    macosIntel?: PlatformFileForOS;
+    macosArm?: PlatformFileForOS;
+    linux?: PlatformFileForOS;
   };
   warning: Sentence;
   warningLink: string;
@@ -76,6 +77,7 @@ export type Game = {
   developers: string;
   publisher: string;
   video: string;
+  requirement: string;
 };
 export type GamesType = { [key: string]: Game };
 
@@ -117,14 +119,26 @@ const Games: { [key: string]: Game } = {
           exePath: "/tmp.AppImage",
         },
       },
-      macos: {
+      macosIntel: {
         prod: {
           url: "",
           type: "zip",
           exePath: "",
         },
         dev: {
-          url: "https://dev.district53.io:2000/District53_5.9.0.2_mac.zip",
+          url: "https://dev.district53.io:2000/District53_5.9.0.2_mac_x64_86.zip",
+          type: "zip",
+          exePath: "/District53_5.9.0.2_mac/District53",
+        },
+      },
+      macosArm: {
+        prod: {
+          url: "",
+          type: "zip",
+          exePath: "",
+        },
+        dev: {
+          url: "https://dev.district53.io:2000/District53_5.9.0.2_mac_arm.zip",
           type: "zip",
           exePath: "/District53_5.9.0.2_mac/District53",
         },
@@ -153,6 +167,7 @@ const Games: { [key: string]: Game } = {
     release: "October 28, 2022",
     developers: "Solar Enterprises / Minetest",
     publisher: "Solar Enterprises",
+    requirement: "",
   },
   veloren: {
     name: "Veloren",
@@ -186,7 +201,14 @@ const Games: { [key: string]: Game } = {
           exePath: "/veloren-voxygen",
         },
       },
-      macos: {
+      macosIntel: {
+        prod: {
+          url: "https://download.veloren.net/latest/macos/x86_64/nightly",
+          type: "zip",
+          exePath: "/veloren-voxygen",
+        },
+      },
+      macosArm: {
         prod: {
           url: "https://download.veloren.net/latest/macos/x86_64/nightly",
           type: "zip",
@@ -211,6 +233,8 @@ const Games: { [key: string]: Game } = {
     developers: "Kristoffer Anderson",
     publisher: "veloren.net",
     video: "https://veloren.net/videos/veloren.webm",
+    requirement:
+      "Operating system: Windows 10, Windows 11, macOS or Linux <br>Processor: 64-bit CPU <br>Memory: 4 GiB RAM <br>Graphics: GPU with support for DirectX 12 or newer, Vulkan or Metal <br>Storage: 2 GiB available space",
   },
   redeclipse: {
     name: "Red Eclipse",
@@ -244,7 +268,14 @@ const Games: { [key: string]: Game } = {
           exePath: "/tmp.AppImage",
         },
       },
-      macos: {
+      macosIntel: {
+        prod: {
+          url: "https://github.com/redeclipse/base/releases/download/v2.0.0/redeclipse_2.0.0_mac.tar.bz2",
+          type: "tar.bz2",
+          exePath: "/redeclipse.app",
+        },
+      },
+      macosArm: {
         prod: {
           url: "https://github.com/redeclipse/base/releases/download/v2.0.0/redeclipse_2.0.0_mac.tar.bz2",
           type: "tar.bz2",
@@ -268,6 +299,8 @@ const Games: { [key: string]: Game } = {
     developers: "Quinton Reeves, Lee Salzman, et al.",
     publisher: "Quinton Reeves",
     video: "",
+    requirement:
+      "Requires a 64-bit processor and operating system OS *: Windows Vista, 7, 8, 10, 11 <br>Processor: Intel Pentium Dual-Core E2180 / AMD Athlon 64 X2 4200+ <br>Memory: 2 GB RAM <br>Graphics: Intel HD 630 / Nvidia GeForce GT 630 / AMD Radeon HD 5750 <br>Network: Broadband Internet connection <br>Storage: 2 GB available space <br>Additional Notes: OpenGL 2.0 with GLSL 1.20",
   },
 };
 

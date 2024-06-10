@@ -435,20 +435,30 @@ const GameOverview = () => {
                   </Box>
                 )}
 
-                <Box marginTop={"24px"} borderBottom={"1px solid rgba(255, 255, 255, 0.10)"} paddingBottom={"16px"}>
+                <Box marginTop={"16px"} borderBottom={"1px solid rgba(255, 255, 255, 0.10)"} paddingBottom={"16px"}>
+                  <Box className={"fs-20-regular white"}>{t("ga-28_minimum-requirement")}</Box>
+                  <Box className={"fs-16 white"} marginTop={"14px"}>
+                    <div
+                      dangerouslySetInnerHTML={{
+                        __html: game.requirement.replace(/\n/g, "<br>"),
+                      }}
+                    ></div>
+                  </Box>
+                </Box>
+                <Box marginTop={"24px"} paddingBottom={"16px"}>
                   <Box className={"fs-20-regular white"}>{t("ga-6_permissions")}</Box>
                   <Box className={"fs-16 white"} marginTop={"14px"}>
                     {t("ga-7_this-game-will")}
                   </Box>
                 </Box>
-                <Stack marginTop={"16px"} direction={"row"} alignItems={"center"} justifyContent={"space-between"}>
+                {/* <Stack marginTop={"16px"} direction={"row"} alignItems={"center"} justifyContent={"space-between"}>
                   <Box className={"fs-20-regular white"}>{t("ga-6_permissions")}</Box>
                   <Button className={classes.modal_btn_left} onClick={() => setView(true)}>
                     <Box className={"fs-18-bold"} color={"var(--Main-Blue, #52E1F2)"}>
                       {t("ga-9_report")}
                     </Box>
                   </Button>
-                </Stack>
+                </Stack> */}
               </Grid>
             </Grid>
             <AdviceModal open={open} setOpen={setOpen} />

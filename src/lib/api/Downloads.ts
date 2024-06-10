@@ -4,7 +4,7 @@ import {
   // readTextFile,
 } from "@tauri-apps/api/fs";
 import { appDataDir } from "@tauri-apps/api/path";
-import { type } from "@tauri-apps/api/os";
+import { type, arch } from "@tauri-apps/api/os";
 import { invoke } from "@tauri-apps/api/tauri";
 import { open } from "@tauri-apps/api/shell";
 import Games from "../game/Game";
@@ -107,17 +107,25 @@ export async function runUrlArgs(url: string, args: string) {
 
 export async function downloadGame(game_key: string) {
   let platform = await type();
+  let cpu = await arch();
   let game = Games[game_key];
   let url = "";
   switch (platform) {
     case "Linux":
-      url = production_version === "prod" ? game.executables.linux.prod.url : game.executables.linux.dev?.url ?? "";
+      url = production_version === "prod" ? game.executables.linux?.prod?.url ?? "" : game.executables.linux?.dev?.url ?? "";
       break;
     case "Darwin":
-      url = production_version === "prod" ? game.executables.macos.prod.url : game.executables.macos.dev?.url ?? "";
+      switch (cpu) {
+        case "arm":
+          url = production_version === "prod" ? game.executables.macosArm?.prod?.url ?? "" : game.executables.macosArm?.dev?.url ?? "";
+          break;
+        case "x86_64":
+          url = production_version === "prod" ? game.executables.macosIntel?.prod?.url ?? "" : game.executables.macosIntel?.dev?.url ?? "";
+          break;
+      }
       break;
     case "Windows_NT":
-      url = production_version === "prod" ? game.executables.windows64.prod.url : game.executables.windows64.dev?.url ?? "";
+      url = production_version === "prod" ? game.executables.windows64?.prod?.url ?? "" : game.executables.windows64?.dev?.url ?? "";
       break;
   }
   if (!url) {
@@ -126,12 +134,12 @@ export async function downloadGame(game_key: string) {
   console.log("downloadGame: ", url);
   switch (platform) {
     case "Linux":
-      switch (production_version === "prod" ? game.executables.linux.prod.type : game.executables.linux.dev?.type ?? "") {
+      switch (production_version === "prod" ? game.executables.linux?.prod?.type ?? "" : game.executables.linux.dev?.type ?? "") {
         case "zip":
           await downloadAndUnzipLinux(
             url,
             `/v${tymt_version}/games/${game_key}`,
-            production_version === "prod" ? game.executables.linux.prod.exePath : game.executables.linux.dev?.exePath ?? ""
+            production_version === "prod" ? game.executables.linux?.prod?.exePath ?? "" : game.executables.linux.dev?.exePath ?? ""
           );
           break;
         case "appimage":
@@ -140,20 +148,42 @@ export async function downloadGame(game_key: string) {
       }
       break;
     case "Darwin":
-      switch (production_version === "prod" ? game.executables.macos.prod.type : game.executables.macos.dev?.type ?? "") {
-        case "zip":
-          await downloadAndUnzipMacOS(
-            url,
-            `/v${tymt_version}/games/${game_key}`,
-            production_version === "prod" ? game.executables.macos.prod.exePath : game.executables.macos.dev?.exePath ?? ""
-          );
+      switch (cpu) {
+        case "arm":
+          switch (production_version === "prod" ? game.executables.macosArm?.prod?.type ?? "" : game.executables.macosArm?.dev?.type ?? "") {
+            case "zip":
+              await downloadAndUnzipMacOS(
+                url,
+                `/v${tymt_version}/games/${game_key}`,
+                production_version === "prod" ? game.executables.macosArm?.prod?.exePath ?? "" : game.executables.macosArm?.dev?.exePath ?? ""
+              );
+              break;
+            case "tar.bz2":
+              await downloadAndUntarbz2MacOS(
+                url,
+                `/v${tymt_version}/games/${game_key}`,
+                production_version === "prod" ? game.executables.macosArm?.prod?.exePath ?? "" : game.executables.macosArm?.dev?.exePath ?? ""
+              );
+              break;
+          }
           break;
-        case "tar.bz2":
-          await downloadAndUntarbz2MacOS(
-            url,
-            `/v${tymt_version}/games/${game_key}`,
-            production_version === "prod" ? game.executables.macos.prod.exePath : game.executables.macos.dev?.exePath ?? ""
-          );
+        case "x86_64":
+          switch (production_version === "prod" ? game.executables.macosIntel?.prod?.type ?? "" : game.executables.macosIntel?.dev?.type ?? "") {
+            case "zip":
+              await downloadAndUnzipMacOS(
+                url,
+                `/v${tymt_version}/games/${game_key}`,
+                production_version === "prod" ? game.executables.macosIntel?.prod?.exePath ?? "" : game.executables.macosIntel?.dev?.exePath ?? ""
+              );
+              break;
+            case "tar.bz2":
+              await downloadAndUntarbz2MacOS(
+                url,
+                `/v${tymt_version}/games/${game_key}`,
+                production_version === "prod" ? game.executables.macosIntel?.prod?.exePath ?? "" : game.executables.macosIntel?.dev?.exePath ?? ""
+              );
+              break;
+          }
           break;
       }
       break;
@@ -178,12 +208,26 @@ export async function runGame(game_key: string, serverIp?: string) {
     const dataDir = await appDataDir();
     let exePath = "";
     const platform = await type();
+    const cpu = await arch();
     switch (platform) {
       case "Linux":
         exePath = production_version === "prod" ? Games[game_key].executables.linux.prod.exePath : Games[game_key].executables.linux.dev?.exePath ?? "";
         break;
       case "Darwin":
-        exePath = production_version === "prod" ? Games[game_key].executables.macos.prod.exePath : Games[game_key].executables.macos.dev?.exePath ?? "";
+        switch (cpu) {
+          case "arm":
+            exePath =
+              production_version === "prod"
+                ? Games[game_key].executables.macosArm?.prod?.exePath ?? ""
+                : Games[game_key].executables.macosArm?.dev?.exePath ?? "";
+            break;
+          case "x86_64":
+            exePath =
+              production_version === "prod"
+                ? Games[game_key].executables.macosIntel?.prod?.exePath ?? ""
+                : Games[game_key].executables.macosIntel?.dev?.exePath ?? "";
+            break;
+        }
         break;
       case "Windows_NT":
         exePath = production_version === "prod" ? Games[game_key].executables.windows64.prod.exePath : Games[game_key].executables.windows64.dev?.exePath ?? "";
