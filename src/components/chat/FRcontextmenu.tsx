@@ -78,7 +78,7 @@ const FRcontextmenu = ({
         ) : (
           <>
             <Box
-              className={"fs-16 white context_menu_friendrequest"}
+              className={"fs-16 white context_menu_single"}
               textAlign={"center"}
               sx={{
                 backdropFilter: "blur(10px)",

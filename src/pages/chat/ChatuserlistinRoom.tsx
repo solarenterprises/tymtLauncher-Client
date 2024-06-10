@@ -293,18 +293,18 @@ const ChatuserlistinRoom = ({ view, setView }: propsType) => {
                         contextMenuPosition={contextMenuPosition}
                       />
                     )}
-                    <BlockModal block={tab !== 2} openBlockModal={openBlockModal} setOpenBlockModal={setOpenBlockModal} roommode={false} />
+                    <BlockModal block={tab !== 2} openBlockModal={openBlockModal} setOpenBlockModal={setOpenBlockModal} roommode={true} />
                     <DeleteModal
                       openDeleteModal={openDeleteModal}
                       setOpenDeleteModal={setOpenDeleteModal}
                       deleteSelectedUser={deleteSelectedUser}
-                      roommode={false}
+                      roommode={true}
                     />
                     <RequestModal
                       openRequestModal={openRequestModal}
                       setOpenRequestModal={setOpenRequestModal}
                       sendFriendRequest={sendFriendRequest}
-                      roommode={false}
+                      roommode={true}
                     />
                   </>
                 )}
@@ -356,18 +356,18 @@ const ChatuserlistinRoom = ({ view, setView }: propsType) => {
                         contextMenuPosition={contextMenuPosition}
                       />
                     )}
-                    <BlockModal block={tab !== 2} openBlockModal={openBlockModal} setOpenBlockModal={setOpenBlockModal} roommode={false} />
+                    <BlockModal block={tab !== 2} openBlockModal={openBlockModal} setOpenBlockModal={setOpenBlockModal} roommode={true} />
                     <DeleteModal
                       openDeleteModal={openDeleteModal}
                       setOpenDeleteModal={setOpenDeleteModal}
                       deleteSelectedUser={deleteSelectedUser}
-                      roommode={false}
+                      roommode={true}
                     />
                     <RequestModal
                       openRequestModal={openRequestModal}
                       setOpenRequestModal={setOpenRequestModal}
                       sendFriendRequest={sendFriendRequest}
-                      roommode={false}
+                      roommode={true}
                     />
                   </>
                 )}
@@ -419,18 +419,18 @@ const ChatuserlistinRoom = ({ view, setView }: propsType) => {
                         contextMenuPosition={contextMenuPosition}
                       />
                     )}
-                    <BlockModal block={tab !== 2} openBlockModal={openBlockModal} setOpenBlockModal={setOpenBlockModal} roommode={false} />
+                    <BlockModal block={tab !== 2} openBlockModal={openBlockModal} setOpenBlockModal={setOpenBlockModal} roommode={true} />
                     <DeleteModal
                       openDeleteModal={openDeleteModal}
                       setOpenDeleteModal={setOpenDeleteModal}
                       deleteSelectedUser={deleteSelectedUser}
-                      roommode={false}
+                      roommode={true}
                     />
                     <RequestModal
                       openRequestModal={openRequestModal}
                       setOpenRequestModal={setOpenRequestModal}
                       sendFriendRequest={sendFriendRequest}
-                      roommode={false}
+                      roommode={true}
                     />
                   </>
                 )}
