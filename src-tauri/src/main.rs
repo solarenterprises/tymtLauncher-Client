@@ -1156,17 +1156,27 @@ fn run_url_args(url: String, args: Vec<String>) {
         println!("{}", arg);
     }
 
+    let path = Path::new(&url);
+    let working_directory = match path.parent() {
+        Some(dir) => dir,
+        None => {
+            eprintln!("Failed to determine directory for {}", url);
+            return;
+        }
+    };
+
+    let mut command = Command::new(&url);
+    command.current_dir(working_directory);
+    println!("Setting working directory to: {:?}", working_directory);
+
     if args.is_empty() {
         println!("No command provided");
-        let mut command = Command::new(url);
 
         match command.spawn() {
             Ok(_) => println!("Process started successfully"),
             Err(e) => eprintln!("Failed to start process: {}", e),
         }
     } else {
-        let mut command = Command::new(url);
-
         for arg in args {
             command.arg(arg);
         }
