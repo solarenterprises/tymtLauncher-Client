@@ -8,17 +8,6 @@ import { viewType } from "../../types/storeTypes";
 import { Swiper, SwiperSlide } from "swiper/react";
 import storeStyles from "../../styles/StoreStyles";
 import solar from "../../assets/chains/solar.svg";
-import bitcoin from "../../assets/chains/bitcoin.svg";
-import ether from "../../assets/chains/ethereum.svg";
-import solana from "../../assets/chains/solana.svg";
-import avalanche from "../../assets/chains/avalanche.svg";
-import binance from "../../assets/chains/binance.svg";
-import polygon from "../../assets/chains/polygon.svg";
-import arbitrum from "../../assets/chains/arbitrum.svg";
-import optimism from "../../assets/chains/optimism.svg";
-import windows from "../../assets/main/windows.png";
-import mac from "../../assets/main/mac.svg";
-import linux from "../../assets/main/linux.svg";
 import Xicon from "../../assets/main/XIcon.png";
 import linkicon from "../../assets/main/linkIcon.png";
 import facebookicon from "../../assets/main/facebookIcon.png";
@@ -45,8 +34,8 @@ import DeleteOutlineRoundedIcon from "@mui/icons-material/DeleteOutlineRounded";
 import D53Modal from "../home/D53Modal";
 import { tymt_version } from "../../configs";
 import { useNotification } from "../../providers/NotificationProvider";
-
-const chains = [solar, bitcoin, ether, solana, avalanche, binance, polygon, arbitrum, optimism];
+import { platformIconMap } from "../../types/GameTypes";
+import { chainIconMap } from "../../types/walletTypes";
 
 const GameOverview = () => {
   const viewmode: viewType = useSelector(getViewmode);
@@ -293,19 +282,16 @@ const GameOverview = () => {
                   <Box className={classes.box_gameoption}>
                     <Box className={"fs-14-regular gray"}>{t("sto-4_platform")}</Box>
                     <Box>
-                      {Object.keys(game.executables).map(
-                        (rowKey) =>
-                          game.executables[rowKey].url !== "" && (
-                            <img src={rowKey === "windows64" ? windows : rowKey === "linux" ? linux : mac} width={"16px"} className={classes.platform} />
-                          )
-                      )}
+                      {game.platforms.map((os) => (
+                        <img src={platformIconMap.get(os)} width={"16px"} className={classes.platform} />
+                      ))}
                     </Box>
                   </Box>
                   <Box className={classes.box_gameoption}>
-                    <Box className={"fs-14-regular gray"}>{t("sto-2_chains") + ":" + "9"}</Box>
+                    <Box className={"fs-14-regular gray"}>{`${t("sto-2_chains")}: ${game.chains.length}`}</Box>
                     <Stack direction={"row"}>
-                      {chains.map((one) => (
-                        <img src={one} width={"16px"} style={{ marginRight: "-4px" }} />
+                      {game.chains.map((element) => (
+                        <img src={chainIconMap.get(element)} width={"16px"} style={{ marginRight: "-4px" }} />
                       ))}
                     </Stack>
                   </Box>
@@ -445,12 +431,14 @@ const GameOverview = () => {
                     ></div>
                   </Box>
                 </Box>
-                <Box marginTop={"24px"} paddingBottom={"16px"}>
-                  <Box className={"fs-20-regular white"}>{t("ga-6_permissions")}</Box>
-                  <Box className={"fs-16 white"} marginTop={"14px"}>
-                    {t("ga-7_this-game-will")}
+                {id === "district53" && (
+                  <Box marginTop={"24px"} paddingBottom={"16px"}>
+                    <Box className={"fs-20-regular white"}>{t("ga-6_permissions")}</Box>
+                    <Box className={"fs-16 white"} marginTop={"14px"}>
+                      {t("ga-7_this-game-will")}
+                    </Box>
                   </Box>
-                </Box>
+                )}
                 {/* <Stack marginTop={"16px"} direction={"row"} alignItems={"center"} justifyContent={"space-between"}>
                   <Box className={"fs-20-regular white"}>{t("ga-6_permissions")}</Box>
                   <Button className={classes.modal_btn_left} onClick={() => setView(true)}>

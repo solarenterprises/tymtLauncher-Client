@@ -30,6 +30,8 @@ import redeclipse2 from "../game/redeclipse/2.png";
 import redeclipse3 from "../game/redeclipse/3.png";
 import redeclipse4 from "../game/redeclipse/4.png";
 import redeclipse5 from "../game/redeclipse/5.png";
+import { chainEnum } from "../../types/walletTypes";
+import { platformEnum } from "../../types/GameTypes";
 
 export type PlatformFile =
   | {
@@ -78,6 +80,8 @@ export type Game = {
   publisher: string;
   video: string;
   requirement: string;
+  platforms: platformEnum[];
+  chains: chainEnum[];
 };
 export type GamesType = { [key: string]: Game };
 
@@ -128,7 +132,7 @@ const Games: { [key: string]: Game } = {
         dev: {
           url: "https://dev.district53.io:2000/District53_5.9.0.2_mac_x64_86.zip",
           type: "zip",
-          exePath: "/District53_5.9.0.2_mac/District53",
+          exePath: "/District53",
         },
       },
       macosArm: {
@@ -140,7 +144,7 @@ const Games: { [key: string]: Game } = {
         dev: {
           url: "https://dev.district53.io:2000/District53_5.9.0.2_mac_arm.zip",
           type: "zip",
-          exePath: "/District53_5.9.0.2_mac/District53",
+          exePath: "/District53",
         },
       },
       windows64: {
@@ -168,6 +172,8 @@ const Games: { [key: string]: Game } = {
     developers: "Solar Enterprises / Minetest",
     publisher: "Solar Enterprises",
     requirement: "",
+    platforms: [platformEnum.windows, platformEnum.linux, platformEnum.mac],
+    chains: [chainEnum.solar],
   },
   veloren: {
     name: "Veloren",
@@ -235,6 +241,8 @@ const Games: { [key: string]: Game } = {
     video: "https://veloren.net/videos/veloren.webm",
     requirement:
       "Operating system: Windows 10, Windows 11, macOS or Linux <br>Processor: 64-bit CPU <br>Memory: 4 GiB RAM <br>Graphics: GPU with support for DirectX 12 or newer, Vulkan or Metal <br>Storage: 2 GiB available space",
+    platforms: [platformEnum.windows, platformEnum.linux, platformEnum.mac],
+    chains: [],
   },
   redeclipse: {
     name: "Red Eclipse",
@@ -301,6 +309,8 @@ const Games: { [key: string]: Game } = {
     video: "",
     requirement:
       "Requires a 64-bit processor and operating system OS *: Windows Vista, 7, 8, 10, 11 <br>Processor: Intel Pentium Dual-Core E2180 / AMD Athlon 64 X2 4200+ <br>Memory: 2 GB RAM <br>Graphics: Intel HD 630 / Nvidia GeForce GT 630 / AMD Radeon HD 5750 <br>Network: Broadband Internet connection <br>Storage: 2 GB available space <br>Additional Notes: OpenGL 2.0 with GLSL 1.20",
+    platforms: [platformEnum.windows, platformEnum.linux, platformEnum.mac],
+    chains: [],
   },
 };
 
