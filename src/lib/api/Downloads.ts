@@ -246,7 +246,7 @@ export async function runGame(game_key: string, serverIp?: string) {
       console.error("Failed to runGame: url not existing");
       return false;
     }
-    console.log("runGame: ", url);
+    console.log("runGame: ", url, args);
     if (game_key === "district53") {
       const d53_ip: string = serverIp;
       if (!d53_ip) {
@@ -274,18 +274,21 @@ export async function runGame(game_key: string, serverIp?: string) {
           args = [`--address`, d53_server, `--port`, d53_port, `--launcher_url`, launcherUrl, `--token`, token, `--go`];
           break;
       }
+      await runUrlArgs(url, args);
+    } else {
+      switch (platform) {
+        case "Linux":
+          await runUrlArgs(url, args);
+          break;
+        case "Windows_NT":
+          await runUrlArgs(url, args);
+          break;
+        case "Darwin":
+          await runUrlArgs("open", [url, ...args]);
+          break;
+      }
     }
-    switch (platform) {
-      case "Linux":
-        await runUrlArgs(url, args);
-        break;
-      case "Windows_NT":
-        await runUrlArgs(url, args);
-        break;
-      case "Darwin":
-        await runUrlArgs("open", [url, ...args]);
-        break;
-    }
+
     return true;
   } catch (err) {
     console.log(err);
