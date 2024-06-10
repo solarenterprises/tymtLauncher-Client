@@ -106,99 +106,107 @@ export async function runUrlArgs(url: string, args: string[]) {
 }
 
 export async function downloadGame(game_key: string) {
-  let platform = await type();
-  let cpu = await arch();
-  let game = Games[game_key];
-  let url = "";
-  switch (platform) {
-    case "Linux":
-      url = production_version === "prod" ? game.executables.linux?.prod?.url ?? "" : game.executables.linux?.dev?.url ?? "";
-      break;
-    case "Darwin":
-      switch (cpu) {
-        case "arm":
-          url = production_version === "prod" ? game.executables.macosArm?.prod?.url ?? "" : game.executables.macosArm?.dev?.url ?? "";
-          break;
-        case "x86_64":
-          url = production_version === "prod" ? game.executables.macosIntel?.prod?.url ?? "" : game.executables.macosIntel?.dev?.url ?? "";
-          break;
-      }
-      break;
-    case "Windows_NT":
-      url = production_version === "prod" ? game.executables.windows64?.prod?.url ?? "" : game.executables.windows64?.dev?.url ?? "";
-      break;
-  }
-  if (!url) {
+  try {
+    let platform = await type();
+    let cpu = await arch();
+    let game = Games[game_key];
+    let url = "";
+    switch (platform) {
+      case "Linux":
+        url = production_version === "prod" ? game.executables.linux?.prod?.url ?? "" : game.executables.linux?.dev?.url ?? "";
+        break;
+      case "Darwin":
+        switch (cpu) {
+          case "arm":
+            url = production_version === "prod" ? game.executables.macosArm?.prod?.url ?? "" : game.executables.macosArm?.dev?.url ?? "";
+            break;
+          case "x86_64":
+            url = production_version === "prod" ? game.executables.macosIntel?.prod?.url ?? "" : game.executables.macosIntel?.dev?.url ?? "";
+            break;
+        }
+        break;
+      case "Windows_NT":
+        url = production_version === "prod" ? game.executables.windows64?.prod?.url ?? "" : game.executables.windows64?.dev?.url ?? "";
+        break;
+    }
+    if (!url) {
+      return false;
+    }
+    console.log("downloadGame: ", url);
+    switch (platform) {
+      case "Linux":
+        switch (production_version === "prod" ? game.executables.linux?.prod?.type ?? "" : game.executables.linux.dev?.type ?? "") {
+          case "zip":
+            await downloadAndUnzipLinux(
+              url,
+              `/v${tymt_version}/games/${game_key}`,
+              production_version === "prod" ? game.executables.linux?.prod?.exePath ?? "" : game.executables.linux.dev?.exePath ?? ""
+            );
+            break;
+          case "appimage":
+            await downloadAppImageLinux(url, `/v${tymt_version}/games/${game_key}`);
+            break;
+        }
+        break;
+      case "Darwin":
+        switch (cpu) {
+          case "arm":
+            switch (production_version === "prod" ? game.executables.macosArm?.prod?.type ?? "" : game.executables.macosArm?.dev?.type ?? "") {
+              case "zip":
+                await downloadAndUnzipMacOS(
+                  url,
+                  `/v${tymt_version}/games/${game_key}`,
+                  production_version === "prod" ? game.executables.macosArm?.prod?.exePath ?? "" : game.executables.macosArm?.dev?.exePath ?? ""
+                );
+                break;
+              case "tar.bz2":
+                await downloadAndUntarbz2MacOS(
+                  url,
+                  `/v${tymt_version}/games/${game_key}`,
+                  production_version === "prod" ? game.executables.macosArm?.prod?.exePath ?? "" : game.executables.macosArm?.dev?.exePath ?? ""
+                );
+                break;
+            }
+            break;
+          case "x86_64":
+            switch (production_version === "prod" ? game.executables.macosIntel?.prod?.type ?? "" : game.executables.macosIntel?.dev?.type ?? "") {
+              case "zip":
+                await downloadAndUnzipMacOS(
+                  url,
+                  `/v${tymt_version}/games/${game_key}`,
+                  production_version === "prod" ? game.executables.macosIntel?.prod?.exePath ?? "" : game.executables.macosIntel?.dev?.exePath ?? ""
+                );
+                break;
+              case "tar.bz2":
+                await downloadAndUntarbz2MacOS(
+                  url,
+                  `/v${tymt_version}/games/${game_key}`,
+                  production_version === "prod" ? game.executables.macosIntel?.prod?.exePath ?? "" : game.executables.macosIntel?.dev?.exePath ?? ""
+                );
+                break;
+            }
+            break;
+        }
+        // Install depencies for D53 on mac, temp solution
+        await invoke("install_depencies_for_d53_on_mac");
+        break;
+      case "Windows_NT":
+        await downloadAndUnzipWindows(url, `/v${tymt_version}/games/${game_key}`);
+        break;
+    }
+    return true;
+  } catch (err) {
+    console.error("Failed to downloadGame: ", err);
     return false;
   }
-  console.log("downloadGame: ", url);
-  switch (platform) {
-    case "Linux":
-      switch (production_version === "prod" ? game.executables.linux?.prod?.type ?? "" : game.executables.linux.dev?.type ?? "") {
-        case "zip":
-          await downloadAndUnzipLinux(
-            url,
-            `/v${tymt_version}/games/${game_key}`,
-            production_version === "prod" ? game.executables.linux?.prod?.exePath ?? "" : game.executables.linux.dev?.exePath ?? ""
-          );
-          break;
-        case "appimage":
-          await downloadAppImageLinux(url, `/v${tymt_version}/games/${game_key}`);
-          break;
-      }
-      break;
-    case "Darwin":
-      switch (cpu) {
-        case "arm":
-          switch (production_version === "prod" ? game.executables.macosArm?.prod?.type ?? "" : game.executables.macosArm?.dev?.type ?? "") {
-            case "zip":
-              await downloadAndUnzipMacOS(
-                url,
-                `/v${tymt_version}/games/${game_key}`,
-                production_version === "prod" ? game.executables.macosArm?.prod?.exePath ?? "" : game.executables.macosArm?.dev?.exePath ?? ""
-              );
-              break;
-            case "tar.bz2":
-              await downloadAndUntarbz2MacOS(
-                url,
-                `/v${tymt_version}/games/${game_key}`,
-                production_version === "prod" ? game.executables.macosArm?.prod?.exePath ?? "" : game.executables.macosArm?.dev?.exePath ?? ""
-              );
-              break;
-          }
-          break;
-        case "x86_64":
-          switch (production_version === "prod" ? game.executables.macosIntel?.prod?.type ?? "" : game.executables.macosIntel?.dev?.type ?? "") {
-            case "zip":
-              await downloadAndUnzipMacOS(
-                url,
-                `/v${tymt_version}/games/${game_key}`,
-                production_version === "prod" ? game.executables.macosIntel?.prod?.exePath ?? "" : game.executables.macosIntel?.dev?.exePath ?? ""
-              );
-              break;
-            case "tar.bz2":
-              await downloadAndUntarbz2MacOS(
-                url,
-                `/v${tymt_version}/games/${game_key}`,
-                production_version === "prod" ? game.executables.macosIntel?.prod?.exePath ?? "" : game.executables.macosIntel?.dev?.exePath ?? ""
-              );
-              break;
-          }
-          break;
-      }
-      break;
-    case "Windows_NT":
-      await downloadAndUnzipWindows(url, `/v${tymt_version}/games/${game_key}`);
-      break;
-  }
-  return true;
 }
 
 export async function isInstalled(game_key: string) {
   try {
     await readDir(`${await appDataDir()}v${tymt_version}/games/${game_key}`);
     return true;
-  } catch (error) {
+  } catch (err) {
+    console.error("Failed to isInstalled: ", err);
     return false;
   }
 }
@@ -291,7 +299,7 @@ export async function runGame(game_key: string, serverIp?: string) {
 
     return true;
   } catch (err) {
-    console.log(err);
+    console.error("Failed to runGame: ", err);
     return false;
   }
 }

@@ -62,6 +62,7 @@ async fn main() -> std::io::Result<()> {
                 download_and_unzip_macos,
                 download_and_untarbz2_macos,
                 download_and_unzip_windows,
+                install_depencies_for_d53_on_mac,
                 run_exe,
                 run_url_args,
                 run_linux,
@@ -1146,6 +1147,46 @@ fn run_exe(url: String) {
     match command.spawn() {
         Ok(_) => println!("Process started successfully"),
         Err(e) => eprintln!("Failed to start process: {}", e),
+    }
+}
+
+#[tauri::command]
+fn install_depencies_for_d53_on_mac() {
+    println!("install_depences_for_d53_on_mac");
+
+    let output = Command::new("brew")
+        .arg("install")
+        .args(
+            &[
+                "cmake",
+                "freetype",
+                "gettext",
+                "gmp",
+                "hiredis",
+                "jpeg-turbo",
+                "jsoncpp",
+                "leveldb",
+                "libogg",
+                "libpng",
+                "libvorbis",
+                "luajit",
+                "zstd",
+                "gettext",
+                "ffmpeg@6",
+                "mysql-client",
+            ]
+        )
+        .output()
+        .expect("Failed to execute command");
+
+    if output.status.success() {
+        println!("install_depences_for_d53_on_mac executed successfully");
+        let stdout = String::from_utf8_lossy(&output.stdout);
+        println!("{}", stdout);
+    } else {
+        eprintln!("install_depences_for_d53_on_mac failed to execute");
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        eprintln!("{}", stderr);
     }
 }
 
