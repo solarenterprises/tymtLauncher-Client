@@ -11,27 +11,13 @@ import warnnigIcon from "../assets/alert/warnning-icon.svg";
 import alertIcon from "../assets/alert/alert-icon.png";
 import messageIcon from "../assets/alert/message-icon.svg";
 import closeIcon from "../assets/settings/x-icon.svg";
-// import Avatar from "./home/Avatar";
 import { propsAlertTypes } from "../types/commonTypes";
 import { notification_duration } from "../configs";
 import { IContactList } from "../types/chatTypes";
-// import { accountType } from "../types/accountTypes";
-// import {
-//   addOneToFriendList,
-//   getFriendlist,
-// } from "../features/chat/FriendListSlice";
-// import { getAccount } from "../features/account/AccountSlice";
 import { selectEncryptionKeyByUserId } from "../features/chat/Chat-encryptionkeySlice";
 import { decrypt } from "../lib/api/Encrypt";
-import {
-  // getCurrentPartner,
-  setCurrentPartner,
-} from "../features/chat/CurrentPartnerSlice";
+import { setCurrentPartner } from "../features/chat/CurrentPartnerSlice";
 import { getContactList } from "../features/chat/ContactListSlice";
-// import {
-//   approveFriendRequest,
-//   declineFriendRequest,
-// } from "../features/alert/AlertListApi";
 
 function SlideTransition(props) {
   return <Slide {...props} direction="left" />;
@@ -49,9 +35,6 @@ const AlertComp = ({ open, status, title, detail, setOpen, link }: propsAlertTyp
   const senderUser = contactListStore.contacts.find((user) => user._id === senderId);
 
   const dispatch = useDispatch();
-  // const currentPartnerStore: IContact = useSelector(getCurrentPartner);
-  // const friendListStore: IContactList = useSelector(getFriendlist);
-  // const accountStore: accountType = useSelector(getAccount);
   const existkey: string = useSelector((state) => selectEncryptionKeyByUserId(state, senderId));
 
   const [border, setBorder] = useState("");
@@ -66,27 +49,6 @@ const AlertComp = ({ open, status, title, detail, setOpen, link }: propsAlertTyp
     };
     decryptmessage();
   }, [detail]);
-
-  // const addFriend = useCallback(async () => {
-  //   const senderId = detail.note?.sender;
-  //   const senderInFriendList = friendListStore.contacts.find(
-  //     (user) => user._id === senderId
-  //   );
-  //   if (senderInFriendList) return;
-  //   const senderInContactList = contactListStore.contacts.find(
-  //     (user) => user._id === senderId
-  //   );
-  //   if (!senderInContactList) return;
-  //   dispatch(addOneToFriendList(senderInContactList));
-  // }, [friendListStore, contactListStore]);
-
-  // const approveFR = useCallback(async () => {
-  //   await approveFriendRequest(detail._id, accountStore.uid);
-  // }, [];
-
-  // const declineFR = async () => {
-  //   await declineFriendRequest(detail._id, accountStore.uid);
-  // }, [accountStore]);
 
   useEffect(() => {
     if (status == "failed") {

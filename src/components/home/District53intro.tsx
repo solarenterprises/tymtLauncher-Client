@@ -9,7 +9,7 @@ import "../../fonts/Cobe/Cobe-Regular.ttf";
 import districteffect from "../../assets/main/districteffect.svg";
 import districteffect1 from "../../assets/main/districteffect1.svg";
 import districteffect2 from "../../assets/main/districteffect2.svg";
-import { downloadGame, isInstalled } from "../../lib/api/Downloads";
+import { downloadGame, getGameFileSize, isInstalled } from "../../lib/api/Downloads";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch } from "../../store";
 import { getProcess, setProcess } from "../../features/home/InstallprocessSlice";
@@ -28,6 +28,7 @@ const District53intro = ({ setImage }: props) => {
   const [selected, setSelected] = useState(0);
   const [installed, setInstalled] = useState(false);
   const [d53Open, setD53Open] = useState<boolean>(false);
+  const [gameFileSize, setGameFileSize] = useState<string>("");
 
   const { setNotificationStatus, setNotificationTitle, setNotificationDetail, setNotificationOpen, setNotificationLink } = useNotification();
 
@@ -51,6 +52,15 @@ const District53intro = ({ setImage }: props) => {
 
   useEffect(() => {
     checkInstalled();
+  }, []);
+
+  useEffect(() => {
+    const init = async () => {
+      const sizeMB = await getGameFileSize("district53");
+      if (sizeMB) setGameFileSize(`(${sizeMB} MB)`);
+      else setGameFileSize("");
+    };
+    init();
   }, []);
 
   return (
@@ -170,7 +180,7 @@ const District53intro = ({ setImage }: props) => {
                   }}
                 >
                   {installed && t("hom-7_play-game")}
-                  {!processStore.inprogress && !installed && t("hom-20_install-game")}
+                  {!processStore.inprogress && !installed && `${t("hom-20_install-game")} ${gameFileSize}`}
                   {processStore.inprogress && !installed && t("hom-21_downloading")}
                 </Button>
               </Grid>

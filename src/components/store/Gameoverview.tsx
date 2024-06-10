@@ -18,7 +18,7 @@ import { getViewmode } from "../../features/store/Gameview";
 import AdviceModal from "./AdviceModal";
 import Overview from "./Overview";
 import Review from "./Review";
-import { downloadGame, isInstalled, openLink } from "../../lib/api/Downloads";
+import { downloadGame, getGameFileSize, isInstalled, openLink } from "../../lib/api/Downloads";
 import ComingModal from "../ComingModal";
 import { processType } from "../../types/homeTypes";
 import { getProcess, setProcess } from "../../features/home/InstallprocessSlice";
@@ -56,6 +56,7 @@ const GameOverview = () => {
   const lang = langStore.language;
   const [loading, setLoading] = useState<boolean>(false);
   const [d53Open, setD53Open] = useState<boolean>(false);
+  const [gameFileSize, setGameFileSize] = useState<string>("");
 
   const { setNotificationStatus, setNotificationTitle, setNotificationDetail, setNotificationOpen, setNotificationLink } = useNotification();
 
@@ -76,7 +77,16 @@ const GameOverview = () => {
 
   useEffect(() => {
     checkInstalled(id);
-  }, []);
+  }, [id]);
+
+  useEffect(() => {
+    const init = async () => {
+      const sizeMB = await getGameFileSize(id);
+      if (sizeMB) setGameFileSize(`(${sizeMB} MB)`);
+      else setGameFileSize("");
+    };
+    init();
+  }, [id]);
 
   return (
     <>
@@ -166,7 +176,7 @@ const GameOverview = () => {
                     }}
                   >
                     {installed && t("hom-7_play-game")}
-                    {!processStore.inprogress && !installed && t("hom-20_install-game")}
+                    {!processStore.inprogress && !installed && `${t("hom-20_install-game")} ${gameFileSize}`}
                     {processStore.inprogress && !installed && t("hom-21_downloading")}
                   </Button>
                 </Grid>

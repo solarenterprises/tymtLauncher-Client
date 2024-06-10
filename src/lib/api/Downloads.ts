@@ -7,7 +7,7 @@ import { appDataDir } from "@tauri-apps/api/path";
 import { type, arch } from "@tauri-apps/api/os";
 import { invoke } from "@tauri-apps/api/tauri";
 import { open } from "@tauri-apps/api/shell";
-import Games from "../game/Game";
+import Games, { PlatformFile, PlatformFileForOS } from "../game/Game";
 import { local_server_port, production_version, tymt_version } from "../../configs";
 import { ISaltToken } from "../../types/accountTypes";
 import tymtStorage from "../Storage";
@@ -315,5 +315,72 @@ export async function openLink(url: string) {
     await open(url);
   } catch (err) {
     console.error("Failed to open link:", err);
+  }
+}
+
+export async function getGameFile(game_key: string) {
+  try {
+    const game = Games[game_key];
+    const platform = await type();
+    const cpu = await arch();
+    let gameFileForOs: PlatformFileForOS;
+    let gameFile: PlatformFile;
+    switch (platform) {
+      case "Linux":
+        gameFileForOs = game.executables.linux;
+        break;
+      case "Windows_NT":
+        gameFileForOs = game.executables.windows64;
+        break;
+      case "Darwin":
+        switch (cpu) {
+          case "arm":
+            gameFileForOs = game.executables.macosArm;
+            break;
+          case "x86_64":
+            gameFileForOs = game.executables.macosIntel;
+            break;
+        }
+        break;
+    }
+    if (!gameFileForOs) {
+      console.error("Failed to getGameFile: Not support this OS!");
+      return null;
+    }
+    switch (production_version) {
+      case "prod":
+        gameFile = gameFileForOs.prod;
+        break;
+      case "dev":
+        gameFile = gameFileForOs.dev;
+        break;
+    }
+    if (!gameFile) {
+      console.error("Failed to getGameFile: Not support!", production_version);
+      return null;
+    }
+    return gameFile;
+  } catch (err) {
+    console.error("Failed to getGameFile: ", err);
+    return null;
+  }
+}
+
+export async function getGameFileSize(game_key: string) {
+  try {
+    const gameFile = await getGameFile(game_key);
+    if (!gameFile) {
+      console.error("Failed to getFileSize: No gameFile!");
+      return null;
+    }
+    let gameFileSize = gameFile.size;
+    if (!gameFileSize) {
+      console.error("Failed to getFileSize: No gameFileSize!");
+      return null;
+    }
+    return gameFileSize;
+  } catch (err) {
+    console.error("Failed to getFileSize: ", err);
+    return null;
   }
 }

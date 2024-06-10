@@ -39,6 +39,7 @@ export type PlatformFile =
       type: "zip" | "exec" | "appimage" | "tar.bz2";
       file?: string;
       exePath: string;
+      size?: number; // in MB
     }
   | undefined;
 
@@ -121,6 +122,7 @@ const Games: { [key: string]: Game } = {
           url: "https://dev.district53.io:2000/District53-5.9.0.2-x86_64.AppImage",
           type: "appimage",
           exePath: "/tmp.AppImage",
+          size: 88,
         },
       },
       macosIntel: {
@@ -133,6 +135,7 @@ const Games: { [key: string]: Game } = {
           url: "https://dev.district53.io:2000/District53_5.9.0.2_mac_x64_86.zip",
           type: "zip",
           exePath: "/District53",
+          size: 10,
         },
       },
       macosArm: {
@@ -145,6 +148,7 @@ const Games: { [key: string]: Game } = {
           url: "https://dev.district53.io:2000/District53_5.9.0.2_mac_arm.zip",
           type: "zip",
           exePath: "/District53",
+          size: 10,
         },
       },
       windows64: {
@@ -159,6 +163,7 @@ const Games: { [key: string]: Game } = {
           type: "zip",
           file: "minetest",
           exePath: "/bin/District53.exe",
+          size: 23,
         },
       },
     },
