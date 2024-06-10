@@ -39,10 +39,10 @@ export const createBlock = async (_id: string) => {
         "Content-Type": "application/json",
       },
     });
-    if (res?.status === 200 && res?.data?.block) {
+    if (res?.status === 200 && res?.data?.blocks) {
       console.log("createBlock");
       return {
-        contacts: res?.data?.block,
+        contacts: res?.data?.blocks,
       };
     } else {
       console.log("createBlock: ", res?.status);
@@ -66,10 +66,10 @@ export const deleteBlock = async (_id: string) => {
         block: _id,
       },
     });
-    if (res?.status === 200 && res?.data?.block) {
+    if (res?.status === 200 && res?.data?.blocks) {
       console.log("deleteBlock");
       return {
-        contacts: res?.data?.block,
+        contacts: res?.data?.blocks,
       };
     } else {
       console.log("deleteBlock: ", res?.status);
