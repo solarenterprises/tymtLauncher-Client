@@ -98,7 +98,7 @@ export async function runUrl(url: string) {
   });
 }
 
-export async function runUrlArgs(url: string, args: string) {
+export async function runUrlArgs(url: string, args: string[]) {
   return invoke("run_url_args", {
     url: url,
     args: args,
@@ -211,7 +211,8 @@ export async function runGame(game_key: string, serverIp?: string) {
     const cpu = await arch();
     switch (platform) {
       case "Linux":
-        exePath = production_version === "prod" ? Games[game_key].executables.linux.prod.exePath : Games[game_key].executables.linux.dev?.exePath ?? "";
+        exePath =
+          production_version === "prod" ? Games[game_key].executables.linux?.prod?.exePath ?? "" : Games[game_key].executables.linux?.dev?.exePath ?? "";
         break;
       case "Darwin":
         switch (cpu) {
@@ -230,11 +231,14 @@ export async function runGame(game_key: string, serverIp?: string) {
         }
         break;
       case "Windows_NT":
-        exePath = production_version === "prod" ? Games[game_key].executables.windows64.prod.exePath : Games[game_key].executables.windows64.dev?.exePath ?? "";
+        exePath =
+          production_version === "prod"
+            ? Games[game_key].executables.windows64?.prod?.exePath ?? ""
+            : Games[game_key].executables.windows64?.dev?.exePath ?? "";
         break;
     }
     let url = path.join(dataDir, `v${tymt_version}`, `games`, game_key, exePath);
-    let args = "";
+    let args: string[];
     // const filePath: string = dataDir + `games.config.json`;
     // let configJson = JSON.parse(await readTextFile(filePath));
     // let url = configJson[game_key].path;
@@ -255,32 +259,33 @@ export async function runGame(game_key: string, serverIp?: string) {
       const launcherUrl = `http://localhost:${local_server_port}`;
       switch (platform) {
         case "Linux":
-          switch (production_version === "prod" ? Games[game_key].executables.linux.prod.type : Games[game_key].executables.linux.dev?.type ?? "") {
+          switch (production_version === "prod" ? Games[game_key].executables.linux?.prod?.type ?? "" : Games[game_key].executables.linux?.dev?.type ?? "") {
             case "appimage":
-              args = `--appimage-extract-and-run --address ${d53_server} --port ${d53_port} --launcher_url ${launcherUrl} --token ${token} --go`;
+              args = [`--appimage-extract-and-run`, `--address`, d53_server, `--port`, d53_port, `--launcher_url`, launcherUrl, `--token`, token, `--go`];
               break;
             case "zip":
               break;
           }
           break;
         case "Windows_NT":
-          args = `--address ${d53_server} --port ${d53_port} --launcher_url ${launcherUrl} --token ${token} --go`;
+          args = [`--address`, d53_server, `--port`, d53_port, `--launcher_url`, launcherUrl, `--token`, token, `--go`];
           break;
         case "Darwin":
-          break;
-      }
-    } else {
-      switch (platform) {
-        case "Linux":
-          break;
-        case "Darwin":
-          await runAppMacOS(url);
-          return true;
-        case "Windows_NT":
+          args = [`--address`, d53_server, `--port`, d53_port, `--launcher_url`, launcherUrl, `--token`, token, `--go`];
           break;
       }
     }
-    await runUrlArgs(url, args);
+    switch (platform) {
+      case "Linux":
+        await runUrlArgs(url, args);
+        break;
+      case "Windows_NT":
+        await runUrlArgs(url, args);
+        break;
+      case "Darwin":
+        await runUrlArgs("open", [url, ...args]);
+        break;
+    }
     return true;
   } catch (err) {
     console.log(err);

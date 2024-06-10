@@ -1150,11 +1150,11 @@ fn run_exe(url: String) {
 }
 
 #[tauri::command]
-fn run_url_args(url: String, args: String) {
+fn run_url_args(url: String, args: Vec<String>) {
     println!("{}", url);
-    println!("{}", args);
-
-    let parts: Vec<&str> = args.split_whitespace().collect();
+    for arg in args.clone() {
+        println!("{}", arg);
+    }
 
     if args.is_empty() {
         println!("No command provided");
@@ -1167,7 +1167,7 @@ fn run_url_args(url: String, args: String) {
     } else {
         let mut command = Command::new(url);
 
-        for arg in parts {
+        for arg in args {
             command.arg(arg);
         }
 
