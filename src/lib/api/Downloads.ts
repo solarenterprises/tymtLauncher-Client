@@ -188,7 +188,7 @@ export async function downloadGame(game_key: string) {
             break;
         }
         // Install depencies for D53 on mac, temp solution
-        await invoke("install_depencies_for_d53_on_mac");
+        await invoke("install_dependencies_for_d53_on_mac");
         break;
       case "Windows_NT":
         await downloadAndUnzipWindows(url, `/v${tymt_version}/games/${game_key}`);

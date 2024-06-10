@@ -62,7 +62,7 @@ async fn main() -> std::io::Result<()> {
                 download_and_unzip_macos,
                 download_and_untarbz2_macos,
                 download_and_unzip_windows,
-                install_depencies_for_d53_on_mac,
+                install_dependencies_for_d53_on_mac,
                 run_exe,
                 run_url_args,
                 run_linux,
@@ -1151,8 +1151,8 @@ fn run_exe(url: String) {
 }
 
 #[tauri::command]
-fn install_depencies_for_d53_on_mac() {
-    println!("install_depences_for_d53_on_mac");
+fn install_dependencies_for_d53_on_mac() {
+    println!("install_dependencies_for_d53_on_mac");
 
     let output = Command::new("brew")
         .arg("install")
