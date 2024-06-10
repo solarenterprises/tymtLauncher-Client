@@ -939,7 +939,8 @@ async fn download_and_unzip_macos(
     app_handle: tauri::AppHandle,
     url: String,
     target: String,
-    exeLocation: String
+    exeLocation: String,
+    authorization: Option<String>
 ) -> bool {
     println!("{}", url);
     println!("{}", target);
@@ -953,7 +954,17 @@ async fn download_and_unzip_macos(
         .to_owned()
         .unwrap();
 
-    let response = reqwest::get(&url).await.unwrap();
+    let client = Client::new();
+    let response = if let Some(auth) = authorization {
+        client
+            .get(&url)
+            .header(header::CONTENT_TYPE, "application/json")
+            .header(header::AUTHORIZATION, format!("{}", auth))
+            .send().await
+            .unwrap()
+    } else {
+        client.get(&url).send().await.unwrap()
+    };
 
     let zip_location = (app_dir.to_string() + "/tmp.zip").to_owned();
     println!("{}", zip_location);

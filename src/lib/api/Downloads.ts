@@ -42,6 +42,7 @@ export async function downloadAndUnzipMacOS(url: string, targetDir: string, exe:
     url: url,
     target: targetDir,
     exeLocation: exe,
+    authorization: `Basic ${btoa("dev:shine skype sherry occupant python cure urology phantom broadband overlying groin sensation")}`,
   });
 }
 

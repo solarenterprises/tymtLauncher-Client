@@ -123,6 +123,11 @@ const Games: { [key: string]: Game } = {
           type: "zip",
           exePath: "",
         },
+        dev: {
+          url: "https://dev.district53.io:2000/District53_5.9.0.2_mac.zip",
+          type: "zip",
+          exePath: "/District53_5.9.0.2_mac/District53",
+        },
       },
       windows64: {
         prod: {
