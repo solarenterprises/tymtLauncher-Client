@@ -26,7 +26,7 @@ import { searchUsers } from "../../features/chat/ContactListApi";
 import { createFriendAsync, deleteFriendAsync, getFriendList } from "../../features/chat/FriendListSlice";
 import SwipeableViews from "react-swipeable-views";
 import { useTheme } from "@mui/material/styles";
-import { getBlockList } from "../../features/chat/BlockListSlice";
+import { deleteBlockAsync, getBlockList } from "../../features/chat/BlockListSlice";
 
 const theme = createTheme({
   palette: {
@@ -79,6 +79,7 @@ const Chatmain = ({ view, setView }: propsType) => {
   const selectedUserToDeleteStoreRef = useRef(selectedUserToDeleteStore);
   const accountStoreRef = useRef(accountStore);
   const friendListStoreRef = useRef(friendListStore);
+  const blockListStoreRef = useRef(blockListStore);
 
   useEffect(() => {
     selectedUserToDeleteStoreRef.current = selectedUserToDeleteStore;
@@ -89,11 +90,16 @@ const Chatmain = ({ view, setView }: propsType) => {
   useEffect(() => {
     friendListStoreRef.current = friendListStore;
   }, [friendListStore]);
+  useEffect(() => {
+    blockListStoreRef.current = blockListStore;
+  }, [blockListStore]);
 
   const deleteSelectedUser = async () => {
     try {
       dispatch(deleteFriendAsync(selectedUserToDeleteStoreRef.current.id)).then(() => {
-        dispatch(deleteContactAsync(selectedUserToDeleteStoreRef.current.id));
+        dispatch(deleteContactAsync(selectedUserToDeleteStoreRef.current.id)).then(() => {
+          dispatch(deleteBlockAsync(selectedUserToDeleteStoreRef.current.id));
+        });
       });
       console.log("deleteSelectedUser");
     } catch (err) {
@@ -105,7 +111,7 @@ const Chatmain = ({ view, setView }: propsType) => {
   const sendFriendRequest = async () => {
     try {
       if (friendListStoreRef.current.contacts.find((element) => element._id === selectedUserToDeleteStoreRef.current.id)) {
-        console.log("sendFriendRequest: already in the friend list!");
+        console.log("sendFriendRequest: Already in the friend list!");
         return;
       }
       const data: IAlert = {
@@ -117,8 +123,10 @@ const Chatmain = ({ view, setView }: propsType) => {
         receivers: [selectedUserToDeleteStoreRef.current.id],
       };
       socket.current.emit("post-alert", JSON.stringify(data));
-      dispatch(createContactAsync(selectedUserToDeleteStoreRef.current.id)).then(() => {
-        dispatch(createFriendAsync(selectedUserToDeleteStoreRef.current.id));
+      dispatch(deleteBlockAsync(selectedUserToDeleteStoreRef.current.id)).then(() => {
+        dispatch(createContactAsync(selectedUserToDeleteStoreRef.current.id)).then(() => {
+          dispatch(createFriendAsync(selectedUserToDeleteStoreRef.current.id));
+        });
       });
       console.log("sendFriendRequest");
     } catch (err) {
@@ -145,6 +153,10 @@ const Chatmain = ({ view, setView }: propsType) => {
     setTab(index);
   };
 
+  const handleChangeIndex = (index: number) => {
+    setTab(index);
+  };
+
   function a11yProps(index: number) {
     return {
       id: `full-width-tab-${index}`,
@@ -168,10 +180,6 @@ const Chatmain = ({ view, setView }: propsType) => {
       </div>
     );
   }
-
-  const handleChangeIndex = (index: number) => {
-    setTab(index);
-  };
 
   return (
     <>
@@ -313,6 +321,7 @@ const Chatmain = ({ view, setView }: propsType) => {
                       })}
                       {showContextMenu && (
                         <FRcontextmenu
+                          tab={tab}
                           value={value}
                           isClickedBlock={isClickedBlock}
                           isClickedDelete={isClickedDelete}
@@ -327,7 +336,7 @@ const Chatmain = ({ view, setView }: propsType) => {
                           contextMenuPosition={contextMenuPosition}
                         />
                       )}
-                      <BlockModal openBlockModal={openBlockModal} setOpenBlockModal={setOpenBlockModal} roommode={false} />
+                      <BlockModal block={tab !== 2} openBlockModal={openBlockModal} setOpenBlockModal={setOpenBlockModal} roommode={false} />
                       <DeleteModal
                         openDeleteModal={openDeleteModal}
                         setOpenDeleteModal={setOpenDeleteModal}
@@ -375,6 +384,7 @@ const Chatmain = ({ view, setView }: propsType) => {
                       })}
                       {showContextMenu && (
                         <FRcontextmenu
+                          tab={tab}
                           value={value}
                           isClickedBlock={isClickedBlock}
                           isClickedDelete={isClickedDelete}
@@ -389,7 +399,7 @@ const Chatmain = ({ view, setView }: propsType) => {
                           contextMenuPosition={contextMenuPosition}
                         />
                       )}
-                      <BlockModal openBlockModal={openBlockModal} setOpenBlockModal={setOpenBlockModal} roommode={false} />
+                      <BlockModal block={tab !== 2} openBlockModal={openBlockModal} setOpenBlockModal={setOpenBlockModal} roommode={false} />
                       <DeleteModal
                         openDeleteModal={openDeleteModal}
                         setOpenDeleteModal={setOpenDeleteModal}
@@ -437,6 +447,7 @@ const Chatmain = ({ view, setView }: propsType) => {
                       })}
                       {showContextMenu && (
                         <FRcontextmenu
+                          tab={tab}
                           value={value}
                           isClickedBlock={isClickedBlock}
                           isClickedDelete={isClickedDelete}
@@ -451,7 +462,7 @@ const Chatmain = ({ view, setView }: propsType) => {
                           contextMenuPosition={contextMenuPosition}
                         />
                       )}
-                      <BlockModal openBlockModal={openBlockModal} setOpenBlockModal={setOpenBlockModal} roommode={false} />
+                      <BlockModal block={tab !== 2} openBlockModal={openBlockModal} setOpenBlockModal={setOpenBlockModal} roommode={false} />
                       <DeleteModal
                         openDeleteModal={openDeleteModal}
                         setOpenDeleteModal={setOpenDeleteModal}

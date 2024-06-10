@@ -43,6 +43,10 @@ const blockListSlice = createSlice({
         state.status = "pending";
       })
       .addCase(fetchBlockListAsync.fulfilled, (state, action: PayloadAction<any>) => {
+        if (!action.payload) {
+          console.log("Failed to fetchBlockListAsync:", action.payload);
+          return;
+        }
         state.data = { ...state.data, ...action.payload };
         tymtStorage.set(`blockList`, JSON.stringify(state.data));
         state.status = "blockList";

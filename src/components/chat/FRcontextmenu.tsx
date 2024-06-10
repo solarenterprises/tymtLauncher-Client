@@ -3,6 +3,7 @@ import { propsFRcontextmenuType } from "../../types/chatTypes";
 import { useTranslation } from "react-i18next";
 
 const FRcontextmenu = ({
+  tab, // 1: Contact, 2: Friend, 3: Block
   value,
   isClickedBlock,
   isClickedDelete,
@@ -33,8 +34,23 @@ const FRcontextmenu = ({
       >
         {value === "" ? (
           <>
+            {tab !== 1 && (
+              <Box
+                className={"fs-16 white context_menu_up"}
+                textAlign={"left"}
+                sx={{
+                  backdropFilter: "blur(10px)",
+                }}
+                onClick={() => {
+                  setIsClickedRequest(!isClickedRequest), setOpenRequestModal(true), setShowContextMenu(false);
+                }}
+              >
+                {t("cha-20_send-request")}
+              </Box>
+            )}
+
             <Box
-              className={"fs-16 white context_menu_block"}
+              className={tab === 1 ? "fs-16 white context_menu_up" : "fs-16 white context_menu_middle"}
               textAlign={"left"}
               sx={{
                 backdropFilter: "blur(10px)",
@@ -43,11 +59,11 @@ const FRcontextmenu = ({
                 setIsClickedBlock(!isClickedBlock), setOpenBlockModal(true), setShowContextMenu(false);
               }}
             >
-              {t("cha-4_block")}
+              {tab === 2 ? t("cha-39_unblock") : t("cha-4_block")}
             </Box>
 
             <Box
-              className={"fs-16 white context_menu_delete"}
+              className={"fs-16 white context_menu_bottom"}
               textAlign={"left"}
               sx={{
                 backdropFilter: "blur(10px)",

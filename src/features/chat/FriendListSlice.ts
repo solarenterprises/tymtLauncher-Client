@@ -43,6 +43,10 @@ const friendListSlice = createSlice({
         state.status = "pending";
       })
       .addCase(fetchFriendListAsync.fulfilled, (state, action: PayloadAction<any>) => {
+        if (!action.payload) {
+          console.log("Failed to fetchFriendListAsync: ", action.payload);
+          return;
+        }
         state.data = { ...state.data, ...action.payload };
         tymtStorage.set(`friendList`, JSON.stringify(state.data));
         state.status = "friendList";
@@ -51,6 +55,10 @@ const friendListSlice = createSlice({
         state.status = "pending";
       })
       .addCase(createFriendAsync.fulfilled, (state, action: PayloadAction<any>) => {
+        if (!action.payload) {
+          console.log("Failed to createFriendAsync: ", action.payload);
+          return;
+        }
         state.data = { ...state.data, ...action.payload };
         tymtStorage.set(`friendList`, JSON.stringify(state.data));
         state.status = "friendList";
@@ -59,6 +67,10 @@ const friendListSlice = createSlice({
         state.status = "pending";
       })
       .addCase(deleteFriendAsync.fulfilled, (state, action: PayloadAction<any>) => {
+        if (!action.payload) {
+          console.log("Failed to deleteFriendAsync: ", action.payload);
+          return;
+        }
         state.data = { ...state.data, ...action.payload };
         tymtStorage.set(`friendList`, JSON.stringify(state.data));
         state.status = "friendList";

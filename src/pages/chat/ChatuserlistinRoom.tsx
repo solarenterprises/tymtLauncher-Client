@@ -25,6 +25,7 @@ import { createFriendAsync, deleteFriendAsync, getFriendList } from "../../featu
 import { accountType } from "../../types/accountTypes";
 import { getAccount } from "../../features/account/AccountSlice";
 import { useSocket } from "../../providers/SocketProvider";
+import { deleteBlockAsync } from "../../features/chat/BlockListSlice";
 
 const ChatuserlistinRoom = ({ view, setView }: propsType) => {
   const classes = ChatStyle();
@@ -91,8 +92,10 @@ const ChatuserlistinRoom = ({ view, setView }: propsType) => {
         receivers: [selectedUserToDeleteStore.id],
       };
       socket.current.emit("post-alert", JSON.stringify(data));
-      dispatch(createContactAsync(selectedUserToDeleteStore.id)).then(() => {
-        dispatch(createFriendAsync(selectedUserToDeleteStore.id));
+      dispatch(deleteBlockAsync(selectedUserToDeleteStore.id)).then(() => {
+        dispatch(createContactAsync(selectedUserToDeleteStore.id)).then(() => {
+          dispatch(createFriendAsync(selectedUserToDeleteStore.id));
+        });
       });
       console.log("sendFriendRequest");
     } catch (err) {
@@ -214,6 +217,7 @@ const ChatuserlistinRoom = ({ view, setView }: propsType) => {
                 })}
                 {showContextMenu && (
                   <FRcontextmenu
+                    tab={0}
                     value={searchvalue}
                     isClickedBlock={isClickedBlock}
                     isClickedDelete={isClickedDelete}
@@ -228,7 +232,7 @@ const ChatuserlistinRoom = ({ view, setView }: propsType) => {
                     contextMenuPosition={contextMenuPosition}
                   />
                 )}
-                <BlockModal openBlockModal={openBlockModal} setOpenBlockModal={setOpenBlockModal} roommode={true} />
+                <BlockModal block={true} openBlockModal={openBlockModal} setOpenBlockModal={setOpenBlockModal} roommode={true} />
                 <DeleteModal
                   openDeleteModal={openDeleteModal}
                   setOpenDeleteModal={setOpenDeleteModal}

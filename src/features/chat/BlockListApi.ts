@@ -12,22 +12,18 @@ export const fetchBlockList = async () => {
         "Content-Type": "application/json",
       },
     });
-    if (res?.status === 200) {
+    if (res?.status === 200 && res?.data?.blocks) {
       console.log("fetchBlockList");
       return {
         contacts: res?.data?.blocks,
       };
     } else {
       console.log("fetchBlockList: ", res?.status);
-      return {
-        contacts: [],
-      };
+      return null;
     }
   } catch (err) {
     console.error("Failed to fetchBlockList: ", err);
-    return {
-      contacts: [],
-    };
+    return null;
   }
 };
 

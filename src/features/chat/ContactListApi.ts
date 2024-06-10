@@ -20,15 +20,11 @@ export const fetchContactList = async () => {
       };
     } else {
       console.log("fetchContactList res.status !== 200");
-      return {
-        contacts: [],
-      };
+      return null;
     }
   } catch (err) {
     console.error("Failed to fetchContactList: ", err);
-    return {
-      contacts: [],
-    };
+    return null;
   }
 };
 
@@ -44,25 +40,18 @@ export const createContact = async (_id: string) => {
         "Content-Type": "application/json",
       },
     });
-    if (res?.status === 200) {
+    if (res?.status === 200 && res?.data?.contacts) {
       console.log("createContact");
-      if (res?.data?.contacts) {
-        return {
-          contacts: res?.data?.contacts,
-        };
-      }
-      return null;
+      return {
+        contacts: res?.data?.contacts,
+      };
     } else {
       console.log("createContact: ", res?.status);
-      return {
-        contacts: [],
-      };
+      return null;
     }
   } catch (err) {
     console.error("Failed to createContact: ", err);
-    return {
-      contacts: [],
-    };
+    return null;
   }
 };
 
@@ -78,22 +67,18 @@ export const deleteContact = async (_id: string) => {
         contact: _id,
       },
     });
-    if (res?.status === 200) {
+    if (res?.status === 200 && res?.data?.contacts) {
       console.log("deleteContact");
       return {
         contacts: res?.data?.contacts,
       };
     } else {
       console.log("deleteContact: ", res?.status);
-      return {
-        contacts: [],
-      };
+      return null;
     }
   } catch (err) {
     console.error("Failed to deleteContact: ", err);
-    return {
-      contacts: [],
-    };
+    return null;
   }
 };
 

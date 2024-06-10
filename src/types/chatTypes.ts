@@ -9,6 +9,7 @@ export interface propsChatType {
 }
 
 export interface propsBlockModalType {
+  block: boolean;
   openBlockModal: boolean;
   setOpenBlockModal: (param: boolean) => void;
   roommode: boolean;
@@ -29,6 +30,7 @@ export interface propsRequestModalType {
 }
 
 export interface propsFRcontextmenuType {
+  tab: number;
   value: string;
   isClickedBlock: boolean;
   isClickedDelete: boolean;

@@ -51,6 +51,10 @@ export const contactListSlice = createSlice({
         state.status = "pending";
       })
       .addCase(fetchContactListAsync.fulfilled, (state, action: PayloadAction<any>) => {
+        if (!action.payload) {
+          console.log("Failed to fetchContactListAsync: ", action.payload);
+          return;
+        }
         state.data = { ...state.data, ...action.payload };
         tymtStorage.set(`contactList`, JSON.stringify(state.data));
         state.status = "contactList";
@@ -59,10 +63,11 @@ export const contactListSlice = createSlice({
         state.status = "pending";
       })
       .addCase(createContactAsync.fulfilled, (state, action: PayloadAction<any>) => {
-        state.data = { ...state.data, ...action.payload };
-        if (action.payload) {
-          state.data = { ...state.data, ...action.payload };
+        if (!action.payload) {
+          console.log("Failed to createContactAsync: ", action.payload);
+          return;
         }
+        state.data = { ...state.data, ...action.payload };
         tymtStorage.set(`contactList`, JSON.stringify(state.data));
         state.status = "contactList";
       })
@@ -70,6 +75,10 @@ export const contactListSlice = createSlice({
         state.status = "pending";
       })
       .addCase(deleteContactAsync.fulfilled, (state, action: PayloadAction<any>) => {
+        if (!action.payload) {
+          console.log("Failed to deleteContactAsync: ", action.payload);
+          return;
+        }
         state.data = { ...state.data, ...action.payload };
         tymtStorage.set(`contactList`, JSON.stringify(state.data));
         state.status = "contactList";

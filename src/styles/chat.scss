@@ -81,11 +81,10 @@ $Main-Red: #ef4444;
   }
 }
 
-.context_menu_block {
-  border-top-right-radius: 16px;
-  border-top-left-radius: 16px;
+.context_menu_middle {
   border: 1px solid rgba(58, 58, 58, 0.5);
-  padding: 7px 16px 4px 16px;
+  border-bottom: none;
+  padding: 4px 16px 4px 16px;
   width: 100%;
   backdrop-filter: blur(20px);
   background: rgba(11, 11, 11, 0.4);
@@ -97,11 +96,10 @@ $Main-Red: #ef4444;
   }
 }
 
-.context_menu_delete {
+.context_menu_bottom {
   border-bottom-right-radius: 16px;
   border-bottom-left-radius: 16px;
   border: 1px solid rgba(58, 58, 58, 0.5);
-  border-top: none;
   padding: 4px 16px 7px 16px;
   width: 100%;
   background: rgba(11, 11, 11, 0.4);
@@ -114,13 +112,15 @@ $Main-Red: #ef4444;
   }
 }
 
-.context_menu_friendrequest {
-  border-radius: 16px;
+.context_menu_up {
+  border-top-right-radius: 16px;
+  border-top-left-radius: 16px;
   border: 1px solid rgba(58, 58, 58, 0.5);
-  padding: 9px 10px 9px 10px;
+  border-bottom: none;
+  padding: 7px 16px 4px 16px;
   width: 100%;
-  backdrop-filter: blur(20px);
   background: rgba(11, 11, 11, 0.4);
+  backdrop-filter: blur(20px);
   &:hover {
     background: var(--bg-stroke-blue-stroke-default-10, rgba(82, 225, 242, 0.1));
   }

@@ -1,19 +1,22 @@
 import { Box, Grid, Stack } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import Avatar from "../home/Avatar";
-import { propsUserlistType, selecteduserType } from "../../types/chatTypes";
+import { IContactList, propsUserlistType, selecteduserType } from "../../types/chatTypes";
 import { getSelectedUser, setSelectedUsertoDelete } from "../../features/chat/Chat-selecteduserSlice";
-import { useEffect, useRef } from "react";
-import { createContactAsync } from "../../features/chat/ContactListSlice";
+import { useCallback, useEffect, useRef } from "react";
+import { createContactAsync, getContactList } from "../../features/chat/ContactListSlice";
 import { AppDispatch } from "../../store";
 import { setCurrentPartner } from "../../features/chat/CurrentPartnerSlice";
 import { useSocket } from "../../providers/SocketProvider";
+import { getBlockList } from "../../features/chat/BlockListSlice";
 
 const Userlist = ({ user, index, numberofunreadmessages, setShowContextMenu, setContextMenuPosition, setView }: propsUserlistType) => {
   const { askEncryptionKey } = useSocket();
 
   const dispatch = useDispatch<AppDispatch>();
   const selectedUserToDeleteStore: selecteduserType = useSelector(getSelectedUser);
+  const contactListStore: IContactList = useSelector(getContactList);
+  const blockListStore: IContactList = useSelector(getBlockList);
 
   const selectedUserToDeleteStoreRef = useRef(selectedUserToDeleteStore);
 
@@ -45,33 +48,69 @@ const Userlist = ({ user, index, numberofunreadmessages, setShowContextMenu, set
     return false;
   };
 
-  const handleBoxClick = async () => {
+  const handleBoxClick = useCallback(async () => {
     try {
-      dispatch(createContactAsync(user._id))
-        .then(() => {
-          askEncryptionKey(user._id);
-          dispatch(
-            setCurrentPartner({
-              _id: user._id,
-              nickName: user.nickName,
-              avatar: user.avatar,
-              lang: user.lang,
-              sxpAddress: user.sxpAddress,
-              onlineStatus: user.onlineStatus,
-              notificationStatus: user.notificationStatus,
-            })
-          );
-          if (setView) {
-            setView("chatbox");
-          }
-        })
-        .catch((err) => {
-          console.error("Failed to createContactAsync: ", err);
-        });
+      if (blockListStore.contacts.some((element) => element._id === user._id)) {
+        console.log("handleBoxClick: Already in the block list!");
+        askEncryptionKey(user._id);
+        dispatch(
+          setCurrentPartner({
+            _id: user._id,
+            nickName: user.nickName,
+            avatar: user.avatar,
+            lang: user.lang,
+            sxpAddress: user.sxpAddress,
+            onlineStatus: user.onlineStatus,
+            notificationStatus: user.notificationStatus,
+          })
+        );
+        if (setView) {
+          setView("chatbox");
+        }
+      } else if (contactListStore.contacts.some((element) => element._id === user._id)) {
+        console.log("handleBoxClick: Already in the contact list!");
+        askEncryptionKey(user._id);
+        dispatch(
+          setCurrentPartner({
+            _id: user._id,
+            nickName: user.nickName,
+            avatar: user.avatar,
+            lang: user.lang,
+            sxpAddress: user.sxpAddress,
+            onlineStatus: user.onlineStatus,
+            notificationStatus: user.notificationStatus,
+          })
+        );
+        if (setView) {
+          setView("chatbox");
+        }
+      } else {
+        dispatch(createContactAsync(user._id))
+          .then(() => {
+            askEncryptionKey(user._id);
+            dispatch(
+              setCurrentPartner({
+                _id: user._id,
+                nickName: user.nickName,
+                avatar: user.avatar,
+                lang: user.lang,
+                sxpAddress: user.sxpAddress,
+                onlineStatus: user.onlineStatus,
+                notificationStatus: user.notificationStatus,
+              })
+            );
+            if (setView) {
+              setView("chatbox");
+            }
+          })
+          .catch((err) => {
+            console.error("Failed to createContactAsync: ", err);
+          });
+      }
     } catch (err) {
       console.error("Failed to handleBoxClick: ", err);
     }
-  };
+  }, [user, contactListStore, blockListStore]);
 
   return (
     <Box key={`${index}-${new Date().toISOString()}`}>

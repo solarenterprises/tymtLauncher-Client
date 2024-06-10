@@ -12,22 +12,18 @@ export const fetchFriendList = async () => {
         "Content-Type": "application/json",
       },
     });
-    if (res?.status === 200) {
+    if (res?.status === 200 && res?.data?.friends) {
       console.log("fetchFriendList");
       return {
         contacts: res?.data?.friends,
       };
     } else {
       console.log("fetchFriendList res.status: ", res?.status);
-      return {
-        contacts: [],
-      };
+      return null;
     }
   } catch (err) {
     console.error("Failed to fetchFriendList: ", err);
-    return {
-      contacts: [],
-    };
+    return null;
   }
 };
 
@@ -43,25 +39,18 @@ export const createFriend = async (_id: string) => {
         "Content-Type": "application/json",
       },
     });
-    if (res?.status === 200) {
+    if (res?.status === 200 && res?.data?.friends) {
       console.log("createFriend");
-      if (res?.data?.friends) {
-        return {
-          contacts: res?.data?.friends,
-        };
-      }
-      return null;
+      return {
+        contacts: res?.data?.friends,
+      };
     } else {
       console.log("createFriend: ", res?.status);
-      return {
-        contacts: [],
-      };
+      return null;
     }
   } catch (err) {
     console.error("Failed to createFriend: ", err);
-    return {
-      contacts: [],
-    };
+    return null;
   }
 };
 
@@ -77,21 +66,17 @@ export const deleteFriend = async (_id: string) => {
         friend: _id,
       },
     });
-    if (res?.status === 200) {
+    if (res?.status === 200 && res?.data?.friends) {
       console.log("deleteFriend");
       return {
         contacts: res?.data?.friends,
       };
     } else {
       console.log("deleteFriend: ", res?.status);
-      return {
-        contacts: [],
-      };
+      return null;
     }
   } catch (err) {
     console.error("Failed to deleteFriend: ", err);
-    return {
-      contacts: [],
-    };
+    return null;
   }
 };
