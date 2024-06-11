@@ -176,7 +176,8 @@ const Games: { [key: string]: Game } = {
     release: "October 28, 2022",
     developers: "Solar Enterprises / Minetest",
     publisher: "Solar Enterprises",
-    requirement: "",
+    requirement:
+      "OS:  Windows 10, 11 recommended. 7 or 8: partially support, Linux Debian(Ubuntu 20.04, 22.04 ideal) or CentOS, and partially support RHEL, macOS 13+ : in beta; customer support available<br>Processor: Intel Pentium 4 @ 2.0 Ghz or Greater.<br>Memory: 8GB+ of RAM<br>Storage: 500MB+ of free disk space<br>Graphics: Nvidia or Amd; Best recommended 2GB graphic memory",
     platforms: [platformEnum.windows, platformEnum.linux, platformEnum.mac],
     chains: [chainEnum.solar],
   },

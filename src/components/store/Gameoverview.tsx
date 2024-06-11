@@ -329,7 +329,7 @@ const GameOverview = () => {
                   </Box>
                 </Box>
                 {id === "district53" && (
-                  <Box marginTop={"24px"}>
+                  <Box marginTop={"24px"} borderBottom={"1px solid rgba(255, 255, 255, 0.10)"} paddingBottom={"16px"}>
                     <Box className={"fs-20-regular white"}>{t("ga-5_follow-game-on")}</Box>
 
                     <Box marginTop={"16px"} display={"flex"} flexDirection={"row"} gap={2}>
