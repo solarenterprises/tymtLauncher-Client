@@ -110,4 +110,5 @@ export const net_name = import.meta.env.VITE_APP_NETWORK_NAME;
 
 export const production_version = import.meta.env.VITE_APP_PRODUCTION_VERSION;
 
+export const tymt_release_date = import.meta.env.VITE_APP_TYMT_RELEASE_DATE;
 export const tymt_version = import.meta.env.VITE_APP_TYMT_VERSION;

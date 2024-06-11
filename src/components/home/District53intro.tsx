@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Button, Grid, Box, Stack } from "@mui/material";
+import { Button, Grid, Box, Stack, Tooltip } from "@mui/material";
 import "swiper/css";
 import "swiper/css/pagination";
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -17,6 +17,8 @@ import { processType } from "../../types/homeTypes";
 import Games from "../../lib/game/Game";
 import D53Modal from "./D53Modal";
 import { useNotification } from "../../providers/NotificationProvider";
+import { ThreeDots } from "react-loader-spinner";
+import { useNavigate } from "react-router-dom";
 
 interface props {
   setImage?: (image: any) => void;
@@ -24,6 +26,7 @@ interface props {
 
 const District53intro = ({ setImage }: props) => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const homeclasses = homeStyles();
   const [selected, setSelected] = useState(0);
   const [installed, setInstalled] = useState(false);
@@ -100,15 +103,45 @@ const District53intro = ({ setImage }: props) => {
               zIndex: -1,
             }}
           />
-          <Box
-            className={"fs-38-bold"}
-            sx={{
-              color: "white",
-              zIndex: 10,
+          <Tooltip
+            placement="top"
+            title={
+              <Stack
+                spacing={"10px"}
+                sx={{
+                  marginBottom: "-20px",
+                  backgroundColor: "rgb(49, 53, 53)",
+                  padding: "6px 8px",
+                  borderRadius: "32px",
+                  border: "1px solid rgb(71, 76, 76)",
+                }}
+              >
+                <Box className="fs-12-regular white">{t("hom-25_click-to-learn")}</Box>
+              </Stack>
+            }
+            PopperProps={{
+              sx: {
+                [`& .MuiTooltip-tooltip`]: {
+                  backgroundColor: "transparent",
+                  boxShadow: "none",
+                },
+              },
             }}
           >
-            {t("hom-5_district53")}
-          </Box>
+            <Box
+              className={"fs-38-bold"}
+              sx={{
+                color: "white",
+                zIndex: 10,
+                cursor: "pointer",
+              }}
+              onClick={() => {
+                navigate(`/store/district53`);
+              }}
+            >
+              {t("hom-5_district53")}
+            </Box>
+          </Tooltip>
           <Box
             className={"fs-16-regular"}
             sx={{
@@ -180,8 +213,13 @@ const District53intro = ({ setImage }: props) => {
                   }}
                 >
                   {installed && t("hom-7_play-game")}
-                  {!processStore.inprogress && !installed && `${t("hom-20_install-game")} ${gameFileSize}`}
-                  {processStore.inprogress && !installed && t("hom-21_downloading")}
+                  {!processStore.inprogress && !installed && t("hom-20_install-game")}
+                  {processStore.inprogress && !installed && (
+                    <Stack direction={"row"} alignItems={"center"} gap={"4px"}>
+                      <Box className={"fs-14-regular white t-center"}>{`${t("hom-21_downloading")} ${gameFileSize}`}</Box>
+                      <ThreeDots height="12px" width={"24px"} radius={4} color={`white`} />
+                    </Stack>
+                  )}
                 </Button>
               </Grid>
             </Stack>

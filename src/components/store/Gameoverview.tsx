@@ -36,6 +36,7 @@ import { tymt_version } from "../../configs";
 import { useNotification } from "../../providers/NotificationProvider";
 import { platformIconMap } from "../../types/GameTypes";
 import { chainIconMap } from "../../types/walletTypes";
+import { ThreeDots } from "react-loader-spinner";
 
 const GameOverview = () => {
   const viewmode: viewType = useSelector(getViewmode);
@@ -176,8 +177,13 @@ const GameOverview = () => {
                     }}
                   >
                     {installed && t("hom-7_play-game")}
-                    {!processStore.inprogress && !installed && `${t("hom-20_install-game")} ${gameFileSize}`}
-                    {processStore.inprogress && !installed && t("hom-21_downloading")}
+                    {!processStore.inprogress && !installed && t("hom-20_install-game")}
+                    {processStore.inprogress && !installed && (
+                      <Stack direction={"row"} alignItems={"center"} gap={"4px"}>
+                        <Box className={"fs-14-regular white t-center"}>{`${t("hom-21_downloading")} ${gameFileSize}`}</Box>
+                        <ThreeDots height="12px" width={"24px"} radius={4} color={`white`} />
+                      </Stack>
+                    )}
                   </Button>
                 </Grid>
                 <Grid item xs={2}>
