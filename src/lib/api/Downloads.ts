@@ -189,33 +189,43 @@ export async function downloadGame(game_key: string) {
             break;
         }
         // Install depencies for D53 on mac, temp solution
-        console.log("install_dependencies_for_d53_on_mac");
-        const command = Command.sidecar("brew", [
-          "install",
-          "cmake",
-          "freetype",
-          "gettext",
-          "gmp",
-          "hiredis",
-          "jpeg-turbo",
-          "jsoncpp",
-          "leveldb",
-          "libogg",
-          "libpng",
-          "libvorbis",
-          "luajit",
-          "zstd",
-          "gettext",
-          "ffmpeg@6",
-          "mysql-client",
-        ]);
-        const status = await command.execute();
-        if (status.code === 0) {
-          console.log("Command executed successfully");
-        } else {
-          console.error(`Command failed with code ${status.code}`);
+        if (game_key === "district53") {
+          console.log("install_dependencies_for_d53_on_mac");
+          const command = new Command("brew", [
+            "install",
+            "cmake",
+            "freetype",
+            "gettext",
+            "gmp",
+            "hiredis",
+            "jpeg-turbo",
+            "jsoncpp",
+            "leveldb",
+            "libogg",
+            "libpng",
+            "libvorbis",
+            "luajit",
+            "zstd",
+            "gettext",
+            "ffmpeg@6",
+            "mysql-client",
+          ]);
+
+          command.on("close", (data) => {
+            console.log(`command finished with code ${data.code} and signal ${data.signal}`);
+          });
+
+          command.stdout.on("data", (line) => {
+            console.log(`stdout: ${line}`);
+          });
+
+          command.stderr.on("data", (line) => {
+            console.error(`stderr: ${line}`);
+          });
+
+          await command.spawn();
+          console.log("install_dependencies_for_d53_on_mac: Finished!");
         }
-        console.log("install_dependencies_for_d53_on_mac: Finished!");
         break;
       case "Windows_NT":
         await downloadAndUnzipWindows(url, `/v${tymt_version}/games/${game_key}`);

@@ -46,7 +46,32 @@
         "all": true,
         "execute": true,
         "sidecar": true,
-        "open": true
+        "open": true,
+        "scope": [
+          {
+            "name": "brew",
+            "cmd": "/usr/local/bin/brew",
+            "args": [
+              "install",
+              "cmake",
+              "freetype",
+              "gettext",
+              "gmp",
+              "hiredis",
+              "jpeg-turbo",
+              "jsoncpp",
+              "leveldb",
+              "libogg",
+              "libpng",
+              "libvorbis",
+              "luajit",
+              "zstd",
+              "gettext",
+              "ffmpeg@6",
+              "mysql-client"
+            ]
+          }
+        ]
       },
       "notification": {
         "all": true
