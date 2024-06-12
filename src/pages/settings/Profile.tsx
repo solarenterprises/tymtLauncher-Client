@@ -16,6 +16,7 @@ import { AppDispatch } from "../../store";
 import Avatar from "../../components/home/Avatar";
 import { useNotification } from "../../providers/NotificationProvider";
 import { selectNotification } from "../../features/settings/NotificationSlice";
+import { tymt_avatar_url } from "../../configs";
 
 const Profile = ({ view, setView }: propsType) => {
   const classname = SettingStyle();
@@ -69,13 +70,13 @@ const Profile = ({ view, setView }: propsType) => {
         dispatch(
           setAccount({
             ...account,
-            avatar: `https://dev.tymt.com/${res.data.data}`,
+            avatar: `${tymt_avatar_url}/${res.data.data}`,
           })
         );
         dispatch(
           setNonCustodial({
             ...nonCustodial,
-            avatar: `https://dev.tymt.com/${res.data.data}`,
+            avatar: `${tymt_avatar_url}/${res.data.data}`,
           })
         );
         setNotificationStatus("success");

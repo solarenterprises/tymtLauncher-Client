@@ -8,6 +8,7 @@ import mask from "../../assets/account/mask.png";
 import { IChain } from "../../types/walletTypes";
 import { getChain } from "../../features/wallet/ChainSlice";
 import accountIcon from "../../assets/wallet/account.svg";
+import { tymt_backend_url } from "../../configs";
 
 const Avatar = ({ size, userid, onlineStatus, ischain, status }: any) => {
   const { t } = useTranslation();
@@ -111,7 +112,7 @@ const Avatar = ({ size, userid, onlineStatus, ischain, status }: any) => {
           <Box
             component={"img"}
             key={`${new Date().getTime()}`}
-            src={`https://dev.tymt.com/api/users/get-avatar/${userid}?${Date.now()}`}
+            src={`${tymt_backend_url}/users/get-avatar/${userid}?${Date.now()}`}
             sx={{
               position: "absolute",
               top: "50%",
