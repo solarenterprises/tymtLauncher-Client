@@ -1151,10 +1151,12 @@ fn run_exe(url: String) {
 }
 
 #[tauri::command]
-fn install_dependencies_for_d53_on_mac() {
+#[tauri::command]
+async fn install_dependencies_for_d53_on_mac() {
     println!("install_dependencies_for_d53_on_mac");
 
-    let output = Command::new("brew")
+    let output = tokio::process::Command
+        ::new("brew")
         .arg("install")
         .args(
             &[
@@ -1176,7 +1178,7 @@ fn install_dependencies_for_d53_on_mac() {
                 "mysql-client",
             ]
         )
-        .output()
+        .output().await
         .expect("Failed to execute command");
 
     if output.status.success() {
