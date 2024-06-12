@@ -1151,7 +1151,6 @@ fn run_exe(url: String) {
 }
 
 #[tauri::command]
-#[tauri::command]
 async fn install_dependencies_for_d53_on_mac() {
     println!("install_dependencies_for_d53_on_mac");
 
