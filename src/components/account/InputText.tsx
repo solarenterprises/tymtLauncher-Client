@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { FormControl, InputLabel, Input, IconButton, Tooltip, Box, Stack } from "@mui/material";
 import InputAdornment from "@mui/material/InputAdornment";
@@ -10,17 +10,25 @@ import { propsInputTypes } from "../../types/commonTypes";
 const InputText = ({ id, label, type, name, setValue, value, onChange, onBlur, error, onIconButtonClick, onAddressButtonClick }: propsInputTypes) => {
   const { t } = useTranslation();
   const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [showOnce, setShowOnce] = useState<boolean>(false);
   const handleClickShowPassword = () => setShowPassword((show) => !show);
   const handleMouseDownPassword = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
   };
 
-  const checkCapsLock = (event: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const capsLockOn: boolean = event.getModifierState("CapsLock");
-    if (capsLockOn) {
-      alert(t("wc-27_caps-lock-on"));
-    }
-  };
+  const checkCapsLock = useCallback(
+    (event: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      const capsLockOn: boolean = event.getModifierState("CapsLock");
+      if (capsLockOn && (!showOnce || !value)) {
+        alert(t("wc-27_caps-lock-on"));
+        setShowOnce(true);
+      } else if (!capsLockOn || !value) {
+        setShowOnce(false);
+      }
+    },
+    [showOnce, value]
+  );
+
   return (
     <>
       {type === "text" && (
