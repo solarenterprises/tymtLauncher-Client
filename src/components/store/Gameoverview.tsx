@@ -180,13 +180,13 @@ const GameOverview = () => {
                   >
                     {!downloadStatusStore.isDownloading && !installStatusStore.isInstalling && installed && t("hom-7_play-game")}
                     {!downloadStatusStore.isDownloading && !installStatusStore.isInstalling && !installed && t("hom-20_install-game")}
-                    {downloadStatusStore.isDownloading && !installed && (
+                    {downloadStatusStore.isDownloading && (
                       <Stack direction={"row"} alignItems={"center"} gap={"4px"}>
                         <Box className={"fs-14-regular white t-center"}>{`${t("hom-21_downloading")} ${gameFileSize}`}</Box>
                         <ThreeDots height="12px" width={"24px"} radius={4} color={`white`} />
                       </Stack>
                     )}
-                    {!downloadStatusStore.isDownloading && installStatusStore.isInstalling && !installed && (
+                    {!downloadStatusStore.isDownloading && installStatusStore.isInstalling && (
                       <Stack direction={"row"} alignItems={"center"} gap={"4px"}>
                         <Box className={"fs-14-regular white t-center"}>{t("hom-26_installing")}</Box>
                         <ThreeDots height="12px" width={"24px"} radius={4} color={`white`} />
