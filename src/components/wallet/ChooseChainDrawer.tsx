@@ -27,8 +27,6 @@ import { formatBalance } from "../../lib/helper";
 import { IChain, ICurrency, multiWalletType } from "../../types/walletTypes";
 import { setTransasctions } from "../../features/wallet/CryptoSlice";
 import Loading from "../../components/Loading";
-import { accountType } from "../../types/accountTypes";
-import { getAccount } from "../../features/account/AccountSlice";
 import {
   getCurrency,
   refreshCurrencyAsync,
@@ -50,7 +48,6 @@ const ChooseChainDrawer = ({ view, setView }: props) => {
   const [state, setState] = useState({ right: false });
   const dispatch = useDispatch<AppDispatch>();
   const wallets: multiWalletType = useSelector(getMultiWallet);
-  const accountStore: accountType = useSelector(getAccount);
   const currencyStore: ICurrency = useSelector(getCurrency);
   const reserve: number = currencyStore.data[currencyStore.current] as number;
   const symbol: string = currencySymbols[currencyStore.current];
@@ -65,13 +62,14 @@ const ChooseChainDrawer = ({ view, setView }: props) => {
   } = useNotification();
 
   useEffect(() => {
-    dispatch(
-      refreshBalancesAsync({
-        _multiWalletStore: wallets,
-        _accountStore: accountStore,
-      })
-    ).then(() => dispatch(refreshCurrencyAsync()));
-  }, [dispatch]);
+    if (view) {
+      dispatch(
+        refreshBalancesAsync({
+          _multiWalletStore: wallets,
+        })
+      ).then(() => dispatch(refreshCurrencyAsync()));
+    }
+  }, [dispatch, view]);
 
   const selectChain = useCallback((data: IChain) => {
     const udpateData = { ...data, currentToken: "chain" };

@@ -13,7 +13,7 @@ const BenefitModal = ({ open, setOpen, path }: benefitModalType) => {
   const modalStyle = {
     display: "flex",
     alignItems: "center",
-    justifyContent: "center"
+    justifyContent: "center",
   };
 
   return (
@@ -21,7 +21,7 @@ const BenefitModal = ({ open, setOpen, path }: benefitModalType) => {
       open={open}
       style={modalStyle}
       sx={{
-        backdropFilter: "blur(2px)"
+        backdropFilter: "blur(2px)",
       }}
       onClose={() => setOpen(false)}
     >
@@ -29,22 +29,11 @@ const BenefitModal = ({ open, setOpen, path }: benefitModalType) => {
         className="modal-content benefit-modal"
         sx={{
           backdropFilter: "blur(10px)",
-          maxHeight: "80%"
+          maxHeight: "80%",
         }}
       >
-        <img
-          src={closeIcon}
-          alt="close icon"
-          className="close-icon"
-          onClick={() => setOpen(false)}
-        />
-        <Stack
-          direction={"column"}
-          justifyContent={"center"}
-          alignItems={"center"}
-          textAlign={"center"}
-          gap={"10px"}
-        >
+        <img src={closeIcon} alt="close icon" className="close-icon" onClick={() => setOpen(false)} />
+        <Stack direction={"column"} justifyContent={"center"} alignItems={"center"} textAlign={"center"} gap={"10px"}>
           <Box>
             <img src={benefitImg} alt="benefit" />
           </Box>
@@ -56,9 +45,7 @@ const BenefitModal = ({ open, setOpen, path }: benefitModalType) => {
             </Box>
             <Stack direction={"column"} gap={"10px"} textAlign={"left"}>
               <Box className="fs-h4 white">{t("wc-22_creating-wallet")}:</Box>
-              <Box className="fs-14-light white">
-                {t("wc-23_creating-wallet-detail")}
-              </Box>
+              <Box className="fs-14-light white">{t("wc-23_creating-wallet-detail")}</Box>
             </Stack>
           </Stack>
           <Stack direction={"row"} className="m-tb-10" gap={"15px"}>
@@ -66,19 +53,11 @@ const BenefitModal = ({ open, setOpen, path }: benefitModalType) => {
               <img src={benefitIcon} />
             </Box>
             <Stack direction={"column"} gap={"10px"} textAlign={"left"}>
-              <Box className="fs-h4 white">
-                {t("wc-24_solar-card-benefits")}:
-              </Box>
-              <Box className="fs-14-light white">
-                {t("wc-25_solar-card-benefits-detail")}
-              </Box>
+              <Box className="fs-h4 white">{t("wc-24_solar-card-benefits")}:</Box>
+              <Box className="fs-14-light white">{t("wc-25_solar-card-benefits-detail")}</Box>
             </Stack>
           </Stack>
-          <Box
-            onClick={() => navigate(path)}
-            className="action-btn fs-18-light blue center-align"
-            sx={{ minWidth: "100%" }}
-          >
+          <Box onClick={() => navigate(path)} className="action-btn fs-18-light blue center-align" sx={{ minWidth: "100%" }}>
             {t("wc-26_got-it")}
           </Box>
         </Stack>

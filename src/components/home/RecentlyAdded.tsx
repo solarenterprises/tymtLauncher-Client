@@ -2,9 +2,7 @@ import { Grid, Box, Card, Chip, Stack, Button } from "@mui/material";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-
 import "swiper/css";
-
 import recently1 from "../../assets/main/gamelists/Recently1.png";
 import recently2 from "../../assets/main/gamelists/Recently2.png";
 import recently3 from "../../assets/main/gamelists/Recently3.png";
@@ -73,31 +71,16 @@ const RecentlyAdded = () => {
   }, [screenWidth]);
 
   return (
-    <Grid
-      item
-      xs={12}
-      container
-      sx={{ position: "relative", marginTop: "80px" }}
-    >
-      <Grid
-        xs={12}
-        container
-        sx={{ justifyContent: "space-between", alignItems: "center" }}
-      >
+    <Grid item xs={12} container sx={{ position: "relative", marginTop: "80px" }}>
+      <Grid xs={12} container sx={{ justifyContent: "space-between", alignItems: "center" }}>
         <Box className={"fs-38-bold"} color={"white"} textTransform={"none"}>
           {t("hom-10_recently-added")}
         </Box>
         <Stack flexDirection={"row"} alignItems={"center"}>
-          <Button
-            className={classes.trending_chevron_button}
-            onClick={() => handlePrevSlide()}
-          >
+          <Button className={classes.trending_chevron_button} onClick={() => handlePrevSlide()}>
             <img src={chevronleft} />
           </Button>
-          <Button
-            className={classes.trending_chevron_button}
-            onClick={() => handleNextSlide()}
-          >
+          <Button className={classes.trending_chevron_button} onClick={() => handleNextSlide()}>
             <img src={chevronright} />
           </Button>
         </Stack>
@@ -119,12 +102,7 @@ const RecentlyAdded = () => {
           {RecentList.map((recent) => (
             <SwiperSlide key={recent.name}>
               <Card className={classes.card_freegame_container}>
-                <img
-                  src={recent.url}
-                  width={"100%"}
-                  height={"204px"}
-                  style={{ borderRadius: "16px" }}
-                />
+                <img src={recent.url} width={"100%"} height={"204px"} style={{ borderRadius: "16px" }} />
                 <Stack
                   flexDirection={"column"}
                   sx={{
@@ -143,17 +121,14 @@ const RecentlyAdded = () => {
                       marginLeft: "16px",
                       textOverflow: "ellipsis",
                       overflow: "hidden",
-                      WebkitLineClamp: 1, 
+                      WebkitLineClamp: 1,
                       WebkitBoxOrient: "vertical",
                       display: "-webkit-box",
                     }}
                   >
                     {recent.name}
                   </Box>
-                  <Chip
-                    label={t("hom-18_action")}
-                    className={classes.card_genre_label}
-                  />
+                  <Chip label={t("hom-18_action")} className={classes.card_genre_label} />
                   <Stack direction={"row"} alignItems={"center"} spacing={1}>
                     <img src={solar} width={"20px"} height={"20px"} />
                     <Grid>

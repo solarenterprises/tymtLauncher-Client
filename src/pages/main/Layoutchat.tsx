@@ -32,8 +32,7 @@ const Layoutchat = () => {
           item
           container
           sx={{
-            borderTop:
-              "1px solid var(--bg-stroke-white-20-modal-stroke, rgba(255, 255, 255, 0.20))",
+            borderTop: "1px solid var(--bg-stroke-white-20-modal-stroke, rgba(255, 255, 255, 0.20))",
             marginTop: "60px",
             width: "100%",
             zIndex: 3,

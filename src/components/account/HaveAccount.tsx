@@ -15,29 +15,18 @@ const HaveAccount = () => {
   const dispatch = useDispatch();
 
   return (
-    <Stack
-      direction="row"
-      width={"100%"}
-      spacing={"16px"}
-      className={"center-align"}
-    >
-      <Box className={"fs-16-regular white t-center"}>
-        {t("ncca-8_have-an-account")}
-      </Box>
+    <Stack direction="row" width={"100%"} spacing={"16px"} className={"center-align"}>
+      <Box className={"fs-16-regular white t-center"}>{t("ncca-8_have-an-account")}</Box>
       <Box
         onClick={() => {
           dispatch(setAccount({ ...accountStore, mode: loginEnum.login }));
-          accountStore.wallet === walletEnum.noncustodial
-            ? navigate("/non-custodial/login/1")
-            : navigate("/custodial/login/1");
+          accountStore.wallet === walletEnum.noncustodial ? navigate("/non-custodial/login/1") : navigate("/custodial/login/1");
         }}
         sx={{
-          cursor: "pointer"
+          cursor: "pointer",
         }}
       >
-        <Box className={"fs-18-regular blue t-center"}>
-          {t("ncca-9_log-in")}
-        </Box>
+        <Box className={"fs-18-regular blue t-center"}>{t("ncca-9_log-in")}</Box>
       </Box>
     </Stack>
   );

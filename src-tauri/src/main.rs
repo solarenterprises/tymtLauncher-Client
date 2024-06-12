@@ -3,19 +3,18 @@
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 
-use std::sync::OnceLock;
-use tauri::{ CustomMenuItem, SystemTray, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem };
-use actix_web::{ web, App, HttpResponse, HttpServer };
+use actix_web::{ web, App, HttpRequest, HttpResponse, HttpServer };
+use machineid_rs::{ Encryption, HWIDComponent, IdBuilder };
+use reqwest::{ header, Client };
 use serde::{ Deserialize, Serialize };
-use serde_json::Value;
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::{ Path, PathBuf };
 use std::process::Command;
+use std::sync::OnceLock;
 use std::{ fs, io };
 use tauri::Manager;
-use machineid_rs::{ IdBuilder, Encryption, HWIDComponent };
-use reqwest::{ header, Client };
+use tauri::{ CustomMenuItem, SystemTray, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem };
 // use dotenv::dotenv;
 // use std::env;
 
@@ -63,7 +62,9 @@ async fn main() -> std::io::Result<()> {
                 download_and_unzip_macos,
                 download_and_untarbz2_macos,
                 download_and_unzip_windows,
+                install_dependencies_for_d53_on_mac,
                 run_exe,
+                run_url_args,
                 run_linux,
                 run_macos,
                 run_app_macos,
@@ -163,6 +164,60 @@ async fn main() -> std::io::Result<()> {
             let app_handle = app.handle().clone();
             _ = APPHANDLE.set(app_handle);
 
+            #[derive(Deserialize, Serialize)]
+            struct GetAccountReqType {
+                chain: String, // solar, evm, bitcoin, solana
+            }
+
+            #[derive(Deserialize, Serialize)]
+            struct GetBalanceReqType {
+                chain: String, // solar, bitcoin, solana, ethereum, polygon, avalanche, arbitrum, binance, optimism
+                address: String,
+            }
+
+            #[derive(Serialize, Deserialize, Clone)]
+            struct Transfer {
+                to: String,
+                amount: String,
+            }
+
+            #[derive(Deserialize, Serialize)]
+            struct SendTransactionReqType {
+                chain: String, // solar, bitcoin, solana, ethereum, polygon, avalanche, arbitrum, binance, optimism
+                transfers: Vec<Transfer>,
+                note: String,
+                memo: Option<String>,
+                token: Option<String>,
+                status: Option<String>,
+                transaction: Option<String>,
+            }
+
+            #[derive(Deserialize, Serialize, Clone)]
+            struct GetOrderResResultDataType {
+                requestUserId: String,
+                chain: String,
+                transfers: Vec<Transfer>,
+                note: String,
+                memo: String,
+                status: String,
+                transaction: String,
+                _id: String,
+                createdAt: String,
+                updatedAt: String,
+            }
+
+            #[derive(Deserialize, Serialize, Clone)]
+            struct GetOrderResResultType {
+                data: GetOrderResResultDataType,
+                msg: String,
+            }
+
+            #[derive(Deserialize, Serialize)]
+            struct GetOrderResType {
+                msg: String,
+                result: GetOrderResResultType,
+            }
+
             async fn validate_token(token: String) -> bool {
                 APPHANDLE.get()
                     .expect("APPHANDLE is available")
@@ -189,7 +244,11 @@ async fn main() -> std::io::Result<()> {
                     Ok(received) => {
                         // println!("Received: {}", received);
                         APPHANDLE.get().expect("APPHANDLE is available").unlisten(response);
-                        return received == "true";
+                        let res = received == "true";
+                        if !res {
+                            println!("Invalid token");
+                        }
+                        return res;
                     }
                     Err(err) => {
                         println!("Error receiving message: {:?}", err);
@@ -199,18 +258,40 @@ async fn main() -> std::io::Result<()> {
                 }
             }
 
-            #[derive(Deserialize, Serialize)]
-            struct GetAccountReqType {
-                chain: String, // solar, evm, bitcoin, solana
-                launcher_token: String,
+            async fn validate_chain(name: String) -> bool {
+                if
+                    name != "solar" &&
+                    name != "bitcoin" &&
+                    name != "solana" &&
+                    name != "ethereum" &&
+                    name != "polygon" &&
+                    name != "binance" &&
+                    name != "avalanche" &&
+                    name != "arbitrum" &&
+                    name != "optimism"
+                {
+                    println!("Invalid chain");
+                    return false;
+                }
+                return true;
             }
-            async fn get_account(request_param: web::Json<GetAccountReqType>) -> HttpResponse {
+
+            async fn get_account(
+                request: HttpRequest,
+                request_param: web::Json<GetAccountReqType>
+            ) -> HttpResponse {
                 println!("-------> POST /get-account");
 
-                let is_valid_token = validate_token(request_param.launcher_token.clone()).await;
+                let is_valid_token = validate_token(
+                    request.headers().get("x-token").unwrap().to_str().unwrap().to_string()
+                ).await;
                 if !is_valid_token {
-                    println!("Invalid token");
                     return HttpResponse::InternalServerError().body("Invalid token");
+                }
+
+                let is_valid_chain = validate_chain(request_param.chain.clone()).await;
+                if !is_valid_chain {
+                    return HttpResponse::InternalServerError().body("Invalid chain");
                 }
 
                 let json_data = serde_json
@@ -255,21 +336,23 @@ async fn main() -> std::io::Result<()> {
                 }
             }
 
-            #[derive(Deserialize, Serialize)]
-            struct GetBalanceReqType {
-                chain: String, // solar, bitcoin, solana, ethereum, polygon, avalanche, arbitrum, binance, optimism
-                address: String,
-                launcher_token: String,
-            }
-            async fn get_balance(request_param: web::Json<GetBalanceReqType>) -> HttpResponse {
+            async fn get_balance(
+                request: HttpRequest,
+                request_param: web::Json<GetBalanceReqType>
+            ) -> HttpResponse {
                 println!("-------> POST /get-balance");
 
-                let is_valid_token = validate_token(request_param.launcher_token.clone()).await;
+                let is_valid_token = validate_token(
+                    request.headers().get("x-token").unwrap().to_str().unwrap().to_string()
+                ).await;
                 if !is_valid_token {
-                    println!("Invalid token");
                     return HttpResponse::InternalServerError().body("Invalid token");
                 }
 
+                let is_valid_chain = validate_chain(request_param.chain.clone()).await;
+                if !is_valid_chain {
+                    return HttpResponse::InternalServerError().body("Invalid chain");
+                }
                 let json_data = serde_json
                     ::to_string(&request_param)
                     .expect("Failed to serialize JSON data");
@@ -311,32 +394,10 @@ async fn main() -> std::io::Result<()> {
                 }
             }
 
-            #[derive(Serialize, Deserialize)]
-            struct Transfer {
-                to: String,
-                amount: String,
-            }
-            #[derive(Deserialize, Serialize)]
-            struct SendTransactionReqType {
-                chain: String, // solar, bitcoin, solana, ethereum, polygon, avalanche, arbitrum, binance, optimism
-                transfer: Vec<Transfer>,
-                note: String,
-                memo: Option<String>,
-                token: Option<String>,
-                launcher_token: String,
-            }
-            async fn send_transaction(
-                request_param: web::Json<SendTransactionReqType>
-            ) -> HttpResponse {
+            async fn send_transaction(request_param: GetOrderResResultDataType) -> HttpResponse {
                 println!("-------> POST /send-transaction");
 
-                let is_valid_token = validate_token(request_param.launcher_token.clone()).await;
-                if !is_valid_token {
-                    println!("Invalid token");
-                    return HttpResponse::InternalServerError().body("Invalid token");
-                }
-
-                if request_param.transfer.len() > 1 && request_param.chain != "solar" {
+                if request_param.transfers.len() > 1 && request_param.chain != "solar" {
                     println!("Invalid batch transfer {}", request_param.chain);
                     return HttpResponse::BadRequest().body(
                         format!(
@@ -391,17 +452,24 @@ async fn main() -> std::io::Result<()> {
             }
 
             async fn request_new_order(
+                request: HttpRequest,
                 request_param: web::Json<SendTransactionReqType>
             ) -> HttpResponse {
                 println!("-------> POST /request-new-order");
 
-                let is_valid_token = validate_token(request_param.launcher_token.clone()).await;
+                let is_valid_token = validate_token(
+                    request.headers().get("x-token").unwrap().to_str().unwrap().to_string()
+                ).await;
                 if !is_valid_token {
-                    println!("Invalid token");
                     return HttpResponse::InternalServerError().body("Invalid token");
                 }
 
-                if request_param.transfer.len() > 1 && request_param.chain != "solar" {
+                let is_valid_chain = validate_chain(request_param.chain.clone()).await;
+                if !is_valid_chain {
+                    return HttpResponse::InternalServerError().body("Invalid chain");
+                }
+
+                if request_param.transfers.len() > 1 && request_param.chain != "solar" {
                     println!("Invalid batch transfer {}", request_param.chain);
                     return HttpResponse::BadRequest().body(
                         format!(
@@ -411,16 +479,24 @@ async fn main() -> std::io::Result<()> {
                     );
                 }
 
+                let mut param = request_param.into_inner();
+                param.status = Some("pending".to_string());
+                param.transaction = Some("transaction".to_string());
+
                 let client = Client::new();
 
                 match
                     client
                         .post("https://dev.tymt.com/api/orders/request-new-order")
                         .header(header::CONTENT_TYPE, "application/json")
-                        .body(serde_json::to_string(&request_param.into_inner()).unwrap())
+                        .header(
+                            "x-token",
+                            request.headers().get("x-token").unwrap().to_str().unwrap().to_string()
+                        )
+                        .body(serde_json::to_string(&param).unwrap())
                         .send().await
                 {
-                    Ok(response) => {
+                    Ok(response) =>
                         match response.text().await {
                             Ok(json) => {
                                 println!("!!!----> POST /request-new-order");
@@ -434,7 +510,6 @@ async fn main() -> std::io::Result<()> {
                                 )
                             }
                         }
-                    }
                     Err(err) => {
                         eprintln!("Failed to send request: {:?}", err);
                         HttpResponse::InternalServerError().body("Failed to send request")
@@ -445,14 +520,17 @@ async fn main() -> std::io::Result<()> {
             #[derive(Deserialize, Serialize)]
             struct ExecuteOrderReqType {
                 id: String,
-                launcher_token: String,
             }
-            async fn execute_order(request_param: web::Json<ExecuteOrderReqType>) -> HttpResponse {
+            async fn execute_order(
+                request: HttpRequest,
+                request_param: web::Json<ExecuteOrderReqType>
+            ) -> HttpResponse {
                 println!("-------> POST /execute-order");
 
-                let is_valid_token = validate_token(request_param.launcher_token.clone()).await;
+                let is_valid_token = validate_token(
+                    request.headers().get("x-token").unwrap().to_str().unwrap().to_string()
+                ).await;
                 if !is_valid_token {
-                    println!("Invalid token");
                     return HttpResponse::InternalServerError().body("Invalid token");
                 }
 
@@ -463,14 +541,17 @@ async fn main() -> std::io::Result<()> {
                         .get(format!("https://dev.tymt.com/api/orders/orders/{}", request_param.id))
                         .send().await
                 {
-                    Ok(response) => {
+                    Ok(response) =>
                         match response.text().await {
                             Ok(json) => {
-                                let parsed_struct: SendTransactionReqType = serde_json
+                                println!("{}", json);
+                                let parsed_struct: GetOrderResType = serde_json
                                     ::from_str(&json)
                                     .unwrap();
-                                let json_struct = web::Json(parsed_struct);
-                                send_transaction(json_struct).await
+                                let json_struct: web::Json<GetOrderResType> = web::Json(
+                                    parsed_struct
+                                );
+                                send_transaction(json_struct.result.data.clone()).await
                             }
                             Err(err) => {
                                 eprintln!("Failed to parse response as JSON: {:?}", err);
@@ -479,7 +560,6 @@ async fn main() -> std::io::Result<()> {
                                 )
                             }
                         }
-                    }
                     Err(err) => {
                         eprintln!("Failed to send request: {:?}", err);
                         HttpResponse::InternalServerError().body("Failed to send request")
@@ -501,7 +581,7 @@ async fn main() -> std::io::Result<()> {
                     App::new()
                         .route("/get-account", web::post().to(get_account))
                         .route("/get-balance", web::post().to(get_balance))
-                        .route("/send-transaction", web::post().to(send_transaction))
+                        // .route("/send-transaction", web::post().to(send_transaction))
                         .route("/request-new-order", web::post().to(request_new_order))
                         .route("/execute-order", web::post().to(execute_order))
                 })
@@ -536,7 +616,8 @@ fn copy_dir_all(src: impl AsRef<Path>, dst: impl AsRef<Path>) -> io::Result<()> 
 async fn download_appimage_linux(
     app_handle: tauri::AppHandle,
     url: String,
-    target: String
+    target: String,
+    authorization: Option<String>
 ) -> bool {
     let app_dir = app_handle
         .path_resolver()
@@ -546,7 +627,19 @@ async fn download_appimage_linux(
         .into_string()
         .to_owned()
         .unwrap();
-    let response = reqwest::get(&url).await.unwrap();
+
+    let client = Client::new();
+    let response = if let Some(auth) = authorization {
+        client
+            .get(&url)
+            .header(header::CONTENT_TYPE, "application/json")
+            .header(header::AUTHORIZATION, format!("{}", auth))
+            .send().await
+            .unwrap()
+    } else {
+        client.get(&url).send().await.unwrap()
+    };
+
     let location = (app_dir.to_string() + &target + "/tmp.AppImage").to_owned();
 
     println!("{}", location);
@@ -658,7 +751,8 @@ async fn download_and_unzip(app_handle: tauri::AppHandle, url: String, target: S
 async fn download_and_unzip_windows(
     app_handle: tauri::AppHandle,
     url: String,
-    target: String
+    target: String,
+    authorization: Option<String>
 ) -> bool {
     println!("{}", url);
     println!("{}", target);
@@ -672,7 +766,17 @@ async fn download_and_unzip_windows(
         .to_owned()
         .unwrap();
 
-    let response = reqwest::get(&url).await.unwrap();
+    let client = Client::new();
+    let response = if let Some(auth) = authorization {
+        client
+            .get(&url)
+            .header(header::CONTENT_TYPE, "application/json")
+            .header(header::AUTHORIZATION, format!("{}", auth))
+            .send().await
+            .unwrap()
+    } else {
+        client.get(&url).send().await.unwrap()
+    };
 
     let zip_location = (app_dir.to_string() + "/tmp.zip").to_owned();
     println!("{}", zip_location);
@@ -836,7 +940,8 @@ async fn download_and_unzip_macos(
     app_handle: tauri::AppHandle,
     url: String,
     target: String,
-    exeLocation: String
+    exeLocation: String,
+    authorization: Option<String>
 ) -> bool {
     println!("{}", url);
     println!("{}", target);
@@ -850,7 +955,17 @@ async fn download_and_unzip_macos(
         .to_owned()
         .unwrap();
 
-    let response = reqwest::get(&url).await.unwrap();
+    let client = Client::new();
+    let response = if let Some(auth) = authorization {
+        client
+            .get(&url)
+            .header(header::CONTENT_TYPE, "application/json")
+            .header(header::AUTHORIZATION, format!("{}", auth))
+            .send().await
+            .unwrap()
+    } else {
+        client.get(&url).send().await.unwrap()
+    };
 
     let zip_location = (app_dir.to_string() + "/tmp.zip").to_owned();
     println!("{}", zip_location);
@@ -1036,6 +1151,86 @@ fn run_exe(url: String) {
 }
 
 #[tauri::command]
+async fn install_dependencies_for_d53_on_mac() {
+    println!("install_dependencies_for_d53_on_mac");
+
+    let output = tokio::process::Command
+        ::new("brew")
+        .arg("install")
+        .args(
+            &[
+                "cmake",
+                "freetype",
+                "gettext",
+                "gmp",
+                "hiredis",
+                "jpeg-turbo",
+                "jsoncpp",
+                "leveldb",
+                "libogg",
+                "libpng",
+                "libvorbis",
+                "luajit",
+                "zstd",
+                "gettext",
+                "ffmpeg@6",
+                "mysql-client",
+            ]
+        )
+        .output().await
+        .expect("Failed to execute command");
+
+    if output.status.success() {
+        println!("install_dependencies_for_d53_on_mac executed successfully");
+        let stdout = String::from_utf8_lossy(&output.stdout);
+        println!("{}", stdout);
+    } else {
+        eprintln!("install_dependencies_for_d53_on_mac failed to execute");
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        eprintln!("{}", stderr);
+    }
+}
+
+#[tauri::command]
+fn run_url_args(url: String, args: Vec<String>) {
+    println!("{}", url);
+    for arg in args.clone() {
+        println!("{}", arg);
+    }
+
+    let path = if url == "open" { Path::new(&args[0]) } else { Path::new(&url) };
+    let working_directory = match path.parent() {
+        Some(dir) => dir,
+        None => {
+            eprintln!("Failed to determine directory for {}", url);
+            return;
+        }
+    };
+
+    let mut command = Command::new(&url);
+    command.current_dir(working_directory);
+    println!("Setting working directory to: {:?}", working_directory);
+
+    if args.is_empty() {
+        println!("No command provided");
+
+        match command.spawn() {
+            Ok(_) => println!("Process started successfully"),
+            Err(e) => eprintln!("Failed to start process: {}", e),
+        }
+    } else {
+        for arg in args {
+            command.arg(arg);
+        }
+
+        match command.spawn() {
+            Ok(_) => println!("Process started successfully"),
+            Err(e) => eprintln!("Failed to start process: {}", e),
+        }
+    }
+}
+
+#[tauri::command]
 fn run_linux(url: String) {
     // Use std::process::Command to run your .exe file
     Command::new(url).spawn().expect("failed to execute process");
@@ -1072,7 +1267,7 @@ fn open_directory(path: &str) {
 fn get_machine_id() -> Result<String, String> {
     let mut builder = IdBuilder::new(Encryption::SHA256);
     builder.add_component(HWIDComponent::SystemID);
-    let hwid = builder.build("tymtLauncher").map_err(|err| err.to_string())?;
+    let hwid = builder.build("tymtLauncherDebug").map_err(|err| err.to_string())?;
 
     Ok(hwid)
 }

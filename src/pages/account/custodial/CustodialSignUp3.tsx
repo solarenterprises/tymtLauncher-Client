@@ -2,10 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 
-import {
-  getTempCustodial,
-  setTempCustodial,
-} from "../../../features/account/TempCustodialSlice";
+import { getTempCustodial, setTempCustodial } from "../../../features/account/TempCustodialSlice";
 
 import { useFormik } from "formik";
 import * as Yup from "yup";
@@ -56,12 +53,7 @@ const CustodialSignUp3 = () => {
     <>
       <Grid container className="basic-container">
         <Grid item xs={12} container justifyContent={"center"}>
-          <Stack
-            direction={"row"}
-            alignItems={"center"}
-            justifyContent={"center"}
-            gap={"64px"}
-          >
+          <Stack direction={"row"} alignItems={"center"} justifyContent={"center"} gap={"64px"}>
             <Stack alignItems={"center"} justifyContent={"center"}>
               <Grid container justifyContent={"center"}>
                 <Grid
@@ -74,23 +66,13 @@ const CustodialSignUp3 = () => {
                 >
                   <Grid item xs={12} container justifyContent={"space-between"}>
                     <Back onClick={handleBackClick} />
-                    <Stepper
-                      all={3}
-                      now={3}
-                      texts={["", "", t("cca-24_create-nickname")]}
-                    />
+                    <Stepper all={3} now={3} texts={["", "", t("cca-24_create-nickname")]} />
                   </Grid>
 
                   <Grid item xs={12} mt={"80px"}>
-                    <AccountHeader
-                      title={t("cca-25_your-nickname")}
-                      text={t("cca-26_nickname-display-all")}
-                    />
+                    <AccountHeader title={t("cca-25_your-nickname")} text={t("cca-26_nickname-display-all")} />
                   </Grid>
-                  <form
-                    onSubmit={formik.handleSubmit}
-                    style={{ width: "100%" }}
-                  >
+                  <form onSubmit={formik.handleSubmit} style={{ width: "100%" }}>
                     <Grid item xs={12} mt={"48px"}>
                       <InputText
                         id="custodial-new-nickname"
@@ -100,30 +82,18 @@ const CustodialSignUp3 = () => {
                         value={formik.values.nickname}
                         onChange={formik.handleChange}
                         onBlur={formik.handleBlur}
-                        error={
-                          formik.touched.nickname && formik.errors.nickname
-                            ? true
-                            : false
-                        }
+                        error={formik.touched.nickname && formik.errors.nickname ? true : false}
                       />
                     </Grid>
                     <Grid item xs={12} mt={"8px"} padding={"0px 6px"}>
                       {formik.touched.nickname && formik.errors.nickname ? (
-                        <Box className={"fs-16-regular red"}>
-                          {formik.errors.nickname}
-                        </Box>
+                        <Box className={"fs-16-regular red"}>{formik.errors.nickname}</Box>
                       ) : (
-                        <Box className={"fs-16-regular light"}>
-                          {t("ncca-43_you-use-letters")}
-                        </Box>
+                        <Box className={"fs-16-regular light"}>{t("ncca-43_you-use-letters")}</Box>
                       )}
                     </Grid>
                     <Grid item xs={12} mt={"48px"}>
-                      <AccountNextButton
-                        text={t("cca-29_verify-and-complete")}
-                        isSubmit={true}
-                        disabled={formik.errors.nickname ? true : false}
-                      />
+                      <AccountNextButton text={t("cca-29_verify-and-complete")} isSubmit={true} disabled={formik.errors.nickname ? true : false} />
                     </Grid>
                   </form>
                   <Grid item xs={12} mt={"50px"}>

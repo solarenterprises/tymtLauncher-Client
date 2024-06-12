@@ -1,13 +1,9 @@
 import { configureStore } from "@reduxjs/toolkit";
-import {
-  createStateSyncMiddleware,
-  initMessageListener,
-} from "redux-state-sync";
+import { createStateSyncMiddleware, initMessageListener } from "redux-state-sync";
 
 import languageReducer from "./features/settings/LanguageSlice";
 import notificationReducer from "./features/settings/NotificationSlice";
 import addressReducer from "./features/settings/AddressSlice";
-import chatReducer from "./features/settings/ChatSlice";
 import walletReducer from "./features/settings/WalletSlice";
 import accountReducer from "./features/account/AccountSlice";
 import nonCustodialReducer from "./features/account/NonCustodialSlice";
@@ -15,50 +11,46 @@ import custodialReducer from "./features/account/CustodialSlice";
 import tempNonCustodialReducer from "./features/account/TempNonCustodialSlice";
 import tempCustodialReducer from "./features/account/TempCustodialSlice";
 import threeConfirmReducer from "./features/account/ThreeConfirmSlice";
-import currentPartnerReducer from "./features/chat/Chat-currentPartnerSlice";
-import chatHistoryReducer from "./features/chat/Chat-historySlice";
-import chatuserlistReducer from "./features/chat/Chat-userlistSlice";
 import chainReducer from "./features/wallet/ChainSlice";
 import multiWalletReducer from "./features/wallet/MultiWalletSlice";
 import tempMultiWalletReducer from "./features/wallet/TempMultiWalletSlice";
 import navigationReducer from "./features/home/Navigation";
 import tymtlogoReducer from "./features/home/Tymtlogo";
 import librarymodeReducer from "./features/library/Librarymode";
-import chatnotificationReducer from "./features/chat/Chat-notificationSlice";
 import cryptoReducer from "./features/wallet/CryptoSlice";
 import gameoverviewReducer from "./features/store/Gameview";
 import installprocessReducer from "./features/home/InstallprocessSlice";
-import selecteduserReducer from "./features/chat/Chat-selecteduserSlice";
 import tymtReducer from "./features/account/TymtSlice";
-import alertReducer from "./features/chat/Chat-alertSlice";
 import d53PasswordReducer from "./features/wallet/D53PasswordSlice";
 import tempD53PasswordReducer from "./features/wallet/TempD53PasswordSlice";
 import currencyReducer from "./features/wallet/CurrencySlice";
 import scrolldownReducer from "./features/chat/Chat-scrollDownSlice";
-import chatfriendlistReducer from "./features/chat/Chat-friendlistSlice";
-import alertbadgeReducer from "./features/alert/AlertbadgeSlice";
-import encryptionReducer from "./features/chat/Chat-encryptionkeySlice";
 import machineIdReducer from "./features/account/MachineIdSlice";
+import mnemonicReducer from "./features/account/MnemonicSlice";
+import saltTokenReducer from "./features/account/SaltTokenSlice";
+// chat
 import socketHashReducer from "./features/chat/SocketHashSlice";
 import chatmountedReducer from "./features/chat/Chat-intercomSupportSlice";
 import chathistoryperUserReducer from "./features/chat/Chat-historyperUserSlice";
-import mnemonicReducer from "./features/account/MnemonicSlice";
-import tokenReducer from "./features/account/TokenSlice";
+import friendListReducer from "./features/chat/FriendListSlice";
+import contactListReducer from "./features/chat/ContactListSlice";
+import blockListReducer from "./features/chat/BlockListSlice";
+import encryptionReducer from "./features/chat/Chat-encryptionkeySlice";
+import currentPartnerReducer from "./features/chat/CurrentPartnerSlice";
+import chatHistoryReducer from "./features/chat/Chat-historySlice";
+import selecteduserReducer from "./features/chat/Chat-selecteduserSlice";
+import chatnotificationReducer from "./features/chat/Chat-notificationSlice";
+import alertReducer from "./features/chat/Chat-alertSlice";
+import chatReducer from "./features/settings/ChatSlice";
+import alertListReducer from "./features/alert/AlertListSlice";
 
-const blacklistActionTypes = [
-  "notification/setNotification",
-  "intercomsupport/setChatMounted",
-  "intercomsupport/setMountedTrue",
-  "intercomsupport/setMountedFalse",
-  // Add other notification actions if there are more
-];
+const blacklistActionTypes = ["intercomsupport/setChatMounted", "intercomsupport/setMountedTrue", "intercomsupport/setMountedFalse"];
 
 const stateSyncConfig = {
   blacklist: blacklistActionTypes,
 };
 
 const stateSyncMiddleware = createStateSyncMiddleware(stateSyncConfig);
-// const stateSyncMiddleware = createStateSyncMiddleware();
 
 const store = configureStore({
   reducer: {
@@ -75,7 +67,7 @@ const store = configureStore({
     wallet: walletReducer,
     currentPartner: currentPartnerReducer,
     chatHistory: chatHistoryReducer,
-    chatuserlist: chatuserlistReducer,
+    contactList: contactListReducer,
     chain: chainReducer,
     multiWallet: multiWalletReducer,
     tempMultiWallet: tempMultiWalletReducer,
@@ -93,20 +85,21 @@ const store = configureStore({
     tempD53Password: tempD53PasswordReducer,
     currency: currencyReducer,
     scrolldown: scrolldownReducer,
-    chatfriendlist: chatfriendlistReducer,
-    alertbadge: alertbadgeReducer,
+    friendList: friendListReducer,
+    blockList: blockListReducer,
     encryption: encryptionReducer,
     machineId: machineIdReducer,
     socketHash: socketHashReducer,
     chatmounted: chatmountedReducer,
     chathistoryperUser: chathistoryperUserReducer,
     mnemonic: mnemonicReducer,
-    token: tokenReducer,
+    saltToken: saltTokenReducer,
+    alertList: alertListReducer,
   },
-  middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(stateSyncMiddleware),
+  middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(stateSyncMiddleware),
 });
 
 initMessageListener(store);
+
 export type AppDispatch = typeof store.dispatch;
 export default store;

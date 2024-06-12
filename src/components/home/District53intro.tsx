@@ -1,29 +1,24 @@
 import { useState, useEffect } from "react";
-import { Button, Grid, Box, Stack } from "@mui/material";
-
+import { Button, Grid, Box, Stack, Tooltip } from "@mui/material";
 import "swiper/css";
 import "swiper/css/pagination";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { useTranslation } from "react-i18next";
 import homeStyles from "../../styles/homeStyles";
 import "../../fonts/Cobe/Cobe-Regular.ttf";
-
 import districteffect from "../../assets/main/districteffect.svg";
 import districteffect1 from "../../assets/main/districteffect1.svg";
 import districteffect2 from "../../assets/main/districteffect2.svg";
-
-import { downloadGame, isInstalled } from "../../lib/api/Downloads";
+import { downloadGame, getGameFileSize, isInstalled } from "../../lib/api/Downloads";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch } from "../../store";
-import {
-  getProcess,
-  setProcess,
-} from "../../features/home/InstallprocessSlice";
+import { getProcess, setProcess } from "../../features/home/InstallprocessSlice";
 import { processType } from "../../types/homeTypes";
 import Games from "../../lib/game/Game";
 import D53Modal from "./D53Modal";
-
 import { useNotification } from "../../providers/NotificationProvider";
+import { ThreeDots } from "react-loader-spinner";
+import { useNavigate } from "react-router-dom";
 
 interface props {
   setImage?: (image: any) => void;
@@ -31,18 +26,14 @@ interface props {
 
 const District53intro = ({ setImage }: props) => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const homeclasses = homeStyles();
   const [selected, setSelected] = useState(0);
   const [installed, setInstalled] = useState(false);
   const [d53Open, setD53Open] = useState<boolean>(false);
+  const [gameFileSize, setGameFileSize] = useState<string>("");
 
-  const {
-    setNotificationStatus,
-    setNotificationTitle,
-    setNotificationDetail,
-    setNotificationOpen,
-    setNotificationLink,
-  } = useNotification();
+  const { setNotificationStatus, setNotificationTitle, setNotificationDetail, setNotificationOpen, setNotificationLink } = useNotification();
 
   const dispatch = useDispatch<AppDispatch>();
   const processStore: processType = useSelector(getProcess);
@@ -64,6 +55,15 @@ const District53intro = ({ setImage }: props) => {
 
   useEffect(() => {
     checkInstalled();
+  }, []);
+
+  useEffect(() => {
+    const init = async () => {
+      const sizeMB = await getGameFileSize("district53");
+      if (sizeMB) setGameFileSize(`(${sizeMB} MB)`);
+      else setGameFileSize("");
+    };
+    init();
   }, []);
 
   return (
@@ -103,15 +103,45 @@ const District53intro = ({ setImage }: props) => {
               zIndex: -1,
             }}
           />
-          <Box
-            className={"fs-38-bold"}
-            sx={{
-              color: "white",
-              zIndex: 10,
+          <Tooltip
+            placement="top"
+            title={
+              <Stack
+                spacing={"10px"}
+                sx={{
+                  marginBottom: "-20px",
+                  backgroundColor: "rgb(49, 53, 53)",
+                  padding: "6px 8px",
+                  borderRadius: "32px",
+                  border: "1px solid rgb(71, 76, 76)",
+                }}
+              >
+                <Box className="fs-12-regular white">{t("hom-25_click-to-learn")}</Box>
+              </Stack>
+            }
+            PopperProps={{
+              sx: {
+                [`& .MuiTooltip-tooltip`]: {
+                  backgroundColor: "transparent",
+                  boxShadow: "none",
+                },
+              },
             }}
           >
-            {t("hom-5_district53")}
-          </Box>
+            <Box
+              className={"fs-38-bold"}
+              sx={{
+                color: "white",
+                zIndex: 10,
+                cursor: "pointer",
+              }}
+              onClick={() => {
+                navigate(`/store/district53`);
+              }}
+            >
+              {t("hom-5_district53")}
+            </Box>
+          </Tooltip>
           <Box
             className={"fs-16-regular"}
             sx={{
@@ -126,12 +156,7 @@ const District53intro = ({ setImage }: props) => {
             {t("hom-6_intro")}
           </Box>
           <Grid xs={12}>
-            <Stack
-              direction={"row"}
-              alignItems={"start"}
-              spacing={2}
-              marginTop={"16px"}
-            >
+            <Stack direction={"row"} alignItems={"start"} spacing={2} marginTop={"16px"}>
               <Grid xs={12}>
                 <Button
                   fullWidth
@@ -147,7 +172,6 @@ const District53intro = ({ setImage }: props) => {
                       setNotificationLink(null);
                     } else {
                       if (!installed) {
-                        console.log("downloadGame");
                         setNotificationStatus("success");
                         setNotificationTitle(t("alt-28_download-start"));
                         setNotificationDetail(t("alt-29_wait-for-a-few"));
@@ -164,9 +188,7 @@ const District53intro = ({ setImage }: props) => {
                         if (!downloadable) {
                           setNotificationStatus("failed");
                           setNotificationTitle(t("alt-5_os-not-support"));
-                          setNotificationDetail(
-                            t("alt-6_os-not-support-intro")
-                          );
+                          setNotificationDetail(t("alt-6_os-not-support-intro"));
                           setNotificationOpen(true);
                           setNotificationLink(null);
                         } else {
@@ -191,12 +213,13 @@ const District53intro = ({ setImage }: props) => {
                   }}
                 >
                   {installed && t("hom-7_play-game")}
-                  {!processStore.inprogress &&
-                    !installed &&
-                    t("hom-20_install-game")}
-                  {processStore.inprogress &&
-                    !installed &&
-                    t("hom-21_downloading")}
+                  {!processStore.inprogress && !installed && t("hom-20_install-game")}
+                  {processStore.inprogress && !installed && (
+                    <Stack direction={"row"} alignItems={"center"} gap={"4px"}>
+                      <Box className={"fs-14-regular white t-center"}>{`${t("hom-21_downloading")} ${gameFileSize}`}</Box>
+                      <ThreeDots height="12px" width={"24px"} radius={4} color={`white`} />
+                    </Stack>
+                  )}
                 </Button>
               </Grid>
             </Stack>

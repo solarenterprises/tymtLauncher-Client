@@ -1,9 +1,4 @@
-import {
-  Managers,
-  Identities,
-  Transactions,
-  Crypto,
-} from "@solar-network/crypto";
+import { Managers, Identities, Transactions, Crypto } from "@solar-network/crypto";
 import { generateMnemonic } from "bip39";
 import { IWallet } from "./IWallet";
 import Big from "big.js";
@@ -12,6 +7,7 @@ import { net_name, solar_api_url } from "../../configs/index";
 import { IRecipient } from "../../features/wallet/CryptoApi";
 import { multiWalletType } from "../../types/walletTypes";
 import tymtStorage from "../Storage";
+import { testAccountTokens } from "../../consts/testMnemonics";
 
 export class Solar implements IWallet {
   address: string;
@@ -23,9 +19,7 @@ export class Solar implements IWallet {
   ticker: "SXP" = "SXP";
 
   constructor(mnemonic: string) {
-    Managers.configManager.setFromPreset(
-      net_name === "mainnet" ? "mainnet" : "testnet"
-    );
+    Managers.configManager.setFromPreset(net_name === "mainnet" ? "mainnet" : "testnet");
 
     this.passphrase = mnemonic;
     this.address = Identities.Address.fromPassphrase(mnemonic);
@@ -37,26 +31,20 @@ export class Solar implements IWallet {
   }
 
   static async getAddress(mnemonic: string): Promise<string> {
-    Managers.configManager.setFromPreset(
-      net_name === "mainnet" ? "mainnet" : "testnet"
-    );
+    Managers.configManager.setFromPreset(net_name === "mainnet" ? "mainnet" : "testnet");
 
     return Identities.Address.fromPassphrase(mnemonic.normalize("NFD"));
   }
 
-  static async getPublicKey(mnemonic: string): Promise<string> {
-    Managers.configManager.setFromPreset(
-      net_name === "mainnet" ? "mainnet" : "testnet"
-    );
+  static getPublicKey(mnemonic: string): string {
+    Managers.configManager.setFromPreset(net_name === "mainnet" ? "mainnet" : "testnet");
 
     return Identities.PublicKey.fromPassphrase(mnemonic.normalize("NFD"));
   }
 
   async getCurrentBalance(): Promise<number> {
     try {
-      return (
-        await (await fetch(`${solar_api_url}/wallets/${this.address}`)).json()
-      ).data.balance as number;
+      return (await (await fetch(`${solar_api_url}/wallets/${this.address}`)).json()).data.balance as number;
     } catch {
       return 0;
     }
@@ -64,19 +52,14 @@ export class Solar implements IWallet {
 
   static async getBalance(addr: string): Promise<number> {
     try {
-      return (
-        ((await (await fetch(`${solar_api_url}/wallets/${addr}`)).json()).data
-          .balance as number) / 1e8
-      );
+      return ((await (await fetch(`${solar_api_url}/wallets/${addr}`)).json()).data.balance as number) / 1e8;
     } catch {
       return 0;
     }
   }
 
   static validateAddress(address: string): boolean {
-    Managers.configManager.setFromPreset(
-      net_name === "mainnet" ? "mainnet" : "testnet"
-    );
+    Managers.configManager.setFromPreset(net_name === "mainnet" ? "mainnet" : "testnet");
     return Identities.Address.validate(address);
   }
 
@@ -93,9 +76,7 @@ export class Solar implements IWallet {
     return passphrase;
   }
   static async isSecondSignatureFromAddress(address: string) {
-    let walletAttributes = (
-      await (await fetch(`${solar_api_url}/wallets/${address}`)).json()
-    ).data.attributes;
+    let walletAttributes = (await (await fetch(`${solar_api_url}/wallets/${address}`)).json()).data.attributes;
     if (walletAttributes) {
       if (walletAttributes.secondPublicKey) {
         return true;
@@ -107,9 +88,7 @@ export class Solar implements IWallet {
     }
   }
   async isSecondSignature() {
-    let walletAttributes = (
-      await (await fetch(`${solar_api_url}/wallets/${this.address}`)).json()
-    ).data.attributes;
+    let walletAttributes = (await (await fetch(`${solar_api_url}/wallets/${this.address}`)).json()).data.attributes;
     if (walletAttributes) {
       if (walletAttributes.secondPublicKey) {
         return true;
@@ -120,62 +99,32 @@ export class Solar implements IWallet {
       return false;
     }
   }
-  static async isSecondSignatureFromPassphrase(
-    passphrase: string
-  ): Promise<boolean> {
-    return await this.isSecondSignatureFromAddress(
-      this.addressFromPassphrase(passphrase)
-    );
+  static async isSecondSignatureFromPassphrase(passphrase: string): Promise<boolean> {
+    return await this.isSecondSignatureFromAddress(this.addressFromPassphrase(passphrase));
   }
-  static async isValidSecondSignature(
-    passphrase: string,
-    secondpassphrase: string
-  ): Promise<boolean> {
-    Managers.configManager.setFromPreset(
-      net_name === "mainnet" ? "mainnet" : "testnet"
-    );
-    let testTx = Transactions.BuilderFactory.vote()
-      .nonce("1")
-      .votesAsset({})
-      .fee("42")
-      .sign(passphrase)
-      .secondSign(secondpassphrase)
-      .getStruct();
-    let walletPublicKey = (
-      await (
-        await fetch(
-          `${solar_api_url}/wallets/${this.addressFromPassphrase(passphrase)}`
-        )
-      ).json()
-    ).data.attributes.secondPublicKey;
+  static async isValidSecondSignature(passphrase: string, secondpassphrase: string): Promise<boolean> {
+    Managers.configManager.setFromPreset(net_name === "mainnet" ? "mainnet" : "testnet");
+    let testTx = Transactions.BuilderFactory.vote().nonce("1").votesAsset({}).fee("42").sign(passphrase).secondSign(secondpassphrase).getStruct();
+    let walletPublicKey = (await (await fetch(`${solar_api_url}/wallets/${this.addressFromPassphrase(passphrase)}`)).json()).data.attributes.secondPublicKey;
     if (walletPublicKey) {
-      return Transactions.Verifier.verifySecondSignature(
-        testTx,
-        walletPublicKey
-      );
+      return Transactions.Verifier.verifySecondSignature(testTx, walletPublicKey);
     } else {
       return false;
     }
   }
   static addressFromPassphrase(passphrase: string): string {
-    Managers.configManager.setFromPreset(
-      net_name === "mainnet" ? "mainnet" : "testnet"
-    );
+    Managers.configManager.setFromPreset(net_name === "mainnet" ? "mainnet" : "testnet");
     return Identities.Address.fromPassphrase(passphrase);
   }
 
   validateAddress(address: string): boolean {
-    Managers.configManager.setFromPreset(
-      net_name === "mainnet" ? "mainnet" : "testnet"
-    );
+    Managers.configManager.setFromPreset(net_name === "mainnet" ? "mainnet" : "testnet");
     return Identities.Address.validate(address);
   }
 
   async getVote(): Promise<any> {
     try {
-      return (
-        await (await fetch(`${solar_api_url}/wallets/${this.address}`)).json()
-      ).data.votingFor;
+      return (await (await fetch(`${solar_api_url}/wallets/${this.address}`)).json()).data.votingFor;
     } catch {
       return "";
     }
@@ -183,13 +132,7 @@ export class Solar implements IWallet {
 
   static async getTransactions(addr: string, page: number): Promise<any> {
     try {
-      return (
-        await (
-          await fetch(
-            `${solar_api_url}/wallets/${addr}/transactions?page=${page}&limit=15`
-          )
-        ).json()
-      ).data;
+      return (await (await fetch(`${solar_api_url}/wallets/${addr}/transactions?page=${page}&limit=15`)).json()).data;
     } catch {
       return [];
     }
@@ -197,9 +140,7 @@ export class Solar implements IWallet {
 
   async getTransaction(txId: string): Promise<any> {
     try {
-      return (
-        await (await fetch(`${solar_api_url}/transactions/${txId}`)).json()
-      ).data;
+      return (await (await fetch(`${solar_api_url}/transactions/${txId}`)).json()).data;
     } catch {
       return undefined;
     }
@@ -220,9 +161,7 @@ export class Solar implements IWallet {
     let nonce: number = await Solar.getCurrentNonce(addr);
     if (tx.recipients.length > 0) {
       if (tx.recipients.length > 1) {
-        Managers.configManager.setFromPreset(
-          net_name === "mainnet" ? "mainnet" : "testnet"
-        );
+        Managers.configManager.setFromPreset(net_name === "mainnet" ? "mainnet" : "testnet");
         let transaction = Transactions.BuilderFactory.transfer();
         tx.recipients.map((recipient) => {
           transaction.addTransfer(
@@ -233,9 +172,7 @@ export class Solar implements IWallet {
           );
         });
 
-        const multiWalletStore: multiWalletType = JSON.parse(
-          await tymtStorage.get(`multiWallet`)
-        );
+        const multiWalletStore: multiWalletType = JSON.parse(await tymtStorage.get(`multiWallet`));
         const sxpPriceUSD = multiWalletStore.Solar.chain.price;
         let itransaction = transaction
           .fee(
@@ -256,10 +193,7 @@ export class Solar implements IWallet {
 
         let iTxJson = txJson.build().toJson();
         console.log("sending start");
-        let res = await SolarAPI.addTxToQueue(
-          JSON.stringify({ transactions: [iTxJson] }),
-          solar_api_url ?? ""
-        );
+        let res = await SolarAPI.addTxToQueue(JSON.stringify({ transactions: [iTxJson] }), solar_api_url ?? "");
         console.log("sending res", res);
         if (res.status !== 200) {
           return {
@@ -272,22 +206,19 @@ export class Solar implements IWallet {
             return {
               status: "success",
               title: "Send SXP",
-              message: `Transaction is sent out.`,
+              message: `Transaction confirmed.`,
               transactionId: res.data.data.accept[0],
             };
           } else {
             return {
               status: "failed",
               title: "Send SXP",
-              message: res.data.errors[res.data.data.invalid[0]]
-                .message as string,
+              message: res.data.errors[res.data.data.invalid[0]].message as string,
             };
           }
         }
       } else {
-        Managers.configManager.setFromPreset(
-          net_name === "mainnet" ? "mainnet" : "testnet"
-        );
+        Managers.configManager.setFromPreset(net_name === "mainnet" ? "mainnet" : "testnet");
         let transaction = Transactions.BuilderFactory.transfer()
           .recipientId(tx.recipients[0].address)
           .version(3)
@@ -296,9 +227,7 @@ export class Solar implements IWallet {
               .times(10 ** 8)
               .toFixed(0)
           );
-        const multiWalletStore: multiWalletType = JSON.parse(
-          await tymtStorage.get(`multiWallet`)
-        );
+        const multiWalletStore: multiWalletType = JSON.parse(await tymtStorage.get(`multiWallet`));
         const sxpPriceUSD = multiWalletStore.Solar.chain.price;
         let itransaction = transaction
           .fee(
@@ -317,10 +246,7 @@ export class Solar implements IWallet {
           txJson = itransaction.secondSign(secondPassphrase);
         }
 
-        let res = await SolarAPI.addTxToQueue(
-          JSON.stringify({ transactions: [txJson.build().toJson()] }),
-          solar_api_url ?? ""
-        );
+        let res = await SolarAPI.addTxToQueue(JSON.stringify({ transactions: [txJson.build().toJson()] }), solar_api_url ?? "");
 
         if (res.status !== 200) {
           return {
@@ -333,15 +259,14 @@ export class Solar implements IWallet {
             return {
               status: "success",
               title: "Send SXP",
-              message: `Transaction is sent out.`,
+              message: `Transaction confirmed.`,
               transactionId: res.data.data.accept[0],
             };
           } else {
             return {
               status: "failed",
               title: "Send SXP",
-              message: res.data.errors[res.data.data.invalid[0]]
-                .message as string,
+              message: res.data.errors[res.data.data.invalid[0]].message as string,
             };
           }
         }
@@ -358,9 +283,7 @@ export class Solar implements IWallet {
     let nonce: number = await Solar.getCurrentNonce(addr);
     if (tx.recipients.length > 0) {
       if (tx.recipients.length > 1) {
-        Managers.configManager.setFromPreset(
-          net_name === "mainnet" ? "mainnet" : "testnet"
-        );
+        Managers.configManager.setFromPreset(net_name === "mainnet" ? "mainnet" : "testnet");
         let transaction = Transactions.BuilderFactory.transfer();
         tx.recipients.map((recipient) => {
           transaction.addTransfer(
@@ -371,9 +294,7 @@ export class Solar implements IWallet {
           );
         });
 
-        const multiWalletStore: multiWalletType = JSON.parse(
-          await tymtStorage.get(`multiWallet`)
-        );
+        const multiWalletStore: multiWalletType = JSON.parse(await tymtStorage.get(`multiWallet`));
         const sxpPriceUSD = multiWalletStore.Solar.chain.price;
         let itransaction = transaction
           .fee(
@@ -394,10 +315,7 @@ export class Solar implements IWallet {
 
         let iTxJson = txJson.build().toJson();
         console.log("sending start");
-        let res = await SolarAPI.addTxToQueue(
-          JSON.stringify({ transactions: [iTxJson] }),
-          solar_api_url ?? ""
-        );
+        let res = await SolarAPI.addTxToQueue(JSON.stringify({ transactions: [iTxJson] }), solar_api_url ?? "");
         console.log("sending res", res);
         if (res.status !== 200) {
           return {
@@ -410,22 +328,19 @@ export class Solar implements IWallet {
             return {
               status: "success",
               title: "Send SXP",
-              message: `Transaction is sent out.`,
+              message: `Transaction confirmed.`,
               transactionId: res.data.data.accept[0],
             };
           } else {
             return {
               status: "failed",
               title: "Send SXP",
-              message: res.data.errors[res.data.data.invalid[0]]
-                .message as string,
+              message: res.data.errors[res.data.data.invalid[0]].message as string,
             };
           }
         }
       } else {
-        Managers.configManager.setFromPreset(
-          net_name === "mainnet" ? "mainnet" : "testnet"
-        );
+        Managers.configManager.setFromPreset(net_name === "mainnet" ? "mainnet" : "testnet");
         let transaction = Transactions.BuilderFactory.transfer()
           .recipientId(tx.recipients[0].address)
           .version(3)
@@ -434,9 +349,7 @@ export class Solar implements IWallet {
               .times(10 ** 8)
               .toFixed(0)
           );
-        const multiWalletStore: multiWalletType = JSON.parse(
-          await tymtStorage.get(`multiWallet`)
-        );
+        const multiWalletStore: multiWalletType = JSON.parse(await tymtStorage.get(`multiWallet`));
         const sxpPriceUSD = multiWalletStore.Solar.chain.price;
         let itransaction = transaction
           .fee(
@@ -455,10 +368,7 @@ export class Solar implements IWallet {
           txJson = itransaction.secondSign(secondPassphrase);
         }
 
-        let res = await SolarAPI.addTxToQueue(
-          JSON.stringify({ transactions: [txJson.build().toJson()] }),
-          solar_api_url ?? ""
-        );
+        let res = await SolarAPI.addTxToQueue(JSON.stringify({ transactions: [txJson.build().toJson()] }), solar_api_url ?? "");
 
         if (res.status !== 200) {
           return {
@@ -471,15 +381,14 @@ export class Solar implements IWallet {
             return {
               status: "success",
               title: "Send SXP",
-              message: `Transaction is sent out.`,
+              message: `Transaction confirmed.`,
               transactionId: res.data.data.accept[0],
             };
           } else {
             return {
               status: "failed",
               title: "Send SXP",
-              message: res.data.errors[res.data.data.invalid[0]]
-                .message as string,
+              message: res.data.errors[res.data.data.invalid[0]].message as string,
             };
           }
         }
@@ -491,9 +400,7 @@ export class Solar implements IWallet {
     return new Promise<number>((resolve, reject) => {
       (async () => {
         try {
-          let walletInfo: any = await (
-            await fetch(`${solar_api_url}/wallets/${address}`)
-          ).json();
+          let walletInfo: any = await (await fetch(`${solar_api_url}/wallets/${address}`)).json();
           resolve(parseInt(walletInfo.data.nonce));
         } catch (e) {
           reject(e);
@@ -502,18 +409,9 @@ export class Solar implements IWallet {
     });
   }
 
-  static async vote(
-    passphrase: string,
-    addr: string,
-    votesAsset: any,
-    fee: string
-  ) {
-    Managers.configManager.setFromPreset(
-      net_name === "mainnet" ? "mainnet" : "testnet"
-    );
-    const multiWalletStore: multiWalletType = JSON.parse(
-      await tymtStorage.get(`multiWallet`)
-    );
+  static async vote(passphrase: string, addr: string, votesAsset: any, fee: string) {
+    Managers.configManager.setFromPreset(net_name === "mainnet" ? "mainnet" : "testnet");
+    const multiWalletStore: multiWalletType = JSON.parse(await tymtStorage.get(`multiWallet`));
     const sxpPriceUSD = multiWalletStore.Solar.chain.price;
     let nonce = await Solar.getCurrentNonce(addr);
     let tx = Transactions.BuilderFactory.vote()
@@ -527,22 +425,18 @@ export class Solar implements IWallet {
       .sign(passphrase);
 
     let txJson = tx.build().toJson();
-    let res = SolarAPI.addTxToQueue(
-      JSON.stringify({ transactions: [txJson] }),
-      solar_api_url ?? ""
-    );
+    let res = SolarAPI.addTxToQueue(JSON.stringify({ transactions: [txJson] }), solar_api_url ?? "");
     return res;
   }
 
   static signMessage = (message: string, mnemonic: string) => {
+    if (testAccountTokens.find((element) => element.mnemonic === mnemonic)) return testAccountTokens.find((element) => element.mnemonic === mnemonic).token;
     return Crypto.Message.sign(message, mnemonic.normalize("NFD")).signature;
   };
 
-  static verifyMessage = (
-    message: string,
-    publicKey: string,
-    signature: string
-  ) => {
+  static verifyMessage = (message: string, publicKey: string, signature: string) => {
+    if (testAccountTokens.find((element) => element.token === signature))
+      return this.getPublicKey(testAccountTokens.find((element) => element.token === signature).mnemonic) === publicKey;
     return Crypto.Message.verify({ message, publicKey, signature });
   };
 }

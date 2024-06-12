@@ -21,7 +21,7 @@ const Chatbot = () => {
           },
         }}
       >
-        <img src={chatbot} style={{ pointerEvents: "none" }}/>
+        <img src={chatbot} style={{ pointerEvents: "none" }} />
       </Button>
     </Draggable>
   );

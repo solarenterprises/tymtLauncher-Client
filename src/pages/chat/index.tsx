@@ -15,20 +15,13 @@ const Chatindex = ({ viewChat, setViewChat }: propsChatType) => {
   const [state, setState] = useState({ right: false });
   const [panel, setPanel] = useState("chatmain");
   const classes = ChatStyle();
-  const toggleDrawer =
-    (anchor: Anchor, open: boolean) =>
-    (event: React.KeyboardEvent | React.MouseEvent) => {
-      if (
-        event &&
-        event.type === "keydown" &&
-        ((event as React.KeyboardEvent).key === "Tab" ||
-          (event as React.KeyboardEvent).key === "Shift")
-      ) {
-        return;
-      }
+  const toggleDrawer = (anchor: Anchor, open: boolean) => (event: React.KeyboardEvent | React.MouseEvent) => {
+    if (event && event.type === "keydown" && ((event as React.KeyboardEvent).key === "Tab" || (event as React.KeyboardEvent).key === "Shift")) {
+      return;
+    }
 
-      setState({ ...state, [anchor]: open });
-    };
+    setState({ ...state, [anchor]: open });
+  };
 
   return (
     <SwipeableDrawer
@@ -44,11 +37,7 @@ const Chatindex = ({ viewChat, setViewChat }: propsChatType) => {
       }}
     >
       <Box className={classes.collaps_pan}>
-        <img
-          src={closeicon}
-          className={classes.close_icon}
-          onClick={() => setViewChat(false)}
-        />
+        <img src={closeicon} className={classes.close_icon} onClick={() => setViewChat(false)} />
       </Box>
       <Box className={classes.main_pan}>
         <Chatmain view={panel} setView={setPanel} />

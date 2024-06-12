@@ -36,12 +36,7 @@ const NonCustodialSignUp2 = () => {
     <>
       <Grid container className="basic-container">
         <Grid item xs={12} container justifyContent={"center"}>
-          <Stack
-            direction={"row"}
-            alignItems={"center"}
-            justifyContent={"center"}
-            gap={"64px"}
-          >
+          <Stack direction={"row"} alignItems={"center"} justifyContent={"center"} gap={"64px"}>
             <Stack alignItems={"center"} justifyContent={"center"}>
               <Grid container justifyContent={"center"}>
                 <Grid
@@ -54,18 +49,11 @@ const NonCustodialSignUp2 = () => {
                 >
                   <Grid item xs={12} container justifyContent={"space-between"}>
                     <Back onClick={handleBackClick} />
-                    <Stepper
-                      all={4}
-                      now={2}
-                      texts={["", t("ncca-12_secure-wallet"), "", ""]}
-                    />
+                    <Stepper all={4} now={2} texts={["", t("ncca-12_secure-wallet"), "", ""]} />
                   </Grid>
 
                   <Grid item xs={12} mt={"80px"}>
-                    <AccountHeader
-                      title={t("ncca-13_secure-passphrase")}
-                      text={t("ncca-14_here-your-mnemonic")}
-                    />
+                    <AccountHeader title={t("ncca-13_secure-passphrase")} text={t("ncca-14_here-your-mnemonic")} />
                   </Grid>
                   <Grid item xs={12} mt={"48px"}>
                     <MnemonicComboBox text="want" />
@@ -74,10 +62,7 @@ const NonCustodialSignUp2 = () => {
                     <MnemonicPad editable={true} />
                   </Grid>
                   <Grid item xs={12} mt={"48px"}>
-                    <AccountNextButton
-                      text={t("ncl-6_next")}
-                      onClick={handleNextClick}
-                    />
+                    <AccountNextButton text={t("ncl-6_next")} onClick={handleNextClick} />
                   </Grid>
                   <Grid item xs={12} mt={length === 12 ? "91px" : "40px"}>
                     <HaveAccount />

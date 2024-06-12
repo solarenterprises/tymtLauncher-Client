@@ -1,22 +1,10 @@
 import { useState } from "react";
-
-import {
-  Box,
-  Stack,
-  Modal,
-  Button,
-  TextField,
-  InputAdornment,
-  CircularProgress,
-} from "@mui/material";
-
+import { Box, Stack, Modal, Button, TextField, InputAdornment, CircularProgress } from "@mui/material";
 import createKeccakHash from "keccak";
-
 import closeIcon from "../assets/settings/x-icon.svg";
 import logo from "../assets/main/foxhead-comingsoon.png";
 import solarBlockchainIcon from "../assets/main/solarblockchain.png";
 import InputText from "./account/InputText";
-
 import { nonCustodialType } from "../types/accountTypes";
 import { useDispatch, useSelector } from "react-redux";
 import { getNonCustodial } from "../features/account/NonCustodialSlice";
@@ -33,7 +21,6 @@ import { getCurrency } from "../features/wallet/CurrencySlice";
 import numeral from "numeral";
 import { currencySymbols } from "../consts/currency";
 import { useNotification } from "../providers/NotificationProvider";
-
 import { translateString } from "../lib/api/Translate";
 
 interface props {
@@ -56,13 +43,7 @@ const PasswordModal = ({ open, setOpen, voteAsset }: props) => {
   const classname = SettingStyle();
   const dispatch = useDispatch();
 
-  const {
-    setNotificationStatus,
-    setNotificationTitle,
-    setNotificationDetail,
-    setNotificationOpen,
-    setNotificationLink,
-  } = useNotification();
+  const { setNotificationStatus, setNotificationTitle, setNotificationDetail, setNotificationOpen, setNotificationLink } = useNotification();
 
   const modalStyle = {
     display: "flex",
@@ -71,25 +52,14 @@ const PasswordModal = ({ open, setOpen, voteAsset }: props) => {
   };
 
   const validatePassword = () => {
-    return (
-      createKeccakHash("keccak256").update(password).digest("hex") ===
-      nonCustodialStore.password
-    );
+    return createKeccakHash("keccak256").update(password).digest("hex") === nonCustodialStore.password;
   };
 
   const handleVoteClick = async () => {
     try {
       setLoading(true);
-      const passphrase: string = await decrypt(
-        nonCustodialStore.mnemonic,
-        password
-      );
-      const res = await tymtCore.Blockchains.solar.wallet.vote(
-        passphrase.normalize("NFD"),
-        multiWalletStore.Solar.chain.wallet,
-        voteAsset,
-        walletStore.fee
-      );
+      const passphrase: string = await decrypt(nonCustodialStore.mnemonic, password);
+      const res = await tymtCore.Blockchains.solar.wallet.vote(passphrase.normalize("NFD"), multiWalletStore.Solar.chain.wallet, voteAsset, walletStore.fee);
       if (res.data.data.invalid[0]) {
         const temp = res.data.data.invalid[0];
         const err = res.data.errors[temp].message;
@@ -133,12 +103,7 @@ const PasswordModal = ({ open, setOpen, voteAsset }: props) => {
       }}
     >
       <Box className="modal-content oauth-modal">
-        <img
-          src={closeIcon}
-          alt="close icon"
-          className="close-icon"
-          onClick={() => setOpen(false)}
-        />
+        <img src={closeIcon} alt="close icon" className="close-icon" onClick={() => setOpen(false)} />
         <img
           src={logo}
           alt="tymt icon"
@@ -148,13 +113,7 @@ const PasswordModal = ({ open, setOpen, voteAsset }: props) => {
             height: "30px",
           }}
         />
-        <Stack
-          direction={"column"}
-          justifyContent={"center"}
-          alignItems={"center"}
-          textAlign={"center"}
-          gap={"10px"}
-        >
+        <Stack direction={"column"} justifyContent={"center"} alignItems={"center"} textAlign={"center"} gap={"10px"}>
           <Stack direction={"column"}>
             <Box className="center-align" padding={"30px 10px 10px 10px"}>
               <FeeSwitchButton />
@@ -167,10 +126,7 @@ const PasswordModal = ({ open, setOpen, voteAsset }: props) => {
                 InputProps={{
                   inputMode: "numeric",
                   endAdornment: (
-                    <InputAdornment
-                      position="end"
-                      classes={{ root: classname.adornment }}
-                    >
+                    <InputAdornment position="end" classes={{ root: classname.adornment }}>
                       {symbol}
                     </InputAdornment>
                   ),
@@ -178,9 +134,7 @@ const PasswordModal = ({ open, setOpen, voteAsset }: props) => {
                     input: classname.input,
                   },
                 }}
-                value={numeral(
-                  Number(walletStore.fee) * Number(reserve)
-                ).format("0,0.0000")}
+                value={numeral(Number(walletStore.fee) * Number(reserve)).format("0,0.0000")}
                 // onBlur={(e) => {
                 //   dispatch(
                 //     setWallet({
@@ -214,13 +168,7 @@ const PasswordModal = ({ open, setOpen, voteAsset }: props) => {
           <Box className="center-align">
             <img width={200} src={solarBlockchainIcon} />
           </Box>
-          <Stack
-            direction={"column"}
-            justifyContent={"center"}
-            alignItems={"center"}
-            textAlign={"center"}
-            gap={"10px"}
-          >
+          <Stack direction={"column"} justifyContent={"center"} alignItems={"center"} textAlign={"center"} gap={"10px"}>
             <InputText
               id="password"
               label={t("cca-3_password")}
@@ -230,12 +178,7 @@ const PasswordModal = ({ open, setOpen, voteAsset }: props) => {
               setValue={setPassword}
               error={validatePassword()}
             />
-            <Button
-              fullWidth
-              className="red-button"
-              onClick={handleVoteClick}
-              disabled={!validatePassword() || loading}
-            >
+            <Button fullWidth className="red-button" onClick={handleVoteClick} disabled={!validatePassword() || loading}>
               <Box className="fs-18-bold white" padding={"10px 18px"}>
                 {loading && (
                   <CircularProgress

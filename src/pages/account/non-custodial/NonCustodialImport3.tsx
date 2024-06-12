@@ -18,23 +18,15 @@ import DontHaveAccount from "../../../components/account/DontHaveAccount";
 import tymt4 from "../../../assets/account/tymt4.png";
 
 import "../../../global.css";
-import {
-  accountType,
-  loginEnum,
-  nonCustodialType,
-} from "../../../types/accountTypes";
-import {
-  getTempNonCustodial,
-  setTempNonCustodial,
-} from "../../../features/account/TempNonCustodialSlice";
+import { accountType, loginEnum, nonCustodialType } from "../../../types/accountTypes";
+import { getTempNonCustodial, setTempNonCustodial } from "../../../features/account/TempNonCustodialSlice";
 import { getAccount, setAccount } from "../../../features/account/AccountSlice";
 
 const NonCustodialImport3 = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const dispatch = useDispatch();
-  const tempNonCustodialStore: nonCustodialType =
-    useSelector(getTempNonCustodial);
+  const tempNonCustodialStore: nonCustodialType = useSelector(getTempNonCustodial);
   const accountStore: accountType = useSelector(getAccount);
 
   const formik = useFormik({
@@ -51,13 +43,7 @@ const NonCustodialImport3 = () => {
             if (!value) {
               return false;
             }
-            const checks = [
-              /[a-z]/.test(value),
-              /[A-Z]/.test(value),
-              /\d/.test(value),
-              /[\W_]/.test(value),
-              value.length >= 8,
-            ];
+            const checks = [/[a-z]/.test(value), /[A-Z]/.test(value), /\d/.test(value), /[\W_]/.test(value), value.length >= 8];
             const passedConditions = checks.filter(Boolean).length;
             return passedConditions >= 4;
           }
@@ -92,12 +78,7 @@ const NonCustodialImport3 = () => {
     <>
       <Grid container className="basic-container">
         <Grid item xs={12} container justifyContent={"center"}>
-          <Stack
-            direction={"row"}
-            alignItems={"center"}
-            justifyContent={"center"}
-            gap={"64px"}
-          >
+          <Stack direction={"row"} alignItems={"center"} justifyContent={"center"} gap={"64px"}>
             <Stack alignItems={"center"} justifyContent={"center"}>
               <Grid container justifyContent={"center"}>
                 <Grid
@@ -110,23 +91,13 @@ const NonCustodialImport3 = () => {
                 >
                   <Grid item xs={12} container justifyContent={"space-between"}>
                     <Back onClick={handleBackClick} />
-                    <Stepper
-                      all={4}
-                      now={2}
-                      texts={["", t("cca-35_email-password"), "", ""]}
-                    />
+                    <Stepper all={4} now={2} texts={["", t("cca-35_email-password"), "", ""]} />
                   </Grid>
 
                   <Grid item xs={12} mt={"80px"}>
-                    <AccountHeader
-                      title={t("cca-53_create-new-password")}
-                      text={t("cca-54_enter-password-below")}
-                    />
+                    <AccountHeader title={t("cca-53_create-new-password")} text={t("cca-54_enter-password-below")} />
                   </Grid>
-                  <form
-                    onSubmit={formik.handleSubmit}
-                    style={{ width: "100%" }}
-                  >
+                  <form onSubmit={formik.handleSubmit} style={{ width: "100%" }}>
                     <Grid item xs={12} mt={"48px"}>
                       <InputText
                         id="custodial-reset-new-password"
@@ -136,11 +107,7 @@ const NonCustodialImport3 = () => {
                         value={formik.values.password}
                         onChange={formik.handleChange}
                         onBlur={formik.handleBlur}
-                        error={
-                          formik.touched.password && formik.errors.password
-                            ? true
-                            : false
-                        }
+                        error={formik.touched.password && formik.errors.password ? true : false}
                       />
                     </Grid>
                     <Grid item xs={12} mt={"8px"}>
@@ -155,12 +122,7 @@ const NonCustodialImport3 = () => {
                         value={formik.values.passwordMatch}
                         onChange={formik.handleChange}
                         onBlur={formik.handleBlur}
-                        error={
-                          formik.touched.passwordMatch &&
-                          formik.errors.passwordMatch
-                            ? true
-                            : false
-                        }
+                        error={formik.touched.passwordMatch && formik.errors.passwordMatch ? true : false}
                       />
                     </Grid>
                     <Grid
@@ -171,22 +133,13 @@ const NonCustodialImport3 = () => {
                         padding: "0px 6px",
                       }}
                     >
-                      {formik.touched.passwordMatch &&
-                        formik.errors.passwordMatch && (
-                          <Box className={"fs-16-regular red"}>
-                            {formik.errors.passwordMatch}
-                          </Box>
-                        )}
+                      {formik.touched.passwordMatch && formik.errors.passwordMatch && <Box className={"fs-16-regular red"}>{formik.errors.passwordMatch}</Box>}
                     </Grid>
                     <Grid item xs={12} mt={"48px"}>
                       <AccountNextButton
                         text={t("cca-41_next")}
                         isSubmit={true}
-                        disabled={
-                          formik.errors.password || formik.errors.passwordMatch
-                            ? true
-                            : false
-                        }
+                        disabled={formik.errors.password || formik.errors.passwordMatch ? true : false}
                       />
                     </Grid>
                   </form>

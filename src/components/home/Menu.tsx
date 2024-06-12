@@ -2,17 +2,7 @@ import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useLocation } from "react-router-dom";
-import {
-  Button,
-  Grid,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemIcon,
-  Box,
-  Tooltip,
-  Stack,
-} from "@mui/material";
+import { Button, Grid, List, ListItem, ListItemButton, ListItemIcon, Box, Tooltip, Stack } from "@mui/material";
 import home from "../../assets/main/home.svg";
 import library from "../../assets/main/library.svg";
 import store from "../../assets/main/store.svg";
@@ -34,9 +24,7 @@ const Menu = () => {
   const currentpage: PaginationType = useSelector(getCurrentPage);
   const tymtlogo: TymtlogoType = useSelector(getCurrentLogo);
   const [selectedItem, setSelectedItem] = useState<number>(currentpage.index);
-  const [isDrawerExpanded, setDrawerExpanded] = useState<boolean>(
-    tymtlogo.isDrawerExpanded
-  );
+  const [isDrawerExpanded, setDrawerExpanded] = useState<boolean>(tymtlogo.isDrawerExpanded);
 
   const handleChevronClick = () => {
     setDrawerExpanded((prevExpanded) => !prevExpanded);
@@ -123,11 +111,7 @@ const Menu = () => {
           }}
         >
           <List sx={{ bgcolor: "none", marginTop: "20px" }}>
-            {[
-              `${t("hom-1_home")}`,
-              `${t("hom-2_store")}`,
-              `${t("hom-3_library")}`,
-            ].map((text, index) => (
+            {[`${t("hom-1_home")}`, `${t("hom-2_store")}`, `${t("hom-3_library")}`].map((text, index) => (
               <Tooltip
                 key={index}
                 title={
@@ -157,7 +141,7 @@ const Menu = () => {
                   sx: {
                     display: isDrawerExpanded ? "none" : "block",
                     [`& .MuiTooltip-tooltip`]: {
-                      backgroundColor: "transparent", 
+                      backgroundColor: "transparent",
                       boxShadow: "none",
                     },
                   },
@@ -168,14 +152,8 @@ const Menu = () => {
                   key={text}
                   disablePadding
                   sx={{
-                    background:
-                      selectedItem === index
-                        ? "linear-gradient(112deg, rgba(255, 255, 255, 0.24) 0%,rgba(255, 255, 255, 0.00) 100%)"
-                        : "transparent",
-                    borderLeft:
-                      selectedItem === index
-                        ? "solid white 3px"
-                        : "transparent",
+                    background: selectedItem === index ? "linear-gradient(112deg, rgba(255, 255, 255, 0.24) 0%,rgba(255, 255, 255, 0.00) 100%)" : "transparent",
+                    borderLeft: selectedItem === index ? "solid white 3px" : "transparent",
                   }}
                 >
                   <ListItemButton
@@ -197,12 +175,7 @@ const Menu = () => {
                         })
                       );
                       setSelectedItem(index);
-                      const path =
-                        index % 3 === 0
-                          ? "/home"
-                          : index % 3 === 1
-                          ? "/store"
-                          : "/library";
+                      const path = index % 3 === 0 ? "/home" : index % 3 === 1 ? "/store" : "/library";
 
                       navigate(path);
                     }}
@@ -221,11 +194,7 @@ const Menu = () => {
                       </>
                     </ListItemIcon>
                     {isDrawerExpanded && (
-                      <Box
-                        sx={{ opacity: 1, color: "white" }}
-                        className={"fs-16-regular"}
-                        textTransform={"none"}
-                      >
+                      <Box sx={{ opacity: 1, color: "white" }} className={"fs-16-regular"} textTransform={"none"}>
                         {text}
                       </Box>
                     )}

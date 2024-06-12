@@ -1,11 +1,9 @@
-import { Snackbar, Stack, Box, Button } from "@mui/material";
+import { Snackbar, Stack, Box } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
-
 import Slide from "@mui/material/Slide";
-
 import CommonStyles from "../styles/commonStyles";
 import failedIcon from "../assets/alert/failed-icon.svg";
 import successIcon from "../assets/alert/success-icon.svg";
@@ -13,104 +11,45 @@ import warnnigIcon from "../assets/alert/warnning-icon.svg";
 import alertIcon from "../assets/alert/alert-icon.png";
 import messageIcon from "../assets/alert/message-icon.svg";
 import closeIcon from "../assets/settings/x-icon.svg";
-import Avatar from "./home/Avatar";
-
 import { propsAlertTypes } from "../types/commonTypes";
-import { getUserlist } from "../features/chat/Chat-userlistSlice";
 import { notification_duration } from "../configs";
-import {
-  selectPartner,
-  setCurrentChatPartner,
-} from "../features/chat/Chat-currentPartnerSlice";
-import {  userType } from "../types/chatTypes";
-import { accountType, nonCustodialType } from "../types/accountTypes";
-import { multiWalletType } from "../types/walletTypes";
-
-import {
-  getFriendlist,
-  setFriendlist,
-} from "../features/chat/Chat-friendlistSlice";
-import {
-  approveFriendRequest,
-  declineFriendRequest,
-} from "../features/chat/Chat-alertApi";
-import { getAccount } from "../features/account/AccountSlice";
-import { getaccessToken } from "../features/chat/Chat-contactApi";
-import { getNonCustodial } from "../features/account/NonCustodialSlice";
-import { getMultiWallet } from "../features/wallet/MultiWalletSlice";
+import { IContactList } from "../types/chatTypes";
 import { selectEncryptionKeyByUserId } from "../features/chat/Chat-encryptionkeySlice";
 import { decrypt } from "../lib/api/Encrypt";
+import { setCurrentPartner } from "../features/chat/CurrentPartnerSlice";
+import { getContactList } from "../features/chat/ContactListSlice";
 
 function SlideTransition(props) {
   return <Slide {...props} direction="left" />;
 }
 
-const AlertComp = ({
-  open,
-  status,
-  title,
-  detail,
-  setOpen,
-  link,
-}: propsAlertTypes) => {
+const AlertComp = ({ open, status, title, detail, setOpen, link }: propsAlertTypes) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const dispatch = useDispatch();
   const classname = CommonStyles();
   const searchParams = new URLSearchParams(link?.split("?")[1]);
-  const userdata: userType[] = useSelector(selectPartner);
-  const chatuserlist: userType[] = useSelector(getUserlist);
-  const friendlist: userType[] = useSelector(getFriendlist);
-  const account: accountType = useSelector(getAccount);
-  const nonCustodial: nonCustodialType = useSelector(getNonCustodial);
-  const multiwallet: multiWalletType = useSelector(getMultiWallet);
+
+  const contactListStore: IContactList = useSelector(getContactList);
+
+  const senderId = title === "Friend Request" ? detail.note?.sender : searchParams.get("senderId");
+  const senderUser = contactListStore.contacts.find((user) => user._id === senderId);
+
+  const dispatch = useDispatch();
+  const existkey: string = useSelector((state) => selectEncryptionKeyByUserId(state, senderId));
+
   const [border, setBorder] = useState("");
   const [bg, setBg] = useState("");
   const [logo, setLogo] = useState<any>();
   const [message, setMessage] = useState<string>("");
-  const senderId =
-    title === "Friend Request"
-      ? detail.note?.sender
-      : searchParams.get("senderId");
-  const senderUser = chatuserlist.find((user) => user._id === senderId);
-  const existkey: string = useSelector((state) =>
-    selectEncryptionKeyByUserId(state, senderId)
-  );
 
   useEffect(() => {
     const decryptmessage = async () => {
-      const decryptedmessage: string = existkey
-        ? await decrypt(detail, existkey)
-        : t("not-13_cannot-decrypt");
+      const decryptedmessage: string = existkey ? await decrypt(detail, existkey) : t("not-13_cannot-decrypt");
       setMessage(decryptedmessage);
     };
     decryptmessage();
   }, [detail]);
-  const addFriend = async () => {
-    const senderId = detail.note?.sender;
-    const senderInChatUserlist = chatuserlist.find(
-      (user) => user._id === senderId
-    );
-    console.log("request sender", senderInChatUserlist);
-    console.log("chatuserlist", chatuserlist);
-    const updatedFriendlist: userType[] = [...friendlist, senderInChatUserlist];
-    dispatch(setFriendlist(updatedFriendlist));
-    console.log("friendlist", friendlist);
-  };
-  const approveFR = async () => {
-    const accessToken: string = await getaccessToken(
-      multiwallet.Solar.chain.wallet,
-      nonCustodial.password
-    );
-    await approveFriendRequest(detail._id, account.uid, accessToken);
-  };
-  const declineFR = async () => {
-    const accessToken: string = await getaccessToken(
-      multiwallet.Solar.chain.wallet,
-      nonCustodial.password
-    );
-    await declineFriendRequest(detail._id, account.uid, accessToken);
-  };
+
   useEffect(() => {
     if (status == "failed") {
       setLogo(failedIcon);
@@ -173,8 +112,7 @@ const AlertComp = ({
           navigate(link);
           if (title !== "Friend Request") {
             dispatch(
-              setCurrentChatPartner({
-                ...userdata,
+              setCurrentPartner({
                 _id: senderUser?._id,
                 nickName: senderUser?.nickName,
                 avatar: senderUser?.avatar,
@@ -205,20 +143,10 @@ const AlertComp = ({
               <Stack direction={"column"} gap={"8px"}>
                 <Box className={"fs-h4 white"}>{title}</Box>
                 <Box className={"fs-16-regular white"}>
-                  {status === "message" &&
-                    (message.length > 100
-                      ? message.substring(0, 100) + "..."
-                      : message)}
-                  {status === "alert" &&
-                    title === "Friend Request" &&
-                    t("not-10_fr-intro")}
-                  {!(
-                    status === "message" ||
-                    (status === "alert" && title === "Friend Request")
-                  ) &&
-                    (detail.length > 100
-                      ? detail.substring(0, 100) + "..."
-                      : detail)}
+                  {status === "message" && (message.length > 100 ? message.substring(0, 100) + "..." : message)}
+                  {status === "alert" && title === "Friend Request" && t("not-10_fr-intro")}
+                  {!(status === "message" || (status === "alert" && title === "Friend Request")) &&
+                    (detail.length > 100 ? detail.substring(0, 100) + "..." : detail)}
                 </Box>
               </Stack>
             </Stack>
@@ -226,7 +154,7 @@ const AlertComp = ({
               <img src={closeIcon} />
             </Box>
           </Stack>
-          {title === "Friend Request" && (
+          {/* {title === "Friend Request" && (
             <>
               <Stack
                 display={"flex"}
@@ -279,7 +207,7 @@ const AlertComp = ({
                 </Stack>
               </Stack>
             </>
-          )}
+          )} */}
         </Stack>
       </Snackbar>
     </>

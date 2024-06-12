@@ -1,7 +1,5 @@
 import { Grid } from "@mui/material";
-
 import WalletBar from "./WalletBar";
-
 import solar from "../../assets/chains/solar.png";
 import binance from "../../assets/chains/binance.png";
 import ethereum from "../../assets/chains/ethereum.png";
@@ -74,77 +72,36 @@ const WalletList = ({ mode }: props) => {
   const tempMultiWalletStore: multiWalletType = useSelector(getTempMultiWallet);
   const multiWalletStore: multiWalletType = useSelector(getMultiWallet);
   const accountStore: accountType = useSelector(getAccount);
-  const displayData =
-    accountStore.wallet === walletEnum.custodial
-      ? addresses
-      : mode === "login"
-      ? multiWalletStore
-      : tempMultiWalletStore;
+  const displayData = accountStore.wallet === walletEnum.custodial ? addresses : mode === "login" ? multiWalletStore : tempMultiWalletStore;
 
   return (
     <Grid container spacing={"12px"}>
       <Grid item xs={12}>
-        <WalletBar
-          icon={solar}
-          chain={"Solar"}
-          address={displayData.Solar.chain.wallet}
-        />
+        <WalletBar icon={solar} chain={"Solar"} address={displayData.Solar.chain.wallet} />
       </Grid>
       <Grid item xs={12}>
-        <WalletBar
-          icon={binance}
-          chain={"Binance"}
-          address={displayData.Binance.chain.wallet}
-        />
+        <WalletBar icon={binance} chain={"Binance"} address={displayData.Binance.chain.wallet} />
       </Grid>
       <Grid item xs={12}>
-        <WalletBar
-          icon={ethereum}
-          chain={"Ethereum"}
-          address={displayData.Ethereum.chain.wallet}
-        />
+        <WalletBar icon={ethereum} chain={"Ethereum"} address={displayData.Ethereum.chain.wallet} />
       </Grid>
       <Grid item xs={12}>
-        <WalletBar
-          icon={bitcoin}
-          chain={"Bitcoin"}
-          address={displayData.Bitcoin.chain.wallet}
-        />
+        <WalletBar icon={bitcoin} chain={"Bitcoin"} address={displayData.Bitcoin.chain.wallet} />
       </Grid>
       <Grid item xs={12}>
-        <WalletBar
-          icon={solana}
-          chain={"Solana"}
-          address={displayData.Solana.chain.wallet}
-        />
+        <WalletBar icon={solana} chain={"Solana"} address={displayData.Solana.chain.wallet} />
       </Grid>
       <Grid item xs={12}>
-        <WalletBar
-          icon={polygon}
-          chain={"Polygon"}
-          address={displayData.Polygon.chain.wallet}
-        />
+        <WalletBar icon={polygon} chain={"Polygon"} address={displayData.Polygon.chain.wallet} />
       </Grid>
       <Grid item xs={12}>
-        <WalletBar
-          icon={avalanche}
-          chain={"Avalanche"}
-          address={displayData.Avalanche.chain.wallet}
-        />
+        <WalletBar icon={avalanche} chain={"Avalanche"} address={displayData.Avalanche.chain.wallet} />
       </Grid>
       <Grid item xs={12}>
-        <WalletBar
-          icon={arbitrumOne}
-          chain={"Arbitrum One"}
-          address={displayData.Arbitrum.chain.wallet}
-        />
+        <WalletBar icon={arbitrumOne} chain={"Arbitrum One"} address={displayData.Arbitrum.chain.wallet} />
       </Grid>
       <Grid item xs={12}>
-        <WalletBar
-          icon={optimism}
-          chain={"Optimism"}
-          address={displayData.Optimism.chain.wallet}
-        />
+        <WalletBar icon={optimism} chain={"Optimism"} address={displayData.Optimism.chain.wallet} />
       </Grid>
     </Grid>
   );

@@ -21,11 +21,7 @@ const SwitchButton = () => {
           spacing={"6px"}
         >
           <Button
-            className={
-              accountStore.mode === loginEnum.signup
-                ? "switch-button-checked"
-                : "switch-button"
-            }
+            className={accountStore.mode === loginEnum.signup ? "switch-button-checked" : "switch-button"}
             onClick={() => {
               dispatch(setAccount({ ...accountStore, mode: loginEnum.signup }));
             }}
@@ -34,8 +30,7 @@ const SwitchButton = () => {
               className={"fs-18-regular"}
               sx={{
                 padding: "8px 16px",
-                color:
-                  accountStore.mode === loginEnum.signup ? "#52E1F2" : "white",
+                color: accountStore.mode === loginEnum.signup ? "#52E1F2" : "white",
                 fontFeatureSettings: "'calt' off",
               }}
             >
@@ -43,11 +38,7 @@ const SwitchButton = () => {
             </Box>
           </Button>
           <Button
-            className={
-              accountStore.mode === loginEnum.login
-                ? "switch-button-checked"
-                : "switch-button"
-            }
+            className={accountStore.mode === loginEnum.login ? "switch-button-checked" : "switch-button"}
             onClick={() => {
               dispatch(setAccount({ ...accountStore, mode: loginEnum.login }));
             }}
@@ -56,8 +47,7 @@ const SwitchButton = () => {
               className={"fs-18-regular"}
               sx={{
                 padding: "8px 16px",
-                color:
-                  accountStore.mode === loginEnum.login ? "#52E1F2" : "white",
+                color: accountStore.mode === loginEnum.login ? "#52E1F2" : "white",
                 fontFeatureSettings: "'calt' off",
               }}
             >

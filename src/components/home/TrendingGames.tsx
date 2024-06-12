@@ -1,13 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Grid, Box, Card, Stack, Button } from "@mui/material";
-
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay } from "swiper/modules";
 import "swiper/css";
-
 import homeStyles from "../../styles/homeStyles";
-
 import trendgame1 from "../../assets/main/gamelists/trendgame1.png";
 import trendgame2 from "../../assets/main/gamelists/trendgame2.png";
 import trendgame3 from "../../assets/main/gamelists/trendgame3.png";
@@ -89,25 +86,15 @@ const TrendingGames = () => {
           alt={"goldeneffect"}
           loading="lazy"
         />
-        <Grid
-          xs={12}
-          container
-          sx={{ justifyContent: "space-between", alignItems: "center" }}
-        >
+        <Grid xs={12} container sx={{ justifyContent: "space-between", alignItems: "center" }}>
           <Box className={"fs-38-bold"} color={"white"} textTransform={"none"}>
             {t("hom-8_trending-games")}
           </Box>
           <Stack flexDirection={"row"} alignItems={"center"}>
-            <Button
-              className={homeclasses.trending_chevron_button}
-              onClick={() => handlePrevSlide()}
-            >
+            <Button className={homeclasses.trending_chevron_button} onClick={() => handlePrevSlide()}>
               <img src={chevronleft} />
             </Button>
-            <Button
-              className={homeclasses.trending_chevron_button}
-              onClick={() => handleNextSlide()}
-            >
+            <Button className={homeclasses.trending_chevron_button} onClick={() => handleNextSlide()}>
               <img src={chevronright} />
             </Button>
           </Stack>
@@ -134,13 +121,7 @@ const TrendingGames = () => {
             {TrendingList.map((trendingame, index) => (
               <SwiperSlide key={index}>
                 <Card key={index} className={homeclasses.trending_game_card}>
-                  <img
-                    src={trendingame.url}
-                    width={"100%"}
-                    height={"280px"}
-                    style={{ borderRadius: "16px", zIndex: -1 }}
-                    loading="lazy"
-                  />
+                  <img src={trendingame.url} width={"100%"} height={"280px"} style={{ borderRadius: "16px", zIndex: -1 }} loading="lazy" />
                   <Box
                     textTransform={"none"}
                     className={"fs-20-regular"}
@@ -150,7 +131,7 @@ const TrendingGames = () => {
                       marginLeft: "16px",
                       textOverflow: "ellipsis",
                       overflow: "hidden",
-                      WebkitLineClamp: 1, 
+                      WebkitLineClamp: 1,
                       WebkitBoxOrient: "vertical",
                       display: "-webkit-box",
                     }}

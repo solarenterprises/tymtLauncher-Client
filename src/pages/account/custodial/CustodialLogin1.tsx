@@ -18,11 +18,7 @@ import DontHaveAccount from "../../../components/account/DontHaveAccount";
 import BenefitModal from "../../../components/account/BenefitModal";
 import tymt7 from "../../../assets/account/tymt2.png";
 import "../../../global.css";
-import {
-  accountType,
-  custodialType,
-  loginEnum,
-} from "../../../types/accountTypes";
+import { accountType, custodialType, loginEnum } from "../../../types/accountTypes";
 
 const CustodialLogIn1 = () => {
   const navigate = useNavigate();
@@ -42,20 +38,10 @@ const CustodialLogIn1 = () => {
       email: Yup.string()
         .email(t("cca-62_invalid-email-address"))
         .required(t("cca-63_required"))
-        .test(
-          "equals",
-          t("cca-59_wrong-email"),
-          (value) => value === custodialStore.email
-        ),
+        .test("equals", t("cca-59_wrong-email"), (value) => value === custodialStore.email),
       password: Yup.string()
         .required(t("cca-63_required"))
-        .test(
-          "equals",
-          t("cca-60_wrong-password"),
-          (value) =>
-            createKeccakHash("keccak256").update(value).digest("hex") ===
-            custodialStore.password
-        ),
+        .test("equals", t("cca-60_wrong-password"), (value) => createKeccakHash("keccak256").update(value).digest("hex") === custodialStore.password),
     }),
     onSubmit: () => {
       setPath("/custodial/login/2");
@@ -75,12 +61,7 @@ const CustodialLogIn1 = () => {
     <>
       <Grid container className="basic-container">
         <Grid item xs={12} container justifyContent={"center"}>
-          <Stack
-            direction={"row"}
-            alignItems={"center"}
-            justifyContent={"center"}
-            gap={"64px"}
-          >
+          <Stack direction={"row"} alignItems={"center"} justifyContent={"center"} gap={"64px"}>
             <Stack alignItems={"center"} justifyContent={"center"}>
               <Grid container justifyContent={"center"}>
                 <Grid
@@ -93,23 +74,13 @@ const CustodialLogIn1 = () => {
                 >
                   <Grid item xs={12} container justifyContent={"space-between"}>
                     <Back onClick={handleBackClick} />
-                    <Stepper
-                      all={2}
-                      now={1}
-                      texts={[t("cca-35_email-password"), ""]}
-                    />
+                    <Stepper all={2} now={1} texts={[t("cca-35_email-password"), ""]} />
                   </Grid>
 
                   <Grid item xs={12} mt={"80px"}>
-                    <AccountHeader
-                      title={t("cca-36_login-with-email")}
-                      text={t("cca-37_use-email-password")}
-                    />
+                    <AccountHeader title={t("cca-36_login-with-email")} text={t("cca-37_use-email-password")} />
                   </Grid>
-                  <form
-                    onSubmit={formik.handleSubmit}
-                    style={{ width: "100%" }}
-                  >
+                  <form onSubmit={formik.handleSubmit} style={{ width: "100%" }}>
                     <Grid item xs={12} mt={"48px"}>
                       <InputText
                         id="custodial-login-email"
@@ -119,11 +90,7 @@ const CustodialLogIn1 = () => {
                         value={formik.values.email}
                         onChange={formik.handleChange}
                         onBlur={formik.handleBlur}
-                        error={
-                          formik.touched.email && formik.errors.email
-                            ? true
-                            : false
-                        }
+                        error={formik.touched.email && formik.errors.email ? true : false}
                       />
                     </Grid>
                     <Grid
@@ -134,11 +101,7 @@ const CustodialLogIn1 = () => {
                         padding: "0px 6px",
                       }}
                     >
-                      {formik.touched.email && formik.errors.email && (
-                        <Box className={"fs-16-regular red"}>
-                          {formik.errors.email}
-                        </Box>
-                      )}
+                      {formik.touched.email && formik.errors.email && <Box className={"fs-16-regular red"}>{formik.errors.email}</Box>}
                     </Grid>
                     <Grid item xs={12} mt={"40px"}>
                       <InputText
@@ -149,11 +112,7 @@ const CustodialLogIn1 = () => {
                         value={formik.values.password}
                         onChange={formik.handleChange}
                         onBlur={formik.handleBlur}
-                        error={
-                          formik.touched.password && formik.errors.password
-                            ? true
-                            : false
-                        }
+                        error={formik.touched.password && formik.errors.password ? true : false}
                       />
                     </Grid>
                     <Grid
@@ -164,25 +123,13 @@ const CustodialLogIn1 = () => {
                         padding: "0px 6px",
                       }}
                     >
-                      {formik.touched.password && formik.errors.password && (
-                        <Box className={"fs-16-regular red"}>
-                          {formik.errors.password}
-                        </Box>
-                      )}
+                      {formik.touched.password && formik.errors.password && <Box className={"fs-16-regular red"}>{formik.errors.password}</Box>}
                     </Grid>
                     <Grid item xs={12} mt={"12px"}>
                       <ForgotYourPassword />
                     </Grid>
                     <Grid item xs={12} mt={"48px"}>
-                      <AccountNextButton
-                        text={t("cca-41_next")}
-                        isSubmit={true}
-                        disabled={
-                          formik.errors.email || formik.errors.password
-                            ? true
-                            : false
-                        }
-                      />
+                      <AccountNextButton text={t("cca-41_next")} isSubmit={true} disabled={formik.errors.email || formik.errors.password ? true : false} />
                     </Grid>
                   </form>
 

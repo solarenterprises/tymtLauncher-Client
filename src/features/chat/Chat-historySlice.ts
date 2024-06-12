@@ -30,10 +30,7 @@ const initialState = {
   msg: "",
 };
 
-export const setChatHistoryAsync = createAsyncThunk(
-  "chatHistory/setChatHistory",
-  setChatHistoryFunc
-);
+export const setChatHistoryAsync = createAsyncThunk("chatHistory/setChatHistory", setChatHistoryFunc);
 
 const chatHistorySlice = createSlice({
   name: "chatHistory",
@@ -43,21 +40,22 @@ const chatHistorySlice = createSlice({
       state.data = action.payload;
       tymtStorage.set(`chatHistory`, JSON.stringify(action.payload));
     },
+    addChatHistory(state, action) {
+      state.data.messages = [action.payload, ...state.data.messages];
+      tymtStorage.set(`chatHistory`, JSON.stringify(action.payload));
+    },
   },
   extraReducers: (builder) => {
     builder
       .addCase(setChatHistoryAsync.pending, (state) => {
         state.status = "loading";
       })
-      .addCase(
-        setChatHistoryAsync.fulfilled,
-        (state, action: PayloadAction<any>) => {
-          console.log(action.payload, "action.payload");
-          state.data.messages = action.payload.messages;
-          tymtStorage.set(`chatHistory`, JSON.stringify(state.data));
-          state.status = "succeeded";
-        }
-      );
+      .addCase(setChatHistoryAsync.fulfilled, (state, action: PayloadAction<any>) => {
+        console.log(action.payload, "action.payload");
+        state.data.messages = action.payload.messages;
+        tymtStorage.set(`chatHistory`, JSON.stringify(state.data));
+        state.status = "succeeded";
+      });
   },
 });
 
@@ -65,4 +63,4 @@ export const getChatHistory = (state: any) => state.chatHistory.data;
 
 export default chatHistorySlice.reducer;
 
-export const { setChatHistory } = chatHistorySlice.actions;
+export const { setChatHistory, addChatHistory } = chatHistorySlice.actions;

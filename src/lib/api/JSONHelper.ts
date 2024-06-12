@@ -1,3 +1,5 @@
+import { ChatMessageType, IAlert } from "../../types/chatTypes";
+
 // Function to compare if two JSON objects have the same structure
 export const compareJSONStructure = (json1, json2) => {
   // Get keys of both JSON objects
@@ -31,4 +33,22 @@ export const compareJSONStructure = (json1, json2) => {
   return true;
 };
 
-// Example JSON objects for comparison
+export const addChatHistory = (array1: ChatMessageType[], array2: ChatMessageType[]) => {
+  const resultArray: ChatMessageType[] = [...array1];
+  for (const obj of array2) {
+    if (!resultArray.some((item) => item._id === obj._id)) {
+      resultArray.push(obj);
+    }
+  }
+  return resultArray;
+};
+
+export const addAlertHistory = (array1: IAlert[], array2: IAlert[]) => {
+  const resultArray: IAlert[] = [...array1];
+  for (const obj of array2) {
+    if (!resultArray.some((item) => item._id === obj._id)) {
+      resultArray.push(obj);
+    }
+  }
+  return resultArray;
+};

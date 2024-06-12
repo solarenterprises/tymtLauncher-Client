@@ -1,13 +1,7 @@
 import { IWallet } from "./IWallet";
 import * as bip39 from "bip39";
 import * as ed25519 from "ed25519-hd-key";
-import {
-  Keypair,
-  PublicKey,
-  Transaction,
-  SystemProgram,
-  LAMPORTS_PER_SOL,
-} from "@solana/web3.js";
+import { Keypair, PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SOL } from "@solana/web3.js";
 import * as multichainWallet from "multichain-crypto-wallet";
 import { validate } from "multicoin-address-validator";
 import { INotification } from "../../features/wallet/CryptoSlice";
@@ -47,10 +41,7 @@ class Solana implements IWallet {
   static async getKeyPair(mnemonic: string): Promise<Keypair> {
     const seed = await bip39.mnemonicToSeed(mnemonic);
     const derivationPath = "m/44'/501'/0'/0'";
-    const derivedSeed = ed25519.derivePath(
-      derivationPath,
-      seed.toString("hex")
-    ).key;
+    const derivedSeed = ed25519.derivePath(derivationPath, seed.toString("hex")).key;
     const keypair = Keypair.fromSeed(derivedSeed);
     return keypair;
   }
@@ -98,9 +89,7 @@ class Solana implements IWallet {
         body: body1,
         responseType: ResponseType.JSON,
       });
-      const signatures: string[] = response1?.data?.result
-        .slice(-15)
-        .map((signature: any) => signature?.signature);
+      const signatures: string[] = response1?.data?.result.slice(-15).map((signature: any) => signature?.signature);
       // get transactions
       let bodyContent2 = [];
       for (let i = 0; i < signatures?.length; i++) {
@@ -108,10 +97,7 @@ class Solana implements IWallet {
           jsonrpc: "2.0",
           id: i,
           method: "getTransaction",
-          params: [
-            signatures[i],
-            { encoding: "jsonParsed", commitment: "finalized" },
-          ],
+          params: [signatures[i], { encoding: "jsonParsed", commitment: "finalized" }],
         });
       }
       const body2 = Body.json(bodyContent2);
@@ -128,10 +114,7 @@ class Solana implements IWallet {
     }
   }
 
-  static async sendTransaction(
-    passphrase: string,
-    tx: { recipients: IRecipient[]; fee: string; vendorField?: string }
-  ) {
+  static async sendTransaction(passphrase: string, tx: { recipients: IRecipient[]; fee: string; vendorField?: string }) {
     if (tx.recipients.length > 0) {
       try {
         const keypair = await Solana.getKeyPair(passphrase);
@@ -209,10 +192,7 @@ class Solana implements IWallet {
     }
   }
 
-  static async sendTransactionAPI(
-    passphrase: string,
-    tx: { recipients: IRecipient[]; fee: string; vendorField?: string }
-  ) {
+  static async sendTransactionAPI(passphrase: string, tx: { recipients: IRecipient[]; fee: string; vendorField?: string }) {
     if (tx.recipients.length > 0) {
       try {
         const keypair = await Solana.getKeyPair(passphrase);
@@ -274,7 +254,7 @@ class Solana implements IWallet {
         const noti: INotification = {
           status: "success",
           title: "Send SOL",
-          message: "Transaction is sent out.",
+          message: "Transaction confirmed.",
           transactionId: response2?.data?.result,
         };
         return noti;

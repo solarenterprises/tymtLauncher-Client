@@ -75,8 +75,7 @@ export const getExplorerUrl = (chain: IChain): string => {
     }
     case "Solana": {
       if (net_name == "testnet") {
-        url =
-          sol_scan_path + "account/" + chain.chain.wallet + "?cluster=testnet";
+        url = sol_scan_path + "account/" + chain.chain.wallet + "?cluster=testnet";
       } else {
         url = sol_scan_path + "account/" + chain.chain.wallet;
       }
@@ -126,11 +125,7 @@ export const formatTransaction = (chain: IChain, data: any) => {
           direction = 0;
           address = data?.sender;
           amount = formatDecimal(
-            data?.asset?.transfers.find(
-              (element: any) =>
-                element?.recipientId?.toLowerCase() ===
-                chain.chain.wallet?.toLocaleLowerCase()
-            )?.amount ?? 0,
+            data?.asset?.transfers.find((element: any) => element?.recipientId?.toLowerCase() === chain.chain.wallet?.toLocaleLowerCase())?.amount ?? 0,
             8
           );
         }
@@ -153,8 +148,7 @@ export const formatTransaction = (chain: IChain, data: any) => {
     } else if (chain.chain.symbol === "BTC") {
       if (data?.result >= 0) {
         direction = 0;
-        if (Array.isArray(data?.inputs))
-          address = data?.inputs[0]?.prev_out?.addr ?? "";
+        if (Array.isArray(data?.inputs)) address = data?.inputs[0]?.prev_out?.addr ?? "";
         time = formatDate(data?.time);
         url = btc_scan_path + "tx/" + data?.hash;
         amount = formatDecimal(data?.result, 8);
@@ -166,21 +160,13 @@ export const formatTransaction = (chain: IChain, data: any) => {
         amount = formatDecimal(-data?.result, 8);
       }
     } else if (chain.chain.symbol === "SOL") {
-      const amountSOL =
-        data?.result?.meta?.postBalances[1] -
-        data?.result?.meta?.preBalances[1];
-      if (
-        chain.chain.wallet ===
-        data?.result?.transaction.message.instructions[0].parsed.info.source
-      ) {
+      const amountSOL = data?.result?.meta?.postBalances[1] - data?.result?.meta?.preBalances[1];
+      if (chain.chain.wallet === data?.result?.transaction.message.instructions[0].parsed.info.source) {
         direction = 1;
-        address =
-          data?.result?.transaction.message.instructions[0].parsed.info
-            .destination;
+        address = data?.result?.transaction.message.instructions[0].parsed.info.destination;
       } else {
         direction = 0;
-        address =
-          data?.result?.transaction.message.instructions[0].parsed.info.source;
+        address = data?.result?.transaction.message.instructions[0].parsed.info.source;
       }
       amount = formatDecimal(amountSOL ?? 0, 9);
       time = formatDate(data?.result?.blockTime);

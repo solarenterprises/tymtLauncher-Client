@@ -1,12 +1,6 @@
 import { useSelector, useDispatch } from "react-redux";
-
-import {
-  getThreeConfirm,
-  setThreeConfirm,
-} from "../../features/account/ThreeConfirmSlice";
-
+import { getThreeConfirm, setThreeConfirm } from "../../features/account/ThreeConfirmSlice";
 import { Box, Stack } from "@mui/material";
-
 import { threeConfirmType } from "../../types/accountTypes";
 
 interface props {

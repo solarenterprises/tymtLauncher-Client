@@ -14,7 +14,7 @@ const tymtStorage = {
   },
   remove(key: string) {
     localStorage.removeItem(key);
-  }
+  },
 };
 
 export const SPOT_ACTIVE_PAIR_KEYS = "spotDashboard";

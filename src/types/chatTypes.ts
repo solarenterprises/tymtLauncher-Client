@@ -9,6 +9,7 @@ export interface propsChatType {
 }
 
 export interface propsBlockModalType {
+  block: boolean;
   openBlockModal: boolean;
   setOpenBlockModal: (param: boolean) => void;
   roommode: boolean;
@@ -29,6 +30,7 @@ export interface propsRequestModalType {
 }
 
 export interface propsFRcontextmenuType {
+  tab: number;
   value: string;
   isClickedBlock: boolean;
   isClickedDelete: boolean;
@@ -38,7 +40,7 @@ export interface propsFRcontextmenuType {
   setShowContextMenu: (param: boolean) => void;
   setIsClickedDelete: (param: boolean) => void;
   setOpenDeleteModal: (param: boolean) => void;
-  setOpenRequestModal: (param: boolean) => void;
+  setOpenRequestModal?: (param: boolean) => void;
   setIsClickedRequest: (param: boolean) => void;
   contextMenuPosition: contextmenupositionType;
 }
@@ -48,10 +50,8 @@ export interface propsUserlistType {
   index: number;
   numberofunreadmessages: number;
   setShowContextMenu: (param: boolean) => void;
-  setContextMenuPosition: (
-    contextMenuPosition: contextmenupositionType
-  ) => void;
-  setView: (panel: string) => void;
+  setContextMenuPosition: (contextMenuPosition: contextmenupositionType) => void;
+  setView?: (panel: string) => void;
 }
 
 export interface contextmenupositionType {
@@ -80,7 +80,23 @@ export interface userType {
   friend: boolean;
 }
 
+export interface IContact {
+  _id: string;
+  nickName: string;
+  sxpAddress: string;
+  onlineStatus: boolean;
+  lastAvailable: string;
+  notificationStatus: string;
+  lang?: string;
+  avatar?: string;
+}
+
+export interface IContactList {
+  contacts: IContact[];
+}
+
 export interface ChatMessageType {
+  _id: string;
   sender_id: string;
   recipient_id: string;
   room_id: string;
@@ -108,10 +124,6 @@ export interface ChatMsgType {
   to: string;
 }
 
-export interface accesstokenType {
-  accesstoken: string;
-}
-
 export interface selecteduserType {
   id: string;
 }
@@ -120,11 +132,23 @@ export interface scrollDownType {
   down: boolean;
 }
 
-export interface alertType {
-  _id: string;
+export interface INote {
+  message?: string;
+  sender: string;
+  status?: string;
+  detail?: string;
+}
+
+export interface IAlert {
+  _id?: string;
   alertType: string;
-  note: any;
+  note: INote;
   receivers: string[];
+  isDeleted?: boolean;
+  reads?: string[];
+  updatedAt?: string;
+  createdAt?: string;
+  readAts?: Map<string, number>;
 }
 
 export interface encryptionkeyStoreType {

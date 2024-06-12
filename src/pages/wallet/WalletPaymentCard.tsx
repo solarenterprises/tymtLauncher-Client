@@ -1,6 +1,5 @@
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-
 import { Box, Button, Grid, Stack } from "@mui/material";
 import InputText from "../../components/account/InputText";
 
@@ -15,31 +14,16 @@ const WalletPaymentCard = () => {
             {t("wal-36_payment-card")}
           </Box>
           <Box mb={"40px"}>
-            <InputText
-              id="card-number"
-              type="text"
-              label={t("wal-43_card-number")}
-            />
+            <InputText id="card-number" type="text" label={t("wal-43_card-number")} />
           </Box>
           <Box mb={"40px"}>
-            <InputText
-              id="holder-name"
-              type="text"
-              label={t("wal-44_holder-name")}
-            />
+            <InputText id="holder-name" type="text" label={t("wal-44_holder-name")} />
           </Box>
           <Stack direction="row" alignItems="center" spacing="24px" mb="40px">
-            <InputText
-              id="expiration-date"
-              type="text"
-              label={t("wal-45_expiration-date")}
-            />
+            <InputText id="expiration-date" type="text" label={t("wal-45_expiration-date")} />
             <InputText id="cvv" type="text" label={t("wal-46_CVV")} />
           </Stack>
-          <Button
-            className="red-button fw"
-            onClick={() => navigate("/wallet/buy-game")}
-          >
+          <Button className="red-button fw" onClick={() => navigate("/wallet/buy-game")}>
             {t("wal-37_buy-sxp")}
           </Button>
         </Box>

@@ -1,6 +1,5 @@
 import { Box, Button, Divider, Stack } from "@mui/material";
 import { useTranslation } from "react-i18next";
-
 import backIcon from "../../assets/settings/back-icon.svg";
 import arrowImg from "../../assets/settings/arrow-right.svg";
 import { propsType } from "../../types/settingTypes";
@@ -16,44 +15,23 @@ const Security = ({ view, setView }: propsType) => {
       {view === "security" && (
         <Stack direction={"column"}>
           <input type="file" id="file-input" style={{ display: "none" }} />
-          <Stack
-            flexDirection={"row"}
-            justifyContent={"flex-start"}
-            gap={"10px"}
-            alignItems={"center"}
-            textAlign={"center"}
-            sx={{ padding: "20px" }}
-          >
-            <Button
-              className={"setting-back-button"}
-              onClick={() => setView("general")}
-            >
+          <Stack flexDirection={"row"} justifyContent={"flex-start"} gap={"10px"} alignItems={"center"} textAlign={"center"} sx={{ padding: "20px" }}>
+            <Button className={"setting-back-button"} onClick={() => setView("general")}>
               <Box component={"img"} src={backIcon}></Box>
             </Button>
             <Box className="fs-h3 white">{t("set-14_security-privacy")}</Box>
           </Stack>
           <Divider variant="middle" sx={{ backgroundColor: "#FFFFFF1A" }} />
           <Stack direction={"column"} justifyContent={""}>
-            <Button
-              className="common-btn"
-              sx={{ padding: "20px" }}
-              onClick={() => setView("password")}
-            >
-              <Stack
-                direction={"row"}
-                justifyContent={"space-between"}
-                textAlign={"center"}
-              >
+            <Button className="common-btn" sx={{ padding: "20px" }} onClick={() => setView("password")}>
+              <Stack direction={"row"} justifyContent={"space-between"} textAlign={"center"}>
                 <Box className="fs-h4 white">{t("set-71_change-password")}</Box>
                 <Box className="center-align">
                   <img src={arrowImg} />
                 </Box>
               </Stack>
             </Button>
-            <Divider
-              variant="fullWidth"
-              sx={{ backgroundColor: "#FFFFFF1A" }}
-            />
+            <Divider variant="fullWidth" sx={{ backgroundColor: "#FFFFFF1A" }} />
             <Stack
               direction={"column"}
               justifyContent={"flex-start"}

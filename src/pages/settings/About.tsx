@@ -19,18 +19,8 @@ const About = ({ view, setView }: propsType) => {
       {view === "about" && (
         <>
           <Stack direction={"column"}>
-            <Stack
-              flexDirection={"row"}
-              justifyContent={"flex-start"}
-              gap={"10px"}
-              alignItems={"center"}
-              textAlign={"center"}
-              className="p-20"
-            >
-              <Button
-                className={"setting-back-button"}
-                onClick={() => setView("general")}
-              >
+            <Stack flexDirection={"row"} justifyContent={"flex-start"} gap={"10px"} alignItems={"center"} textAlign={"center"} className="p-20">
+              <Button className={"setting-back-button"} onClick={() => setView("general")}>
                 <Box component={"img"} src={backIcon}></Box>
               </Button>
               <Box className="fs-h3 white">{t("set-50_about")}</Box>
@@ -44,21 +34,14 @@ const About = ({ view, setView }: propsType) => {
                   openLink(tymtlinks.links.documentation);
                 }}
               >
-                <Stack
-                  direction={"row"}
-                  justifyContent={"space-between"}
-                  textAlign={"center"}
-                >
+                <Stack direction={"row"} justifyContent={"space-between"} textAlign={"center"}>
                   <Box className="fs-h4 white">{t("set-51_documentation")}</Box>
                   <Box className="center-align">
                     <img src={externalIcon} />
                   </Box>
                 </Stack>
               </Button>
-              <Divider
-                variant="fullWidth"
-                sx={{ backgroundColor: "#FFFFFF1A" }}
-              />
+              <Divider variant="fullWidth" sx={{ backgroundColor: "#FFFFFF1A" }} />
               <Button
                 className="common-btn"
                 sx={{ padding: "20px" }}
@@ -66,23 +49,14 @@ const About = ({ view, setView }: propsType) => {
                   openLink(tymtlinks.links.policy);
                 }}
               >
-                <Stack
-                  direction={"row"}
-                  justifyContent={"space-between"}
-                  textAlign={"center"}
-                >
-                  <Box className="fs-h4 white">
-                    {t("set-52_privacy-policy")}
-                  </Box>
+                <Stack direction={"row"} justifyContent={"space-between"} textAlign={"center"}>
+                  <Box className="fs-h4 white">{t("set-52_privacy-policy")}</Box>
                   <Box className="center-align">
                     <img src={externalIcon} />
                   </Box>
                 </Stack>
               </Button>
-              <Divider
-                variant="fullWidth"
-                sx={{ backgroundColor: "#FFFFFF1A" }}
-              />
+              <Divider variant="fullWidth" sx={{ backgroundColor: "#FFFFFF1A" }} />
               <Button
                 className="common-btn"
                 sx={{ padding: "20px" }}
@@ -90,34 +64,17 @@ const About = ({ view, setView }: propsType) => {
                   openLink(tymtlinks.links.termsofservice);
                 }}
               >
-                <Stack
-                  direction={"row"}
-                  justifyContent={"space-between"}
-                  textAlign={"center"}
-                >
+                <Stack direction={"row"} justifyContent={"space-between"} textAlign={"center"}>
                   <Box className="fs-h4 white">{t("set-53_terms-service")}</Box>
                   <Box className="center-align">
                     <img src={externalIcon} />
                   </Box>
                 </Stack>
               </Button>
-              <Divider
-                variant="fullWidth"
-                sx={{ backgroundColor: "#FFFFFF1A" }}
-              />
-              <Stack
-                direction={"column"}
-                justifyContent={"flex-start"}
-                textAlign={"left"}
-                gap={"20px"}
-                padding={"20px"}
-              >
+              <Divider variant="fullWidth" sx={{ backgroundColor: "#FFFFFF1A" }} />
+              <Stack direction={"column"} justifyContent={"flex-start"} textAlign={"left"} gap={"20px"} padding={"20px"}>
                 <Box className="fs-h4 white">{t("set-54_follow-us")}</Box>
-                <Stack
-                  direction={"row"}
-                  justifyContent={"flex-start"}
-                  gap={"10px"}
-                >
+                <Stack direction={"row"} justifyContent={"flex-start"} gap={"10px"}>
                   <Button
                     className="button_navbar_common"
                     sx={{ padding: 0 }}

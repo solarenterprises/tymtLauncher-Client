@@ -16,7 +16,6 @@ export interface accountType {
   agreedTerms: boolean;
   uid: string;
   avatar: string;
-  accessToken: string;
   isLoggedIn: boolean;
 }
 
@@ -75,7 +74,7 @@ export interface IMnemonic {
   mnemonic: string;
 }
 
-export interface IToken {
+export interface ISaltToken {
   salt: string;
   token: string;
 }

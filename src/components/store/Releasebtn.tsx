@@ -1,5 +1,4 @@
 import { useState } from "react";
-
 import { SelectChangeEvent } from "@mui/material/Select";
 import { useTranslation } from "react-i18next";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
@@ -52,13 +51,7 @@ const theme = createTheme({
   },
 });
 
-const Releasedate = [
-  "sto-6_coming-soon",
-  "sto-7_last-7days",
-  "sto-8_last-30-days",
-  "sto-9_last-60-days",
-  "sto-10_last-90-days",
-];
+const Releasedate = ["sto-6_coming-soon", "sto-7_last-7days", "sto-8_last-30-days", "sto-9_last-60-days", "sto-10_last-90-days"];
 
 var selectedshow: boolean = false;
 
@@ -103,12 +96,10 @@ const Releasebtn = () => {
               border: "1px solid rgba(82, 225, 242, 0.40)",
               background: "var(--bg-stroke-card-bg, rgba(27, 53, 56, 0.20))",
               "&:hover": {
-                backgroundColor:
-                  "var(--bg-stroke-blue-stroke-default-10, rgba(82, 225, 242, 0.10))",
+                backgroundColor: "var(--bg-stroke-blue-stroke-default-10, rgba(82, 225, 242, 0.10))",
               },
               "&:active": {
-                backgroundColor:
-                  "var(--bg-stroke-blue-stroke-default-20, rgba(82, 225, 242, 0.20))",
+                backgroundColor: "var(--bg-stroke-blue-stroke-default-20, rgba(82, 225, 242, 0.20))",
               },
               "& .MuiSelect-icon": {
                 color: "var(--Basic-Light, #AFAFAF)",
@@ -123,18 +114,14 @@ const Releasebtn = () => {
                   width: "180px",
                   display: "flex",
                   justifyContent: "space-between",
-                  borderBottom:
-                    "1px solid var(--bg-stroke-white-10-stroke-default, rgba(255, 255, 255, 0.10))",
+                  borderBottom: "1px solid var(--bg-stroke-white-10-stroke-default, rgba(255, 255, 255, 0.10))",
                   "&:hover": {
-                    background:
-                      "var(--bg-stroke-blue-stroke-default-10, rgba(82, 225, 242, 0.10))",
+                    background: "var(--bg-stroke-blue-stroke-default-10, rgba(82, 225, 242, 0.10))",
                   },
                   "&.Mui-selected": {
-                    background:
-                      "var(--bg-stroke-blue-stroke-default-10, rgba(82, 225, 242, 0.10))",
+                    background: "var(--bg-stroke-blue-stroke-default-10, rgba(82, 225, 242, 0.10))",
                     "&:hover": {
-                      background:
-                        "var(--bg-stroke-blue-stroke-default-10, rgba(82, 225, 242, 0.10))",
+                      background: "var(--bg-stroke-blue-stroke-default-10, rgba(82, 225, 242, 0.10))",
                     },
                     backdropFilter: "blur(10px)",
                   },

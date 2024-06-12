@@ -22,10 +22,7 @@ import tymt3 from "../../../assets/account/tymt3.png";
 
 import "../../../global.css";
 import { accountType, custodialType } from "../../../types/accountTypes";
-import {
-  getTempCustodial,
-  setTempCustodial,
-} from "../../../features/account/TempCustodialSlice";
+import { getTempCustodial, setTempCustodial } from "../../../features/account/TempCustodialSlice";
 import BenefitModal from "../../../components/account/BenefitModal";
 import { getAccount } from "../../../features/account/AccountSlice";
 import { useState } from "react";
@@ -46,9 +43,7 @@ const CustodialSignUp1 = () => {
       passwordMatch: "",
     },
     validationSchema: Yup.object({
-      email: Yup.string()
-        .email(t("cca-62_invalid-email-address"))
-        .required(t("cca-63_required")),
+      email: Yup.string().email(t("cca-62_invalid-email-address")).required(t("cca-63_required")),
       password: Yup.string()
         .test(
           "password-requirements",
@@ -57,13 +52,7 @@ const CustodialSignUp1 = () => {
             if (!value) {
               return false;
             }
-            const checks = [
-              /[a-z]/.test(value),
-              /[A-Z]/.test(value),
-              /\d/.test(value),
-              /[\W_]/.test(value),
-              value.length >= 8,
-            ];
+            const checks = [/[a-z]/.test(value), /[A-Z]/.test(value), /\d/.test(value), /[\W_]/.test(value), value.length >= 8];
             const passedConditions = checks.filter(Boolean).length;
             return passedConditions >= 4;
           }
@@ -78,9 +67,7 @@ const CustodialSignUp1 = () => {
         setTempCustodial({
           ...tempCustodialStore,
           email: formik.values.email,
-          password: createKeccakHash("keccak256")
-            .update(formik.values.password)
-            .digest("hex"),
+          password: createKeccakHash("keccak256").update(formik.values.password).digest("hex"),
         })
       );
       setPath("/custodial/signup/1/verify-email");
@@ -96,12 +83,7 @@ const CustodialSignUp1 = () => {
     <>
       <Grid container className="basic-container">
         <Grid item xs={12} container justifyContent={"center"}>
-          <Stack
-            direction={"row"}
-            alignItems={"center"}
-            justifyContent={"center"}
-            gap={"64px"}
-          >
+          <Stack direction={"row"} alignItems={"center"} justifyContent={"center"} gap={"64px"}>
             <Stack alignItems={"center"} justifyContent={"center"}>
               <Grid container justifyContent={"center"}>
                 <Grid
@@ -114,22 +96,12 @@ const CustodialSignUp1 = () => {
                 >
                   <Grid item xs={12} container justifyContent={"space-between"}>
                     <Back onClick={handleBackClick} />
-                    <Stepper
-                      all={3}
-                      now={1}
-                      texts={[t("ncca-1_create-account"), "", ""]}
-                    />
+                    <Stepper all={3} now={1} texts={[t("ncca-1_create-account"), "", ""]} />
                   </Grid>
                   <Grid item xs={12} mt={"80px"}>
-                    <AccountHeader
-                      title={t("ncca-1_create-account")}
-                      text={t("cca-1_not-feel-ready")}
-                    />
+                    <AccountHeader title={t("ncca-1_create-account")} text={t("cca-1_not-feel-ready")} />
                   </Grid>
-                  <form
-                    onSubmit={formik.handleSubmit}
-                    style={{ width: "100%" }}
-                  >
+                  <form onSubmit={formik.handleSubmit} style={{ width: "100%" }}>
                     <Grid item xs={12} mt={"48px"}>
                       <InputText
                         id="custodial-new-email"
@@ -139,11 +111,7 @@ const CustodialSignUp1 = () => {
                         value={formik.values.email}
                         onChange={formik.handleChange}
                         onBlur={formik.handleBlur}
-                        error={
-                          formik.touched.email && formik.errors.email
-                            ? true
-                            : false
-                        }
+                        error={formik.touched.email && formik.errors.email ? true : false}
                       />
                     </Grid>
                     <Grid
@@ -154,11 +122,7 @@ const CustodialSignUp1 = () => {
                         padding: "0px 6px",
                       }}
                     >
-                      {formik.touched.email && formik.errors.email && (
-                        <Box className={"fs-16-regular red"}>
-                          {formik.errors.email}
-                        </Box>
-                      )}
+                      {formik.touched.email && formik.errors.email && <Box className={"fs-16-regular red"}>{formik.errors.email}</Box>}
                     </Grid>
                     <Grid item xs={12} mt={"40px"}>
                       <InputText
@@ -169,11 +133,7 @@ const CustodialSignUp1 = () => {
                         value={formik.values.password}
                         onChange={formik.handleChange}
                         onBlur={formik.handleBlur}
-                        error={
-                          formik.touched.password && formik.errors.password
-                            ? true
-                            : false
-                        }
+                        error={formik.touched.password && formik.errors.password ? true : false}
                       />
                     </Grid>
                     <Grid item xs={12} mt={"16px"}>
@@ -188,12 +148,7 @@ const CustodialSignUp1 = () => {
                         value={formik.values.passwordMatch}
                         onChange={formik.handleChange}
                         onBlur={formik.handleBlur}
-                        error={
-                          formik.touched.passwordMatch &&
-                          formik.errors.passwordMatch
-                            ? true
-                            : false
-                        }
+                        error={formik.touched.passwordMatch && formik.errors.passwordMatch ? true : false}
                       />
                     </Grid>
                     <Grid
@@ -204,12 +159,7 @@ const CustodialSignUp1 = () => {
                         padding: "0px 6px",
                       }}
                     >
-                      {formik.touched.passwordMatch &&
-                        formik.errors.passwordMatch && (
-                          <Box className={"fs-16-regular red"}>
-                            {formik.errors.passwordMatch}
-                          </Box>
-                        )}
+                      {formik.touched.passwordMatch && formik.errors.passwordMatch && <Box className={"fs-16-regular red"}>{formik.errors.passwordMatch}</Box>}
                     </Grid>
                     <Grid item xs={12} mt={"40px"}>
                       <IAgreeTerms />
@@ -217,14 +167,7 @@ const CustodialSignUp1 = () => {
                     <Grid item xs={12} mt={"48px"}>
                       <AccountNextButton
                         isSubmit={true}
-                        disabled={
-                          formik.errors.email ||
-                          formik.errors.password ||
-                          formik.errors.passwordMatch ||
-                          !accountStore.agreedTerms
-                            ? true
-                            : false
-                        }
+                        disabled={formik.errors.email || formik.errors.password || formik.errors.passwordMatch || !accountStore.agreedTerms ? true : false}
                         text={t("ncca-1_create-account")}
                       />
                     </Grid>

@@ -1,53 +1,38 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
-
-import {
-  FormControl,
-  InputLabel,
-  Input,
-  IconButton,
-  Tooltip,
-  Box,
-  Stack,
-} from "@mui/material";
-
+import { FormControl, InputLabel, Input, IconButton, Tooltip, Box, Stack } from "@mui/material";
 import InputAdornment from "@mui/material/InputAdornment";
 import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import VisibilityOffOutlinedIcon from "@mui/icons-material/VisibilityOffOutlined";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
-
 import { propsInputTypes } from "../../types/commonTypes";
 
-const InputText = ({
-  id,
-  label,
-  type,
-  name,
-  setValue,
-  value,
-  onChange,
-  onBlur,
-  error,
-  onIconButtonClick,
-  onAddressButtonClick,
-}: propsInputTypes) => {
+const InputText = ({ id, label, type, name, setValue, value, onChange, onBlur, error, onIconButtonClick, onAddressButtonClick }: propsInputTypes) => {
   const { t } = useTranslation();
   const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [showOnce, setShowOnce] = useState<boolean>(false);
   const handleClickShowPassword = () => setShowPassword((show) => !show);
-  const handleMouseDownPassword = (
-    event: React.MouseEvent<HTMLButtonElement>
-  ) => {
+  const handleMouseDownPassword = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
   };
+
+  const checkCapsLock = useCallback(
+    (event: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      const capsLockOn: boolean = event.getModifierState("CapsLock");
+      if (capsLockOn && (!showOnce || !value)) {
+        alert(t("wc-27_caps-lock-on"));
+        setShowOnce(true);
+      } else if (!capsLockOn || !value) {
+        setShowOnce(false);
+      }
+    },
+    [showOnce, value]
+  );
 
   return (
     <>
       {type === "text" && (
-        <FormControl
-          className="input-text"
-          sx={{ width: "100%" }}
-          variant="standard"
-        >
+        <FormControl className="input-text" sx={{ width: "100%" }} variant="standard">
           <InputLabel
             htmlFor={id}
             sx={{
@@ -90,11 +75,7 @@ const InputText = ({
         </FormControl>
       )}
       {type === "mnemonic" && (
-        <FormControl
-          className="input-text"
-          sx={{ width: "100%" }}
-          variant="standard"
-        >
+        <FormControl className="input-text" sx={{ width: "100%" }} variant="standard">
           <InputLabel
             htmlFor={id}
             sx={{
@@ -130,6 +111,7 @@ const InputText = ({
                   onClick={onIconButtonClick}
                   onMouseDown={handleMouseDownPassword}
                   className={"icon-button"}
+                  tabIndex={-1}
                 >
                   <ContentCopyIcon className={"icon-button"} />
                 </IconButton>
@@ -151,45 +133,37 @@ const InputText = ({
       {type === "password" && (
         <Tooltip
           title={
-            <Stack
-              spacing={"10px"}
-              sx={{
-                marginTop:
-                  label === "Your password"
-                    ? "-42px"
-                    : label === "Repeat Password"
-                    ? "-42px"
-                    : label === "Password"
-                    ? "25px"
-                    : label === t("set-75_your-new-password")
-                    ? "30px"
-                    : label === "Your New Password"
-                    ? "30px"
-                    : "-42px",
-                backgroundColor: "rgb(49, 53, 53)",
-                padding: "16px",
-                borderRadius: "16px",
-                border: "1px solid rgb(71, 76, 76)",
-              }}
-            >
-              <Box className="fs-16-regular white">
-                {t("cca-4_your-password-must")}
-              </Box>
-              <Stack>
-                <Box className="fs-14-regular light">
-                  • {t("cca-5_at-least-8")}
-                </Box>
-                <Box className="fs-14-regular light">
-                  • {t("cca-6_one-uppercase-letter")}
-                </Box>
-                <Box className="fs-14-regular light">
-                  • {t("cca-7_one-lowercase-letter")}
-                </Box>
-                <Box className="fs-14-regular light">
-                  • {t("cca-8_one-number-character")}
-                </Box>
+            !value && (
+              <Stack
+                spacing={"10px"}
+                sx={{
+                  marginTop:
+                    label === "Your password"
+                      ? "-42px"
+                      : label === "Repeat Password"
+                      ? "-42px"
+                      : label === "Password"
+                      ? "25px"
+                      : label === t("set-75_your-new-password")
+                      ? "30px"
+                      : label === "Your New Password"
+                      ? "30px"
+                      : "-42px",
+                  backgroundColor: "rgb(49, 53, 53)",
+                  padding: "16px",
+                  borderRadius: "16px",
+                  border: "1px solid rgb(71, 76, 76)",
+                }}
+              >
+                <Box className="fs-16-regular white">{t("cca-4_your-password-must")}</Box>
+                <Stack>
+                  <Box className="fs-14-regular light">• {t("cca-5_at-least-8")}</Box>
+                  <Box className="fs-14-regular light">• {t("cca-6_one-uppercase-letter")}</Box>
+                  <Box className="fs-14-regular light">• {t("cca-7_one-lowercase-letter")}</Box>
+                  <Box className="fs-14-regular light">• {t("cca-8_one-number-character")}</Box>
+                </Stack>
               </Stack>
-            </Stack>
+            )
           }
           PopperProps={{
             sx: {
@@ -201,11 +175,7 @@ const InputText = ({
             },
           }}
         >
-          <FormControl
-            sx={{ width: "100%" }}
-            variant="standard"
-            className="input-text"
-          >
+          <FormControl sx={{ width: "100%" }} variant="standard" className="input-text">
             <InputLabel
               htmlFor={id}
               sx={{
@@ -241,12 +211,9 @@ const InputText = ({
                     onClick={handleClickShowPassword}
                     onMouseDown={handleMouseDownPassword}
                     className={"icon-button"}
+                    tabIndex={-1}
                   >
-                    {showPassword ? (
-                      <VisibilityOutlinedIcon className={"icon-button"} />
-                    ) : (
-                      <VisibilityOffOutlinedIcon className={"icon-button"} />
-                    )}
+                    {showPassword ? <VisibilityOutlinedIcon className={"icon-button"} /> : <VisibilityOffOutlinedIcon className={"icon-button"} />}
                   </IconButton>
                 </InputAdornment>
               }
@@ -265,16 +232,15 @@ const InputText = ({
                   display: "none",
                 },
               }}
+              onKeyUp={(e) => {
+                checkCapsLock(e);
+              }}
             />
           </FormControl>
         </Tooltip>
       )}
       {type === "address" && (
-        <FormControl
-          className="input-text"
-          sx={{ width: "100%" }}
-          variant="standard"
-        >
+        <FormControl className="input-text" sx={{ width: "100%" }} variant="standard">
           <InputLabel
             htmlFor={id}
             sx={{
@@ -305,18 +271,10 @@ const InputText = ({
             error={error}
             endAdornment={
               <InputAdornment position="end">
-                <IconButton
-                  onClick={onIconButtonClick}
-                  onMouseDown={handleMouseDownPassword}
-                  className={"icon-button"}
-                >
+                <IconButton onClick={onIconButtonClick} onMouseDown={handleMouseDownPassword} className={"icon-button"} tabIndex={-1}>
                   <ContentCopyIcon className={"icon-button"} />
                 </IconButton>
-                <IconButton
-                  onClick={onAddressButtonClick}
-                  onMouseDown={handleMouseDownPassword}
-                  className={"icon-button"}
-                >
+                <IconButton onClick={onAddressButtonClick} onMouseDown={handleMouseDownPassword} className={"icon-button"} tabIndex={-1}>
                   <i className="pi pi-book icon-button" />
                 </IconButton>
               </InputAdornment>

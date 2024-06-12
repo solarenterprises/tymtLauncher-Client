@@ -14,9 +14,7 @@ class ERC20 {
     const change = node.deriveChild(0);
     const childNode = change.deriveChild(0);
     const childWallet = childNode.getWallet();
-    const wallet = new ethers.Wallet(
-      childWallet.getPrivateKey().toString("hex")
-    );
+    const wallet = new ethers.Wallet(childWallet.getPrivateKey().toString("hex"));
     return wallet.privateKey;
   }
 
@@ -27,9 +25,7 @@ class ERC20 {
     const change = node.deriveChild(0);
     const childNode = change.deriveChild(0);
     const childWallet = childNode.getWallet();
-    const wallet = new ethers.Wallet(
-      childWallet.getPrivateKey().toString("hex")
-    );
+    const wallet = new ethers.Wallet(childWallet.getPrivateKey().toString("hex"));
     return wallet;
   }
 
@@ -55,11 +51,7 @@ class ERC20 {
     }
   }
 
-  static async sendTransaction(
-    passphrase: string,
-    rpc_url: string,
-    tx: { recipients: IRecipient[]; fee: string; vendorField?: string }
-  ) {
+  static async sendTransaction(passphrase: string, rpc_url: string, tx: { recipients: IRecipient[]; fee: string; vendorField?: string }) {
     console.log("RPC_URL", rpc_url);
     console.log("passphrase", passphrase);
     if (tx.recipients.length < 1) {
@@ -104,11 +96,7 @@ class ERC20 {
     }
   }
 
-  static async sendTransactionAPI(
-    passphrase: string,
-    rpc_url: string,
-    tx: { recipients: IRecipient[]; fee: string; vendorField?: string }
-  ) {
+  static async sendTransactionAPI(passphrase: string, rpc_url: string, tx: { recipients: IRecipient[]; fee: string; vendorField?: string }) {
     console.log("RPC_URL", rpc_url);
     console.log("passphrase", passphrase);
     if (tx.recipients.length < 1) {
@@ -137,7 +125,7 @@ class ERC20 {
       const noti: INotification = {
         status: "success",
         title: "Send EVM",
-        message: "Transaction is sent out.",
+        message: "Transaction confirmed.",
         transactionId: response[0].hash,
       };
       return noti;
@@ -152,11 +140,7 @@ class ERC20 {
     }
   }
 
-  static async sendERCTransaction(
-    passphrase: string,
-    rpc_url: string,
-    tx: { recipients: IRecipient[]; fee: string; vendorField?: string }
-  ) {
+  static async sendERCTransaction(passphrase: string, rpc_url: string, tx: { recipients: IRecipient[]; fee: string; vendorField?: string }) {
     if (tx.recipients.length < 1) {
       const noti: INotification = {
         status: "failed",
@@ -198,11 +182,7 @@ class ERC20 {
     }
   }
 
-  static async sendERCTransactionAPI(
-    passphrase: string,
-    rpc_url: string,
-    tx: { recipients: IRecipient[]; fee: string; vendorField?: string }
-  ) {
+  static async sendERCTransactionAPI(passphrase: string, rpc_url: string, tx: { recipients: IRecipient[]; fee: string; vendorField?: string }) {
     if (tx.recipients.length < 1) {
       const noti: INotification = {
         status: "failed",
@@ -229,7 +209,7 @@ class ERC20 {
       const noti: INotification = {
         status: "success",
         title: "Send EVM",
-        message: "Transaction is sent out.",
+        message: "Transaction confirmed.",
         transactionId: response[0].hash,
       };
       return noti;

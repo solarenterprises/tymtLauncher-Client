@@ -7,14 +7,15 @@
     "withGlobalTauri": true
   },
   "package": {
-    "productName": "tymtLauncher",
-    "version": "2.0.2"
+    "productName": "tymtLauncherDebug",
+    "version": "2.1.2"
   },
 
   "tauri": {
     "allowlist": {
       "all": true,
       "fs": {
+        "readFile": true,
         "removeDir": true,
         "removeFile": true,
         "scope": [
@@ -23,10 +24,18 @@
           "/home/*/.local/share/tymtLauncher/*/games/*/*",
           "/home/*/.local/share/tymtLauncher/*/games/*/*/*",
           "/home/*/.local/share/tymtLauncher/*/games/*/*/*/*",
+          "/home/*/.local/share/tymtLauncherDebug/*/games/*",
+          "/home/*/.local/share/tymtLauncherDebug/*/games/*/*",
+          "/home/*/.local/share/tymtLauncherDebug/*/games/*/*/*",
+          "/home/*/.local/share/tymtLauncherDebug/*/games/*/*/*/*",
           "/Users/*/Library/Application Support/tymtLauncher/*/games/*",
           "/Users/*/Library/Application Support/tymtLauncher/*/games/*/*",
           "/Users/*/Library/Application Support/tymtLauncher/*/games/*/*/*",
-          "/Users/*/Library/Application Support/tymtLauncher/*/games/*/*/*/*"
+          "/Users/*/Library/Application Support/tymtLauncher/*/games/*/*/*/*",
+          "/Users/*/Library/Application Support/tymtLauncherDebug/*/games/*",
+          "/Users/*/Library/Application Support/tymtLauncherDebug/*/games/*/*",
+          "/Users/*/Library/Application Support/tymtLauncherDebug/*/games/*/*/*",
+          "/Users/*/Library/Application Support/tymtLauncherDebug/*/games/*/*/*/*"
         ],
         "all": true
       },
@@ -37,7 +46,32 @@
         "all": true,
         "execute": true,
         "sidecar": true,
-        "open": true
+        "open": true,
+        "scope": [
+          {
+            "name": "brew",
+            "cmd": "/usr/local/bin/brew",
+            "args": [
+              "install",
+              "cmake",
+              "freetype",
+              "gettext",
+              "gmp",
+              "hiredis",
+              "jpeg-turbo",
+              "jsoncpp",
+              "leveldb",
+              "libogg",
+              "libpng",
+              "libvorbis",
+              "luajit",
+              "zstd",
+              "gettext",
+              "ffmpeg@6",
+              "mysql-client"
+            ]
+          }
+        ]
       },
       "notification": {
         "all": true
@@ -50,13 +84,7 @@
       "http": {
         "all": true,
         "request": true,
-        "scope": [
-          "https://*",
-          "http://*",
-          "https://api.mainnet-beta.solana.com/*",
-          "https://api.devnet.solana.com/*",
-          "https://unisat.io/*"
-        ]
+        "scope": ["https://*", "http://*", "https://api.mainnet-beta.solana.com/*", "https://api.devnet.solana.com/*", "https://unisat.io/*"]
       },
       "window": {
         "all": true,
@@ -66,7 +94,7 @@
     "windows": [
       {
         "label": "tymtLauncher",
-        "title": "tymtLauncher 2.0.2",
+        "title": "tymtLauncher (debug) 2.1.2",
         "resizable": true,
         "width": 1440,
         "height": 1024,
@@ -101,15 +129,9 @@
     "bundle": {
       "active": true,
       "targets": "all",
-      "identifier": "tymtLauncher",
+      "identifier": "tymtLauncherDebug",
       "publisher": "dev@solarenterprises.com",
-      "icon": [
-        "icons/32x32.png",
-        "icons/128x128.png",
-        "icons/128x128@2x.png",
-        "icons/icon.icns",
-        "icons/icon.ico"
-      ],
+      "icon": ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.icns", "icons/icon.ico"],
       "category": "Game",
       "shortDescription": "A multi-chain game launcher and an environment for creating and publishing games",
       "longDescription": "tymt is a multi-chain game launcher and an environment for creating and publishing games. \n tymt is a gaming environment and platform, built using the Solar Core blockchain solutions, enabling a new world of game economy - empowering Developers and Publishers!"

@@ -3,7 +3,7 @@ const api_path = "api_url";
 
 const Axios = axios.create({
   responseType: "json",
-  baseURL: `${api_path}/api`
+  baseURL: `${api_path}/api`,
 });
 
 Axios.interceptors.request.use(function (options: any) {

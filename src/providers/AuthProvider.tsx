@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Outlet } from "react-router-dom";
 
@@ -10,11 +10,17 @@ export const AuthProvider = () => {
   const navigate = useNavigate();
   const accountStore: accountType = useSelector(getAccount);
 
+  const accountStoreRef = useRef(accountStore);
+
   useEffect(() => {
-    if (!accountStore.isLoggedIn) {
+    accountStoreRef.current = accountStore;
+  }, [accountStore]);
+
+  useEffect(() => {
+    if (!accountStoreRef.current.isLoggedIn) {
       navigate("/start");
     }
-  }, [accountStore]);
+  }, [accountStoreRef.current.isLoggedIn]);
 
   return <Outlet />;
 };

@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import InputText from "../account/InputText";
 import { useNotification } from "../../providers/NotificationProvider";
 import { fetch as tauriFetch, ResponseType } from "@tauri-apps/api/http";
+import { production_version } from "../../configs";
 
 interface props {
   open: boolean;
@@ -27,13 +28,7 @@ const D53Modal = ({ open, setOpen }: props) => {
   const [serverList, setServerList] = useState<IServer[]>([]);
   const [serverIp, setServerIp] = useState<string>("");
 
-  const {
-    setNotificationStatus,
-    setNotificationTitle,
-    setNotificationDetail,
-    setNotificationOpen,
-    setNotificationLink,
-  } = useNotification();
+  const { setNotificationStatus, setNotificationTitle, setNotificationDetail, setNotificationOpen, setNotificationLink } = useNotification();
 
   const modalStyle = {
     display: "flex",
@@ -49,23 +44,25 @@ const D53Modal = ({ open, setOpen }: props) => {
       setNotificationOpen(true);
       setNotificationLink(null);
     } else {
-      const selectedServer = serverList.find(
-        (server) => server.ip === serverIp
-      );
-      if (selectedServer.clients >= selectedServer.clients_max) {
-        setNotificationStatus("failed");
-        setNotificationTitle(t("alt-9_run-failed"));
-        setNotificationDetail(t("alt-38_sorry-server-full"));
-        setNotificationOpen(true);
-        setNotificationLink(null);
+      const selectedServer = serverList.find((server) => server.ip === serverIp);
+      if (!selectedServer) {
+        await runGame("district53", serverIp);
       } else {
-        const res = await runGame("district53", serverIp);
-        if (!res) {
+        if (selectedServer?.clients >= selectedServer?.clients_max) {
           setNotificationStatus("failed");
           setNotificationTitle(t("alt-9_run-failed"));
-          setNotificationDetail(t("alt-10_run-failed-intro"));
+          setNotificationDetail(t("alt-38_sorry-server-full"));
           setNotificationOpen(true);
           setNotificationLink(null);
+        } else {
+          const res = await runGame("district53", serverIp);
+          if (!res) {
+            setNotificationStatus("failed");
+            setNotificationTitle(t("alt-9_run-failed"));
+            setNotificationDetail(t("alt-10_run-failed-intro"));
+            setNotificationOpen(true);
+            setNotificationLink(null);
+          }
         }
       }
     }
@@ -78,22 +75,29 @@ const D53Modal = ({ open, setOpen }: props) => {
   }
 
   useEffect(() => {
-    const init = async () => {
-      const apiURL = `https://serverlist.district53.io/`;
-      const res: any = await tauriFetch(apiURL, {
-        method: "GET",
-        timeout: 30,
-        responseType: ResponseType.JSON,
-      });
-      setServerList(res.data);
-      setServerIp(res.data[0].ip);
+    let intervalId: NodeJS.Timeout;
+    if (open) {
+      const init = async () => {
+        const apiURL = production_version === "prod" ? `https://serverlist.district53.io/` : `http://dev.district53.io:5000/`;
+        const res: any = await tauriFetch(apiURL, {
+          method: "GET",
+          timeout: 30,
+          responseType: ResponseType.JSON,
+        });
+        setServerList(res.data);
+        setServerIp(res.data[0].ip);
+      };
+
+      init();
+      intervalId = setInterval(init, 30 * 1e3);
+    }
+
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
     };
-
-    init();
-    const intervalId = setInterval(init, 30 * 1e3);
-
-    return () => clearInterval(intervalId);
-  }, []);
+  }, [open]);
 
   return (
     <Modal
@@ -105,27 +109,9 @@ const D53Modal = ({ open, setOpen }: props) => {
       }}
     >
       <Box className="d53-modal-content oauth-modal">
-        <img
-          src={closeIcon}
-          alt="close icon"
-          className="close-icon"
-          onClick={() => setOpen(false)}
-        />
-        <Stack
-          direction={"column"}
-          justifyContent={"center"}
-          alignItems={"center"}
-          textAlign={"center"}
-        >
-          <InputText
-            id="server"
-            label={"server"}
-            type="text"
-            name="server"
-            value={serverIp}
-            setValue={setServerIp}
-            error={validateIPv4Address(serverIp)}
-          />
+        <img src={closeIcon} alt="close icon" className="close-icon" onClick={() => setOpen(false)} />
+        <Stack direction={"column"} justifyContent={"center"} alignItems={"center"} textAlign={"center"}>
+          <InputText id="server" label={"server"} type="text" name="server" value={serverIp} setValue={setServerIp} error={validateIPv4Address(serverIp)} />
           {validateIPv4Address(serverIp) && (
             <Box
               className={"fs-16-regular red t-left"}
@@ -151,47 +137,15 @@ const D53Modal = ({ open, setOpen }: props) => {
                 }}
                 disabled={server.status !== "online"}
               >
-                <Stack
-                  direction={"row"}
-                  width={"100%"}
-                  gap={"4px"}
-                  alignItems={"center"}
-                >
-                  <Box
-                    className={
-                      server.clients < server.clients_max
-                        ? "fs-16-regular white"
-                        : "fs-16-regular red"
-                    }
-                  >{`${server.display_name}`}</Box>
+                <Stack direction={"row"} width={"100%"} gap={"4px"} alignItems={"center"}>
+                  <Box className={server.clients < server.clients_max ? "fs-16-regular white" : "fs-16-regular red"}>{`${server.display_name}`}</Box>
                   <Stack direction={"row"} alignItems={"center"} gap={"4px"}>
-                    <Box
-                      className={"fs-12-regular"}
-                      color={
-                        server.clients < server.clients_max
-                          ? "#52E1F2"
-                          : "#EF4444"
-                      }
-                    >{`(${server.clients ?? "0"}/${
+                    <Box className={"fs-12-regular"} color={server.clients < server.clients_max ? "#52E1F2" : "#EF4444"}>{`(${server.clients ?? "0"}/${
                       server.clients_max ?? "0"
                     }`}</Box>
                     <Stack direction={"row"} alignItems={"center"}>
-                      <Box
-                        className={"fs-10-light"}
-                        color={
-                          server.clients < server.clients_max
-                            ? "#52E1F2"
-                            : "#EF4444"
-                        }
-                      >{`Joined`}</Box>
-                      <Box
-                        className={"fs-12-regular"}
-                        color={
-                          server.clients < server.clients_max
-                            ? "#52E1F2"
-                            : "#EF4444"
-                        }
-                      >{`)`}</Box>
+                      <Box className={"fs-10-light"} color={server.clients < server.clients_max ? "#52E1F2" : "#EF4444"}>{`Joined`}</Box>
+                      <Box className={"fs-12-regular"} color={server.clients < server.clients_max ? "#52E1F2" : "#EF4444"}>{`)`}</Box>
                     </Stack>
                   </Stack>
                 </Stack>

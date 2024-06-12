@@ -15,10 +15,15 @@ export interface ITransfer {
 }
 
 export interface ISendTransactionReq {
+  requestUserId: string;
   chain: string;
-  transfer: ITransfer[];
+  transfers: ITransfer[];
   note: string;
   memo?: string;
   token?: string;
-  launcher_token: string;
+  status: string;
+  transaction: string;
+  _id: string;
+  createdAt: string;
+  updatedAt: string;
 }

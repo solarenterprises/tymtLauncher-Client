@@ -1,58 +1,44 @@
 import { Box, Grid, Stack } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import Avatar from "../home/Avatar";
-import {
-  createContact,
-  getaccessToken,
-  receiveContactlist,
-} from "../../features/chat/Chat-contactApi";
-import { setUserList } from "../../features/chat/Chat-userlistSlice";
-import {
-  propsUserlistType,
-  selecteduserType,
-  userType,
-} from "../../types/chatTypes";
-import { multiWalletType } from "../../types/walletTypes";
-import { nonCustodialType } from "../../types/accountTypes";
-import {
-  getSelectedUser,
-  setSelectedUsertoDelete,
-} from "../../features/chat/Chat-selecteduserSlice";
-import { getMultiWallet } from "../../features/wallet/MultiWalletSlice";
-import { getNonCustodial } from "../../features/account/NonCustodialSlice";
-import {
-  selectPartner,
-  setCurrentChatPartner,
-} from "../../features/chat/Chat-currentPartnerSlice";
+import { IContactList, propsUserlistType, selecteduserType } from "../../types/chatTypes";
+import { getSelectedUser, setSelectedUsertoDelete } from "../../features/chat/Chat-selecteduserSlice";
+import { useCallback, useEffect, useRef } from "react";
+import { createContactAsync, getContactList } from "../../features/chat/ContactListSlice";
+import { AppDispatch } from "../../store";
+import { setCurrentPartner } from "../../features/chat/CurrentPartnerSlice";
+import { useSocket } from "../../providers/SocketProvider";
+import { getBlockList } from "../../features/chat/BlockListSlice";
 
-const Userlist = ({
-  user,
-  index,
-  numberofunreadmessages,
-  setShowContextMenu,
-  setContextMenuPosition,
-  setView,
-}: propsUserlistType) => {
-  const selectedusertoDelete: selecteduserType = useSelector(getSelectedUser);
-  const multiwallet: multiWalletType = useSelector(getMultiWallet);
-  const nonCustodial: nonCustodialType = useSelector(getNonCustodial);
-  const userdata: userType[] = useSelector(selectPartner);
-  const dispatch = useDispatch();
+const Userlist = ({ user, index, numberofunreadmessages, setShowContextMenu, setContextMenuPosition, setView }: propsUserlistType) => {
+  const { askEncryptionKey } = useSocket();
+
+  const dispatch = useDispatch<AppDispatch>();
+  const selectedUserToDeleteStore: selecteduserType = useSelector(getSelectedUser);
+  const contactListStore: IContactList = useSelector(getContactList);
+  const blockListStore: IContactList = useSelector(getBlockList);
+
+  const selectedUserToDeleteStoreRef = useRef(selectedUserToDeleteStore);
+
+  useEffect(() => {
+    selectedUserToDeleteStoreRef.current = selectedUserToDeleteStore;
+  }, [selectedUserToDeleteStore]);
+
   const handleContextMenu = (e: any, id: string) => {
     e.preventDefault();
     const mouseX = e.clientX;
     const mouseY = e.clientY;
-    // const mouseX = e.pageX;
-    // const mouseY = e.pageY;
     setShowContextMenu(true);
     setContextMenuPosition({ x: mouseX, y: mouseY });
     e.stopPropagation();
-    dispatch(setSelectedUsertoDelete({ ...selectedusertoDelete, id: id }));
+    dispatch(
+      setSelectedUsertoDelete({
+        ...selectedUserToDeleteStoreRef.current,
+        id: id,
+      })
+    );
     const handleClickOutsideContextMenu = (event) => {
-      if (
-        !event.target.closest(".context_menu_block") &&
-        !event.target.closest(".context_menu_delete")
-      ) {
+      if (!event.target.closest(".context_menu_block") && !event.target.closest(".context_menu_delete")) {
         setShowContextMenu(false);
         document.removeEventListener("click", handleClickOutsideContextMenu);
       }
@@ -62,15 +48,69 @@ const Userlist = ({
     return false;
   };
 
-  const updateContact = async (_id) => {
-    const accessToken: string = await getaccessToken(
-      multiwallet.Solar.chain.wallet,
-      nonCustodial.password
-    );
-    await createContact(_id, accessToken);
-    const contacts: userType[] = await receiveContactlist(accessToken);
-    dispatch(setUserList(contacts));
-  };
+  const handleBoxClick = useCallback(async () => {
+    try {
+      if (blockListStore.contacts.some((element) => element._id === user._id)) {
+        console.log("handleBoxClick: Already in the block list!");
+        askEncryptionKey(user._id);
+        dispatch(
+          setCurrentPartner({
+            _id: user._id,
+            nickName: user.nickName,
+            avatar: user.avatar,
+            lang: user.lang,
+            sxpAddress: user.sxpAddress,
+            onlineStatus: user.onlineStatus,
+            notificationStatus: user.notificationStatus,
+          })
+        );
+        if (setView) {
+          setView("chatbox");
+        }
+      } else if (contactListStore.contacts.some((element) => element._id === user._id)) {
+        console.log("handleBoxClick: Already in the contact list!");
+        askEncryptionKey(user._id);
+        dispatch(
+          setCurrentPartner({
+            _id: user._id,
+            nickName: user.nickName,
+            avatar: user.avatar,
+            lang: user.lang,
+            sxpAddress: user.sxpAddress,
+            onlineStatus: user.onlineStatus,
+            notificationStatus: user.notificationStatus,
+          })
+        );
+        if (setView) {
+          setView("chatbox");
+        }
+      } else {
+        dispatch(createContactAsync(user._id))
+          .then(() => {
+            askEncryptionKey(user._id);
+            dispatch(
+              setCurrentPartner({
+                _id: user._id,
+                nickName: user.nickName,
+                avatar: user.avatar,
+                lang: user.lang,
+                sxpAddress: user.sxpAddress,
+                onlineStatus: user.onlineStatus,
+                notificationStatus: user.notificationStatus,
+              })
+            );
+            if (setView) {
+              setView("chatbox");
+            }
+          })
+          .catch((err) => {
+            console.error("Failed to createContactAsync: ", err);
+          });
+      }
+    } catch (err) {
+      console.error("Failed to handleBoxClick: ", err);
+    }
+  }, [user, contactListStore, blockListStore]);
 
   return (
     <Box key={`${index}-${new Date().toISOString()}`}>
@@ -97,42 +137,12 @@ const Userlist = ({
           },
         }}
         onContextMenu={(e) => handleContextMenu(e, user._id)}
-        onClick={() => {
-          dispatch(
-            setCurrentChatPartner({
-              ...userdata,
-              _id: user._id,
-              nickName: user.nickName,
-              avatar: user.avatar,
-              lang: user.lang,
-              sxpAddress: user.sxpAddress,
-              onlineStatus: user.onlineStatus,
-              notificationStatus: user.notificationStatus,
-            })
-          );
-          setView("chatbox");
-          updateContact(user._id);
-        }}
+        onClick={handleBoxClick}
       >
-        <Avatar
-          onlineStatus={user.onlineStatus}
-          userid={user._id}
-          size={40}
-          status={user.notificationStatus}
-        />
-        <Stack
-          flexDirection={"row"}
-          alignItems={"center"}
-          justifyContent={"space-between"}
-          display={"flex"}
-          sx={{ marginLeft: "25px", width: "320px" }}
-        >
+        <Avatar onlineStatus={user.onlineStatus} userid={user._id} size={40} status={user.notificationStatus} />
+        <Stack flexDirection={"row"} alignItems={"center"} justifyContent={"space-between"} display={"flex"} sx={{ marginLeft: "25px", width: "320px" }}>
           <Box>
-            <Stack
-              direction={"column"}
-              justifyContent={"flex-start"}
-              spacing={1}
-            >
+            <Stack direction={"column"} justifyContent={"flex-start"} spacing={1}>
               <Box className={"fs-16 white"}>{user?.nickName}</Box>
               <Box className={"fs-12-light gray"}>{user?.sxpAddress}</Box>
             </Stack>

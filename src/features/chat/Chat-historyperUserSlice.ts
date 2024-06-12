@@ -35,10 +35,7 @@ const chathistoryperUserSlice = createSlice({
   reducers: {
     addChatHistoryperUser(state, action) {
       const { userId, encryptedmessage } = action.payload;
-      state.data.history[userId] = [
-        encryptedmessage,
-        ...(state.data.history[userId] || []),
-      ];
+      state.data.history[userId] = [encryptedmessage, ...(state.data.history[userId] || [])];
       tymtStorage.set(`historystore`, JSON.stringify(state.data));
       console.log("added encryptionkey", state.data.history[userId]);
     },
@@ -53,8 +50,7 @@ export const selectchathistoryByUserId = (state: any, userId: string) => {
   }
   return []; // Return an empty array if data is not defined
 };
-export const selectchathistoryperUserStore = (state: any) =>
-  state.historystore.data;
+export const selectchathistoryperUserStore = (state: any) => state.historystore.data;
 export const { addChatHistoryperUser } = chathistoryperUserSlice.actions;
 
 export default chathistoryperUserSlice.reducer;

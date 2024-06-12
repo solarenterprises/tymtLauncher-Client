@@ -30,6 +30,8 @@ import redeclipse2 from "../game/redeclipse/2.png";
 import redeclipse3 from "../game/redeclipse/3.png";
 import redeclipse4 from "../game/redeclipse/4.png";
 import redeclipse5 from "../game/redeclipse/5.png";
+import { chainEnum } from "../../types/walletTypes";
+import { platformEnum } from "../../types/GameTypes";
 
 export type PlatformFile =
   | {
@@ -37,8 +39,14 @@ export type PlatformFile =
       type: "zip" | "exec" | "appimage" | "tar.bz2";
       file?: string;
       exePath: string;
+      size?: number; // in MB
     }
   | undefined;
+
+export type PlatformFileForOS = {
+  prod: PlatformFile;
+  dev?: PlatformFile;
+};
 
 export type Sentence = { [key: string]: string };
 
@@ -61,9 +69,10 @@ export type Game = {
   introduction: Sentence;
   heroes: Sentence;
   executables: {
-    windows64: PlatformFile;
-    macos: PlatformFile;
-    linux: PlatformFile;
+    windows64?: PlatformFileForOS;
+    macosIntel?: PlatformFileForOS;
+    macosArm?: PlatformFileForOS;
+    linux?: PlatformFileForOS;
   };
   warning: Sentence;
   warningLink: string;
@@ -71,6 +80,9 @@ export type Game = {
   developers: string;
   publisher: string;
   video: string;
+  requirement: string;
+  platforms: platformEnum[];
+  chains: chainEnum[];
 };
 export type GamesType = { [key: string]: Game };
 
@@ -101,20 +113,58 @@ const Games: { [key: string]: Game } = {
     },
     executables: {
       linux: {
-        url: "https://github.com/district53/minetest/releases/download/5.9.0.001/District53-5.9.0.001-x86_64.AppImage",
-        type: "appimage",
-        exePath: "/tmp.AppImage",
+        prod: {
+          url: "https://github.com/solarenterprises/d53-minetest/releases/download/5.9.0.2/District53-5.9.0.2-x86_64.AppImage",
+          type: "appimage",
+          exePath: "/tmp.AppImage",
+        },
+        dev: {
+          url: "https://dev.district53.io:2000/District53-5.9.0.2-x86_64.AppImage",
+          type: "appimage",
+          exePath: "/tmp.AppImage",
+          size: 88,
+        },
       },
-      macos: {
-        url: "",
-        type: "zip",
-        exePath: "",
+      macosIntel: {
+        prod: {
+          url: "https://github.com/solarenterprises/d53-minetest/releases/download/5.9.0.2/District53_5.9.0.2_mac_x64_86.zip",
+          type: "zip",
+          exePath: "/District53",
+        },
+        dev: {
+          url: "https://dev.district53.io:2000/District53_5.9.0.2_mac_x64_86.zip",
+          type: "zip",
+          exePath: "/District53",
+          size: 10,
+        },
+      },
+      macosArm: {
+        prod: {
+          url: "https://github.com/solarenterprises/d53-minetest/releases/download/5.9.0.2/District53_5.9.0.2_mac_arm.zip",
+          type: "zip",
+          exePath: "/District53",
+        },
+        dev: {
+          url: "https://dev.district53.io:2000/District53_5.9.0.2_mac_arm.zip",
+          type: "zip",
+          exePath: "/District53",
+          size: 10,
+        },
       },
       windows64: {
-        url: "https://github.com/district53/minetest/releases/download/5.9.0.001/District53_5.9.0.001_win_x64.zip",
-        type: "zip",
-        file: "minetest",
-        exePath: "/bin/District53.exe",
+        prod: {
+          url: "https://github.com/solarenterprises/d53-minetest/releases/download/5.9.0.2/District53_5.9.0.2_win_x64.zip",
+          type: "zip",
+          file: "minetest",
+          exePath: "/bin/District53.exe",
+        },
+        dev: {
+          url: "https://dev.district53.io:2000/District53_5.9.0.2_win_x64.zip",
+          type: "zip",
+          file: "minetest",
+          exePath: "/bin/District53.exe",
+          size: 23,
+        },
       },
     },
     warning: {
@@ -126,6 +176,10 @@ const Games: { [key: string]: Game } = {
     release: "October 28, 2022",
     developers: "Solar Enterprises / Minetest",
     publisher: "Solar Enterprises",
+    requirement:
+      "OS:  Windows 10, 11 recommended. 7 or 8: partially support, Linux Debian(Ubuntu 20.04, 22.04 ideal) or CentOS, and partially support RHEL, macOS 13+ : in beta; customer support available<br>Processor: Intel Pentium 4 @ 2.0 Ghz or Greater.<br>Memory: 8GB+ of RAM<br>Storage: 500MB+ of free disk space<br>Graphics: Nvidia or Amd; Best recommended 2GB graphic memory",
+    platforms: [platformEnum.windows, platformEnum.linux, platformEnum.mac],
+    chains: [chainEnum.solar],
   },
   veloren: {
     name: "Veloren",
@@ -153,32 +207,48 @@ const Games: { [key: string]: Game } = {
     },
     executables: {
       linux: {
-        url: "https://download.veloren.net/latest/linux/x86_64/nightly",
-        type: "zip",
-        exePath: "/veloren-voxygen",
+        prod: {
+          url: "https://download.veloren.net/latest/linux/x86_64/nightly",
+          type: "zip",
+          exePath: "/veloren-voxygen",
+        },
       },
-      macos: {
-        url: "https://download.veloren.net/latest/macos/x86_64/nightly",
-        type: "zip",
-        exePath: "/veloren-voxygen",
+      macosIntel: {
+        prod: {
+          url: "https://download.veloren.net/latest/macos/x86_64/nightly",
+          type: "zip",
+          exePath: "/veloren-voxygen",
+        },
+      },
+      macosArm: {
+        prod: {
+          url: "https://download.veloren.net/latest/macos/x86_64/nightly",
+          type: "zip",
+          exePath: "/veloren-voxygen",
+        },
       },
       windows64: {
-        url: "https://download.veloren.net/latest/windows/x86_64/nightly",
-        type: "zip",
-        file: "minetest",
-        exePath: "/veloren-voxygen.exe",
+        prod: {
+          url: "https://download.veloren.net/latest/windows/x86_64/nightly",
+          type: "zip",
+          file: "minetest",
+          exePath: "/veloren-voxygen.exe",
+        },
       },
     },
     warning: {
       en: "Veloren is in development and it's not related to Solar or tymt. If you need any more information, please check out here.",
       jp: "Velorenは開発中であり、Solarやtymtとは関係ありません。さらに詳しい情報が必要な場合は、こちらをご覧ください。",
     },
-    warningLink:
-      "https://discord.com/invite/veloren-community-449602562165833758",
+    warningLink: "https://discord.com/invite/veloren-community-449602562165833758",
     release: "July 1, 2023",
     developers: "Kristoffer Anderson",
     publisher: "veloren.net",
     video: "https://veloren.net/videos/veloren.webm",
+    requirement:
+      "Operating system: Windows 10, Windows 11, macOS or Linux <br>Processor: 64-bit CPU <br>Memory: 4 GiB RAM <br>Graphics: GPU with support for DirectX 12 or newer, Vulkan or Metal <br>Storage: 2 GiB available space",
+    platforms: [platformEnum.windows, platformEnum.linux, platformEnum.mac],
+    chains: [],
   },
   redeclipse: {
     name: "Red Eclipse",
@@ -206,19 +276,32 @@ const Games: { [key: string]: Game } = {
     },
     executables: {
       linux: {
-        url: "https://github.com/redeclipse/deploy/releases/download/appimage_continuous_stable/redeclipse-stable-x86_64.AppImage",
-        type: "appimage",
-        exePath: "/tmp.AppImage",
+        prod: {
+          url: "https://github.com/redeclipse/deploy/releases/download/appimage_continuous_stable/redeclipse-stable-x86_64.AppImage",
+          type: "appimage",
+          exePath: "/tmp.AppImage",
+        },
       },
-      macos: {
-        url: "https://github.com/redeclipse/base/releases/download/v2.0.0/redeclipse_2.0.0_mac.tar.bz2",
-        type: "tar.bz2",
-        exePath: "/redeclipse.app",
+      macosIntel: {
+        prod: {
+          url: "https://github.com/redeclipse/base/releases/download/v2.0.0/redeclipse_2.0.0_mac.tar.bz2",
+          type: "tar.bz2",
+          exePath: "/redeclipse.app",
+        },
+      },
+      macosArm: {
+        prod: {
+          url: "https://github.com/redeclipse/base/releases/download/v2.0.0/redeclipse_2.0.0_mac.tar.bz2",
+          type: "tar.bz2",
+          exePath: "/redeclipse.app",
+        },
       },
       windows64: {
-        url: "https://github.com/redeclipse/base/releases/download/v2.0.0/redeclipse_2.0.0_win.zip",
-        type: "zip",
-        exePath: "/redeclipse.bat",
+        prod: {
+          url: "https://github.com/redeclipse/base/releases/download/v2.0.0/redeclipse_2.0.0_win.zip",
+          type: "zip",
+          exePath: "/redeclipse.bat",
+        },
       },
     },
     warning: {
@@ -230,6 +313,10 @@ const Games: { [key: string]: Game } = {
     developers: "Quinton Reeves, Lee Salzman, et al.",
     publisher: "Quinton Reeves",
     video: "",
+    requirement:
+      "Requires a 64-bit processor and operating system OS *: Windows Vista, 7, 8, 10, 11 <br>Processor: Intel Pentium Dual-Core E2180 / AMD Athlon 64 X2 4200+ <br>Memory: 2 GB RAM <br>Graphics: Intel HD 630 / Nvidia GeForce GT 630 / AMD Radeon HD 5750 <br>Network: Broadband Internet connection <br>Storage: 2 GB available space <br>Additional Notes: OpenGL 2.0 with GLSL 1.20",
+    platforms: [platformEnum.windows, platformEnum.linux, platformEnum.mac],
+    chains: [],
   },
 };
 

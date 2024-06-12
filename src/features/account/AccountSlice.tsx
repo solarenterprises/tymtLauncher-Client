@@ -13,7 +13,6 @@ const init: accountType = {
   agreedTerms: false,
   uid: "",
   avatar: randomavatar1,
-  accessToken: "",
   isLoggedIn: false,
 };
 

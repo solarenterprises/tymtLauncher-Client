@@ -1,62 +1,32 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
-import {
-  Box,
-  Divider,
-  Stack,
-  TextField,
-  InputAdornment,
-  Grid,
-  Button,
-  // Modal,
-} from "@mui/material";
+import { Box, Divider, Stack, TextField, InputAdornment, Grid, Button, Tabs, Tab } from "@mui/material";
 import { debounce } from "lodash";
-
 import ChatStyle from "../../styles/ChatStyles";
-
 import searchlg from "../../assets/searchlg.svg";
 import settingicon from "../../assets/chat/settings.svg";
 import nocontact from "../../assets/chat/nocontact.png";
-// import Avatar from "../../components/home/Avatar";
 import BlockModal from "../../components/chat/BlockModal";
 import DeleteModal from "../../components/chat/DeleteModal";
 import RequestModal from "../../components/chat/RequestModal";
-
 import { useSocket } from "../../providers/SocketProvider";
-import {
-  alertType,
-  propsType,
-  selecteduserType,
-  userType,
-} from "../../types/chatTypes";
-import { accountType, nonCustodialType } from "../../types/accountTypes";
-import { multiWalletType } from "../../types/walletTypes";
-import {
-  getUserlist,
-  setUserList,
-} from "../../features/chat/Chat-userlistSlice";
-import {
-  createContact,
-  deleteContact,
-  getaccessToken,
-  receiveContactlist,
-  searchUsers,
-} from "../../features/chat/Chat-contactApi";
-import { getNonCustodial } from "../../features/account/NonCustodialSlice";
-import { getMultiWallet } from "../../features/wallet/MultiWalletSlice";
-import {
-  getSelectedUser,
-  // setSelectedUsertoDelete,
-} from "../../features/chat/Chat-selecteduserSlice";
-import { setChatHistory } from "../../features/chat/Chat-historySlice";
+import { IAlert, IContactList, propsType, selecteduserType, userType } from "../../types/chatTypes";
+import { accountType } from "../../types/accountTypes";
+import { getSelectedUser } from "../../features/chat/Chat-selecteduserSlice";
 import { getAccount } from "../../features/account/AccountSlice";
-import { fetchUnreadAlerts } from "../../features/chat/Chat-alertApi";
-import { alertbadgeType } from "../../types/alertTypes";
-import { selectBadgeStatus } from "../../features/alert/AlertbadgeSlice";
+import { IAlertList } from "../../types/alertTypes";
 import FRcontextmenu from "../../components/chat/FRcontextmenu";
 import Userlist from "../../components/chat/Userlist";
+import { createContactAsync, deleteContactAsync, getContactList } from "../../features/chat/ContactListSlice";
+import { AppDispatch } from "../../store";
+import { getAlertList } from "../../features/alert/AlertListSlice";
+import { searchUsers } from "../../features/chat/ContactListApi";
+import { createFriendAsync, deleteFriendAsync, getFriendList } from "../../features/chat/FriendListSlice";
+import SwipeableViews from "react-swipeable-views";
+import { useTheme } from "@mui/material/styles";
+import { deleteBlockAsync, getBlockList } from "../../features/chat/BlockListSlice";
 
 const theme = createTheme({
   palette: {
@@ -74,15 +44,10 @@ const theme = createTheme({
 const Chatmain = ({ view, setView }: propsType) => {
   const classes = ChatStyle();
   const { socket } = useSocket();
-  const dispatch = useDispatch();
   const { t } = useTranslation();
+  const otheme = useTheme();
+
   const [value, setValue] = useState<string>("");
-  const chatuserlist: userType[] = useSelector(getUserlist);
-  const nonCustodial: nonCustodialType = useSelector(getNonCustodial);
-  const multiwallet: multiWalletType = useSelector(getMultiWallet);
-  const selectedusertoDelete: selecteduserType = useSelector(getSelectedUser);
-  const account: accountType = useSelector(getAccount);
-  const alertbadge: alertbadgeType = useSelector(selectBadgeStatus);
   const [searchedresult, setSearchedresult] = useState<userType[]>([]);
   const [isClickedBlock, setIsClickedBlock] = useState(false);
   const [isClickedDelete, setIsClickedDelete] = useState(false);
@@ -95,65 +60,126 @@ const Chatmain = ({ view, setView }: propsType) => {
     x: 0,
     y: 0,
   });
-  const [unreadalerts, setUnreadAlerts] = useState<alertType[]>([]);
+  const [tab, setTab] = useState<number>(0);
+
+  const valueRef = useRef(value);
+
+  useEffect(() => {
+    valueRef.current = value;
+  }, [value]);
+
+  const dispatch = useDispatch<AppDispatch>();
+  const contactListStore: IContactList = useSelector(getContactList);
+  const friendListStore: IContactList = useSelector(getFriendList);
+  const blockListStore: IContactList = useSelector(getBlockList);
+  const selectedUserToDeleteStore: selecteduserType = useSelector(getSelectedUser);
+  const accountStore: accountType = useSelector(getAccount);
+  const alertListStore: IAlertList = useSelector(getAlertList);
+
+  const selectedUserToDeleteStoreRef = useRef(selectedUserToDeleteStore);
+  const accountStoreRef = useRef(accountStore);
+  const friendListStoreRef = useRef(friendListStore);
+  const blockListStoreRef = useRef(blockListStore);
+
+  useEffect(() => {
+    selectedUserToDeleteStoreRef.current = selectedUserToDeleteStore;
+  }, [selectedUserToDeleteStore]);
+  useEffect(() => {
+    accountStoreRef.current = accountStore;
+  }, [accountStore]);
+  useEffect(() => {
+    friendListStoreRef.current = friendListStore;
+  }, [friendListStore]);
+  useEffect(() => {
+    blockListStoreRef.current = blockListStore;
+  }, [blockListStore]);
 
   const deleteSelectedUser = async () => {
-    const accessToken: string = await getaccessToken(
-      multiwallet.Solar.chain.wallet,
-      nonCustodial.password
-    );
-    await deleteContact(selectedusertoDelete.id, accessToken);
+    try {
+      dispatch(deleteFriendAsync(selectedUserToDeleteStoreRef.current.id)).then(() => {
+        dispatch(deleteContactAsync(selectedUserToDeleteStoreRef.current.id)).then(() => {
+          dispatch(deleteBlockAsync(selectedUserToDeleteStoreRef.current.id));
+        });
+      });
+      console.log("deleteSelectedUser");
+    } catch (err) {
+      console.error("Failed to deleteSelectedUser: ", err);
+    }
     setOpenDeleteModal(false);
-    const contacts: userType[] = await receiveContactlist(accessToken);
-    dispatch(setUserList(contacts));
-    dispatch(setChatHistory({ messages: [] }));
   };
 
-  const sendRequest = async () => {
-    const data = {
-      alertType: "friend-request",
-      note: {
-        sender: `${account.uid}`,
-        status: "pending",
-      },
-      receivers: [selectedusertoDelete.id],
-    };
-    socket.emit("post-alert", JSON.stringify(data));
+  const sendFriendRequest = async () => {
+    try {
+      if (friendListStoreRef.current.contacts.find((element) => element._id === selectedUserToDeleteStoreRef.current.id)) {
+        console.log("sendFriendRequest: Already in the friend list!");
+        return;
+      }
+      const data: IAlert = {
+        alertType: "friend-request",
+        note: {
+          sender: `${accountStoreRef.current.uid}`,
+          status: "pending",
+        },
+        receivers: [selectedUserToDeleteStoreRef.current.id],
+      };
+      socket.current.emit("post-alert", JSON.stringify(data));
+      dispatch(deleteBlockAsync(selectedUserToDeleteStoreRef.current.id)).then(() => {
+        dispatch(createContactAsync(selectedUserToDeleteStoreRef.current.id)).then(() => {
+          dispatch(createFriendAsync(selectedUserToDeleteStoreRef.current.id));
+        });
+      });
+      console.log("sendFriendRequest");
+    } catch (err) {
+      console.error("Failed to sendFriendRequest: ", err);
+    }
     setOpenRequestModal(false);
-    await updateContact(selectedusertoDelete.id);
   };
 
   const debouncedFilterUsers = debounce(async (value: string) => {
     setSearchedresult(await searchUsers(value));
-  }, 1000); // Adjust the delay time (in milliseconds) as needed
+  }, 1000);
 
   const filterUsers = (value: string) => {
     debouncedFilterUsers(value);
   };
 
-  const updateContact = async (_id) => {
-    const accessToken: string = await getaccessToken(
-      multiwallet.Solar.chain.wallet,
-      nonCustodial.password
+  useEffect(() => {
+    if (view === "chatmain" && !value) {
+      filterUsers(value);
+    }
+  }, [value, view]);
+
+  const handleTabChange = (_event: React.SyntheticEvent, index: number) => {
+    setTab(index);
+  };
+
+  const handleChangeIndex = (index: number) => {
+    setTab(index);
+  };
+
+  function a11yProps(index: number) {
+    return {
+      id: `full-width-tab-${index}`,
+      "aria-controls": `full-width-tabpanel-${index}`,
+    };
+  }
+
+  interface TabPanelProps {
+    children?: React.ReactNode;
+    dir?: string;
+    index: number;
+    value: number;
+  }
+
+  function TabPanel(props: TabPanelProps) {
+    const { children, value, index, ...other } = props;
+
+    return (
+      <div role="tabpanel" hidden={value !== index} id={`full-width-tabpanel-${index}`} aria-labelledby={`full-width-tab-${index}`} {...other}>
+        {value === index && children}
+      </div>
     );
-    await createContact(_id, accessToken);
-    const contacts: userType[] = await receiveContactlist(accessToken);
-    dispatch(setUserList(contacts));
-  };
-
-  useEffect(() => {
-    filterUsers(value);
-  }, [value]);
-
-  // read the unread chat alerts and mark the number of unread messages
-  const getUnreadAlerts = async () => {
-    const unreadalerts: alertType[] = await fetchUnreadAlerts(account.uid);
-    setUnreadAlerts(unreadalerts);
-  };
-
-  useEffect(() => {
-    getUnreadAlerts();
-  }, [alertbadge]);
+  }
 
   return (
     <>
@@ -178,12 +204,7 @@ const Chatmain = ({ view, setView }: propsType) => {
               <Box className={"fs-24-bold white"} marginTop={"0px"}>
                 {t("cha-1_chat")}
               </Box>
-              <Stack
-                flexDirection={"row"}
-                justifyContent={"space-between"}
-                alignItems={"center"}
-                marginTop={"30px"}
-              >
+              <Stack flexDirection={"row"} justifyContent={"space-between"} alignItems={"center"} marginTop={"30px"}>
                 <ThemeProvider theme={theme}>
                   <TextField
                     className={classes.search_bar}
@@ -209,12 +230,7 @@ const Chatmain = ({ view, setView }: propsType) => {
                               onClick={() => setValue("")}
                               style={{ cursor: "pointer" }}
                             >
-                              <path
-                                d="M17 7L7 17M7 7L17 17"
-                                stroke="white"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                              />
+                              <path d="M17 7L7 17M7 7L17 17" stroke="white" strokeLinecap="round" strokeLinejoin="round" />
                             </svg>
                           )}
                         </InputAdornment>
@@ -247,82 +263,233 @@ const Chatmain = ({ view, setView }: propsType) => {
                 marginBottom: "22px",
               }}
             />
-            {/* userlist section */}
-            <Box className={classes.scroll_bar}>
-              {chatuserlist?.length === 0 && value === "" ? (
-                <>
-                  <Grid container sx={{ justifyContent: "center" }}>
-                    <img
-                      src={nocontact}
-                      style={{ marginTop: "40%", display: "block" }}
-                    ></img>
-                  </Grid>
-                  <Box className={"fs-20-regular white"} textAlign={"center"}>
-                    {t("cha-2_you-havenot-friends")}
-                  </Box>
-                </>
-              ) : (
-                <>
-                  {(value === "" ? chatuserlist : searchedresult)?.map(
-                    (user, index) => {
-                      const count =
-                        value === ""
-                          ? unreadalerts.filter(
-                              (alert) =>
-                                alert.note.sender === user._id &&
-                                alert.alertType === "chat"
-                            ).length
-                          : 0;
-                      const numberofunreadmessages = count;
+            <ThemeProvider theme={theme}>
+              <Tabs
+                value={tab}
+                onChange={handleTabChange}
+                indicatorColor="primary"
+                textColor="inherit"
+                variant="fullWidth"
+                aria-label="full width tabs example"
+              >
+                <Tab
+                  label={
+                    <Box className={"fs-14-regular white t-center"} sx={{ textTransform: "none" }}>
+                      {t("cha-36_contact")}
+                    </Box>
+                  }
+                  {...a11yProps(0)}
+                />
+                <Tab
+                  label={
+                    <Box className={"fs-14-regular white t-center"} sx={{ textTransform: "none" }}>
+                      {t("cha-37_friend")}
+                    </Box>
+                  }
+                  {...a11yProps(1)}
+                />
+                <Tab
+                  label={
+                    <Box className={"fs-14-regular white t-center"} sx={{ textTransform: "none" }}>
+                      {t("cha-38_block")}
+                    </Box>
+                  }
+                  {...a11yProps(2)}
+                />
+              </Tabs>
+            </ThemeProvider>
+            <SwipeableViews axis={otheme.direction === "rtl" ? "x-reverse" : "x"} index={tab} onChangeIndex={handleChangeIndex} width={"100%"}>
+              <TabPanel value={tab} index={0} dir={otheme.direction}>
+                <Box className={classes.scroll_bar}>
+                  {contactListStore?.contacts?.length === 0 && value === "" ? (
+                    <>
+                      <Grid container sx={{ justifyContent: "center" }}>
+                        <img src={nocontact} style={{ marginTop: "40%", display: "block" }}></img>
+                      </Grid>
+                      <Box className={"fs-20-regular white"} textAlign={"center"}>
+                        {t("cha-2_you-havenot-friends")}
+                      </Box>
+                    </>
+                  ) : (
+                    <>
+                      {(value === "" ? contactListStore?.contacts : searchedresult)?.map((user, index) => {
+                        const count =
+                          value === "" ? alertListStore.unread?.filter((alert) => alert.note.sender === user._id && alert.alertType === "chat").length : 0;
+                        const numberofunreadmessages = count;
 
-                      return (
-                        <Userlist
-                          user={user}
-                          index={index}
-                          numberofunreadmessages={numberofunreadmessages}
+                        return (
+                          <Userlist
+                            user={user}
+                            index={index}
+                            numberofunreadmessages={numberofunreadmessages}
+                            setShowContextMenu={setShowContextMenu}
+                            setContextMenuPosition={setContextMenuPosition}
+                            setView={setView}
+                          />
+                        );
+                      })}
+                      {showContextMenu && (
+                        <FRcontextmenu
+                          tab={tab}
+                          value={value}
+                          isClickedBlock={isClickedBlock}
+                          isClickedDelete={isClickedDelete}
+                          isClickedRequest={isClickedRequest}
+                          setIsClickedBlock={setIsClickedBlock}
+                          setOpenBlockModal={setOpenBlockModal}
                           setShowContextMenu={setShowContextMenu}
-                          setContextMenuPosition={setContextMenuPosition}
-                          setView={setView}
+                          setIsClickedDelete={setIsClickedDelete}
+                          setOpenDeleteModal={setOpenDeleteModal}
+                          setOpenRequestModal={setOpenRequestModal}
+                          setIsClickedRequest={setIsClickedRequest}
+                          contextMenuPosition={contextMenuPosition}
                         />
-                      );
-                    }
+                      )}
+                      <BlockModal block={tab !== 2} openBlockModal={openBlockModal} setOpenBlockModal={setOpenBlockModal} roommode={false} />
+                      <DeleteModal
+                        openDeleteModal={openDeleteModal}
+                        setOpenDeleteModal={setOpenDeleteModal}
+                        deleteSelectedUser={deleteSelectedUser}
+                        roommode={false}
+                      />
+                      <RequestModal
+                        openRequestModal={openRequestModal}
+                        setOpenRequestModal={setOpenRequestModal}
+                        sendFriendRequest={sendFriendRequest}
+                        roommode={false}
+                      />
+                    </>
                   )}
-                  {showContextMenu && (
-                    <FRcontextmenu
-                      value={value}
-                      isClickedBlock={isClickedBlock}
-                      isClickedDelete={isClickedDelete}
-                      isClickedRequest={isClickedRequest}
-                      setIsClickedBlock={setIsClickedBlock}
-                      setOpenBlockModal={setOpenBlockModal}
-                      setShowContextMenu={setShowContextMenu}
-                      setIsClickedDelete={setIsClickedDelete}
-                      setOpenDeleteModal={setOpenDeleteModal}
-                      setOpenRequestModal={setOpenRequestModal}
-                      setIsClickedRequest={setIsClickedRequest}
-                      contextMenuPosition={contextMenuPosition}
-                    />
+                </Box>
+              </TabPanel>
+              <TabPanel value={tab} index={1} dir={otheme.direction}>
+                <Box className={classes.scroll_bar}>
+                  {friendListStore?.contacts?.length === 0 && value === "" ? (
+                    <>
+                      <Grid container sx={{ justifyContent: "center" }}>
+                        <img src={nocontact} style={{ marginTop: "40%", display: "block" }}></img>
+                      </Grid>
+                      <Box className={"fs-20-regular white"} textAlign={"center"}>
+                        {t("cha-2_you-havenot-friends")}
+                      </Box>
+                    </>
+                  ) : (
+                    <>
+                      {(value === "" ? friendListStore?.contacts : searchedresult)?.map((user, index) => {
+                        const count =
+                          value === "" ? alertListStore.unread?.filter((alert) => alert.note.sender === user._id && alert.alertType === "chat").length : 0;
+                        const numberofunreadmessages = count;
+
+                        return (
+                          <Userlist
+                            user={user}
+                            index={index}
+                            numberofunreadmessages={numberofunreadmessages}
+                            setShowContextMenu={setShowContextMenu}
+                            setContextMenuPosition={setContextMenuPosition}
+                            setView={setView}
+                          />
+                        );
+                      })}
+                      {showContextMenu && (
+                        <FRcontextmenu
+                          tab={tab}
+                          value={value}
+                          isClickedBlock={isClickedBlock}
+                          isClickedDelete={isClickedDelete}
+                          isClickedRequest={isClickedRequest}
+                          setIsClickedBlock={setIsClickedBlock}
+                          setOpenBlockModal={setOpenBlockModal}
+                          setShowContextMenu={setShowContextMenu}
+                          setIsClickedDelete={setIsClickedDelete}
+                          setOpenDeleteModal={setOpenDeleteModal}
+                          setOpenRequestModal={setOpenRequestModal}
+                          setIsClickedRequest={setIsClickedRequest}
+                          contextMenuPosition={contextMenuPosition}
+                        />
+                      )}
+                      <BlockModal block={tab !== 2} openBlockModal={openBlockModal} setOpenBlockModal={setOpenBlockModal} roommode={false} />
+                      <DeleteModal
+                        openDeleteModal={openDeleteModal}
+                        setOpenDeleteModal={setOpenDeleteModal}
+                        deleteSelectedUser={deleteSelectedUser}
+                        roommode={false}
+                      />
+                      <RequestModal
+                        openRequestModal={openRequestModal}
+                        setOpenRequestModal={setOpenRequestModal}
+                        sendFriendRequest={sendFriendRequest}
+                        roommode={false}
+                      />
+                    </>
                   )}
-                  <BlockModal
-                    openBlockModal={openBlockModal}
-                    setOpenBlockModal={setOpenBlockModal}
-                    roommode={false}
-                  />
-                  <DeleteModal
-                    openDeleteModal={openDeleteModal}
-                    setOpenDeleteModal={setOpenDeleteModal}
-                    deleteSelectedUser={deleteSelectedUser}
-                    roommode={false}
-                  />
-                  <RequestModal
-                    openRequestModal={openRequestModal}
-                    setOpenRequestModal={setOpenRequestModal}
-                    sendFriendRequest={sendRequest}
-                    roommode={false}
-                  />
-                </>
-              )}
-            </Box>
+                </Box>
+              </TabPanel>
+              <TabPanel value={tab} index={2} dir={otheme.direction}>
+                <Box className={classes.scroll_bar}>
+                  {blockListStore?.contacts?.length === 0 && value === "" ? (
+                    <>
+                      <Grid container sx={{ justifyContent: "center" }}>
+                        <img src={nocontact} style={{ marginTop: "40%", display: "block" }}></img>
+                      </Grid>
+                      <Box className={"fs-20-regular white"} textAlign={"center"}>
+                        {t("cha-2_you-havenot-friends")}
+                      </Box>
+                    </>
+                  ) : (
+                    <>
+                      {(value === "" ? blockListStore?.contacts : searchedresult)?.map((user, index) => {
+                        const count =
+                          value === "" ? alertListStore.unread?.filter((alert) => alert.note.sender === user._id && alert.alertType === "chat").length : 0;
+                        const numberofunreadmessages = count;
+
+                        return (
+                          <Userlist
+                            user={user}
+                            index={index}
+                            numberofunreadmessages={numberofunreadmessages}
+                            setShowContextMenu={setShowContextMenu}
+                            setContextMenuPosition={setContextMenuPosition}
+                            setView={setView}
+                          />
+                        );
+                      })}
+                      {showContextMenu && (
+                        <FRcontextmenu
+                          tab={tab}
+                          value={value}
+                          isClickedBlock={isClickedBlock}
+                          isClickedDelete={isClickedDelete}
+                          isClickedRequest={isClickedRequest}
+                          setIsClickedBlock={setIsClickedBlock}
+                          setOpenBlockModal={setOpenBlockModal}
+                          setShowContextMenu={setShowContextMenu}
+                          setIsClickedDelete={setIsClickedDelete}
+                          setOpenDeleteModal={setOpenDeleteModal}
+                          setOpenRequestModal={setOpenRequestModal}
+                          setIsClickedRequest={setIsClickedRequest}
+                          contextMenuPosition={contextMenuPosition}
+                        />
+                      )}
+                      <BlockModal block={tab !== 2} openBlockModal={openBlockModal} setOpenBlockModal={setOpenBlockModal} roommode={false} />
+                      <DeleteModal
+                        openDeleteModal={openDeleteModal}
+                        setOpenDeleteModal={setOpenDeleteModal}
+                        deleteSelectedUser={deleteSelectedUser}
+                        roommode={false}
+                      />
+                      <RequestModal
+                        openRequestModal={openRequestModal}
+                        setOpenRequestModal={setOpenRequestModal}
+                        sendFriendRequest={sendFriendRequest}
+                        roommode={false}
+                      />
+                    </>
+                  )}
+                </Box>
+              </TabPanel>
+            </SwipeableViews>
+            {/* userlist section */}
           </Box>
         </>
       )}

@@ -21,10 +21,7 @@ import { getTempAddressesFromMnemonicAsync } from "../../../features/wallet/Temp
 import tymt3 from "../../../assets/account/tymt3.png";
 
 import "../../../global.css";
-import {
-  nonCustodialType,
-  threeConfirmType,
-} from "../../../types/accountTypes";
+import { nonCustodialType, threeConfirmType } from "../../../types/accountTypes";
 import { AppDispatch } from "../../../store";
 
 const NonCustodialSignUp3 = () => {
@@ -32,8 +29,7 @@ const NonCustodialSignUp3 = () => {
   const { t } = useTranslation();
   const dispatch = useDispatch<AppDispatch>();
   const threeConfirmStore: threeConfirmType = useSelector(getThreeConfirm);
-  const tempNonCustodialStore: nonCustodialType =
-    useSelector(getTempNonCustodial);
+  const tempNonCustodialStore: nonCustodialType = useSelector(getTempNonCustodial);
   const [error, setError] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
 
@@ -44,11 +40,7 @@ const NonCustodialSignUp3 = () => {
   const handleNextClick = async () => {
     const mnemonicString = tempNonCustodialStore.mnemonic;
     const mnemonic = mnemonicString.split(" ");
-    if (
-      threeConfirmStore.first === mnemonic[2] &&
-      threeConfirmStore.second === mnemonic[5] &&
-      threeConfirmStore.third === mnemonic[8]
-    ) {
+    if (threeConfirmStore.first === mnemonic[2] && threeConfirmStore.second === mnemonic[5] && threeConfirmStore.third === mnemonic[8]) {
       setLoading(true);
       dispatch(
         getTempAddressesFromMnemonicAsync({
@@ -86,12 +78,7 @@ const NonCustodialSignUp3 = () => {
     <>
       <Grid container className="basic-container">
         <Grid item xs={12} container justifyContent={"center"}>
-          <Stack
-            direction={"row"}
-            alignItems={"center"}
-            justifyContent={"center"}
-            gap={"64px"}
-          >
+          <Stack direction={"row"} alignItems={"center"} justifyContent={"center"} gap={"64px"}>
             <Stack alignItems={"center"} justifyContent={"center"}>
               <Grid container justifyContent={"center"}>
                 <Grid
@@ -104,18 +91,11 @@ const NonCustodialSignUp3 = () => {
                 >
                   <Grid item xs={12} container justifyContent={"space-between"}>
                     <Back onClick={handleBackClick} />
-                    <Stepper
-                      all={4}
-                      now={3}
-                      texts={["", "", t("ncca-30_confirm-recovery-phrase"), ""]}
-                    />
+                    <Stepper all={4} now={3} texts={["", "", t("ncca-30_confirm-recovery-phrase"), ""]} />
                   </Grid>
 
                   <Grid item xs={12} mt={"80px"}>
-                    <AccountHeader
-                      title={t("ncca-13_secure-passphrase")}
-                      text={t("ncca-14_here-your-mnemonic")}
-                    />
+                    <AccountHeader title={t("ncca-13_secure-passphrase")} text={t("ncca-14_here-your-mnemonic")} />
                   </Grid>
                   <Grid item xs={12} mt={"48px"}>
                     <MnemonicConfirm />
@@ -128,11 +108,7 @@ const NonCustodialSignUp3 = () => {
                       padding: "8px 6px",
                     }}
                   >
-                    {error && (
-                      <Box className={"fs-16-regular red"}>
-                        {"Wrong Mnemonic"}
-                      </Box>
-                    )}
+                    {error && <Box className={"fs-16-regular red"}>{"Wrong Mnemonic"}</Box>}
                   </Grid>
                   <Grid item xs={12} mt={"40px"}>
                     <MnemonicRandomPad />
@@ -140,21 +116,12 @@ const NonCustodialSignUp3 = () => {
                   <Grid item xs={12} mt={"48px"}>
                     <AccountNextButton
                       text={t("ncca-44_verify-and-complete")}
-                      disabled={
-                        loading ||
-                        threeConfirmStore.first === "" ||
-                        threeConfirmStore.second === "" ||
-                        threeConfirmStore.third === ""
-                      }
+                      disabled={loading || threeConfirmStore.first === "" || threeConfirmStore.second === "" || threeConfirmStore.third === ""}
                       loading={loading}
                       onClick={handleNextClick}
                     />
                   </Grid>
-                  <Grid
-                    item
-                    xs={12}
-                    mt={length === 12 ? "91px" : "40px"}
-                  >
+                  <Grid item xs={12} mt={length === 12 ? "91px" : "40px"}>
                     <HaveAccount />
                   </Grid>
                 </Grid>

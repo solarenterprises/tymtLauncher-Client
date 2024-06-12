@@ -51,12 +51,7 @@ const CustodialSignUp2 = () => {
     <>
       <Grid container className="basic-container">
         <Grid item xs={12} container justifyContent={"center"}>
-          <Stack
-            direction={"row"}
-            alignItems={"center"}
-            justifyContent={"center"}
-            gap={"64px"}
-          >
+          <Stack direction={"row"} alignItems={"center"} justifyContent={"center"} gap={"64px"}>
             <Stack alignItems={"center"} justifyContent={"center"}>
               <Grid container justifyContent={"center"}>
                 <Grid
@@ -69,18 +64,11 @@ const CustodialSignUp2 = () => {
                 >
                   <Grid item xs={12} container justifyContent={"space-between"}>
                     <Back onClick={handleBackClick} />
-                    <Stepper
-                      all={3}
-                      now={2}
-                      texts={["", t("cca-21_secure-wallet"), ""]}
-                    />
+                    <Stepper all={3} now={2} texts={["", t("cca-21_secure-wallet"), ""]} />
                   </Grid>
 
                   <Grid item xs={12} mt={"80px"}>
-                    <AccountHeader
-                      title={t("cca-22_6-digit-code")}
-                      text={t("cca-23_enter-6-code")}
-                    />
+                    <AccountHeader title={t("cca-22_6-digit-code")} text={t("cca-23_enter-6-code")} />
                   </Grid>
                   <Grid item xs={12} mb={"30px"}>
                     <OtpInput value={value} setValue={handleSetValue} />
@@ -93,17 +81,10 @@ const CustodialSignUp2 = () => {
                       padding: "0px 6px",
                     }}
                   >
-                    {error && (
-                      <Box className={"fs-16-regular red"}>
-                        {t("cca-58_wrong-code")}
-                      </Box>
-                    )}
+                    {error && <Box className={"fs-16-regular red"}>{t("cca-58_wrong-code")}</Box>}
                   </Grid>
                   <Grid item xs={12} mt={"48px"}>
-                    <AccountNextButton
-                      text={t("cca-20_next")}
-                      onClick={handleNextClick}
-                    />
+                    <AccountNextButton text={t("cca-20_next")} onClick={handleNextClick} />
                   </Grid>
                   <Grid item xs={12} mt={"50px"}>
                     <HaveAccount />

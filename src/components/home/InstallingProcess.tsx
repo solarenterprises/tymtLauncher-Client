@@ -1,7 +1,5 @@
 import { useEffect } from "react";
-
 import { listen } from "@tauri-apps/api/event";
-
 import { Button, Box, Stack } from "@mui/material";
 import homeStyles from "../../styles/homeStyles";
 import downloadbig from "../../assets/main/downloadbig.svg";
@@ -59,10 +57,7 @@ const InstallingProcess = () => {
                 marginLeft: "25%",
               }}
             >
-              <Box
-                className={"fs-16 white"}
-                sx={{ textTransform: "none", display: "flex", marginLeft: 0.5 }}
-              >
+              <Box className={"fs-16 white"} sx={{ textTransform: "none", display: "flex", marginLeft: 0.5 }}>
                 {Games[game.name].name}
               </Box>
               <Box
@@ -83,10 +78,7 @@ const InstallingProcess = () => {
       {!drawer.isDrawerExpanded && game.inprogress && (
         <>
           <Button className={homeclasses.button_download_small}>
-            <img
-              src={Games[game.name].downloadImg}
-              style={{ position: "absolute", left: -2, width: "21px" }}
-            />
+            <img src={Games[game.name].downloadImg} style={{ position: "absolute", left: -2, width: "21px" }} />
             <Box
               className={"fs-14-regular gray"}
               sx={{

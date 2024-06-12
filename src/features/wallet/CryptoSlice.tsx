@@ -18,10 +18,7 @@ export interface INotification {
 
 export const sendCoinAsync = createAsyncThunk("coin/send", sendCoin);
 export const sendCoinAPIAsync = createAsyncThunk("coin/sendAPI", sendCoinAPI);
-export const getTransactionsAsync = createAsyncThunk(
-  "wallet/transaction",
-  walletTransaction
-);
+export const getTransactionsAsync = createAsyncThunk("wallet/transaction", walletTransaction);
 
 export const cryptoSlice = createSlice({
   name: "crypto",
