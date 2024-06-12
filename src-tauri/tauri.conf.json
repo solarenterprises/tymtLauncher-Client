@@ -7,7 +7,7 @@
     "withGlobalTauri": true
   },
   "package": {
-    "productName": "tymtLauncherDebug",
+    "productName": "tymtLauncher",
     "version": "2.1.2"
   },
 
@@ -84,7 +84,13 @@
       "http": {
         "all": true,
         "request": true,
-        "scope": ["https://*", "http://*", "https://api.mainnet-beta.solana.com/*", "https://api.devnet.solana.com/*", "https://unisat.io/*"]
+        "scope": [
+          "https://*",
+          "http://*",
+          "https://api.mainnet-beta.solana.com/*",
+          "https://api.devnet.solana.com/*",
+          "https://unisat.io/*"
+        ]
       },
       "window": {
         "all": true,
@@ -94,7 +100,7 @@
     "windows": [
       {
         "label": "tymtLauncher",
-        "title": "tymtLauncher (debug) 2.1.2",
+        "title": "tymtLauncher 2.1.2",
         "resizable": true,
         "width": 1440,
         "height": 1024,
@@ -129,9 +135,15 @@
     "bundle": {
       "active": true,
       "targets": "all",
-      "identifier": "tymtLauncherDebug",
-      "publisher": "dev@solarenterprises.com",
-      "icon": ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.icns", "icons/icon.ico"],
+      "identifier": "tymtLauncher",
+      "publisher": "hello@solarenterprises.com",
+      "icon": [
+        "icons/32x32.png",
+        "icons/128x128.png",
+        "icons/128x128@2x.png",
+        "icons/icon.icns",
+        "icons/icon.ico"
+      ],
       "category": "Game",
       "shortDescription": "A multi-chain game launcher and an environment for creating and publishing games",
       "longDescription": "tymt is a multi-chain game launcher and an environment for creating and publishing games. \n tymt is a gaming environment and platform, built using the Solar Core blockchain solutions, enabling a new world of game economy - empowering Developers and Publishers!"
