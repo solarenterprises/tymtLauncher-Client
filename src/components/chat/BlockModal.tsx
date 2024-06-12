@@ -59,7 +59,7 @@ const BlockModal = ({ block, openBlockModal, setOpenBlockModal, roommode }: prop
     <Modal open={openBlockModal}>
       <Box className={roommode ? "modal_content_chatroom" : "modal_content"}>
         <Box className={"fs-18-light white"} textAlign={"center"}>
-          {block ? t("cha-9_are-you-sure-block") : "cha-40_are-you-sure-unblock"}
+          {block ? t("cha-9_are-you-sure-block") : t("cha-40_are-you-sure-unblock")}
         </Box>
         <Stack marginTop={"20px"} width={"100%"} flexDirection={"row"} alignSelf={"center"} justifyContent={"space-around"}>
           <Button className="modal_btn_left" onClick={handleCancelClick}>

@@ -16,8 +16,14 @@ export interface librarymodeType {
   mode: number;
 }
 
-export interface processType {
+export interface IDownloadStatus {
   progress: number;
-  inprogress: boolean;
+  isDownloading: boolean;
+  name: string;
+}
+
+export interface IInstallStatus {
+  progress: number;
+  isInstalling: boolean;
   name: string;
 }

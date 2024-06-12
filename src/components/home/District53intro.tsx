@@ -12,13 +12,14 @@ import districteffect2 from "../../assets/main/districteffect2.svg";
 import { downloadGame, getGameFileSize, isInstalled } from "../../lib/api/Downloads";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch } from "../../store";
-import { getProcess, setProcess } from "../../features/home/InstallprocessSlice";
-import { processType } from "../../types/homeTypes";
 import Games from "../../lib/game/Game";
 import D53Modal from "./D53Modal";
 import { useNotification } from "../../providers/NotificationProvider";
 import { ThreeDots } from "react-loader-spinner";
 import { useNavigate } from "react-router-dom";
+import { getDownloadStatus, setDownloadStatus } from "../../features/home/InstallStatusSlice";
+import { IDownloadStatus, IInstallStatus } from "../../types/homeTypes";
+import { getInstallStatus } from "../../features/home/DownloadStatusSlice";
 
 interface props {
   setImage?: (image: any) => void;
@@ -36,7 +37,8 @@ const District53intro = ({ setImage }: props) => {
   const { setNotificationStatus, setNotificationTitle, setNotificationDetail, setNotificationOpen, setNotificationLink } = useNotification();
 
   const dispatch = useDispatch<AppDispatch>();
-  const processStore: processType = useSelector(getProcess);
+  const downloadStatusStore: IDownloadStatus = useSelector(getDownloadStatus);
+  const installStatusStore: IInstallStatus = useSelector(getInstallStatus);
 
   const checkInstalled = async () => {
     setInstalled(await isInstalled("district53"));
@@ -161,7 +163,7 @@ const District53intro = ({ setImage }: props) => {
                 <Button
                   fullWidth
                   className={"red-button-D53"}
-                  disabled={processStore.inprogress && !installed}
+                  disabled={downloadStatusStore.isDownloading && !installed}
                   onClick={async () => {
                     const online = await checkOnline();
                     if (!online) {
@@ -178,9 +180,9 @@ const District53intro = ({ setImage }: props) => {
                         setNotificationOpen(true);
                         setNotificationLink(null);
                         dispatch(
-                          setProcess({
-                            ...processStore,
-                            inprogress: true,
+                          setDownloadStatus({
+                            ...downloadStatusStore,
+                            isDownloading: true,
                             name: "district53",
                           })
                         );
@@ -199,9 +201,9 @@ const District53intro = ({ setImage }: props) => {
                           setNotificationLink(null);
                         }
                         dispatch(
-                          setProcess({
-                            ...processStore,
-                            inprogress: false,
+                          setDownloadStatus({
+                            ...downloadStatusStore,
+                            isDownloading: false,
                             name: "",
                           })
                         );
@@ -212,11 +214,17 @@ const District53intro = ({ setImage }: props) => {
                     }
                   }}
                 >
-                  {installed && t("hom-7_play-game")}
-                  {!processStore.inprogress && !installed && t("hom-20_install-game")}
-                  {processStore.inprogress && !installed && (
+                  {!downloadStatusStore.isDownloading && !installStatusStore.isInstalling && installed && t("hom-7_play-game")}
+                  {!downloadStatusStore.isDownloading && !installStatusStore.isInstalling && !installed && t("hom-20_install-game")}
+                  {downloadStatusStore.isDownloading && (
                     <Stack direction={"row"} alignItems={"center"} gap={"4px"}>
                       <Box className={"fs-14-regular white t-center"}>{`${t("hom-21_downloading")} ${gameFileSize}`}</Box>
+                      <ThreeDots height="12px" width={"24px"} radius={4} color={`white`} />
+                    </Stack>
+                  )}
+                  {!downloadStatusStore.isDownloading && installStatusStore.isInstalling && (
+                    <Stack direction={"row"} alignItems={"center"} gap={"4px"}>
+                      <Box className={"fs-14-regular white t-center"}>{`${t("hom-26_installing")}`}</Box>
                       <ThreeDots height="12px" width={"24px"} radius={4} color={`white`} />
                     </Stack>
                   )}

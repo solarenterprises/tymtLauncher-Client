@@ -10,6 +10,8 @@ import { notificationType } from "../types/settingTypes";
 import { accountType } from "../types/accountTypes";
 import { getAccount } from "../features/account/AccountSlice";
 import { invoke } from "@tauri-apps/api/tauri";
+import { getInstallStatus, setInstallStatus } from "../features/home/DownloadStatusSlice";
+import { IInstallStatus } from "../types/homeTypes";
 
 interface TrayContextType {}
 
@@ -26,6 +28,7 @@ export const TrayProvider: React.FC<TrayProviderProps> = ({ children }) => {
   const dispatch = useDispatch<AppDispatch>();
   const notificationStore: notificationType = useSelector(selectNotification);
   const accountStore: accountType = useSelector(getAccount);
+  const installStatusStore: IInstallStatus = useSelector(getInstallStatus);
 
   const notificationStoreRef = useRef(notificationStore);
   const accountStoreRef = useRef(accountStore);
@@ -90,12 +93,23 @@ export const TrayProvider: React.FC<TrayProviderProps> = ({ children }) => {
       console.log(event.payload as string);
     });
 
+    const unlisten_install_dependencies = listen("install_dependencies_for_d53_on_mac", (event) => {
+      dispatch(
+        setInstallStatus({
+          ...installStatusStore,
+          isInstalling: event.payload as boolean,
+        })
+      );
+      console.log(event.payload as string);
+    });
+
     return () => {
       unlisten_wallet.then((unlistenFn) => unlistenFn());
       unlisten_games.then((unlistenFn) => unlistenFn());
       unlisten_signout.then((unlistenFn) => unlistenFn());
       unlisten_about.then((unlistenFn) => unlistenFn());
       unlisten_disable_notifications.then((unlistenFn) => unlistenFn());
+      unlisten_install_dependencies.then((unlistenFn) => unlistenFn());
     };
   }, [notificationStoreRef.current]);
 
