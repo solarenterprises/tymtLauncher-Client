@@ -111,7 +111,7 @@ const Avatar = ({ size, userid, onlineStatus, ischain, status }: any) => {
           <Box
             component={"img"}
             key={`${new Date().getTime()}`}
-            src={`https://dev.tymt.com/api/users/get-avatar/${userid}?${Date.now()}`}
+            src={`https://tymt.com/api/users/get-avatar/${userid}?${Date.now()}`}
             sx={{
               position: "absolute",
               top: "50%",
