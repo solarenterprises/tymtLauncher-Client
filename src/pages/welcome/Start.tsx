@@ -18,6 +18,7 @@ import { getAccount, setAccount } from "../../features/account/AccountSlice";
 import { loginEnum, walletEnum, accountType } from "../../types/accountTypes";
 import ComingModal from "../../components/ComingModal";
 import { setMnemonic } from "../../features/account/MnemonicSlice";
+import { motion } from "framer-motion";
 
 const Start = () => {
   const navigate = useNavigate();
@@ -46,103 +47,112 @@ const Start = () => {
     <>
       <Grid container className="basic-container">
         <Grid item xs={12} container justifyContent={"center"}>
-          <Stack direction={"row"} alignItems={"center"} justifyContent={"center"} gap={"64px"}>
-            <Stack alignItems={"center"} justifyContent={"center"}>
-              <Grid container justifyContent={"center"}>
-                <Grid
-                  item
-                  container
-                  sx={{
-                    width: "520px",
-                    padding: "10px 0px",
-                  }}
-                >
-                  <Grid item xs={12}>
-                    <Back onClick={handleBackClick} />
-                  </Grid>
-                  <Grid item xs={12} mt={"80px"}>
-                    <SwitchButton />
-                  </Grid>
-                  <Grid item xs={12} mt={"24px"}>
-                    <Box className="fs-h1 white">{t("wc-1_welcome-player")}</Box>
-                  </Grid>
-                  <Grid item xs={12} mt={"48px"}>
-                    <AccountButton
-                      src={wallet}
-                      text={t("wc-12_non-custodial-wallet")}
-                      onClick={() => {
-                        dispatch(
-                          setAccount({
-                            ...accountStore,
-                            wallet: walletEnum.noncustodial,
-                          })
-                        );
-                        if (accountStore.mode === loginEnum.login) navigate("/non-custodial/login/1");
-                        else navigate("/non-custodial/signup/1");
-                      }}
-                    />
-                  </Grid>
-                  <Grid item xs={12} mt={"24px"}>
-                    <AccountButton
-                      src={mail}
-                      text={t("wc-13_custodial-wallet")}
-                      onClick={() => {
-                        setComing(true);
-                      }}
-                    />
-                  </Grid>
-                  <Grid item xs={12} mt={"40px"}>
-                    <OrLine />
-                  </Grid>
-                  <Grid item xs={12} container mt={"24px"} spacing={"16px"}>
+          <motion.div
+            initial={{ opacity: 0, y: -50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            style={{
+              alignSelf: "center",
+            }}
+          >
+            <Stack direction={"row"} alignItems={"center"} justifyContent={"center"} gap={"64px"}>
+              <Stack alignItems={"center"} justifyContent={"center"}>
+                <Grid container justifyContent={"center"}>
+                  <Grid
+                    item
+                    container
+                    sx={{
+                      width: "520px",
+                      padding: "10px 0px",
+                    }}
+                  >
                     <Grid item xs={12}>
+                      <Back onClick={handleBackClick} />
+                    </Grid>
+                    <Grid item xs={12} mt={"80px"}>
+                      <SwitchButton />
+                    </Grid>
+                    <Grid item xs={12} mt={"24px"}>
+                      <Box className="fs-h1 white">{t("wc-1_welcome-player")}</Box>
+                    </Grid>
+                    <Grid item xs={12} mt={"48px"}>
                       <AccountButton
-                        src={facebookIcon}
-                        text={t("wc-14_facebook")}
+                        src={wallet}
+                        text={t("wc-12_non-custodial-wallet")}
+                        onClick={() => {
+                          dispatch(
+                            setAccount({
+                              ...accountStore,
+                              wallet: walletEnum.noncustodial,
+                            })
+                          );
+                          if (accountStore.mode === loginEnum.login) navigate("/non-custodial/login/1");
+                          else navigate("/non-custodial/signup/1");
+                        }}
+                      />
+                    </Grid>
+                    <Grid item xs={12} mt={"24px"}>
+                      <AccountButton
+                        src={mail}
+                        text={t("wc-13_custodial-wallet")}
                         onClick={() => {
                           setComing(true);
                         }}
                       />
                     </Grid>
-                    <Grid item xs={12}>
-                      <AccountButton
-                        src={googleIcon}
-                        text={t("wc-15_google")}
-                        onClick={() => {
-                          setComing(true);
-                        }}
-                      />
+                    <Grid item xs={12} mt={"40px"}>
+                      <OrLine />
                     </Grid>
-                    <Grid item xs={12}>
-                      <AccountButton
-                        src={discordIcon}
-                        text={t("wc-16_discord")}
-                        onClick={() => {
-                          setComing(true);
-                        }}
-                      />
-                    </Grid>
-                    <Grid item xs={12}>
-                      <AccountButton
-                        src={binanceIcon}
-                        text={t("wc-17_binance-id")}
-                        onClick={() => {
-                          setComing(true);
-                        }}
-                      />
+                    <Grid item xs={12} container mt={"24px"} spacing={"16px"}>
+                      <Grid item xs={12}>
+                        <AccountButton
+                          src={facebookIcon}
+                          text={t("wc-14_facebook")}
+                          onClick={() => {
+                            setComing(true);
+                          }}
+                        />
+                      </Grid>
+                      <Grid item xs={12}>
+                        <AccountButton
+                          src={googleIcon}
+                          text={t("wc-15_google")}
+                          onClick={() => {
+                            setComing(true);
+                          }}
+                        />
+                      </Grid>
+                      <Grid item xs={12}>
+                        <AccountButton
+                          src={discordIcon}
+                          text={t("wc-16_discord")}
+                          onClick={() => {
+                            setComing(true);
+                          }}
+                        />
+                      </Grid>
+                      <Grid item xs={12}>
+                        <AccountButton
+                          src={binanceIcon}
+                          text={t("wc-17_binance-id")}
+                          onClick={() => {
+                            setComing(true);
+                          }}
+                        />
+                      </Grid>
                     </Grid>
                   </Grid>
                 </Grid>
-              </Grid>
+              </Stack>
+              <Box
+                component={"img"}
+                src={tymt1}
+                sx={{
+                  height: "calc(100vh - 64px)",
+                }}
+              />
             </Stack>
-            <Box
-              component={"img"}
-              src={tymt1}
-              sx={{
-                height: "calc(100vh - 64px)",
-              }}
-            />
-          </Stack>
+          </motion.div>
         </Grid>
       </Grid>
       {/* <OAuthModal title={title} src={src} setOpen={setOpen} open={open} /> */}

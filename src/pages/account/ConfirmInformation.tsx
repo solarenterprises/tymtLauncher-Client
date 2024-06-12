@@ -38,6 +38,7 @@ import { getSaltToken, setSaltToken } from "../../features/account/SaltTokenSlic
 import { INonCustodyBeforeSignInReq } from "../../types/AuthAPITypes";
 import { getMnemonic } from "../../features/account/MnemonicSlice";
 import { refreshCurrencyAsync } from "../../features/wallet/CurrencySlice";
+import { motion } from "framer-motion";
 
 const ConfirmInformation = () => {
   const navigate = useNavigate();
@@ -504,42 +505,51 @@ const ConfirmInformation = () => {
     <>
       <Grid container className="basic-container">
         <Grid item xs={12} container justifyContent={"center"}>
-          <Stack direction={"row"} alignItems={"center"} justifyContent={"center"} gap={"64px"}>
-            <Stack alignItems={"center"} justifyContent={"center"}>
-              <Grid container justifyContent={"center"}>
-                <Grid
-                  item
-                  container
-                  sx={{
-                    width: "520px",
-                    padding: "10px 0px",
-                  }}
-                >
-                  <Grid item xs={12} container justifyContent={"space-between"}>
-                    <Back onClick={handleBackClick} />
-                    <Stepper all={0} now={0} texts={[t("ncca-48_almost-done-confirm")]} />
-                  </Grid>
-                  <Grid item xs={12}></Grid>
-                  <Grid item xs={12} mt={"80px"}>
-                    <AccountHeader title={t("ncca-49_confirm-information")} text={t("ncca-50_welcome-to-kingdom")} />
-                  </Grid>
-                  <Grid item xs={12} mt={"48px"}>
-                    <WalletList mode={accountStore.mode === loginEnum.login ? "login" : "signup"} />
-                  </Grid>
-                  <Grid item xs={12} mt={"40px"}>
-                    <AccountNextButton text={t("ncca-51_confirm")} onClick={handleConfirmClick} disabled={loading} loading={loading} />
+          <motion.div
+            initial={{ opacity: 0, y: -50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            style={{
+              alignSelf: "center",
+            }}
+          >
+            <Stack direction={"row"} alignItems={"center"} justifyContent={"center"} gap={"64px"}>
+              <Stack alignItems={"center"} justifyContent={"center"}>
+                <Grid container justifyContent={"center"}>
+                  <Grid
+                    item
+                    container
+                    sx={{
+                      width: "520px",
+                      padding: "10px 0px",
+                    }}
+                  >
+                    <Grid item xs={12} container justifyContent={"space-between"}>
+                      <Back onClick={handleBackClick} />
+                      <Stepper all={0} now={0} texts={[t("ncca-48_almost-done-confirm")]} />
+                    </Grid>
+                    <Grid item xs={12}></Grid>
+                    <Grid item xs={12} mt={"80px"}>
+                      <AccountHeader title={t("ncca-49_confirm-information")} text={t("ncca-50_welcome-to-kingdom")} />
+                    </Grid>
+                    <Grid item xs={12} mt={"48px"}>
+                      <WalletList mode={accountStore.mode === loginEnum.login ? "login" : "signup"} />
+                    </Grid>
+                    <Grid item xs={12} mt={"40px"}>
+                      <AccountNextButton text={t("ncca-51_confirm")} onClick={handleConfirmClick} disabled={loading} loading={loading} />
+                    </Grid>
                   </Grid>
                 </Grid>
-              </Grid>
+              </Stack>
+              <Box
+                component={"img"}
+                src={tymt2}
+                sx={{
+                  height: "calc(100vh - 64px)",
+                }}
+              />
             </Stack>
-            <Box
-              component={"img"}
-              src={tymt2}
-              sx={{
-                height: "calc(100vh - 64px)",
-              }}
-            />
-          </Stack>
+          </motion.div>
         </Grid>
       </Grid>
     </>

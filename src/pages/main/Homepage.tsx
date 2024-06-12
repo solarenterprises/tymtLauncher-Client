@@ -51,9 +51,39 @@ const Homepage = () => {
         </Grid>
 
         <Grid container xs={12} sx={{ marginTop: "80px" }}>
-          <RecentlyAddedD53 />
-          <ComingsoonD53 />
-          <Bottom />
+          <motion.div
+            initial={{ opacity: 0, y: -50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            style={{
+              alignSelf: "center",
+              width: "100%",
+            }}
+          >
+            <RecentlyAddedD53 />
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: -50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            style={{
+              alignSelf: "center",
+              width: "100%",
+            }}
+          >
+            <ComingsoonD53 />
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: -50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            style={{
+              alignSelf: "center",
+              width: "100%",
+            }}
+          >
+            <Bottom />
+          </motion.div>
         </Grid>
         <UpdateModal open={updateModal} setOpen={setUpdateModal} />
       </motion.div>
