@@ -9,7 +9,7 @@ import { getCurrentLogo } from "../../features/home/Tymtlogo";
 import { IDownloadStatus, TymtlogoType } from "../../types/homeTypes";
 import Games from "../../lib/game/Game";
 import { openDir } from "../../lib/api/Downloads";
-import { getDownloadStatus } from "../../features/home/InstallStatusSlice";
+import { getDownloadStatus } from "../../features/home/DownloadStatusSlice";
 
 const InstallingProcess = () => {
   const homeclasses = homeStyles();

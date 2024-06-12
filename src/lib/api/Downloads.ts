@@ -213,16 +213,20 @@ export async function downloadGame(game_key: string) {
               "ffmpeg@6",
               "mysql-client",
             ]);
+
             command.on("close", (data) => {
               console.log(`command finished with code ${data.code} and signal ${data.signal}`);
               emit("install_dependencies_for_d53_on_mac", false);
             });
+
             command.stdout.on("data", (line) => {
               console.log(`stdout: ${line}`);
             });
+
             command.stderr.on("data", (line) => {
               console.error(`stderr: ${line}`);
             });
+
             await command.spawn();
             console.log("install_dependencies_for_d53_on_mac: Finished!");
           } catch (err) {

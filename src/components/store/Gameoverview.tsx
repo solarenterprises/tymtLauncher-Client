@@ -35,9 +35,9 @@ import { useNotification } from "../../providers/NotificationProvider";
 import { platformIconMap } from "../../types/GameTypes";
 import { chainIconMap } from "../../types/walletTypes";
 import { ThreeDots } from "react-loader-spinner";
-import { getDownloadStatus, setDownloadStatus } from "../../features/home/InstallStatusSlice";
 import { IDownloadStatus, IInstallStatus } from "../../types/homeTypes";
-import { getInstallStatus } from "../../features/home/DownloadStatusSlice";
+import { getDownloadStatus, setDownloadStatus } from "../../features/home/DownloadStatusSlice";
+import { getInstallStatus } from "../../features/home/InstallStatusSlice";
 
 const GameOverview = () => {
   const viewmode: viewType = useSelector(getViewmode);
@@ -123,7 +123,7 @@ const GameOverview = () => {
                   <Button
                     className={"red-button-Gameoverview"}
                     fullWidth
-                    disabled={downloadStatusStore.isDownloading && !installed}
+                    disabled={downloadStatusStore.isDownloading || installStatusStore.isInstalling}
                     onClick={async () => {
                       const online = await checkOnline();
                       if (!online) {
@@ -188,7 +188,7 @@ const GameOverview = () => {
                     )}
                     {!downloadStatusStore.isDownloading && installStatusStore.isInstalling && (
                       <Stack direction={"row"} alignItems={"center"} gap={"4px"}>
-                        <Box className={"fs-14-regular white t-center"}>{`${t("hom-26_installing")}`}</Box>
+                        <Box className={"fs-14-regular white t-center"}>{t("hom-26_installing")}</Box>
                         <ThreeDots height="12px" width={"24px"} radius={4} color={`white`} />
                       </Stack>
                     )}

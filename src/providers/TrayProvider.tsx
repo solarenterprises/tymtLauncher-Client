@@ -10,7 +10,7 @@ import { notificationType } from "../types/settingTypes";
 import { accountType } from "../types/accountTypes";
 import { getAccount } from "../features/account/AccountSlice";
 import { invoke } from "@tauri-apps/api/tauri";
-import { getInstallStatus, setInstallStatus } from "../features/home/DownloadStatusSlice";
+import { getInstallStatus, setInstallStatus } from "../features/home/InstallStatusSlice";
 import { IInstallStatus } from "../types/homeTypes";
 
 interface TrayContextType {}
@@ -98,6 +98,7 @@ export const TrayProvider: React.FC<TrayProviderProps> = ({ children }) => {
         setInstallStatus({
           ...installStatusStore,
           isInstalling: event.payload as boolean,
+          id: (event.payload as boolean) ? "district53" : "",
         })
       );
       console.log(event.payload as string);

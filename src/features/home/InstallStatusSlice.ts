@@ -1,34 +1,34 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { IDownloadStatus } from "../../types/homeTypes";
+import { IInstallStatus } from "../../types/homeTypes";
 
-const init: IDownloadStatus = {
+const init: IInstallStatus = {
   progress: 0,
-  isDownloading: false,
+  isInstalling: false,
   name: "",
 };
 
-const loadDownloadStatus: () => IDownloadStatus = () => {
+const loadInstallStatus: () => IInstallStatus = () => {
   return init;
 };
 
 const initialState = {
-  data: loadDownloadStatus(),
-  status: "downloadStatus",
+  data: loadInstallStatus(),
+  status: "installStatus",
   msg: "",
 };
 
-const downloadStatusSlice = createSlice({
-  name: "downloadStatus",
+const installStatusSlice = createSlice({
+  name: "installStatus",
   initialState,
   reducers: {
-    setDownloadStatus(state, action) {
+    setInstallStatus(state, action) {
       state.data = action.payload;
     },
   },
 });
 
-export const getDownloadStatus = (state: any) => state.downloadStatus.data;
+export const getInstallStatus = (state: any) => state.installStatus.data;
 
-export default downloadStatusSlice.reducer;
+export default installStatusSlice.reducer;
 
-export const { setDownloadStatus } = downloadStatusSlice.actions;
+export const { setInstallStatus } = installStatusSlice.actions;

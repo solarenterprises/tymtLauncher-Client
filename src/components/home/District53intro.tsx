@@ -17,9 +17,9 @@ import D53Modal from "./D53Modal";
 import { useNotification } from "../../providers/NotificationProvider";
 import { ThreeDots } from "react-loader-spinner";
 import { useNavigate } from "react-router-dom";
-import { getDownloadStatus, setDownloadStatus } from "../../features/home/InstallStatusSlice";
+import { getDownloadStatus, setDownloadStatus } from "../../features/home/DownloadStatusSlice";
 import { IDownloadStatus, IInstallStatus } from "../../types/homeTypes";
-import { getInstallStatus } from "../../features/home/DownloadStatusSlice";
+import { getInstallStatus } from "../../features/home/InstallStatusSlice";
 
 interface props {
   setImage?: (image: any) => void;
@@ -163,7 +163,7 @@ const District53intro = ({ setImage }: props) => {
                 <Button
                   fullWidth
                   className={"red-button-D53"}
-                  disabled={downloadStatusStore.isDownloading && !installed}
+                  disabled={downloadStatusStore.isDownloading || installStatusStore.isInstalling}
                   onClick={async () => {
                     const online = await checkOnline();
                     if (!online) {
@@ -224,7 +224,7 @@ const District53intro = ({ setImage }: props) => {
                   )}
                   {!downloadStatusStore.isDownloading && installStatusStore.isInstalling && (
                     <Stack direction={"row"} alignItems={"center"} gap={"4px"}>
-                      <Box className={"fs-14-regular white t-center"}>{`${t("hom-26_installing")}`}</Box>
+                      <Box className={"fs-14-regular white t-center"}>{t("hom-26_installing")}</Box>
                       <ThreeDots height="12px" width={"24px"} radius={4} color={`white`} />
                     </Stack>
                   )}

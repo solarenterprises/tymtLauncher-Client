@@ -28,7 +28,8 @@ import machineIdReducer from "./features/account/MachineIdSlice";
 import mnemonicReducer from "./features/account/MnemonicSlice";
 import saltTokenReducer from "./features/account/SaltTokenSlice";
 import downloadStatusReducer from "./features/home/DownloadStatusSlice";
-import InstallStatusReducer from "./features/home/InstallStatusSlice";
+import installStatusReducer from "./features/home/InstallStatusSlice";
+
 // chat
 import socketHashReducer from "./features/chat/SocketHashSlice";
 import chatmountedReducer from "./features/chat/Chat-intercomSupportSlice";
@@ -77,9 +78,9 @@ const store = configureStore({
     librarymode: librarymodeReducer,
     chatnotification: chatnotificationReducer,
     crypto: cryptoReducer,
-    gameoverview: gameoverviewReducer,
     downloadStatus: downloadStatusReducer,
-    installStatus: InstallStatusReducer,
+    installStatus: installStatusReducer,
+    gameoverview: gameoverviewReducer,
     selecteduser: selecteduserReducer,
     tymt: tymtReducer,
     alert: alertReducer,
