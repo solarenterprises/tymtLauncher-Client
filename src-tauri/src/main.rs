@@ -1181,11 +1181,11 @@ async fn install_dependencies_for_d53_on_mac() {
         .expect("Failed to execute command");
 
     if output.status.success() {
-        println!("install_depences_for_d53_on_mac executed successfully");
+        println!("install_dependencies_for_d53_on_mac executed successfully");
         let stdout = String::from_utf8_lossy(&output.stdout);
         println!("{}", stdout);
     } else {
-        eprintln!("install_depences_for_d53_on_mac failed to execute");
+        eprintln!("install_dependencies_for_d53_on_mac failed to execute");
         let stderr = String::from_utf8_lossy(&output.stderr);
         eprintln!("{}", stderr);
     }

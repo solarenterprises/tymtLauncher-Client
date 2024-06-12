@@ -12,6 +12,7 @@ import { local_server_port, production_version, tymt_version } from "../../confi
 import { ISaltToken } from "../../types/accountTypes";
 import tymtStorage from "../Storage";
 import path from "path";
+import { Command } from "@tauri-apps/api/shell";
 
 export async function downloadAppImageLinux(url: string, targetDir: string) {
   return invoke("download_appimage_linux", {
@@ -188,7 +189,33 @@ export async function downloadGame(game_key: string) {
             break;
         }
         // Install depencies for D53 on mac, temp solution
-        await invoke("install_dependencies_for_d53_on_mac");
+        console.log("install_dependencies_for_d53_on_mac");
+        const command = Command.sidecar("brew", [
+          "install",
+          "cmake",
+          "freetype",
+          "gettext",
+          "gmp",
+          "hiredis",
+          "jpeg-turbo",
+          "jsoncpp",
+          "leveldb",
+          "libogg",
+          "libpng",
+          "libvorbis",
+          "luajit",
+          "zstd",
+          "gettext",
+          "ffmpeg@6",
+          "mysql-client",
+        ]);
+        const status = await command.execute();
+        if (status.code === 0) {
+          console.log("Command executed successfully");
+        } else {
+          console.error(`Command failed with code ${status.code}`);
+        }
+        console.log("install_dependencies_for_d53_on_mac: Finished!");
         break;
       case "Windows_NT":
         await downloadAndUnzipWindows(url, `/v${tymt_version}/games/${game_key}`);
