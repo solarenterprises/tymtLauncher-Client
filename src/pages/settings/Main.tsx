@@ -41,6 +41,7 @@ const Main = ({ view, setView }: propsType) => {
   const reserve = currencyStore.data[currencyStore.current];
   const currentChain: IChain =
     multiWalletStore[Object.keys(multiWalletStore).find((rowKey) => multiWalletStore[rowKey].chain.name === chainStore.chain.name) ?? "Solar"];
+  const currentChainNativeBalance: number = (currentChain?.chain?.balance as number) * (currentChain?.chain?.price as number) * (reserve as number);
   const totalBalance: number =
     Object.keys(multiWalletStore).reduce((acc, rowKey) => {
       acc = acc + (multiWalletStore[rowKey]?.chain?.balance ?? 0) * (multiWalletStore[rowKey]?.chain?.price ?? 0);
@@ -133,9 +134,10 @@ const Main = ({ view, setView }: propsType) => {
                 <Box className="fs-14-light blue">{currentChain?.chain?.wallet ?? ""}</Box>
                 <Box className="fs-14-light gray">
                   {`${t("set-4_balance")} ${numeral(currentChain?.chain?.balance ?? 0).format("0,0.0000")} ${currentChain?.chain?.symbol} (${numeral(
-                    totalBalance
+                    currentChainNativeBalance
                   ).format("0,0.00")} ${symbol})`}
                 </Box>
+                <Box className="fs-14-light gray">{`${t("set-88_total_balance")} ${numeral(totalBalance).format("0,0.00")} ${symbol}`}</Box>
               </Box>
               <Box className="center-align">
                 <img src={arrowImg} />

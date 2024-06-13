@@ -185,6 +185,7 @@
     "set-85_success": "成功",
     "set-86_wallet-successfully-added": "ウォレットが正常に追加されました",
     "set-87_wallet-successfully-updated": "ウォレットが正常に更新されました",
+    "set-88_total_balance": "総合収支",
     "ncr-1_reset-wallet": "ウォレットをリセットする",
     "ncr-2_please-write-secret": "秘密の回復フレーズを書いてください",
     "ncr-3_restore": "復元",

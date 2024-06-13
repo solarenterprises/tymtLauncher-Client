@@ -185,6 +185,7 @@
     "set-85_success": "Success",
     "set-86_wallet-successfully-added": "Wallet successfully added",
     "set-87_wallet-successfully-updated": "Wallet successfully updated",
+    "set-88_total_balance": "Total Balance",
     "ncr-1_reset-wallet": "Reset Wallet",
     "ncr-2_please-write-secret": "Please Write Secret Recovery Phrase",
     "ncr-3_restore": "Restore",
