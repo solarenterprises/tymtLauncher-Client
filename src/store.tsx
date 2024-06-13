@@ -19,7 +19,6 @@ import tymtlogoReducer from "./features/home/Tymtlogo";
 import librarymodeReducer from "./features/library/Librarymode";
 import cryptoReducer from "./features/wallet/CryptoSlice";
 import gameoverviewReducer from "./features/store/Gameview";
-import installprocessReducer from "./features/home/InstallprocessSlice";
 import tymtReducer from "./features/account/TymtSlice";
 import d53PasswordReducer from "./features/wallet/D53PasswordSlice";
 import tempD53PasswordReducer from "./features/wallet/TempD53PasswordSlice";
@@ -28,6 +27,9 @@ import scrolldownReducer from "./features/chat/Chat-scrollDownSlice";
 import machineIdReducer from "./features/account/MachineIdSlice";
 import mnemonicReducer from "./features/account/MnemonicSlice";
 import saltTokenReducer from "./features/account/SaltTokenSlice";
+import downloadStatusReducer from "./features/home/DownloadStatusSlice";
+import installStatusReducer from "./features/home/InstallStatusSlice";
+
 // chat
 import socketHashReducer from "./features/chat/SocketHashSlice";
 import chatmountedReducer from "./features/chat/Chat-intercomSupportSlice";
@@ -76,8 +78,9 @@ const store = configureStore({
     librarymode: librarymodeReducer,
     chatnotification: chatnotificationReducer,
     crypto: cryptoReducer,
+    downloadStatus: downloadStatusReducer,
+    installStatus: installStatusReducer,
     gameoverview: gameoverviewReducer,
-    installprocess: installprocessReducer,
     selecteduser: selecteduserReducer,
     tymt: tymtReducer,
     alert: alertReducer,

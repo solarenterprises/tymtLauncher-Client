@@ -34,7 +34,7 @@ const ComingModal = ({ open, setOpen }: props) => {
           </Box>
           <Stack direction={"column"} justifyContent={"center"} alignItems={"center"} textAlign={"center"} gap={"10px"}>
             <Box className="fs-h3 blue">{t("hom-16_coming-soon")}</Box>
-            <Box className="fs-h3 white">{`tymtLauncher v${tymt_version}`}</Box>
+            <Box className="fs-h3 white">{`tymtLauncherDebug v${tymt_version}`}</Box>
             <Box className="fs-h3 white">{`(${tymt_release_date} released)`}</Box>
           </Stack>
         </Stack>

@@ -114,7 +114,7 @@ const Games: { [key: string]: Game } = {
     executables: {
       linux: {
         prod: {
-          url: "https://github.com/district53/minetest/releases/download/5.9.0.001/District53-5.9.0.001-x86_64.AppImage",
+          url: "https://github.com/solarenterprises/d53-minetest/releases/download/5.9.0.2/District53-5.9.0.2-x86_64.AppImage",
           type: "appimage",
           exePath: "/tmp.AppImage",
         },
@@ -127,9 +127,9 @@ const Games: { [key: string]: Game } = {
       },
       macosIntel: {
         prod: {
-          url: "",
+          url: "https://github.com/solarenterprises/d53-minetest/releases/download/5.9.0.2/District53_5.9.0.2_mac_x64_86.zip",
           type: "zip",
-          exePath: "",
+          exePath: "/District53",
         },
         dev: {
           url: "https://dev.district53.io:2000/District53_5.9.0.2_mac_x64_86.zip",
@@ -140,9 +140,9 @@ const Games: { [key: string]: Game } = {
       },
       macosArm: {
         prod: {
-          url: "",
+          url: "https://github.com/solarenterprises/d53-minetest/releases/download/5.9.0.2/District53_5.9.0.2_mac_arm.zip",
           type: "zip",
-          exePath: "",
+          exePath: "/District53",
         },
         dev: {
           url: "https://dev.district53.io:2000/District53_5.9.0.2_mac_arm.zip",
@@ -153,7 +153,7 @@ const Games: { [key: string]: Game } = {
       },
       windows64: {
         prod: {
-          url: "https://github.com/solarenterprises/d53-minetest/releases/download/5.9.0.001/District53_5.9.0.001_win_x86.zip",
+          url: "https://github.com/solarenterprises/d53-minetest/releases/download/5.9.0.2/District53_5.9.0.2_win_x64.zip",
           type: "zip",
           file: "minetest",
           exePath: "/bin/District53.exe",

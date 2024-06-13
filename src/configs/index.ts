@@ -4,8 +4,6 @@ export const chat_socket_addr = import.meta.env.VITE_APP_SOCKET_ADDR;
 
 export const alchemy_api_key = import.meta.env.VITE_APP_ALCHEMY_KEY;
 
-export const tymt_backend_url = import.meta.env.VITE_APP_TYMT_BACKEND_URL;
-
 export const coingecko_api_url = import.meta.env.VITE_APP_COINGECKO_API_URL;
 
 export const coingecko_api_key = import.meta.env.VITE_APP_COINGECKO_API_KEY;
@@ -102,13 +100,20 @@ export const opt_scan_path =
 export const pol_scan_path =
   import.meta.env.VITE_APP_NETWORK_NAME === "mainnet" ? import.meta.env.VITE_APP_MAINNET_POL_SCAN : import.meta.env.VITE_APP_TESTNET_POL_SCAN;
 
-export const socket_backend_url = import.meta.env.VITE_APP_SOCKET_BACKEND_URL;
-
 export const local_server_port = import.meta.env.VITE_APP_LOCAL_SERVER_PORT;
 
 export const net_name = import.meta.env.VITE_APP_NETWORK_NAME;
 
 export const production_version = import.meta.env.VITE_APP_PRODUCTION_VERSION;
+
+export const tymt_backend_url =
+  import.meta.env.VITE_APP_PRODUCTION_VERSION === "prod" ? import.meta.env.VITE_APP_TYMT_BACKEND_URL : import.meta.env.VITE_APP_TYMT_BACKEND_DEV_URL;
+
+export const socket_backend_url =
+  import.meta.env.VITE_APP_PRODUCTION_VERSION === "prod" ? import.meta.env.VITE_APP_SOCKET_BACKEND_URL : import.meta.env.VITE_APP_SOCKET_BACKEND_DEV_URL;
+
+export const tymt_avatar_url =
+  import.meta.env.VITE_APP_PRODUCTION_VERSION === "prod" ? import.meta.env.VITE_APP_TYMT_AVATAR_URL : import.meta.env.VITE_APP_TYMT_AVATAR_DEV_URL;
 
 export const tymt_release_date = import.meta.env.VITE_APP_TYMT_RELEASE_DATE;
 export const tymt_version = import.meta.env.VITE_APP_TYMT_VERSION;

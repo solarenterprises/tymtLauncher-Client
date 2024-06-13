@@ -20,8 +20,6 @@ import Overview from "./Overview";
 import Review from "./Review";
 import { downloadGame, getGameFileSize, isInstalled, openLink } from "../../lib/api/Downloads";
 import ComingModal from "../ComingModal";
-import { processType } from "../../types/homeTypes";
-import { getProcess, setProcess } from "../../features/home/InstallprocessSlice";
 import { AppDispatch } from "../../store";
 import Games, { Game } from "../../lib/game/Game";
 import WarningModal from "../home/WarningModal";
@@ -37,6 +35,9 @@ import { useNotification } from "../../providers/NotificationProvider";
 import { platformIconMap } from "../../types/GameTypes";
 import { chainIconMap } from "../../types/walletTypes";
 import { ThreeDots } from "react-loader-spinner";
+import { IDownloadStatus, IInstallStatus } from "../../types/homeTypes";
+import { getDownloadStatus, setDownloadStatus } from "../../features/home/DownloadStatusSlice";
+import { getInstallStatus } from "../../features/home/InstallStatusSlice";
 
 const GameOverview = () => {
   const viewmode: viewType = useSelector(getViewmode);
@@ -45,7 +46,8 @@ const GameOverview = () => {
   const param = useParams();
   const id: string = param.gameid ?? "";
   const game: Game = Games[id];
-  const processStore: processType = useSelector(getProcess);
+  const downloadStatusStore: IDownloadStatus = useSelector(getDownloadStatus);
+  const installStatusStore: IInstallStatus = useSelector(getInstallStatus);
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [installed, setInstalled] = useState(false);
@@ -121,7 +123,7 @@ const GameOverview = () => {
                   <Button
                     className={"red-button-Gameoverview"}
                     fullWidth
-                    disabled={processStore.inprogress && !installed}
+                    disabled={downloadStatusStore.isDownloading || installStatusStore.isInstalling}
                     onClick={async () => {
                       const online = await checkOnline();
                       if (!online) {
@@ -138,9 +140,9 @@ const GameOverview = () => {
                           setNotificationOpen(true);
                           setNotificationLink(null);
                           dispatch(
-                            setProcess({
-                              ...processStore,
-                              inprogress: true,
+                            setDownloadStatus({
+                              ...downloadStatusStore,
+                              isDownloading: true,
                               name: id,
                             })
                           );
@@ -159,9 +161,9 @@ const GameOverview = () => {
                             setNotificationLink(null);
                           }
                           dispatch(
-                            setProcess({
-                              ...processStore,
-                              inprogress: false,
+                            setDownloadStatus({
+                              ...downloadStatusStore,
+                              isDownloading: false,
                               name: "",
                             })
                           );
@@ -176,11 +178,17 @@ const GameOverview = () => {
                       }
                     }}
                   >
-                    {installed && t("hom-7_play-game")}
-                    {!processStore.inprogress && !installed && t("hom-20_install-game")}
-                    {processStore.inprogress && !installed && (
+                    {!downloadStatusStore.isDownloading && !installStatusStore.isInstalling && installed && t("hom-7_play-game")}
+                    {!downloadStatusStore.isDownloading && !installStatusStore.isInstalling && !installed && t("hom-20_install-game")}
+                    {downloadStatusStore.isDownloading && (
                       <Stack direction={"row"} alignItems={"center"} gap={"4px"}>
                         <Box className={"fs-14-regular white t-center"}>{`${t("hom-21_downloading")} ${gameFileSize}`}</Box>
+                        <ThreeDots height="12px" width={"24px"} radius={4} color={`white`} />
+                      </Stack>
+                    )}
+                    {!downloadStatusStore.isDownloading && installStatusStore.isInstalling && (
+                      <Stack direction={"row"} alignItems={"center"} gap={"4px"}>
+                        <Box className={"fs-14-regular white t-center"}>{t("hom-26_installing")}</Box>
                         <ThreeDots height="12px" width={"24px"} radius={4} color={`white`} />
                       </Stack>
                     )}

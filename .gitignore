@@ -12,6 +12,10 @@ node_modules/*
 dist
 dist-ssr
 .env
+.env.prod
+.env.dev
+.env.staging
+
 *.local
 configs/*
 

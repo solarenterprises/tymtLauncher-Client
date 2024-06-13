@@ -98,7 +98,7 @@ async fn main() -> std::io::Result<()> {
                 }
                 SystemTrayEvent::DoubleClick { position: _, size: _, .. } => {
                     println!("system tray received a double click");
-                    let window = app.get_window("tymtLauncher").unwrap();
+                    let window = app.get_window("tymtLauncherDebug").unwrap();
                     window.show().unwrap();
                     window.set_focus().unwrap();
                 }
@@ -108,17 +108,17 @@ async fn main() -> std::io::Result<()> {
                             std::process::exit(0);
                         }
                         "hide" => {
-                            let window = app.get_window("tymtLauncher").unwrap();
+                            let window = app.get_window("tymtLauncherDebug").unwrap();
                             window.hide().unwrap();
                         }
                         "showVisible" => {
                             println!("showVisible received a left click");
-                            let window = app.get_window("tymtLauncher").unwrap();
+                            let window = app.get_window("tymtLauncherDebug").unwrap();
                             window.show().unwrap();
                             window.set_focus().unwrap();
                         }
                         "fullscreen" => {
-                            let window = app.get_window("tymtLauncher").unwrap();
+                            let window = app.get_window("tymtLauncherDebug").unwrap();
                             window.show().unwrap();
                             window.set_focus().unwrap();
                             window
@@ -127,13 +127,13 @@ async fn main() -> std::io::Result<()> {
                         }
                         "wallet" => {
                             app.emit_all("wallet", "wallet").expect("failed to emit event wallet");
-                            let window = app.get_window("tymtLauncher").unwrap();
+                            let window = app.get_window("tymtLauncherDebug").unwrap();
                             window.show().unwrap();
                             window.set_focus().unwrap();
                         }
                         "games" => {
                             app.emit_all("games", "games").expect("failed to emit event games");
-                            let window = app.get_window("tymtLauncher").unwrap();
+                            let window = app.get_window("tymtLauncherDebug").unwrap();
                             window.show().unwrap();
                             window.set_focus().unwrap();
                         }
@@ -146,7 +146,7 @@ async fn main() -> std::io::Result<()> {
                             app.emit_all("signout", "signout").expect(
                                 "failed to emit event signout"
                             );
-                            let window = app.get_window("tymtLauncher").unwrap();
+                            let window = app.get_window("tymtLauncherDebug").unwrap();
                             window.show().unwrap();
                             window.set_focus().unwrap();
                         }
@@ -593,7 +593,7 @@ async fn main() -> std::io::Result<()> {
             Ok(())
         })
         .run(tauri::generate_context!())
-        .expect("error while running tymtlauncher");
+        .expect("error while running tymtLauncherDebug");
 
     Ok(())
 }
@@ -1181,11 +1181,11 @@ async fn install_dependencies_for_d53_on_mac() {
         .expect("Failed to execute command");
 
     if output.status.success() {
-        println!("install_depences_for_d53_on_mac executed successfully");
+        println!("install_dependencies_for_d53_on_mac executed successfully");
         let stdout = String::from_utf8_lossy(&output.stdout);
         println!("{}", stdout);
     } else {
-        eprintln!("install_depences_for_d53_on_mac failed to execute");
+        eprintln!("install_dependencies_for_d53_on_mac failed to execute");
         let stderr = String::from_utf8_lossy(&output.stderr);
         eprintln!("{}", stderr);
     }
@@ -1287,7 +1287,7 @@ async fn show_transaction_window(app_handle: tauri::AppHandle) {
         eprintln!("Window 'tymt_d53_transaction' not found");
     }
 
-    if let Some(window_to_hide) = app_handle.get_window("tymtLauncher") {
+    if let Some(window_to_hide) = app_handle.get_window("tymtLauncherDebug") {
         if let Err(e) = window_to_hide.hide() {
             eprintln!("Failed to hide window 'tymtLauncher': {}", e);
         }
@@ -1319,7 +1319,7 @@ async fn hide_transaction_window(app_handle: tauri::AppHandle) {
         eprintln!("Window 'tymt_d53_transaction' not found");
     }
 
-    if let Some(window_to_hide) = app_handle.get_window("tymtLauncher") {
+    if let Some(window_to_hide) = app_handle.get_window("tymtLauncherDebug") {
         if let Err(e) = window_to_hide.show() {
             eprintln!("Failed to show window 'tymtLauncher': {}", e);
         }
