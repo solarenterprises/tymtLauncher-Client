@@ -1,4 +1,4 @@
-import { Box, Stack, Modal } from "@mui/material";
+import { Box, Stack, Modal, Fade } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import closeIcon from "../../assets/settings/x-icon.svg";
 import logoImg from "../../assets/main/logo-header.svg";
@@ -22,31 +22,33 @@ const OAuthModal = ({ src, title, open, setOpen }: oauthModalType) => {
       }}
       onClose={() => setOpen(false)}
     >
-      <Box
-        className="modal-content oauth-modal"
-        sx={{
-          backdropFilter: "blur(10px)",
-          maxHeight: "80%",
-        }}
-      >
-        <img src={closeIcon} alt="close icon" className="close-icon" onClick={() => setOpen(false)} />
-        <Stack direction={"column"} justifyContent={"center"} alignItems={"center"} textAlign={"center"} gap={"10px"}>
-          <Box className="fs-h3 gray">{t("wc-18_connecting-you-to")} </Box>
-          <Box className="fs-h3 white">{title}</Box>
-          <Stack direction={"row"} className="oauth-container m-tb-20">
-            <Box className="center-align">
-              <img width={48} src={logoImg} />
-            </Box>
-            <Box className="center-align">
-              <img src={arrowIcon} />
-            </Box>
-            <Box className="center-align">
-              <img width={48} src={src} />
-            </Box>
+      <Fade in={open}>
+        <Box
+          className="modal-content oauth-modal"
+          sx={{
+            backdropFilter: "blur(10px)",
+            maxHeight: "80%",
+          }}
+        >
+          <img src={closeIcon} alt="close icon" className="close-icon" onClick={() => setOpen(false)} />
+          <Stack direction={"column"} justifyContent={"center"} alignItems={"center"} textAlign={"center"} gap={"10px"}>
+            <Box className="fs-h3 gray">{t("wc-18_connecting-you-to")} </Box>
+            <Box className="fs-h3 white">{title}</Box>
+            <Stack direction={"row"} className="oauth-container m-tb-20">
+              <Box className="center-align">
+                <img width={48} src={logoImg} />
+              </Box>
+              <Box className="center-align">
+                <img src={arrowIcon} />
+              </Box>
+              <Box className="center-align">
+                <img width={48} src={src} />
+              </Box>
+            </Stack>
+            <Box className="fs-14-light gray">{t("wc-19_check-your-browser")}</Box>
           </Stack>
-          <Box className="fs-14-light gray">{t("wc-19_check-your-browser")}</Box>
-        </Stack>
-      </Box>
+        </Box>
+      </Fade>
     </Modal>
   );
 };

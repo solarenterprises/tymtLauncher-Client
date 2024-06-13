@@ -1,4 +1,4 @@
-import { Modal, Box, Stack, Button } from "@mui/material";
+import { Modal, Box, Stack, Button, Fade } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import { IContactList, propsBlockModalType, selecteduserType } from "../../types/chatTypes";
 import { useDispatch, useSelector } from "react-redux";
@@ -57,21 +57,23 @@ const BlockModal = ({ block, openBlockModal, setOpenBlockModal, roommode }: prop
 
   return (
     <Modal open={openBlockModal}>
-      <Box className={roommode ? "modal_content_chatroom" : "modal_content"}>
-        <Box className={"fs-18-light white"} textAlign={"center"}>
-          {block ? t("cha-9_are-you-sure-block") : t("cha-40_are-you-sure-unblock")}
+      <Fade in={openBlockModal}>
+        <Box className={roommode ? "modal_content_chatroom" : "modal_content"}>
+          <Box className={"fs-18-light white"} textAlign={"center"}>
+            {block ? t("cha-9_are-you-sure-block") : t("cha-40_are-you-sure-unblock")}
+          </Box>
+          <Stack marginTop={"20px"} width={"100%"} flexDirection={"row"} alignSelf={"center"} justifyContent={"space-around"}>
+            <Button className="modal_btn_left" onClick={handleCancelClick}>
+              <Box className={"fs-18-bold"} color={"var(--Main-Blue, #52E1F2)"}>
+                {t("cha-7_cancel")}
+              </Box>
+            </Button>
+            <Button className="modal_btn_right" onClick={block ? handleBlockClick : handleUnblockClick}>
+              <Box className={"fs-18-bold white"}>{block ? t("cha-4_block") : t("cha-39_unblock")}</Box>
+            </Button>
+          </Stack>
         </Box>
-        <Stack marginTop={"20px"} width={"100%"} flexDirection={"row"} alignSelf={"center"} justifyContent={"space-around"}>
-          <Button className="modal_btn_left" onClick={handleCancelClick}>
-            <Box className={"fs-18-bold"} color={"var(--Main-Blue, #52E1F2)"}>
-              {t("cha-7_cancel")}
-            </Box>
-          </Button>
-          <Button className="modal_btn_right" onClick={block ? handleBlockClick : handleUnblockClick}>
-            <Box className={"fs-18-bold white"}>{block ? t("cha-4_block") : t("cha-39_unblock")}</Box>
-          </Button>
-        </Stack>
-      </Box>
+      </Fade>
     </Modal>
   );
 };

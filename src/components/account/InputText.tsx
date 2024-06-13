@@ -137,18 +137,7 @@ const InputText = ({ id, label, type, name, setValue, value, onChange, onBlur, e
               <Stack
                 spacing={"10px"}
                 sx={{
-                  marginTop:
-                    label === "Your password"
-                      ? "-42px"
-                      : label === "Repeat Password"
-                      ? "-42px"
-                      : label === "Password"
-                      ? "25px"
-                      : label === t("set-75_your-new-password")
-                      ? "30px"
-                      : label === "Your New Password"
-                      ? "30px"
-                      : "-42px",
+                  marginTop: "-42px",
                   backgroundColor: "rgb(49, 53, 53)",
                   padding: "16px",
                   borderRadius: "16px",

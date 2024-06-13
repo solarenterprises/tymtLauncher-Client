@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { Grid } from "@mui/material";
-import { AnimatePresence, motion } from "framer-motion";
 import axios from "axios";
 import { tymt_backend_url } from "../../configs";
 import { ISaltToken, ITymt } from "../../types/accountTypes";
@@ -11,9 +10,10 @@ import Games from "../../lib/game/Game";
 import ComingsoonD53 from "../../components/home/ComingSoon-D53";
 import District53intro from "../../components/home/District53intro";
 import RecentlyAddedD53 from "../../components/home/RecentlyAdded-D53";
-import UpdateModal from "../../components/home/UpdateModeal";
+import UpdateModal from "../../components/home/UpdateModal";
 import { getTymt } from "../../features/account/TymtSlice";
 import { getSaltToken } from "../../features/account/SaltTokenSlice";
+import AnimatedComponent from "../../components/AnimatedComponent";
 
 const Homepage = () => {
   const [image, setImage] = useState(Games["district53"].images[0]);
@@ -36,8 +36,9 @@ const Homepage = () => {
   }, []);
 
   return (
-    <AnimatePresence mode="wait">
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+    // <AnimatePresence mode="wait">
+    <>
+      <AnimatedComponent>
         <Grid
           item
           xs={12}
@@ -49,45 +50,22 @@ const Homepage = () => {
           <Tymtshow image={image} />
           <District53intro setImage={setImage} />
         </Grid>
+      </AnimatedComponent>
+      <Grid container xs={12} sx={{ marginTop: "80px" }}>
+        <AnimatedComponent>
+          <RecentlyAddedD53 />
+        </AnimatedComponent>
+        <AnimatedComponent>
+          <ComingsoonD53 />
+        </AnimatedComponent>
+        <AnimatedComponent>
+          <Bottom />
+        </AnimatedComponent>
+      </Grid>
+      <UpdateModal open={updateModal} setOpen={setUpdateModal} />
+    </>
 
-        <Grid container xs={12} sx={{ marginTop: "80px" }}>
-          <motion.div
-            initial={{ opacity: 0, y: -50 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            style={{
-              alignSelf: "center",
-              width: "100%",
-            }}
-          >
-            <RecentlyAddedD53 />
-          </motion.div>
-          <motion.div
-            initial={{ opacity: 0, y: -50 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            style={{
-              alignSelf: "center",
-              width: "100%",
-            }}
-          >
-            <ComingsoonD53 />
-          </motion.div>
-          <motion.div
-            initial={{ opacity: 0, y: -50 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            style={{
-              alignSelf: "center",
-              width: "100%",
-            }}
-          >
-            <Bottom />
-          </motion.div>
-        </Grid>
-        <UpdateModal open={updateModal} setOpen={setUpdateModal} />
-      </motion.div>
-    </AnimatePresence>
+    // </AnimatePresence>
   );
 };
 
