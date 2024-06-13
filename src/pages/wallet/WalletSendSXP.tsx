@@ -31,6 +31,7 @@ import { ICurrency } from "../../types/walletTypes";
 import { getCurrency } from "../../features/wallet/CurrencySlice";
 import { currencySymbols } from "../../consts/currency";
 import { useNotification } from "../../providers/NotificationProvider";
+import AnimatedComponent from "../../components/AnimatedComponent";
 
 interface IPriceData {
   price: string;
@@ -284,190 +285,192 @@ const WalletSendSXP = () => {
   }, [chainStore]);
 
   return (
-    <div>
-      <Grid container>
+    <AnimatedComponent threshold={0}>
+      <div>
         <Grid container>
-          <Grid item xs={12} md={12} xl={7} mb={"80px"}>
-            <Box className={"wallet-form-card p-32-56 br-16"}>
-              <Box className={"fs-h2 white"} mb={"32px"}>
-                {t("wal-7_send-sxp")}
-              </Box>
-              <Box className={"wallet-form-card-hover p-24-16 br-16"} mb={"32px"} onClick={() => setChooseChainView(true)}>
-                <Stack direction="row" alignItems={"center"} spacing={"16px"}>
-                  <Box component={"img"} src={chainStore.chain.logo} width={"36px"} height={"36px"} />
-                  <Stack>
-                    <Stack direction={"row"} spacing={"10px"}>
-                      <Box className={"fs-18-regular light"}>{t("wal-8_from")}</Box>
-                      <Box className={"fs-18-regular white"}>{chainStore.chain.name}</Box>
+          <Grid container>
+            <Grid item xs={12} md={12} xl={7} mb={"80px"}>
+              <Box className={"wallet-form-card p-32-56 br-16"}>
+                <Box className={"fs-h2 white"} mb={"32px"}>
+                  {t("wal-7_send-sxp")}
+                </Box>
+                <Box className={"wallet-form-card-hover p-24-16 br-16"} mb={"32px"} onClick={() => setChooseChainView(true)}>
+                  <Stack direction="row" alignItems={"center"} spacing={"16px"}>
+                    <Box component={"img"} src={chainStore.chain.logo} width={"36px"} height={"36px"} />
+                    <Stack>
+                      <Stack direction={"row"} spacing={"10px"}>
+                        <Box className={"fs-18-regular light"}>{t("wal-8_from")}</Box>
+                        <Box className={"fs-18-regular white"}>{chainStore.chain.name}</Box>
+                      </Stack>
+                      <Stack direction={"row"} alignItems={"center"} spacing={"8px"}>
+                        <Box component={"img"} src={walletIcon} width={"12px"} height={"12px"} />
+                        <Box className={"fs-14-regular light"}>{chainStore.chain.wallet}</Box>
+                      </Stack>
                     </Stack>
+                  </Stack>
+                </Box>
+                <Box className={"wallet-form-card p-16-16 br-16 blur"} mb={"32px"}>
+                  <Stack direction={"row"} alignItems={"center"} justifyContent={"space-between"} mb={"16px"}>
+                    <Box className={"fs-18-regular light"}>{t("wal-9_you-send")}</Box>
                     <Stack direction={"row"} alignItems={"center"} spacing={"8px"}>
-                      <Box component={"img"} src={walletIcon} width={"12px"} height={"12px"} />
-                      <Box className={"fs-14-regular light"}>{chainStore.chain.wallet}</Box>
+                      <Box component={"img"} src={walletIcon} width={"18px"} height={"18px"} />
+                      <Box className={"fs-12-light light"}>{priceData ? formatBalance(priceData.balance, 4) : "0.0"}</Box>
+                      <Box
+                        className={"fs-14-bold blue"}
+                        onClick={() => {
+                          setAmount(chainStore.chain.balance.toString());
+                          handleAmount(chainStore.chain.balance.toString());
+                        }}
+                        sx={{
+                          cursor: "pointer",
+                        }}
+                      >
+                        {t("wal-10_max")}
+                      </Box>
                     </Stack>
                   </Stack>
-                </Stack>
-              </Box>
-              <Box className={"wallet-form-card p-16-16 br-16 blur"} mb={"32px"}>
-                <Stack direction={"row"} alignItems={"center"} justifyContent={"space-between"} mb={"16px"}>
-                  <Box className={"fs-18-regular light"}>{t("wal-9_you-send")}</Box>
-                  <Stack direction={"row"} alignItems={"center"} spacing={"8px"}>
-                    <Box component={"img"} src={walletIcon} width={"18px"} height={"18px"} />
-                    <Box className={"fs-12-light light"}>{priceData ? formatBalance(priceData.balance, 4) : "0.0"}</Box>
-                    <Box
-                      className={"fs-14-bold blue"}
-                      onClick={() => {
-                        setAmount(chainStore.chain.balance.toString());
-                        handleAmount(chainStore.chain.balance.toString());
-                      }}
-                      sx={{
-                        cursor: "pointer",
-                      }}
-                    >
-                      {t("wal-10_max")}
-                    </Box>
-                  </Stack>
-                </Stack>
-                <Stack direction={"row"} alignItems={"center"} justifyContent={"space-between"}>
-                  <Stack width={"100%"}>
-                    <InputBox id="send-amount" placeholder="0.0" label="" align="left" onChange={handleAmount} value={amount?.toString()} />
-                    <Box className={"fs-12-light light"}>
-                      {`~${symbol} ${priceData ? formatBalance(Number(amount) * Number(priceData.price) * reserve) : "0.0"}`}
-                    </Box>
-                  </Stack>
-                  <Stack direction={"row"} alignItems={"center"} padding={"4px 8px"} spacing={"8px"}>
-                    {/* <Box component={"img"} src={chainStore.chain.logo} width={30}/>
+                  <Stack direction={"row"} alignItems={"center"} justifyContent={"space-between"}>
+                    <Stack width={"100%"}>
+                      <InputBox id="send-amount" placeholder="0.0" label="" align="left" onChange={handleAmount} value={amount?.toString()} />
+                      <Box className={"fs-12-light light"}>
+                        {`~${symbol} ${priceData ? formatBalance(Number(amount) * Number(priceData.price) * reserve) : "0.0"}`}
+                      </Box>
+                    </Stack>
+                    <Stack direction={"row"} alignItems={"center"} padding={"4px 8px"} spacing={"8px"}>
+                      {/* <Box component={"img"} src={chainStore.chain.logo} width={30}/>
                     <Box className={"fs-18-regular white"}>
                       {chainStore.chain.symbol}
                     </Box> */}
-                    <Button
-                      id="basic-button"
-                      aria-controls={open ? "basic-menu" : undefined}
-                      aria-haspopup="true"
-                      aria-expanded={open ? "true" : undefined}
-                      onClick={handleClick}
-                    >
-                      <Stack direction={"row"} gap={1}>
-                        <Box>
-                          <img src={priceData ? priceData.logo : ""} width={30} />
-                        </Box>
-                        <Box className="fs-18-regular white">{priceData ? priceData.label : ""}</Box>
-                      </Stack>
-                    </Button>
-                    <Menu
-                      id="basic-menu"
-                      anchorEl={anchorEl}
-                      open={open}
-                      onClose={handleClose}
-                      MenuListProps={{
-                        "aria-labelledby": "basic-button",
-                      }}
-                    >
-                      {options.map((token, index) => (
-                        <MenuItem onClick={() => switchCoin(token)} key={index}>
-                          <Stack direction={"row"} gap={1}>
-                            <Box>
-                              <img src={token.icon} width={20} />
-                            </Box>
-                            <Box>{token.label}</Box>
-                          </Stack>
-                        </MenuItem>
-                      ))}
-                    </Menu>
-                  </Stack>
-                </Stack>
-              </Box>
-              <Box className={"wallet-form-card p-16-16 br-16 blur"} mb={"32px"}>
-                <Box className={"fs-18-regular light"} mb={"8px"}>
-                  {t("wal-11_to")}
-                </Box>
-                <InputText
-                  id="recipient-address"
-                  type="address"
-                  value={address}
-                  setValue={setAddress}
-                  label={t("wal-12_recipient-address")}
-                  onIconButtonClick={() => {
-                    navigator.clipboard.writeText(address);
-                  }}
-                  onAddressButtonClick={() => setAddressBookView(true)}
-                />
-                {Number(amount) > 0 && address !== "" && (Number(data.fee) > 0 || chainStore.chain.symbol !== "SXP") && (
-                  <Button
-                    fullWidth
-                    className={classname.action_button}
-                    onClick={() => {
-                      updateDraft();
-                    }}
-                  >
-                    {t("set-57_save")}
-                  </Button>
-                )}
-              </Box>
-              {(chainStore.chain.symbol === "SXP" || chainStore.chain.symbol === "BTC") && (
-                <Box className={"wallet-form-card p-16-16 br-16"} mb={"32px"}>
-                  <Stack direction={"row"} alignItems={"center"} justifyContent={"space-between"}>
-                    <Box className={"fs-16-regular light"}>{t("wal-13_trans-fee")}</Box>
-                    <Stack direction={"row"} alignItems={"center"} spacing={"8px"}>
-                      <Box className={"fs-16-regular white"}>{data.fee} USD</Box>
-                      <IconButton className="icon-button">
-                        <EditOutlinedIcon className="icon-button" onClick={() => setTransactionFeeView(true)} />
-                      </IconButton>
-                    </Stack>
-                  </Stack>
-                </Box>
-              )}
-              <Box mb={"32px"}>
-                <InputText id="send-password" type="password" label={t("ncca-3_password")} value={password} setValue={setPassword} />
-              </Box>
-              <Button
-                disabled={
-                  pending ||
-                  Number(amount) === 0 ||
-                  address === "" ||
-                  (Number(data.fee) === 0 && chainStore.chain.symbol === "SXP") ||
-                  createKeccakHash("keccak256").update(password).digest("hex") !== nonCustodialStore.password
-                }
-                className={"red-button fw"}
-                onClick={handleTransfer}
-              >
-                {t("wal-14_transfer")}
-              </Button>
-            </Box>
-          </Grid>
-          <Grid item xs={12} md={12} xl={5} padding={"0px 32px"}>
-            <Stack spacing={"16px"}>
-              {draft.map((data, index) => (
-                <Box className={"wallet-form-card p-16-16 br-16"} key={index}>
-                  <Stack spacing={"15px"}>
-                    <Stack direction={"row"} alignItems={"center"} justifyContent={"space-between"}>
-                      <Stack>
-                        <Box className="fs-18-regular light">{t("wal-11_to")}</Box>
-                        <Box className="fs-18-regular white">{data.address}</Box>
-                      </Stack>
-                      <IconButton
-                        className="icon-button"
-                        onClick={() => {
-                          removeDraft(index);
+                      <Button
+                        id="basic-button"
+                        aria-controls={open ? "basic-menu" : undefined}
+                        aria-haspopup="true"
+                        aria-expanded={open ? "true" : undefined}
+                        onClick={handleClick}
+                      >
+                        <Stack direction={"row"} gap={1}>
+                          <Box>
+                            <img src={priceData ? priceData.logo : ""} width={30} />
+                          </Box>
+                          <Box className="fs-18-regular white">{priceData ? priceData.label : ""}</Box>
+                        </Stack>
+                      </Button>
+                      <Menu
+                        id="basic-menu"
+                        anchorEl={anchorEl}
+                        open={open}
+                        onClose={handleClose}
+                        MenuListProps={{
+                          "aria-labelledby": "basic-button",
                         }}
                       >
-                        <DeleteOutlineIcon className="icon-button" />
-                      </IconButton>
-                    </Stack>
-                    <Stack direction={"row"} alignItems={"center"} justifyContent={"space-between"}>
-                      <Box className="fs-16-regular light">{t("wal-15_amount")}</Box>
-                      <Box className="fs-16-regular white">{data.amount + " " + data.tokenSymbol}</Box>
+                        {options.map((token, index) => (
+                          <MenuItem onClick={() => switchCoin(token)} key={index}>
+                            <Stack direction={"row"} gap={1}>
+                              <Box>
+                                <img src={token.icon} width={20} />
+                              </Box>
+                              <Box>{token.label}</Box>
+                            </Stack>
+                          </MenuItem>
+                        ))}
+                      </Menu>
                     </Stack>
                   </Stack>
                 </Box>
-              ))}
-            </Stack>
+                <Box className={"wallet-form-card p-16-16 br-16 blur"} mb={"32px"}>
+                  <Box className={"fs-18-regular light"} mb={"8px"}>
+                    {t("wal-11_to")}
+                  </Box>
+                  <InputText
+                    id="recipient-address"
+                    type="address"
+                    value={address}
+                    setValue={setAddress}
+                    label={t("wal-12_recipient-address")}
+                    onIconButtonClick={() => {
+                      navigator.clipboard.writeText(address);
+                    }}
+                    onAddressButtonClick={() => setAddressBookView(true)}
+                  />
+                  {Number(amount) > 0 && address !== "" && (Number(data.fee) > 0 || chainStore.chain.symbol !== "SXP") && (
+                    <Button
+                      fullWidth
+                      className={classname.action_button}
+                      onClick={() => {
+                        updateDraft();
+                      }}
+                    >
+                      {t("set-57_save")}
+                    </Button>
+                  )}
+                </Box>
+                {(chainStore.chain.symbol === "SXP" || chainStore.chain.symbol === "BTC") && (
+                  <Box className={"wallet-form-card p-16-16 br-16"} mb={"32px"}>
+                    <Stack direction={"row"} alignItems={"center"} justifyContent={"space-between"}>
+                      <Box className={"fs-16-regular light"}>{t("wal-13_trans-fee")}</Box>
+                      <Stack direction={"row"} alignItems={"center"} spacing={"8px"}>
+                        <Box className={"fs-16-regular white"}>{data.fee} USD</Box>
+                        <IconButton className="icon-button">
+                          <EditOutlinedIcon className="icon-button" onClick={() => setTransactionFeeView(true)} />
+                        </IconButton>
+                      </Stack>
+                    </Stack>
+                  </Box>
+                )}
+                <Box mb={"32px"}>
+                  <InputText id="send-password" type="password" label={t("ncca-3_password")} value={password} setValue={setPassword} />
+                </Box>
+                <Button
+                  disabled={
+                    pending ||
+                    Number(amount) === 0 ||
+                    address === "" ||
+                    (Number(data.fee) === 0 && chainStore.chain.symbol === "SXP") ||
+                    createKeccakHash("keccak256").update(password).digest("hex") !== nonCustodialStore.password
+                  }
+                  className={"red-button fw"}
+                  onClick={handleTransfer}
+                >
+                  {t("wal-14_transfer")}
+                </Button>
+              </Box>
+            </Grid>
+            <Grid item xs={12} md={12} xl={5} padding={"0px 32px"}>
+              <Stack spacing={"16px"}>
+                {draft.map((data, index) => (
+                  <Box className={"wallet-form-card p-16-16 br-16"} key={index}>
+                    <Stack spacing={"15px"}>
+                      <Stack direction={"row"} alignItems={"center"} justifyContent={"space-between"}>
+                        <Stack>
+                          <Box className="fs-18-regular light">{t("wal-11_to")}</Box>
+                          <Box className="fs-18-regular white">{data.address}</Box>
+                        </Stack>
+                        <IconButton
+                          className="icon-button"
+                          onClick={() => {
+                            removeDraft(index);
+                          }}
+                        >
+                          <DeleteOutlineIcon className="icon-button" />
+                        </IconButton>
+                      </Stack>
+                      <Stack direction={"row"} alignItems={"center"} justifyContent={"space-between"}>
+                        <Box className="fs-16-regular light">{t("wal-15_amount")}</Box>
+                        <Box className="fs-16-regular white">{data.amount + " " + data.tokenSymbol}</Box>
+                      </Stack>
+                    </Stack>
+                  </Box>
+                ))}
+              </Stack>
+            </Grid>
           </Grid>
         </Grid>
-      </Grid>
-      <AddressBookDrawer view={addressBookView} setView={setAddressBookView} setAddress={setAddress} />
-      <TransactionFeeDrawer view={transactionFeeView} setView={setTransactionFeeView} />
-      <ChooseChainDrawer view={chooseChainView} setView={setChooseChainView} />
-    </div>
+        <AddressBookDrawer view={addressBookView} setView={setAddressBookView} setAddress={setAddress} />
+        <TransactionFeeDrawer view={transactionFeeView} setView={setTransactionFeeView} />
+        <ChooseChainDrawer view={chooseChainView} setView={setChooseChainView} />
+      </div>
+    </AnimatedComponent>
   );
 };
 
