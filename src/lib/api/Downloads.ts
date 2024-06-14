@@ -1,8 +1,4 @@
-import {
-  exists,
-  readDir,
-  // readTextFile,
-} from "@tauri-apps/api/fs";
+import { exists, readDir } from "@tauri-apps/api/fs";
 import { appDataDir } from "@tauri-apps/api/path";
 import { type, arch } from "@tauri-apps/api/os";
 import { invoke } from "@tauri-apps/api/tauri";
@@ -12,8 +8,6 @@ import { local_server_port, production_version, tymt_version } from "../../confi
 import { ISaltToken } from "../../types/accountTypes";
 import tymtStorage from "../Storage";
 import path from "path";
-import { Command } from "@tauri-apps/api/shell";
-import { emit } from "@tauri-apps/api/event";
 
 export async function downloadAppImageLinux(url: string, targetDir: string) {
   return invoke("download_appimage_linux", {
@@ -189,51 +183,6 @@ export async function downloadGame(game_key: string) {
             }
             break;
         }
-        // Install depencies for D53 on mac, temp solution
-        if (game_key === "district53") {
-          try {
-            console.log("install_dependencies_for_d53_on_mac");
-            emit("install_dependencies_for_d53_on_mac", true);
-            const command = new Command("brew", [
-              "install",
-              "cmake",
-              "freetype",
-              "gettext",
-              "gmp",
-              "hiredis",
-              "jpeg-turbo",
-              "jsoncpp",
-              "leveldb",
-              "libogg",
-              "libpng",
-              "libvorbis",
-              "luajit",
-              "zstd",
-              "gettext",
-              "ffmpeg@6",
-              "mysql-client",
-            ]);
-
-            command.on("close", (data) => {
-              console.log(`command finished with code ${data.code} and signal ${data.signal}`);
-              emit("install_dependencies_for_d53_on_mac", false);
-            });
-
-            command.stdout.on("data", (line) => {
-              console.log(`stdout: ${line}`);
-            });
-
-            command.stderr.on("data", (line) => {
-              console.error(`stderr: ${line}`);
-            });
-
-            await command.spawn();
-            console.log("install_dependencies_for_d53_on_mac: Finished!");
-          } catch (err) {
-            console.error("Failed to install_dependencies_for_d53_on_mac: ", err);
-            emit("install_dependencies_for_d53_on_mac", false);
-          }
-        }
         break;
       case "Windows_NT":
         await downloadAndUnzipWindows(url, `/v${tymt_version}/games/${game_key}`);
@@ -292,9 +241,6 @@ export async function runGame(game_key: string, serverIp?: string) {
     }
     let url = path.join(dataDir, `v${tymt_version}`, `games`, game_key, exePath);
     let args: string[];
-    // const filePath: string = dataDir + `games.config.json`;
-    // let configJson = JSON.parse(await readTextFile(filePath));
-    // let url = configJson[game_key].path;
     if (!(await exists(url))) {
       console.error("Failed to runGame: url not existing");
       return false;
