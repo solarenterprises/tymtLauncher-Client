@@ -7,7 +7,7 @@
     "withGlobalTauri": true
   },
   "package": {
-    "productName": "tymtLauncherDebug",
+    "productName": "tymtLauncher",
     "version": "2.1.2"
   },
 
@@ -93,8 +93,8 @@
     },
     "windows": [
       {
-        "label": "tymtLauncherDebug",
-        "title": "tymtLauncherDebug 2.1.2",
+        "label": "tymtLauncher",
+        "title": "tymtLauncher 2.1.2",
         "resizable": true,
         "width": 1440,
         "height": 1024,
@@ -129,7 +129,7 @@
     "bundle": {
       "active": true,
       "targets": "all",
-      "identifier": "tymtLauncherDebug",
+      "identifier": "tymtLauncher",
       "publisher": "hello@solarenterprises.com",
       "icon": ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.icns", "icons/icon.ico"],
       "category": "Game",
