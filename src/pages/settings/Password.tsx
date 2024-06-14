@@ -35,6 +35,9 @@ const Password = ({ view, setView }: propsType) => {
       setNotificationDetail(t("alt-16_update-password-old"));
       setNotificationOpen(true);
       setNotificationLink(null);
+      setNewPwd("");
+      setOldPwd("");
+      setCfmPwd("");
       return;
     }
     if (userStore.password === createKeccakHash("keccak256").update(newPwd).digest("hex")) {
@@ -43,6 +46,9 @@ const Password = ({ view, setView }: propsType) => {
       setNotificationDetail(t("alt-17_update-password-new"));
       setNotificationOpen(true);
       setNotificationLink(null);
+      setNewPwd("");
+      setOldPwd("");
+      setCfmPwd("");
       return;
     }
     if (cfmPwd !== newPwd) {
@@ -51,6 +57,9 @@ const Password = ({ view, setView }: propsType) => {
       setNotificationDetail(t("alt-18_update-password-new-not"));
       setNotificationOpen(true);
       setNotificationLink(null);
+      setNewPwd("");
+      setOldPwd("");
+      setCfmPwd("");
       return;
     }
     setNotificationStatus("success");
@@ -61,6 +70,9 @@ const Password = ({ view, setView }: propsType) => {
     account.wallet === walletEnum.noncustodial
       ? dispatch(setNonCustodial({ ...nonCustodialStore, password: createKeccakHash("keccak256").update(newPwd).digest("hex") }))
       : dispatch(setCustodial({ ...custodialStore, password: createKeccakHash("keccak256").update(newPwd).digest("hex") }));
+    setNewPwd("");
+    setOldPwd("");
+    setCfmPwd("");
   }, [account, nonCustodialStore, custodialStore, newPwd, oldPwd, cfmPwd]);
   return (
     <>
