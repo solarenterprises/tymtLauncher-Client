@@ -20,6 +20,7 @@ import { IMachineId, accountType, loginEnum } from "../../types/accountTypes";
 import { getMachineId, setMachineId } from "../../features/account/MachineIdSlice";
 import { invoke } from "@tauri-apps/api/tauri";
 import { setMnemonic } from "../../features/account/MnemonicSlice";
+import { motion } from "framer-motion";
 
 const GetStarted = () => {
   const navigate = useNavigate();
@@ -81,60 +82,69 @@ const GetStarted = () => {
     <>
       <Grid container className="basic-container">
         <Grid item xs={12} container justifyContent={"center"}>
-          <Stack direction={"row"} alignItems={"center"} justifyContent={"center"} gap={"64px"}>
-            <Stack alignItems={"center"} justifyContent={"center"}>
-              <Grid container justifyContent={"center"}>
-                <Grid
-                  item
-                  container
-                  sx={{
-                    width: "520px",
-                    padding: "10px 0px",
-                  }}
-                >
-                  <Grid item xs={12}>
-                    <AccountHeader title={t("wc-1_welcome-player")} text={t("wc-2_tymt-definition")} />
-                  </Grid>
-                  <Grid item xs={12} container spacing={"32px"} mt={"12px"}>
+          <motion.div
+            initial={{ opacity: 0, y: -50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            style={{
+              alignSelf: "center",
+            }}
+          >
+            <Stack direction={"row"} alignItems={"center"} justifyContent={"center"} gap={"64px"}>
+              <Stack alignItems={"center"} justifyContent={"center"}>
+                <Grid container justifyContent={"center"}>
+                  <Grid
+                    item
+                    container
+                    sx={{
+                      width: "520px",
+                      padding: "10px 0px",
+                    }}
+                  >
                     <Grid item xs={12}>
-                      <AccountIconBar icon={item1} text={t("wc-3_manage-game-assets")} />
+                      <AccountHeader title={t("wc-1_welcome-player")} text={t("wc-2_tymt-definition")} />
                     </Grid>
-                    <Grid item xs={12}>
-                      <AccountIconBar icon={item2} text={t("wc-4_enjoy-traditional-games")} />
+                    <Grid item xs={12} container spacing={"32px"} mt={"12px"}>
+                      <Grid item xs={12}>
+                        <AccountIconBar icon={item1} text={t("wc-3_manage-game-assets")} />
+                      </Grid>
+                      <Grid item xs={12}>
+                        <AccountIconBar icon={item2} text={t("wc-4_enjoy-traditional-games")} />
+                      </Grid>
+                      <Grid item xs={12}>
+                        <AccountIconBar icon={item3} text={t("wc-5_browse-game-library")} />
+                      </Grid>
+                      <Grid item xs={12}>
+                        <AccountIconBar icon={item4} text={t("wc-6_keep-your-assets")} />
+                      </Grid>
                     </Grid>
-                    <Grid item xs={12}>
-                      <AccountIconBar icon={item3} text={t("wc-5_browse-game-library")} />
+                    <Grid item xs={12} mt={"40px"}>
+                      <Box className={"fs-18-light light"}>
+                        {t("wc-7_if-you-already")}
+                        <br /> <br />
+                        {t("wc-8_you-create-account")}
+                      </Box>
                     </Grid>
-                    <Grid item xs={12}>
-                      <AccountIconBar icon={item4} text={t("wc-6_keep-your-assets")} />
+                    <Grid item xs={12} mt={"40px"}>
+                      <AccountNextButton
+                        text={t("wc-9_get-started")}
+                        onClick={() => {
+                          navigate("/start");
+                        }}
+                      />
                     </Grid>
-                  </Grid>
-                  <Grid item xs={12} mt={"40px"}>
-                    <Box className={"fs-18-light light"}>
-                      {t("wc-7_if-you-already")}
-                      <br /> <br />
-                      {t("wc-8_you-create-account")}
-                    </Box>
-                  </Grid>
-                  <Grid item xs={12} mt={"40px"}>
-                    <AccountNextButton
-                      text={t("wc-9_get-started")}
-                      onClick={() => {
-                        navigate("/start");
-                      }}
-                    />
                   </Grid>
                 </Grid>
-              </Grid>
+              </Stack>
+              <Box
+                component={"img"}
+                src={tymt1}
+                sx={{
+                  height: "calc(100vh - 64px)",
+                }}
+              />
             </Stack>
-            <Box
-              component={"img"}
-              src={tymt1}
-              sx={{
-                height: "calc(100vh - 64px)",
-              }}
-            />
-          </Stack>
+          </motion.div>
         </Grid>
       </Grid>
     </>
