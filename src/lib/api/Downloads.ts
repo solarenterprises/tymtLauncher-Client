@@ -240,7 +240,7 @@ export async function runGame(game_key: string, serverIp?: string) {
         break;
     }
     let url = path.join(dataDir, `v${tymt_version}`, `games`, game_key, exePath);
-    let args: string[];
+    let args: string[] = [];
     if (!(await exists(url))) {
       console.error("Failed to runGame: url not existing");
       return false;
