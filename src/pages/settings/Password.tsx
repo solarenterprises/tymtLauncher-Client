@@ -12,6 +12,7 @@ import { accountType, custodialType, nonCustodialType, walletEnum } from "../../
 import { getNonCustodial, setNonCustodial } from "../../features/account/NonCustodialSlice";
 import { getCustodial, setCustodial } from "../../features/account/CustodialSlice";
 import { useNotification } from "../../providers/NotificationProvider";
+import createKeccakHash from "keccak";
 
 const Password = ({ view, setView }: propsType) => {
   const classname = SettingStyle();
@@ -28,28 +29,37 @@ const Password = ({ view, setView }: propsType) => {
   const { setNotificationStatus, setNotificationTitle, setNotificationDetail, setNotificationOpen, setNotificationLink } = useNotification();
 
   const updatePassword = useCallback(() => {
-    if (userStore.password != oldPwd) {
+    if (userStore.password !== createKeccakHash("keccak256").update(oldPwd).digest("hex")) {
       setNotificationStatus("failed");
       setNotificationTitle(t("alt-15_update-password"));
       setNotificationDetail(t("alt-16_update-password-old"));
       setNotificationOpen(true);
       setNotificationLink(null);
+      setNewPwd("");
+      setOldPwd("");
+      setCfmPwd("");
       return;
     }
-    if (userStore.password == newPwd) {
+    if (userStore.password === createKeccakHash("keccak256").update(newPwd).digest("hex")) {
       setNotificationStatus("failed");
       setNotificationTitle(t("alt-15_update-password"));
       setNotificationDetail(t("alt-17_update-password-new"));
       setNotificationOpen(true);
       setNotificationLink(null);
+      setNewPwd("");
+      setOldPwd("");
+      setCfmPwd("");
       return;
     }
-    if (cfmPwd != newPwd) {
+    if (cfmPwd !== newPwd) {
       setNotificationStatus("failed");
       setNotificationTitle(t("alt-15_update-password"));
       setNotificationDetail(t("alt-18_update-password-new-not"));
       setNotificationOpen(true);
       setNotificationLink(null);
+      setNewPwd("");
+      setOldPwd("");
+      setCfmPwd("");
       return;
     }
     setNotificationStatus("success");
@@ -58,8 +68,11 @@ const Password = ({ view, setView }: propsType) => {
     setNotificationOpen(true);
     setNotificationLink(null);
     account.wallet === walletEnum.noncustodial
-      ? dispatch(setNonCustodial({ ...nonCustodialStore, password: newPwd }))
-      : dispatch(setCustodial({ ...custodialStore, password: newPwd }));
+      ? dispatch(setNonCustodial({ ...nonCustodialStore, password: createKeccakHash("keccak256").update(newPwd).digest("hex") }))
+      : dispatch(setCustodial({ ...custodialStore, password: createKeccakHash("keccak256").update(newPwd).digest("hex") }));
+    setNewPwd("");
+    setOldPwd("");
+    setCfmPwd("");
   }, [account, nonCustodialStore, custodialStore, newPwd, oldPwd, cfmPwd]);
   return (
     <>
