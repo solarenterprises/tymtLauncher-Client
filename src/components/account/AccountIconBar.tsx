@@ -13,9 +13,7 @@ const AccountIconBar = ({ icon, text, line, secondaryText }: props) => {
       <Box component={"img"} src={icon} />
       <Stack>
         <Box className={"fs-18-regular white"}>{text}</Box>
-        {line === 2 && (
-          <Box className={"fs-16-regular white"}>{secondaryText}</Box>
-        )}
+        {line === 2 && <Box className={"fs-16-regular white"}>{secondaryText}</Box>}
       </Stack>
     </Stack>
   );

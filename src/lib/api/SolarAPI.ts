@@ -2,10 +2,7 @@ import axios, { AxiosResponse, AxiosRequestConfig } from "axios";
 
 import { solar_api_url } from "../../configs/index";
 class SolarAPI {
-  static async addTxToQueue(
-    body: any,
-    url: string
-  ): Promise<AxiosResponse<any, any>> {
+  static async addTxToQueue(body: any, url: string): Promise<AxiosResponse<any, any>> {
     return await axios.post(`${url}/transactions`, body, {
       headers: {
         "Content-Type": "application/json",
@@ -13,10 +10,7 @@ class SolarAPI {
       },
     });
   }
-  static async getData(
-    query: any,
-    url: string
-  ): Promise<AxiosResponse<any, any>> {
+  static async getData(query: any, url: string): Promise<AxiosResponse<any, any>> {
     const config: AxiosRequestConfig = {
       params: query,
     };

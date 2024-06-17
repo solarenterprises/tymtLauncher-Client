@@ -1,5 +1,4 @@
 import { ICurrency } from "../types/walletTypes";
-
 import USDicon from "../assets/settings/USD.svg";
 import EURicon from "../assets/settings/EUR.svg";
 import JPYicon from "../assets/settings/JPY.png";

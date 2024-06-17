@@ -1,10 +1,8 @@
 import { Box, Stack, Modal } from "@mui/material";
 import { useTranslation } from "react-i18next";
-
 import closeIcon from "../../assets/settings/x-icon.svg";
 import logoImg from "../../assets/main/logo-header.svg";
 import arrowIcon from "../../assets/account/blue-arrow-right.svg";
-
 import { oauthModalType } from "../../types/accountTypes";
 
 const OAuthModal = ({ src, title, open, setOpen }: oauthModalType) => {
@@ -12,7 +10,7 @@ const OAuthModal = ({ src, title, open, setOpen }: oauthModalType) => {
   const modalStyle = {
     display: "flex",
     alignItems: "center",
-    justifyContent: "center"
+    justifyContent: "center",
   };
 
   return (
@@ -20,7 +18,7 @@ const OAuthModal = ({ src, title, open, setOpen }: oauthModalType) => {
       open={open}
       style={modalStyle}
       sx={{
-        backdropFilter: "blur(2px)"
+        backdropFilter: "blur(2px)",
       }}
       onClose={() => setOpen(false)}
     >
@@ -28,22 +26,11 @@ const OAuthModal = ({ src, title, open, setOpen }: oauthModalType) => {
         className="modal-content oauth-modal"
         sx={{
           backdropFilter: "blur(10px)",
-          maxHeight: "80%"
+          maxHeight: "80%",
         }}
       >
-        <img
-          src={closeIcon}
-          alt="close icon"
-          className="close-icon"
-          onClick={() => setOpen(false)}
-        />
-        <Stack
-          direction={"column"}
-          justifyContent={"center"}
-          alignItems={"center"}
-          textAlign={"center"}
-          gap={"10px"}
-        >
+        <img src={closeIcon} alt="close icon" className="close-icon" onClick={() => setOpen(false)} />
+        <Stack direction={"column"} justifyContent={"center"} alignItems={"center"} textAlign={"center"} gap={"10px"}>
           <Box className="fs-h3 gray">{t("wc-18_connecting-you-to")} </Box>
           <Box className="fs-h3 white">{title}</Box>
           <Stack direction={"row"} className="oauth-container m-tb-20">
@@ -57,9 +44,7 @@ const OAuthModal = ({ src, title, open, setOpen }: oauthModalType) => {
               <img width={48} src={src} />
             </Box>
           </Stack>
-          <Box className="fs-14-light gray">
-            {t("wc-19_check-your-browser")}
-          </Box>
+          <Box className="fs-14-light gray">{t("wc-19_check-your-browser")}</Box>
         </Stack>
       </Box>
     </Modal>

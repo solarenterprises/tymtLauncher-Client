@@ -3,14 +3,20 @@ import { getAddressesFromMnemonic, refreshBalances } from "./MultiWalletApi";
 import tymtStorage from "../../lib/Storage";
 import { chains } from "../../consts/contracts";
 import { multiWalletType } from "../../types/walletTypes";
-import { tymt_version } from "../../configs";
+import { compareJSONStructure } from "../../lib/api/JSONHelper";
 
 const loadMultiWallet: () => multiWalletType = () => {
-  const data = tymtStorage.get(`multiWallet_${tymt_version}`);
-  if (data === null || data === "") {
-    return chains as multiWalletType;
+  const data = tymtStorage.get(`multiWallet`);
+  if (data === null || data === "" || data === undefined) {
+    tymtStorage.set(`multiWallet`, JSON.stringify(chains));
+    return chains;
   } else {
-    return JSON.parse(data) as multiWalletType;
+    if (compareJSONStructure(JSON.parse(data), chains)) {
+      return JSON.parse(data);
+    } else {
+      tymtStorage.set(`multiWallet`, JSON.stringify(chains));
+      return chains;
+    }
   }
 };
 
@@ -20,15 +26,9 @@ const initialState = {
   msg: "",
 };
 
-export const getAddressesFromMnemonicAsync = createAsyncThunk(
-  "multiWallet/getAddressesFromMnemonic",
-  getAddressesFromMnemonic
-);
+export const getAddressesFromMnemonicAsync = createAsyncThunk("multiWallet/getAddressesFromMnemonic", getAddressesFromMnemonic);
 
-export const refreshBalancesAsync = createAsyncThunk(
-  "multiWallet/refreshBalances",
-  refreshBalances
-);
+export const refreshBalancesAsync = createAsyncThunk("multiWallet/refreshBalances", refreshBalances);
 
 export const multiWalletSlice = createSlice({
   name: "multiWallet",
@@ -36,10 +36,7 @@ export const multiWalletSlice = createSlice({
   reducers: {
     setMultiWallet: (state, action) => {
       state.data = action.payload;
-      tymtStorage.set(
-        `multiWallet_${tymt_version}`,
-        JSON.stringify(action.payload)
-      );
+      tymtStorage.set(`multiWallet`, JSON.stringify(action.payload));
     },
   },
   extraReducers: (builder) => {
@@ -47,32 +44,20 @@ export const multiWalletSlice = createSlice({
       .addCase(getAddressesFromMnemonicAsync.pending, (state) => {
         state.status = "loading";
       })
-      .addCase(
-        getAddressesFromMnemonicAsync.fulfilled,
-        (state, action: PayloadAction<any>) => {
-          // Update state based on the fetched addresses
-          state.data = { ...state.data, ...action.payload };
-          tymtStorage.set(
-            `multiWallet_${tymt_version}`,
-            JSON.stringify(state.data)
-          );
-          state.status = "succeeded";
-        }
-      )
+      .addCase(getAddressesFromMnemonicAsync.fulfilled, (state, action: PayloadAction<any>) => {
+        // Update state based on the fetched addresses
+        state.data = { ...state.data, ...action.payload };
+        tymtStorage.set(`multiWallet`, JSON.stringify(state.data));
+        state.status = "succeeded";
+      })
       .addCase(refreshBalancesAsync.pending, (state) => {
         state.status = "loading";
       })
-      .addCase(
-        refreshBalancesAsync.fulfilled,
-        (state, action: PayloadAction<any>) => {
-          state.data = { ...state.data, ...action.payload };
-          tymtStorage.set(
-            `multiWallet_${tymt_version}`,
-            JSON.stringify(state.data)
-          );
-          state.status = "succeeded";
-        }
-      )
+      .addCase(refreshBalancesAsync.fulfilled, (state, action: PayloadAction<any>) => {
+        state.data = action.payload;
+        tymtStorage.set(`multiWallet`, JSON.stringify(state.data));
+        state.status = "succeeded";
+      })
       .addCase(refreshBalancesAsync.rejected, (state) => {
         state.status = "failed";
       });

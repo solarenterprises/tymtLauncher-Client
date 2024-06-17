@@ -3,16 +3,19 @@
     "beforeDevCommand": "yarn dev",
     "beforeBuildCommand": "yarn build",
     "devPath": "http://localhost:1420",
-    "distDir": "../dist"
+    "distDir": "../dist",
+    "withGlobalTauri": true
   },
   "package": {
     "productName": "tymtLauncher",
-    "version": "2.0.1"
+    "version": "2.1.2"
   },
+
   "tauri": {
     "allowlist": {
       "all": true,
       "fs": {
+        "readFile": true,
         "removeDir": true,
         "removeFile": true,
         "scope": [
@@ -21,10 +24,18 @@
           "/home/*/.local/share/tymtLauncher/*/games/*/*",
           "/home/*/.local/share/tymtLauncher/*/games/*/*/*",
           "/home/*/.local/share/tymtLauncher/*/games/*/*/*/*",
+          "/home/*/.local/share/tymtLauncherDebug/*/games/*",
+          "/home/*/.local/share/tymtLauncherDebug/*/games/*/*",
+          "/home/*/.local/share/tymtLauncherDebug/*/games/*/*/*",
+          "/home/*/.local/share/tymtLauncherDebug/*/games/*/*/*/*",
           "/Users/*/Library/Application Support/tymtLauncher/*/games/*",
           "/Users/*/Library/Application Support/tymtLauncher/*/games/*/*",
           "/Users/*/Library/Application Support/tymtLauncher/*/games/*/*/*",
-          "/Users/*/Library/Application Support/tymtLauncher/*/games/*/*/*/*"
+          "/Users/*/Library/Application Support/tymtLauncher/*/games/*/*/*/*",
+          "/Users/*/Library/Application Support/tymtLauncherDebug/*/games/*",
+          "/Users/*/Library/Application Support/tymtLauncherDebug/*/games/*/*",
+          "/Users/*/Library/Application Support/tymtLauncherDebug/*/games/*/*/*",
+          "/Users/*/Library/Application Support/tymtLauncherDebug/*/games/*/*/*/*"
         ],
         "all": true
       },
@@ -33,7 +44,12 @@
       },
       "shell": {
         "all": true,
+        "execute": true,
+        "sidecar": true,
         "open": true
+      },
+      "notification": {
+        "all": true
       },
       "clipboard": {
         "all": true,
@@ -43,19 +59,39 @@
       "http": {
         "all": true,
         "request": true,
-        "scope": ["https://*", "http://*"]
+        "scope": ["https://*", "http://*", "https://api.mainnet-beta.solana.com/*", "https://api.devnet.solana.com/*", "https://unisat.io/*"]
+      },
+      "window": {
+        "all": true,
+        "create": true
       }
     },
     "windows": [
       {
         "label": "tymtLauncher",
-        "title": "tymtLauncher 2.0.1",
+        "title": "tymtLauncher 2.1.2",
         "resizable": true,
         "width": 1440,
         "height": 1024,
         "minWidth": 1200,
         "minHeight": 800,
-        "center": true
+        "center": true,
+        "additionalBrowserArgs": "--disable-web-security"
+      },
+      {
+        "label": "tymt_d53_transaction",
+        "title": "D53 transaction",
+        "url": "d53-transaction",
+        "transparent": true,
+        "decorations": false,
+        "resizable": false,
+        "visible": false,
+        "width": 440,
+        "x": 5,
+        "y": 5,
+        "additionalBrowserArgs": "--disable-web-security",
+        "alwaysOnTop": true,
+        "focus": true
       }
     ],
     "systemTray": {
@@ -69,17 +105,12 @@
       "active": true,
       "targets": "all",
       "identifier": "tymtLauncher",
-      "publisher": "dev@solarenterprises.com",
-      "icon": [
-        "icons/32x32.png",
-        "icons/128x128.png",
-        "icons/128x128@2x.png",
-        "icons/icon.icns",
-        "icons/icon.ico"
-      ],
+      "publisher": "hello@solarenterprises.com",
+      "icon": ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.icns", "icons/icon.ico"],
       "category": "Game",
       "shortDescription": "A multi-chain game launcher and an environment for creating and publishing games",
       "longDescription": "tymt is a multi-chain game launcher and an environment for creating and publishing games. \n tymt is a gaming environment and platform, built using the Solar Core blockchain solutions, enabling a new world of game economy - empowering Developers and Publishers!"
-    }
+    },
+    "macOSPrivateApi": true
   }
 }

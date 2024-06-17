@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector, useDispatch } from "react-redux";
+import numeral from "numeral";
 
 import {
   SwipeableDrawer,
@@ -22,6 +23,10 @@ import SettingStyle from "../../styles/SettingStyle";
 
 import { walletType } from "../../types/settingTypes";
 import { selectWallet, setWallet } from "../../features/settings/WalletSlice";
+import { ICurrency } from "../../types/walletTypes";
+import { currencySymbols } from "../../consts/currency";
+import { getCurrency } from "../../features/wallet/CurrencySlice";
+
 type Anchor = "right";
 
 interface props {
@@ -34,6 +39,9 @@ const TransactionFeeDrawer = ({ view, setView }: props) => {
   const dispatch = useDispatch();
   const { t } = useTranslation();
   const walletStore: walletType = useSelector(selectWallet);
+  const currencyStore: ICurrency = useSelector(getCurrency);
+  const reserve = currencyStore.data[currencyStore.current];
+  const symbol: string = currencySymbols[currencyStore.current];
 
   const [state, setState] = useState({ right: false });
 
@@ -115,20 +123,22 @@ const TransactionFeeDrawer = ({ view, setView }: props) => {
                       position="end"
                       classes={{ root: classname.adornment }}
                     >
-                      USD
+                      {symbol}
                     </InputAdornment>
                   ),
                   classes: {
                     input: classname.input,
                   },
                 }}
-                value={walletStore.fee}
+                value={numeral(
+                  Number(walletStore.fee) * Number(reserve)
+                ).format("0,0.0000")}
                 onChange={(e) => {
                   dispatch(
                     setWallet({
                       ...walletStore,
                       status: "input",
-                      fee: e.target.value,
+                      fee: Number(e.target.value) / Number(reserve),
                     })
                   );
                 }}

@@ -35,15 +35,16 @@ const ChatStyle = makeStyles({
     backgroundBlendMode: "luminosity",
     backdropFilter: "blur(4px)",
     margin: "10px",
-    position: "fixed",
     "&.MuiPaper-root": {
       flexDirection: "row",
     },
+    zIndex: -1,
   },
   collaps_pan: {
     width: "45px",
     height: "100%",
     position: "relative",
+    marginRight: "0px",
   },
   close_icon: {
     cursor: "pointer",
@@ -54,23 +55,21 @@ const ChatStyle = makeStyles({
     maxWidth: "455px",
     width: "100%",
     height: "100%",
-    overflow: "scroll",
+    overflowY: "scroll",
     borderRadius: "24px",
     backgroundColor: "#071516",
     whiteSpace: "nowrap",
-    overFlowX: "auth",
     scrollbarWidth: "none",
     position: "relative",
+    marginRight: "0px",
   },
   search_bar: {
     width: "357px",
     "& .MuiInputBase-root": {
       height: "44px",
       borderRadius: "var(--Angle-Number, 32px)",
-      border:
-        "1px solid var(--bg-stroke-white-20-modal-stroke, rgba(255, 255, 255, 0.20))",
-      background:
-        "var(--bg-stroke-icon-button-bg-10, rgba(128, 128, 128, 0.10))",
+      border: "1px solid var(--bg-stroke-white-20-modal-stroke, rgba(255, 255, 255, 0.20))",
+      background: "var(--bg-stroke-icon-button-bg-10, rgba(128, 128, 128, 0.10))",
       backgroundBlendMode: "luminosity",
       fontFamily: "Cobe",
       color: "var(--Basic-Light, #AFAFAF)",
@@ -100,10 +99,8 @@ const ChatStyle = makeStyles({
         minHeight: "25px", // Set the minimum height for the input field
       },
       borderRadius: "var(--Angle-Number, 32px)",
-      border:
-        "1px solid var(--bg-stroke-white-20-modal-stroke, rgba(255, 255, 255, 0.20))",
-      background:
-        "var(--bg-stroke-icon-button-bg-10, rgba(128, 128, 128, 0.10))",
+      border: "1px solid var(--bg-stroke-white-20-modal-stroke, rgba(255, 255, 255, 0.20))",
+      background: "var(--bg-stroke-icon-button-bg-10, rgba(128, 128, 128, 0.10))",
       backgroundBlendMode: "luminosity",
       fontFamily: "Cobe",
       color: "var(--Basic-Light, #AFAFAF)",
@@ -191,8 +188,7 @@ const ChatStyle = makeStyles({
     "&::-webkit-scrollbar-track": {
       cursor: "pointer",
       borderRadius: "100px",
-      background:
-        "var(--bg-stroke-white-10-stroke-default, rgba(255, 255, 255, 0.10))",
+      background: "var(--bg-stroke-white-10-stroke-default, rgba(255, 255, 255, 0.10))",
     },
     "&::-webkit-scrollbar-thumb": {
       borderRadius: "100px",
@@ -203,10 +199,13 @@ const ChatStyle = makeStyles({
     },
   },
   scroll_bar_chatbox: {
+    width: "101%",
     flexGrow: 1,
     overflowY: "auto",
     marginBottom: "0px",
-    height: "calc(100vh - 200px)",
+    // height: "calc(100vh - 200px)",
+    paddingRight: "10px",
+    scrollBehavior: "smooth",
     "&::-webkit-scrollbar": {
       borderRadius: "100px",
       width: "5px",
@@ -214,8 +213,7 @@ const ChatStyle = makeStyles({
     },
     "&::-webkit-scrollbar-track": {
       borderRadius: "100px",
-      background:
-        "var(--bg-stroke-white-10-stroke-default, rgba(255, 255, 255, 0.10))",
+      background: "var(--bg-stroke-white-10-stroke-default, rgba(255, 255, 255, 0.10))",
     },
     "&::-webkit-scrollbar-thumb": {
       cursor: "pointer",
@@ -225,50 +223,6 @@ const ChatStyle = makeStyles({
     "&::-webkit-scrollbar-thumb:hover": {
       background: "#555",
     },
-  },
-  modal_content: {
-    width: "250px",
-    height: "158px",
-    position: "fixed",
-    top: "50%",
-    right: "-20px",
-    transform: "translate(-50%, -50%)",
-    borderRadius: "var(--Angle-Small, 16px)",
-    backdropFilter: "blur(20px)",
-    border:
-      "1px solid var(--bg-stroke-white-20-modal-stroke, rgba(255, 255, 255, 0.20))",
-    background: "rgba(11, 11, 11, 0.40)",
-    padding: "20px",
-    justifyContent: "center",
-    zIndex: 1,
-  },
-  modal_content_chatroom: {
-    width: "250px",
-    height: "158px",
-    position: "fixed",
-    top: "50%",
-    left: "230px",
-    transform: "translate(-50%, -50%)",
-    borderRadius: "var(--Angle-Small, 16px)",
-    backdropFilter: "blur(20px)",
-    border:
-      "1px solid var(--bg-stroke-white-20-modal-stroke, rgba(255, 255, 255, 0.20))",
-    background: "rgba(11, 11, 11, 0.40)",
-    padding: "20px",
-    justifyContent: "center",
-    zIndex: 100,
-  },
-  modal_btn_left: {
-    border: "1px solid var(--Main-Red-Red, #EF4444)",
-    borderRadius: "var(--Angle-Small, 16px)",
-    textTransform: "none",
-    padding: "10px 18px 10px 18px",
-  },
-  modal_btn_right: {
-    background: "var(--Main-Red, #EF4444)",
-    borderRadius: "var(--Angle-Small, 16px)",
-    textTransform: "none",
-    padding: "10px 18px 10px 18px",
   },
 
   // chatroom

@@ -1,19 +1,13 @@
 import { createSlice } from "@reduxjs/toolkit";
-
-import tymtStorage from "../../lib/Storage";
 import { PaginationType } from "../../types/homeTypes";
-import { tymt_version } from "../../configs";
+
+const init: PaginationType = {
+  index: 0,
+  page: "home",
+};
 
 const loadData: () => PaginationType = () => {
-  const data = tymtStorage.get(`navigation_${tymt_version}`);
-  if (data === null || data === "") {
-    return {
-      index: 0,
-      page: "home",
-    };
-  } else {
-    return JSON.parse(data);
-  }
+  return init;
 };
 
 const initialState = {

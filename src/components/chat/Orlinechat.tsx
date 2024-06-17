@@ -1,6 +1,8 @@
 import { Stack, Box } from "@mui/material";
 
 const OrLinechat = ({ timeline }: any) => {
+  const centralBoxWidth = `${timeline.length * 12}px`; // Adjust the multiplier as needed
+
   return (
     <Stack
       direction={"row"}
@@ -9,11 +11,11 @@ const OrLinechat = ({ timeline }: any) => {
         height: "18px",
         padding: "0px 5px 0px 5px",
       }}
-      marginBottom={"24px"}
+      marginBottom={"10px"}
     >
       <Box
         sx={{
-          width: "40%",
+          width: `calc((100% - ${centralBoxWidth})/2)`,
           height: "1px",
           backgroundColor: "#FFFFFF16",
         }}
@@ -21,7 +23,7 @@ const OrLinechat = ({ timeline }: any) => {
       <Box
         className={"fs-14-regular"}
         sx={{
-          width: "20%",
+          width: centralBoxWidth,
           textAlign: "center",
           color: "#AFAFAF",
           fontFeatureSettings: "'calt' off",
@@ -31,7 +33,7 @@ const OrLinechat = ({ timeline }: any) => {
       </Box>
       <Box
         sx={{
-          width: "40%",
+          width: `calc((100% - ${centralBoxWidth})/2)`,
           height: "1px",
           backgroundColor: "#FFFFFF16",
         }}

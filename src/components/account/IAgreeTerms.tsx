@@ -25,7 +25,7 @@ const IAgreeTerms = () => {
         dispatch(
           setAccount({
             ...accountStore,
-            agreedTerms: !accountStore.agreedTerms
+            agreedTerms: !accountStore.agreedTerms,
           })
         );
       }}
@@ -35,13 +35,13 @@ const IAgreeTerms = () => {
         sx={{
           width: "20px",
           height: "20px",
-          color: "#7C7C7C"
+          color: "#7C7C7C",
         }}
       />
       <Box
         className={"fs-16-regular white"}
         sx={{
-          cursor: "pointer"
+          cursor: "pointer",
         }}
       >
         {t("ncca-6_agree-terms-privacy")}

@@ -11,19 +11,14 @@ interface props {
 const AccountButton = ({ src, text, onClick }: props) => {
   return (
     <Button fullWidth className="account-button" onClick={onClick}>
-      <Stack
-        direction={"row"}
-        alignItems={"center"}
-        justifyContent={"space-between"}
-        width={"448px"}
-      >
+      <Stack direction={"row"} alignItems={"center"} justifyContent={"space-between"} width={"448px"}>
         <Stack direction={"row"} spacing={"16px"} alignItems={"center"}>
           <Box
             component={"img"}
             src={src}
             sx={{
               width: "24px",
-              height: "24px"
+              height: "24px",
             }}
           />
           <Box

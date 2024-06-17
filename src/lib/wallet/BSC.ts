@@ -2,7 +2,7 @@ import { IWallet } from "./IWallet";
 import { ethers } from "ethers";
 import * as ethereumjsWallet from "ethereumjs-wallet";
 import * as bip39 from "bip39";
-import { bsc_api_key, bsc_api_url, bsc_rpc_url } from "../../configs";
+import { bsc_api_key, bsc_api_url, bsc_rpc_url, net_name } from "../../configs";
 import { ERC20ABI } from "../../abis/ERC20API";
 import { IToken, IGetTokenBalanceRes } from "../../types/walletTypes";
 
@@ -21,9 +21,7 @@ class BSC implements IWallet {
     const change = node.deriveChild(0);
     const childNode = change.deriveChild(0);
     const childWallet = childNode.getWallet();
-    const wallet = new ethers.Wallet(
-      childWallet.getPrivateKey().toString("hex")
-    );
+    const wallet = new ethers.Wallet(childWallet.getPrivateKey().toString("hex"));
     return wallet;
   }
 
@@ -34,13 +32,7 @@ class BSC implements IWallet {
 
   static async getBalance(addr: string): Promise<number> {
     try {
-      const result = (
-        await (
-          await fetch(
-            `${bsc_api_url}?module=account&action=balance&address=${addr}&apikey=${bsc_api_key}`
-          )
-        ).json()
-      ).result;
+      const result = (await (await fetch(`${bsc_api_url}?module=account&action=balance&address=${addr}&apikey=${bsc_api_key}`)).json()).result;
       return (result as number) / 1e9 / 1e9;
     } catch {
       return 0;
@@ -61,25 +53,27 @@ class BSC implements IWallet {
     }
   }
 
-  static async getTokenBalance(
-    addr: string,
-    tokens: IToken[]
-  ): Promise<IGetTokenBalanceRes[]> {
+  static async getTokenBalance(addr: string, tokens: IToken[]): Promise<IGetTokenBalanceRes[]> {
     try {
       let result: IGetTokenBalanceRes[] = [];
       for (let i = 0; i < tokens.length; i++) {
-        result.push({
-          cmc: tokens[i].cmc,
-          balance:
-            ((
-              await (
-                await fetch(
-                  `${bsc_api_url}?module=account&action=tokenbalance&contractAddress=${tokens[i].address}&address=${addr}&apikey=${bsc_api_key}`
-                )
-              ).json()
-            ).result as number) /
-            10 ** (tokens[i].decimals as number),
-        });
+        if (net_name === "testnet") {
+          result.push({
+            cmc: tokens[i].cmc,
+            balance: 0,
+          });
+        } else {
+          result.push({
+            cmc: tokens[i].cmc,
+            balance:
+              ((
+                await (
+                  await fetch(`${bsc_api_url}?module=account&action=tokenbalance&contractAddress=${tokens[i].address}&address=${addr}&apikey=${bsc_api_key}`)
+                ).json()
+              ).result as number) /
+              10 ** (tokens[i].decimals as number),
+          });
+        }
       }
       return result;
     } catch (err) {
@@ -100,17 +94,10 @@ class BSC implements IWallet {
     let wallet = await BSC.getWalletFromMnemonic(passphrase);
     const customProvider = new ethers.JsonRpcProvider(bsc_rpc_url);
     wallet = wallet.connect(customProvider);
-    const tokenContract = new ethers.Contract(
-      tx.tokenAddress,
-      ERC20ABI,
-      wallet
-    );
+    const tokenContract = new ethers.Contract(tx.tokenAddress, ERC20ABI, wallet);
     try {
       tx.recipients.map(async (recipient) => {
-        const tx = await tokenContract.transfer(
-          recipient.address,
-          ethers.parseUnits("0.001", 18)
-        );
+        const tx = await tokenContract.transfer(recipient.address, ethers.parseUnits("0.001", 18));
         const receipt = await tx.wait(1); // wait for 1 confirmation
         const hash = receipt.transactionHash;
         const block = receipt.blockNumber;
@@ -127,10 +114,7 @@ class BSC implements IWallet {
       return false;
     }
   }
-  static async sendTransaction(
-    passphrase: string,
-    tx: { recipients: any[]; fee: string; vendorField?: string }
-  ) {
+  static async sendTransaction(passphrase: string, tx: { recipients: any[]; fee: string; vendorField?: string }) {
     if (tx.recipients.length > 0) {
       try {
         let wallet = await BSC.getWalletFromMnemonic(passphrase);

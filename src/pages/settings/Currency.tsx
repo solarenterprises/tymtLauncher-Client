@@ -7,11 +7,7 @@ import checkImg from "../../assets/settings/check-icon.svg";
 
 import { propsType } from "../../types/settingTypes";
 import { ICurrency } from "../../types/walletTypes";
-import {
-  getCurrency,
-  refreshCurrencyAsync,
-  setCurrency,
-} from "../../features/wallet/CurrencySlice";
+import { getCurrency, refreshCurrencyAsync, setCurrency } from "../../features/wallet/CurrencySlice";
 import { AppDispatch } from "../../store";
 import { currencyFlags } from "../../consts/currency";
 
@@ -35,18 +31,8 @@ const Currency = ({ view, setView }: propsType) => {
     <>
       {view === "currency" && (
         <Stack direction={"column"}>
-          <Stack
-            flexDirection={"row"}
-            justifyContent={"flex-start"}
-            gap={"10px"}
-            alignItems={"center"}
-            textAlign={"center"}
-            padding={"20px"}
-          >
-            <Button
-              className={"setting-back-button"}
-              onClick={() => setView("wallet")}
-            >
+          <Stack flexDirection={"row"} justifyContent={"flex-start"} gap={"10px"} alignItems={"center"} textAlign={"center"} padding={"20px"}>
+            <Button className={"setting-back-button"} onClick={() => setView("wallet")}>
               <Box component={"img"} src={backIcon}></Box>
             </Button>
             <Box className="fs-h3 white">{t("set-34_currency")}</Box>
@@ -62,18 +48,8 @@ const Currency = ({ view, setView }: propsType) => {
                     handleCurrencyClick(currency);
                   }}
                 >
-                  <Stack
-                    direction={"row"}
-                    justifyContent={"space-between"}
-                    textAlign={"center"}
-                  >
-                    <Stack
-                      direction={"row"}
-                      justifyContent={"center"}
-                      textAlign={"right"}
-                      alignItems={"center"}
-                      gap={"5px"}
-                    >
+                  <Stack direction={"row"} justifyContent={"space-between"} textAlign={"center"}>
+                    <Stack direction={"row"} justifyContent={"center"} textAlign={"right"} alignItems={"center"} gap={"5px"}>
                       <Box
                         className="center-align"
                         component={"img"}
@@ -86,17 +62,10 @@ const Currency = ({ view, setView }: propsType) => {
                       />
                       <Box className="fs-h5 white">{currency}</Box>
                     </Stack>
-                    <Box className="center-align">
-                      {currencyStore.current == currency && (
-                        <img src={checkImg} />
-                      )}
-                    </Box>
+                    <Box className="center-align">{currencyStore.current == currency && <img src={checkImg} />}</Box>
                   </Stack>
                 </Button>
-                <Divider
-                  variant="fullWidth"
-                  sx={{ backgroundColor: "#FFFFFF1A" }}
-                />
+                <Divider variant="fullWidth" sx={{ backgroundColor: "#FFFFFF1A" }} />
               </>
             ))}
           </Stack>

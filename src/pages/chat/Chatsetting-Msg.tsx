@@ -25,19 +25,9 @@ const ChatMsg = ({ view, setView }: propsType) => {
     <>
       {view === "message" && (
         <Stack direction={"column"}>
-          <Stack
-            flexDirection={"row"}
-            justifyContent={"flex-start"}
-            gap={"10px"}
-            alignItems={"center"}
-            textAlign={"center"}
-            sx={{ padding: "20px" }}
-          >
+          <Stack flexDirection={"row"} justifyContent={"flex-start"} gap={"10px"} alignItems={"center"} textAlign={"center"} sx={{ padding: "20px" }}>
             <Button className={"common-btn"}>
-              <Box
-                className={"center_align"}
-                onClick={() => setView("chatsetting")}
-              >
+              <Box className={"center_align"} onClick={() => setView("chatsetting")}>
                 <img src={backIcon} />
               </Box>
             </Button>
@@ -52,21 +42,12 @@ const ChatMsg = ({ view, setView }: propsType) => {
                 setMessage("anyone");
               }}
             >
-              <Stack
-                direction={"row"}
-                justifyContent={"space-between"}
-                textAlign={"center"}
-              >
+              <Stack direction={"row"} justifyContent={"space-between"} textAlign={"center"}>
                 <Box className={"fs-h4 white"}>{t("set-23_anyone")}</Box>
-                <Box className={"center-align"}>
-                  {data.message == "anyone" && <img src={checkImg} />}
-                </Box>
+                <Box className={"center-align"}>{data.message == "anyone" && <img src={checkImg} />}</Box>
               </Stack>
             </Button>
-            <Divider
-              variant="fullWidth"
-              sx={{ backgroundColor: "#FFFFFF1A" }}
-            />
+            <Divider variant="fullWidth" sx={{ backgroundColor: "#FFFFFF1A" }} />
             <Button
               className={"common-btn"}
               sx={{ padding: "20px" }}
@@ -74,21 +55,12 @@ const ChatMsg = ({ view, setView }: propsType) => {
                 setMessage("noone");
               }}
             >
-              <Stack
-                direction={"row"}
-                justifyContent={"space-between"}
-                textAlign={"center"}
-              >
+              <Stack direction={"row"} justifyContent={"space-between"} textAlign={"center"}>
                 <Box className={"fs-h4 white"}>{t("set-26_no-one")}</Box>
-                <Box className={"center-align"}>
-                  {data.message == "noone" && <img src={checkImg} />}
-                </Box>
+                <Box className={"center-align"}>{data.message == "noone" && <img src={checkImg} />}</Box>
               </Stack>
             </Button>
-            <Divider
-              variant="fullWidth"
-              sx={{ backgroundColor: "#FFFFFF1A" }}
-            />
+            <Divider variant="fullWidth" sx={{ backgroundColor: "#FFFFFF1A" }} />
             <Button
               className={"common-btn"}
               sx={{ padding: "20px" }}
@@ -96,21 +68,12 @@ const ChatMsg = ({ view, setView }: propsType) => {
                 setMessage("friend");
               }}
             >
-              <Stack
-                direction={"row"}
-                justifyContent={"space-between"}
-                textAlign={"center"}
-              >
+              <Stack direction={"row"} justifyContent={"space-between"} textAlign={"center"}>
                 <Box className={"fs-h4 white"}>{t("set-27_friends")}</Box>
-                <Box className={"center-align"}>
-                  {data.message == "friend" && <img src={checkImg} />}
-                </Box>
+                <Box className={"center-align"}>{data.message == "friend" && <img src={checkImg} />}</Box>
               </Stack>
             </Button>
-            <Divider
-              variant="fullWidth"
-              sx={{ backgroundColor: "#FFFFFF1A" }}
-            />
+            <Divider variant="fullWidth" sx={{ backgroundColor: "#FFFFFF1A" }} />
           </Stack>
         </Stack>
       )}

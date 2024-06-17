@@ -1,6 +1,5 @@
 import { Box, Stack, Modal } from "@mui/material";
 import { useTranslation } from "react-i18next";
-
 import closeIcon from "../../assets/settings/x-icon.svg";
 import logo from "../../assets/main/foxhead-comingsoon.png";
 import { openLink, runGame } from "../../lib/api/Downloads";
@@ -8,7 +7,6 @@ import Games from "../../lib/game/Game";
 import { languageType } from "../../types/settingTypes";
 import { useSelector } from "react-redux";
 import { selectLanguage } from "../../features/settings/LanguageSlice";
-
 import { useNotification } from "../../providers/NotificationProvider";
 
 interface props {
@@ -28,13 +26,7 @@ const WarningModal = ({ open, setOpen, id }: props) => {
     justifyContent: "center",
   };
 
-  const {
-    setNotificationStatus,
-    setNotificationTitle,
-    setNotificationDetail,
-    setNotificationOpen,
-    setNotificationLink,
-  } = useNotification();
+  const { setNotificationStatus, setNotificationTitle, setNotificationDetail, setNotificationOpen, setNotificationLink } = useNotification();
 
   return (
     <>
@@ -47,19 +39,8 @@ const WarningModal = ({ open, setOpen, id }: props) => {
         }}
       >
         <Box className="modal-content oauth-modal">
-          <img
-            src={closeIcon}
-            alt="close icon"
-            className="close-icon"
-            onClick={() => setOpen(false)}
-          />
-          <Stack
-            direction={"column"}
-            justifyContent={"center"}
-            alignItems={"center"}
-            textAlign={"center"}
-            gap={"10px"}
-          >
+          <img src={closeIcon} alt="close icon" className="close-icon" onClick={() => setOpen(false)} />
+          <Stack direction={"column"} justifyContent={"center"} alignItems={"center"} textAlign={"center"} gap={"10px"}>
             <Box className="center-align">
               <img width={200} src={logo} />
             </Box>

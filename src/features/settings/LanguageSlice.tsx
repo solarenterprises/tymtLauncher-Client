@@ -1,16 +1,24 @@
 import { createSlice } from "@reduxjs/toolkit";
 import tymtStorage from "../../lib/Storage";
 import { languageType } from "../../types/settingTypes";
-import { tymt_version } from "../../configs";
+import { compareJSONStructure } from "../../lib/api/JSONHelper";
+
+const init: languageType = {
+  language: "en",
+};
 
 const loadData: () => languageType = () => {
-  const data = tymtStorage.get(`language_${tymt_version}`);
-  if (data === null || data === "") {
-    return {
-      language: "en",
-    };
+  const data = tymtStorage.get(`language`);
+  if (data === null || data === "" || data === undefined) {
+    tymtStorage.set(`language`, JSON.stringify(init));
+    return init;
   } else {
-    return JSON.parse(data);
+    if (compareJSONStructure(JSON.parse(data), init)) {
+      return JSON.parse(data);
+    } else {
+      tymtStorage.set(`language`, JSON.stringify(init));
+      return init;
+    }
   }
 };
 
@@ -26,10 +34,7 @@ export const languageSlice = createSlice({
   reducers: {
     setLanguage: (state, action) => {
       state.data = action.payload;
-      tymtStorage.set(
-        `language_${tymt_version}`,
-        JSON.stringify(action.payload)
-      );
+      tymtStorage.set(`language`, JSON.stringify(action.payload));
     },
   },
 });

@@ -1,17 +1,8 @@
 import { useState } from "react";
-
 import { SelectChangeEvent } from "@mui/material/Select";
 import { useTranslation } from "react-i18next";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
-import {
-  Grid,
-  Box,
-  MenuItem,
-  FormControl,
-  Stack,
-  Select,
-  Checkbox,
-} from "@mui/material";
+import { Grid, Box, MenuItem, FormControl, Stack, Select, Checkbox } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import solar from "../../assets/chains/solar.svg";
 import binance from "../../assets/chains/binance.svg";
@@ -106,12 +97,10 @@ const Multichainbtn = () => {
             border: "1px solid rgba(82, 225, 242, 0.40)",
             background: "var(--bg-stroke-card-bg, rgba(27, 53, 56, 0.20))",
             "&:hover": {
-              backgroundColor:
-                "var(--bg-stroke-blue-stroke-default-10, rgba(82, 225, 242, 0.10))",
+              backgroundColor: "var(--bg-stroke-blue-stroke-default-10, rgba(82, 225, 242, 0.10))",
             },
             "&:active": {
-              backgroundColor:
-                "var(--bg-stroke-blue-stroke-default-20, rgba(82, 225, 242, 0.20))",
+              backgroundColor: "var(--bg-stroke-blue-stroke-default-20, rgba(82, 225, 242, 0.20))",
             },
             "& .MuiSelect-icon": {
               color: "rgba(0, 0, 0, 0.26)",
@@ -127,8 +116,7 @@ const Multichainbtn = () => {
           renderValue={(selected) => (
             <>
               <Box className={"fs-16 white"}>{t("sto-2_chains")}</Box>
-              {selectedshow &&
-                selected.map((value) => <span key={value}>{value}</span>)}
+              {selectedshow && selected.map((value) => <span key={value}>{value}</span>)}
             </>
           )}
         >
@@ -138,36 +126,23 @@ const Multichainbtn = () => {
               value={chain.name}
               sx={{
                 width: "200px",
-                borderBottom:
-                  "1px solid var(--bg-stroke-white-10-stroke-default, rgba(255, 255, 255, 0.10))",
+                borderBottom: "1px solid var(--bg-stroke-white-10-stroke-default, rgba(255, 255, 255, 0.10))",
                 "&:hover": {
-                  background:
-                    "var(--bg-stroke-blue-stroke-default-10, rgba(82, 225, 242, 0.10))",
+                  background: "var(--bg-stroke-blue-stroke-default-10, rgba(82, 225, 242, 0.10))",
                 },
                 "&.Mui-selected": {
-                  background:
-                    "var(--bg-stroke-blue-stroke-default-10, rgba(82, 225, 242, 0.10))",
+                  background: "var(--bg-stroke-blue-stroke-default-10, rgba(82, 225, 242, 0.10))",
                   "&:hover": {
-                    background:
-                      "var(--bg-stroke-blue-stroke-default-10, rgba(82, 225, 242, 0.10))",
+                    background: "var(--bg-stroke-blue-stroke-default-10, rgba(82, 225, 242, 0.10))",
                   },
                   backdropFilter: "blur(10px)",
                 },
                 backdropFilter: "blur(10px)",
               }}
             >
-              <Grid
-                item
-                xs={12}
-                display={"flex"}
-                justifyContent={"space-between"}
-              >
+              <Grid item xs={12} display={"flex"} justifyContent={"space-between"}>
                 <Stack flexDirection={"row"} alignItems={"center"}>
-                  <img
-                    src={chain.url}
-                    width={"18px"}
-                    style={{ backdropFilter: "blur(50px)" }}
-                  />
+                  <img src={chain.url} width={"18px"} style={{ backdropFilter: "blur(50px)" }} />
                   <Box className={"fs-16 white"} sx={{ marginLeft: "8px" }}>
                     {t(`${chain.name}`)}
                   </Box>

@@ -3,47 +3,31 @@ import { useTranslation } from "react-i18next";
 import { useCallback, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
-import {
-  Grid,
-  Button,
-  TextField,
-  InputAdornment,
-  Stack,
-  Box,
-  Tooltip,
-} from "@mui/material";
+import { Grid, Button, TextField, InputAdornment, Stack, Box, Tooltip } from "@mui/material";
 import Chatindex from "../../pages/chat";
-
 import newlogo from "../../assets/main/newlogo.png";
 import newlogohead from "../../assets/main/newlogohead.png";
 import searchlg from "../../assets/main/searchlg.svg";
 import Settings from "../../pages/settings";
 import Back from "./Back";
-
+import Avatar from "./Avatar";
 import { notificationType } from "../../types/settingTypes";
-import { ChatnotificationType } from "../../types/chatTypes";
 import { PaginationType } from "../../types/homeTypes";
 import { TymtlogoType } from "../../types/homeTypes";
-import {
-  accountType,
-  custodialType,
-  nonCustodialType,
-  walletEnum,
-} from "../../types/accountTypes";
+import { accountType, custodialType, nonCustodialType, walletEnum } from "../../types/accountTypes";
 import { IChain } from "../../types/walletTypes";
-import {
-  selectNotification,
-  setNotification,
-} from "../../features/settings/NotificationSlice";
 import { getAccount } from "../../features/account/AccountSlice";
 import { getNonCustodial } from "../../features/account/NonCustodialSlice";
 import { getCustodial } from "../../features/account/CustodialSlice";
 import { getCurrentLogo } from "../../features/home/Tymtlogo";
-import { getchatNotification } from "../../features/chat/Chat-notificationSlice";
 import { getCurrentPage, setCurrentPage } from "../../features/home/Navigation";
 import { getChain } from "../../features/wallet/ChainSlice";
 import ComingModal from "../ComingModal";
-import Avatar from "./Avatar";
+import CardModal from "../CardModal";
+import Alertindex from "../../pages/alert";
+import { selectNotification } from "../../features/settings/NotificationSlice";
+import { getAlertList } from "../../features/alert/AlertListSlice";
+import { IAlertList } from "../../types/alertTypes";
 
 const theme = createTheme({
   palette: {
@@ -62,7 +46,6 @@ const Navbar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  // const homeclasses = homeStyles();
   const notification: notificationType = useSelector(selectNotification);
   const currentpage: PaginationType = useSelector(getCurrentPage);
   const currentlogo: TymtlogoType = useSelector(getCurrentLogo);
@@ -70,16 +53,14 @@ const Navbar = () => {
   const nonCustodialStore: nonCustodialType = useSelector(getNonCustodial);
   const custodialStore: custodialType = useSelector(getCustodial);
   const chain: IChain = useSelector(getChain);
-  const chatnotification: ChatnotificationType =
-    useSelector(getchatNotification);
-  const userStore =
-    account.wallet === walletEnum.noncustodial
-      ? nonCustodialStore
-      : custodialStore;
+  const userStore = account.wallet === walletEnum.noncustodial ? nonCustodialStore : custodialStore;
+  const alertListStore: IAlertList = useSelector(getAlertList);
   const { t } = useTranslation();
   const [showSetting, setShowSetting] = useState(false);
   const [showChat, setShowChat] = useState(false);
+  const [showAlert, setShowAlert] = useState(false);
   const [value, setValue] = useState<string>("");
+  const [cardModalOpen, setCardModalOpen] = useState<boolean>(false);
   const [coming, setComing] = useState<boolean>(false);
 
   const setView = useCallback(
@@ -94,61 +75,49 @@ const Navbar = () => {
     },
     [showChat]
   );
+  const setAlert = useCallback(
+    (viewAlert: boolean) => {
+      setShowAlert(viewAlert);
+    },
+    [showAlert]
+  );
+
+  const handleCardEnter = (event: any) => {
+    event.currentTarget.querySelector("path").setAttribute("stroke", "white");
+  };
+  const handleCardLeave = (event: any) => {
+    event.currentTarget.querySelector("path").setAttribute("stroke", "#AFAFAF");
+  };
   const handleWalletEnter = (event: any) => {
     event.currentTarget.querySelector("path").setAttribute("stroke", "white");
   };
-
   const handleWalletLeave = (event: any) => {
     event.currentTarget.querySelector("path").setAttribute("stroke", "#AFAFAF");
   };
   const handleAlarmEnter = (event: any) => {
     event.currentTarget.querySelector("path").setAttribute("stroke", "white");
   };
-
   const handleAlarmLeave = (event: any) => {
     event.currentTarget.querySelector("path").setAttribute("stroke", "#AFAFAF");
   };
   const handleMessageEnter = (event: any) => {
     event.currentTarget.querySelector("path").setAttribute("stroke", "white");
   };
-
   const handleMessageLeave = (event: any) => {
     event.currentTarget.querySelector("path").setAttribute("stroke", "#AFAFAF");
   };
 
   return (
     <>
-      <Grid
-        item
-        width={"95%"}
-        className="navbar"
-        container
-        sx={{ backdropFilter: "blur(30px)" }}
-      >
+      <Grid item width={"95%"} className="navbar" container sx={{ backdropFilter: "blur(30px)" }}>
         {currentlogo.isDrawerExpanded === true && (
-          <img
-            src={newlogo}
-            alt={"tymtlogo-1"}
-            loading="lazy"
-            style={{ cursor: "pointer" }}
-            onClick={() => navigate("/home")}
-          />
+          <img src={newlogo} alt={"tymtlogo-1"} loading="lazy" style={{ cursor: "pointer" }} onClick={() => navigate("/home")} />
         )}
         {currentlogo.isDrawerExpanded === false && (
-          <img
-            src={newlogohead}
-            alt={"tymtlogo-2"}
-            loading="lazy"
-            style={{ cursor: "pointer" }}
-            onClick={() => navigate("/home")}
-          />
+          <img src={newlogohead} alt={"tymtlogo-2"} loading="lazy" style={{ cursor: "pointer" }} onClick={() => navigate("/home")} />
         )}
 
-        <Stack
-          flexDirection={"row"}
-          alignItems={"center"}
-          sx={{ position: "fixed", left: "20%" }}
-        >
+        <Stack flexDirection={"row"} alignItems={"center"} sx={{ position: "fixed", left: "20%" }}>
           {location.pathname.indexOf("home") === -1 && (
             <Back
               onClick={() => {
@@ -172,23 +141,9 @@ const Navbar = () => {
                 endAdornment: (
                   <InputAdornment position="end">
                     {value !== "" && (
-                      <Button
-                        className={"clear_filter"}
-                        onClick={() => setValue("")}
-                      >
-                        <svg
-                          width="24"
-                          height="24"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            d="M17 7L7 17M7 7L17 17"
-                            stroke="white"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
+                      <Button className={"clear_filter"} onClick={() => setValue("")}>
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M17 7L7 17M7 7L17 17" stroke="white" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
                       </Button>
                     )}
@@ -216,14 +171,63 @@ const Navbar = () => {
                   border: "1px solid rgb(71, 76, 76)",
                 }}
               >
-                <Box className="fs-16-regular white"> {t("tol-1_wallet")}</Box>
+                <Box className="fs-16-regular white">{t("tol-8_solar-card")}</Box>
               </Stack>
             }
             PopperProps={{
               sx: {
                 [`& .MuiTooltip-tooltip`]: {
-                  backgroundColor: "transparent", 
-                  boxShadow: "none", 
+                  backgroundColor: "transparent",
+                  boxShadow: "none",
+                },
+              },
+            }}
+          >
+            <Button
+              className="button_navbar_common"
+              onClick={() => {
+                setCardModalOpen(true);
+              }}
+            >
+              <svg
+                onMouseEnter={handleCardEnter}
+                onMouseLeave={handleCardLeave}
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M22 10H2M2 8.2L2 15.8C2 16.9201 2 17.4802 2.21799 17.908C2.40973 18.2843 2.71569 18.5903 3.09202 18.782C3.51984 19 4.07989 19 5.2 19L18.8 19C19.9201 19 20.4802 19 20.908 18.782C21.2843 18.5903 21.5903 18.2843 21.782 17.908C22 17.4802 22 16.9201 22 15.8V8.2C22 7.0799 22 6.51984 21.782 6.09202C21.5903 5.7157 21.2843 5.40974 20.908 5.21799C20.4802 5 19.9201 5 18.8 5L5.2 5C4.0799 5 3.51984 5 3.09202 5.21799C2.7157 5.40973 2.40973 5.71569 2.21799 6.09202C2 6.51984 2 7.07989 2 8.2Z"
+                  stroke="#AFAFAF"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </Button>
+          </Tooltip>
+          <Tooltip
+            placement="top"
+            title={
+              <Stack
+                spacing={"10px"}
+                sx={{
+                  marginBottom: "-20px",
+                  backgroundColor: "rgb(49, 53, 53)",
+                  padding: "6px 8px",
+                  borderRadius: "32px",
+                  border: "1px solid rgb(71, 76, 76)",
+                }}
+              >
+                <Box className="fs-16-regular white">{t("tol-1_wallet")}</Box>
+              </Stack>
+            }
+            PopperProps={{
+              sx: {
+                [`& .MuiTooltip-tooltip`]: {
+                  backgroundColor: "transparent",
+                  boxShadow: "none",
                 },
               },
             }}
@@ -232,9 +236,7 @@ const Navbar = () => {
               className="button_navbar_common"
               onClick={() => {
                 navigate("/wallet");
-                dispatch(
-                  setCurrentPage({ ...currentpage, index: 3, page: "wallet" })
-                );
+                dispatch(setCurrentPage({ ...currentpage, index: 3, page: "wallet" }));
               }}
             >
               <svg
@@ -288,14 +290,10 @@ const Navbar = () => {
               className="button_navbar_common"
               sx={{ position: "relative" }}
               onClick={() => {
-                dispatch(setNotification({ ...notification, alert: true }));
-                setComing(true);
+                setShowAlert(!showAlert);
               }}
             >
-              {/* {notification.alert == true && (
-                <span className={homeclasses.notification_dot}></span>
-              )} */}
-
+              {alertListStore.unread.length > 0 && <span className={"notification_dot"}></span>}
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="24"
@@ -333,18 +331,21 @@ const Navbar = () => {
             PopperProps={{
               sx: {
                 [`& .MuiTooltip-tooltip`]: {
-                  backgroundColor: "transparent", 
-                  boxShadow: "none", 
+                  backgroundColor: "transparent",
+                  boxShadow: "none",
                 },
               },
             }}
           >
             <Button
               className="button_navbar_common"
-              onClick={() => setShowChat(!showChat)}
+              onClick={() => {
+                // setComing(true);
+                setShowChat(!showChat);
+              }}
               sx={{ position: "relative" }}
             >
-              {chatnotification.alert === true && (
+              {/* {chatnotification.alert === true && (
                 <>
                   <Box
                     className={"fs-12-light"}
@@ -365,7 +366,7 @@ const Navbar = () => {
                     124
                   </Box>
                 </>
-              )}
+              )} */}
 
               <svg
                 width="24"
@@ -385,50 +386,24 @@ const Navbar = () => {
               </svg>
             </Button>
           </Tooltip>
-          <Button
-            className="button_navbar_profile"
-            onClick={() => setShowSetting(!showSetting)}
-          >
-            <Stack
-              direction={"row"}
-              alignItems={"center"}
-              marginLeft={"0px"}
-              justifyContent={"left"}
-              spacing={"8px"}
-              height={"32px"}
-            >
-              <Avatar
-                userid={account.uid}
-                size={32}
-                ischain={true}
-                onlineStatus={true}
-              />
-              <Stack
-                direction={"column"}
-                width={"110px"}
-                alignItems={"flex-start"}
-              >
-                <Box className={"fs-16-regular white"}>
-                  {userStore.nickname.length > 11
-                    ? `${userStore.nickname.substring(0, 10)}...`
-                    : userStore.nickname}
-                </Box>
+          <Button className="button_navbar_profile" onClick={() => setShowSetting(!showSetting)}>
+            <Stack direction={"row"} alignItems={"center"} marginLeft={"0px"} justifyContent={"left"} spacing={"8px"} height={"32px"}>
+              <Avatar userid={account.uid} size={32} ischain={true} onlineStatus={true} status={!notification.alert ? "donotdisturb" : "online"} />
+              <Stack direction={"column"} width={"110px"} alignItems={"flex-start"}>
+                <Box className={"fs-16-regular white"}>{userStore.nickname.length > 11 ? `${userStore.nickname.substring(0, 10)}...` : userStore.nickname}</Box>
                 <Box className={"fs-14-regular light"}>
-                  {`${chain?.chain.wallet.substring(
-                    0,
-                    5
-                  )}...${chain?.chain.wallet.substring(
-                    chain?.chain.wallet.length - 4
-                  )}`}
+                  {`${chain?.chain.wallet.substring(0, 5)}...${chain?.chain.wallet.substring(chain?.chain.wallet.length - 4)}`}
                 </Box>
               </Stack>
             </Stack>
           </Button>
         </Grid>
         <Settings view={showSetting} setView={setView} />
-        <Chatindex viewChat={showChat} setViewChat={setChat} />
+        {location.pathname.indexOf("chat") === -1 && <Chatindex viewChat={showChat} setViewChat={setChat} />}
+        <Alertindex viewAlert={showAlert} setViewAlert={setAlert} />
       </Grid>
       <ComingModal open={coming} setOpen={setComing} />
+      <CardModal open={cardModalOpen} setOpen={setCardModalOpen} />
     </>
   );
 };

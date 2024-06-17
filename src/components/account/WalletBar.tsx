@@ -17,7 +17,7 @@ const WalletBar = ({ icon, chain, address }: props) => {
             color: "white",
             leadingTrim: "both",
             textEdge: "cap",
-            fontFeatureSettings: "'calt' off"
+            fontFeatureSettings: "'calt' off",
           }}
         >
           {chain}
@@ -30,7 +30,7 @@ const WalletBar = ({ icon, chain, address }: props) => {
             color: "#52E1F2",
             leadingTrim: "both",
             textEdge: "cap",
-            fontFeatureSettings: "'calt' off"
+            fontFeatureSettings: "'calt' off",
           }}
         >
           {address}

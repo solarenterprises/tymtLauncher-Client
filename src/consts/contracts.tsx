@@ -1,5 +1,15 @@
 import solarIcon from "../assets/chains/solar.svg";
-export const chains = {
+import ethereumIcon from "../assets/chains/ethereum.svg";
+import solanaIcon from "../assets/chains/solana.svg";
+import avalancheIcon from "../assets/chains/avalanche.svg";
+import optimismIcon from "../assets/chains/optimism.svg";
+import binanceIcon from "../assets/chains/binance.svg";
+import bitcoinIcon from "../assets/chains/bitcoin.svg";
+import polygonIcon from "../assets/chains/polygon.svg";
+import arbitrumoneIcon from "../assets/chains/arbitrum.svg";
+import { multiWalletType } from "../types/walletTypes";
+
+export const chains: multiWalletType = {
   Ethereum: {
     chain: {
       address: "",
@@ -7,7 +17,8 @@ export const chains = {
       name: "Ethereum",
       key: "ethereum",
       decimals: 18,
-      logo: "https://raw.githubusercontent.com/blockchain/coin-definitions/master/extensions/blockchains/ethereum/info/logo.png",
+      // logo: "https://raw.githubusercontent.com/blockchain/coin-definitions/master/extensions/blockchains/ethereum/info/logo.png",
+      logo: ethereumIcon,
       website: "https://ethereum.org/",
       chainId: 1,
       wallet: "",
@@ -59,10 +70,11 @@ export const chains = {
     chain: {
       address: "",
       symbol: "BNB",
-      name: "Binance Smart Chain",
+      name: "Binance",
       key: "smartchain",
       decimals: 18,
-      logo: "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/smartchain/info/logo.png",
+      // logo: "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/smartchain/info/logo.png",
+      logo: binanceIcon,
       website: null,
       chainId: 56,
       wallet: "",
@@ -105,7 +117,8 @@ export const chains = {
       name: "Polygon",
       key: "polygon",
       decimals: 18,
-      logo: "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/polygon/info/logo.png",
+      // logo: "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/polygon/info/logo.png",
+      logo: polygonIcon,
       website: "https://polygon.technology/solutions/polygon-pos/",
       chainId: 137,
       wallet: "",
@@ -160,7 +173,8 @@ export const chains = {
       name: "Avalanche C-Chain",
       key: "avalanchec",
       decimals: 18,
-      logo: "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/avalanchec/info/logo.png",
+      // logo: "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/avalanchec/info/logo.png",
+      logo: avalancheIcon,
       website: "http://avax.network",
       chainId: 43114,
       wallet: "",
@@ -191,7 +205,8 @@ export const chains = {
       name: "Arbitrum",
       key: "arbitrum",
       decimals: 18,
-      logo: "https://cryptologos.cc/logos/arbitrum-arb-logo.png?v=029",
+      // logo: "https://cryptologos.cc/logos/arbitrum-arb-logo.png?v=029",
+      logo: arbitrumoneIcon,
       website: "https://offchainlabs.com",
       chainId: 42161,
       wallet: "",
@@ -246,7 +261,8 @@ export const chains = {
       name: "Optimism",
       key: "optimism",
       decimals: 18,
-      logo: "https://cryptologos.cc/logos/optimism-ethereum-op-logo.png?v=029",
+      // logo: "https://cryptologos.cc/logos/optimism-ethereum-op-logo.png?v=029",
+      logo: optimismIcon,
       website: "https://www.optimism.io/",
       chainId: 10,
       wallet: "",
@@ -307,7 +323,8 @@ export const chains = {
       name: "Bitcoin",
       key: "bitcoin",
       decimals: 8,
-      logo: "https://cryptologos.cc/logos/bitcoin-btc-logo.png?v=029",
+      // logo: "https://cryptologos.cc/logos/bitcoin-btc-logo.png?v=029",
+      logo: bitcoinIcon,
       website: "https://bitcoin.org/",
       chainId: 0,
       wallet: "",
@@ -325,7 +342,8 @@ export const chains = {
       name: "Solana",
       key: "solana",
       decimals: 9,
-      logo: "https://cryptologos.cc/logos/solana-sol-logo.png?v=029",
+      // logo: "https://cryptologos.cc/logos/solana-sol-logo.png?v=029",
+      logo: solanaIcon,
       website: "https://solana.com/",
       chainId: 0,
       wallet: "",

@@ -1,19 +1,10 @@
 import { useDispatch, useSelector } from "react-redux";
-
-import {
-  getTempNonCustodial,
-  setTempNonCustodial,
-} from "../../features/account/TempNonCustodialSlice";
-
+import { getTempNonCustodial, setTempNonCustodial } from "../../features/account/TempNonCustodialSlice";
 import { IconButton, Tooltip, Box, Stack } from "@mui/material";
-
 import LoopIcon from "@mui/icons-material/Loop";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
-
 import MnemonicWord from "./MnemonicWord";
-
 import { getMnemonic } from "../../consts/mnemonics";
-
 import { nonCustodialType } from "../../types/accountTypes";
 import { useTranslation } from "react-i18next";
 
@@ -24,8 +15,7 @@ interface props {
 const MnemonicPad = ({ editable }: props) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
-  const tempNonCustodialStore: nonCustodialType =
-    useSelector(getTempNonCustodial);
+  const tempNonCustodialStore: nonCustodialType = useSelector(getTempNonCustodial);
   const mnemonicString = tempNonCustodialStore.mnemonic;
   const mnemonic = mnemonicString.toString().split(" ");
 
@@ -63,9 +53,7 @@ const MnemonicPad = ({ editable }: props) => {
                   border: "1px solid rgb(71, 76, 76)",
                 }}
               >
-                <Box className="fs-16-regular white">
-                  {t("ncca-16_regenerate")}
-                </Box>
+                <Box className="fs-16-regular white">{t("ncca-16_regenerate")}</Box>
               </Stack>
             }
             PopperProps={{
@@ -116,10 +104,7 @@ const MnemonicPad = ({ editable }: props) => {
               },
             }}
           >
-            <IconButton
-              className={"icon-button"}
-              onClick={copyMnemonicToClipboard}
-            >
+            <IconButton className={"icon-button"} onClick={copyMnemonicToClipboard}>
               <ContentCopyIcon className={"icon-button"} />
             </IconButton>
           </Tooltip>

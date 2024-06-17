@@ -16,7 +16,6 @@ export interface accountType {
   agreedTerms: boolean;
   uid: string;
   avatar: string;
-  accessToken: string;
   isLoggedIn: boolean;
 }
 
@@ -65,4 +64,17 @@ export interface benefitModalType {
 
 export interface ITymt {
   version: string;
+}
+
+export interface IMachineId {
+  machineId: string;
+}
+
+export interface IMnemonic {
+  mnemonic: string;
+}
+
+export interface ISaltToken {
+  salt: string;
+  token: string;
 }

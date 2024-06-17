@@ -84,25 +84,15 @@ const ComingSoon = () => {
             zIndex: -1,
           }}
         />
-        <Grid
-          xs={12}
-          container
-          sx={{ justifyContent: "space-between", alignItems: "center" }}
-        >
+        <Grid xs={12} container sx={{ justifyContent: "space-between", alignItems: "center" }}>
           <Box className={"fs-38-bold"} color={"white"} textTransform={"none"}>
             {t("hom-11_coming-soon")}
           </Box>
           <Stack flexDirection={"row"} alignItems={"center"}>
-            <Button
-              className={classes.trending_chevron_button}
-              onClick={() => handlePrevSlide()}
-            >
+            <Button className={classes.trending_chevron_button} onClick={() => handlePrevSlide()}>
               <img src={chevronleft} />
             </Button>
-            <Button
-              onClick={() => handleNextSlide()}
-              className={classes.trending_chevron_button}
-            >
+            <Button onClick={() => handleNextSlide()} className={classes.trending_chevron_button}>
               <img src={chevronright} />
             </Button>
           </Stack>
@@ -123,13 +113,7 @@ const ComingSoon = () => {
             {ComingList.map((list) => (
               <SwiperSlide key={list.name}>
                 <Card className={classes.card_coming_slide}>
-                  <img
-                    src={list.url}
-                    width={"100%"}
-                    height={"165px"}
-                    style={{ borderRadius: "16px" }}
-                    loading="lazy"
-                  />
+                  <img src={list.url} width={"100%"} height={"165px"} style={{ borderRadius: "16px" }} loading="lazy" />
                   <Box
                     textTransform={"none"}
                     className={"fs-20-regular white"}

@@ -24,16 +24,9 @@ import DontHaveAccount from "../../../components/account/DontHaveAccount";
 import tymt2 from "../../../assets/account/tymt2.png";
 
 import "../../../global.css";
-import {
-  accountType,
-  loginEnum,
-  nonCustodialType,
-} from "../../../types/accountTypes";
+import { accountType, loginEnum, nonCustodialType } from "../../../types/accountTypes";
 import { checkMnemonic } from "../../../consts/mnemonics";
-import {
-  getTempNonCustodial,
-  setTempNonCustodial,
-} from "../../../features/account/TempNonCustodialSlice";
+import { getTempNonCustodial, setTempNonCustodial } from "../../../features/account/TempNonCustodialSlice";
 import { getTempAddressesFromMnemonicAsync } from "../../../features/wallet/TempMultiWalletSlice";
 import AuthAPI from "../../../lib/api/AuthAPI";
 import { getAccount, setAccount } from "../../../features/account/AccountSlice";
@@ -43,8 +36,7 @@ import { tymt_backend_url } from "../../../configs";
 const NonCustodialLogIn2 = () => {
   const navigate = useNavigate();
   const nonCustodialStore: nonCustodialType = useSelector(getNonCustodial);
-  const tempNonCustodialStore: nonCustodialType =
-    useSelector(getTempNonCustodial);
+  const tempNonCustodialStore: nonCustodialType = useSelector(getTempNonCustodial);
   const dispatch = useDispatch<AppDispatch>();
   const accountStore: accountType = useSelector(getAccount);
   const { t } = useTranslation();
@@ -84,14 +76,8 @@ const NonCustodialLogIn2 = () => {
         })
       );
       setLoading(true);
-      dispatch(
-        getTempAddressesFromMnemonicAsync({ mnemonic: formik.values.mnemonic })
-      ).then(async () => {
-        const res = await AuthAPI.getUserBySolarAddress(
-          await tymtCore.Blockchains.solar.wallet.getAddress(
-            formik.values.mnemonic
-          )
-        );
+      dispatch(getTempAddressesFromMnemonicAsync({ mnemonic: formik.values.mnemonic })).then(async () => {
+        const res = await AuthAPI.getUserBySolarAddress(await tymtCore.Blockchains.solar.wallet.getAddress(formik.values.mnemonic));
         if (res.data.users.length === 0) {
           navigate("/non-custodial/import/1");
         } else {
@@ -100,9 +86,7 @@ const NonCustodialLogIn2 = () => {
               ...tempNonCustodialStore,
               mnemonic: formik.values.mnemonic,
               nickname: res.data.users[0].nickName,
-              avatar: `${tymt_backend_url}/users/get-avatar/${
-                res.data.users[0]._id
-              }?${new Date().toISOString()}`,
+              avatar: `${tymt_backend_url}/users/get-avatar/${res.data.users[0]._id}?${new Date().toISOString()}`,
             })
           );
           if (nonCustodialStore.password === "") {
@@ -132,44 +116,27 @@ const NonCustodialLogIn2 = () => {
   return (
     <>
       <Grid container className="basic-container">
-        <Grid item xs={12}>
-          <Stack direction={"row"}>
-            <Stack
-              sx={{
-                width: "calc(100vw - 656px)",
-                height: "1008px",
-              }}
-            >
-              <Grid container justifyContent={"center"} pt={"56px"}>
+        <Grid item xs={12} container justifyContent={"center"}>
+          <Stack direction={"row"} alignItems={"center"} justifyContent={"center"} gap={"64px"}>
+            <Stack alignItems={"center"} justifyContent={"center"}>
+              <Grid container justifyContent={"center"}>
                 <Grid
                   item
                   container
                   sx={{
                     width: "520px",
+                    padding: "10px 0px",
                   }}
                 >
                   <Grid item xs={12} container justifyContent={"space-between"}>
                     <Back onClick={handleBackClick} />
-                    <Stepper
-                      all={2}
-                      now={2}
-                      texts={[
-                        t("ncl-1_password"),
-                        t("ncl-11_secure-passphrase"),
-                      ]}
-                    />
+                    <Stepper all={4} now={2} texts={["", t("ncl-11_secure-passphrase"), t("ncl-1_password"), ""]} />
                   </Grid>
 
                   <Grid item xs={12} mt={"80px"}>
-                    <AccountHeader
-                      title={t("ncl-2_welcome-back")}
-                      text={t("ncl-12_type-your-mnemonic")}
-                    />
+                    <AccountHeader title={t("ncl-2_welcome-back")} text={t("ncl-12_type-your-mnemonic")} />
                   </Grid>
-                  <form
-                    onSubmit={formik.handleSubmit}
-                    style={{ width: "100%" }}
-                  >
+                  <form onSubmit={formik.handleSubmit} style={{ width: "100%" }}>
                     <Grid item xs={12} mt={"48px"}>
                       <InputText
                         id="non-custodial-login"
@@ -179,11 +146,7 @@ const NonCustodialLogIn2 = () => {
                         value={formik.values.mnemonic}
                         onChange={formik.handleChange}
                         onBlur={formik.handleBlur}
-                        error={
-                          formik.touched.mnemonic && formik.errors.mnemonic
-                            ? true
-                            : false
-                        }
+                        error={formik.touched.mnemonic && formik.errors.mnemonic ? true : false}
                         onIconButtonClick={handlePasteClick}
                       />
                     </Grid>
@@ -195,24 +158,13 @@ const NonCustodialLogIn2 = () => {
                         padding: "0px 6px",
                       }}
                     >
-                      {formik.touched.mnemonic && formik.errors.mnemonic && (
-                        <Box className={"fs-16-regular red"}>
-                          {formik.errors.mnemonic}
-                        </Box>
-                      )}
+                      {formik.touched.mnemonic && formik.errors.mnemonic && <Box className={"fs-16-regular red"}>{formik.errors.mnemonic}</Box>}
                     </Grid>
                     <Grid item xs={12} mt={"40px"}>
-                      <AccountNextButton
-                        text={t("ncl-6_next")}
-                        isSubmit={true}
-                        disabled={
-                          loading || formik.errors.mnemonic ? true : false
-                        }
-                        loading={loading}
-                      />
+                      <AccountNextButton text={t("ncl-6_next")} isSubmit={true} disabled={loading || formik.errors.mnemonic ? true : false} loading={loading} />
                     </Grid>
                   </form>
-                  <Grid item xs={12} mt={"275px"}>
+                  <Grid item xs={12} mt={"50px"}>
                     <DontHaveAccount />
                   </Grid>
                 </Grid>
@@ -222,9 +174,7 @@ const NonCustodialLogIn2 = () => {
               component={"img"}
               src={tymt2}
               sx={{
-                width: "656px",
-                height: "1008px",
-                padding: "32px",
+                height: "calc(100vh - 64px)",
               }}
             />
           </Stack>

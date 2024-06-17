@@ -1,33 +1,18 @@
 import { useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
-import { useEffect, useState } from "react";
-
 import { Tooltip, Stack, Box } from "@mui/material";
-import { getUsernotificationStatus } from "../../features/chat/Chat-contactApi";
-
 import onlineframe from "../../assets/chat/onlineframe.svg";
 import offlineframe from "../../assets/chat/offlineframe.svg";
 import donotdisturbframe from "../../assets/chat/donotdisturbframe.svg";
 import mask from "../../assets/account/mask.png";
-
 import { IChain } from "../../types/walletTypes";
-import { notificationType } from "../../types/settingTypes";
 import { getChain } from "../../features/wallet/ChainSlice";
-import { selectNotification } from "../../features/settings/NotificationSlice";
+import accountIcon from "../../assets/wallet/account.svg";
+import { tymt_backend_url } from "../../configs";
 
-const Avatar = ({ size, userid, onlineStatus, ischain }: any) => {
+const Avatar = ({ size, userid, onlineStatus, ischain, status }: any) => {
   const { t } = useTranslation();
   const chain: IChain = useSelector(getChain);
-  const [status, setStatus] = useState("");
-  const notificationStore: notificationType = useSelector(selectNotification);
-  const getNotificationStatus = async () => {
-    const retrievedstatus = await getUsernotificationStatus(userid);
-    setStatus(retrievedstatus);
-  };
-
-  useEffect(() => {
-    getNotificationStatus();
-  }, [userid, notificationStore.alert]);
 
   return (
     <>
@@ -60,14 +45,14 @@ const Avatar = ({ size, userid, onlineStatus, ischain }: any) => {
             {
               name: "offset",
               options: {
-                offset: [0, -10], 
+                offset: [0, -10],
               },
             },
           ],
           sx: {
             [`& .MuiTooltip-tooltip`]: {
-              backgroundColor: "transparent", 
-              boxShadow: "none", 
+              backgroundColor: "transparent",
+              boxShadow: "none",
             },
           },
         }}
@@ -124,10 +109,11 @@ const Avatar = ({ size, userid, onlineStatus, ischain }: any) => {
               }}
             />
           )}
-
-          <img
-            src={`https://dev.tymt.com/api/users/get-avatar/${userid}?${new Date().toISOString()}`}
-            style={{
+          <Box
+            component={"img"}
+            key={`${new Date().getTime()}`}
+            src={`${tymt_backend_url}/users/get-avatar/${userid}?${Date.now()}`}
+            sx={{
               position: "absolute",
               top: "50%",
               left: "50%",
@@ -135,13 +121,17 @@ const Avatar = ({ size, userid, onlineStatus, ischain }: any) => {
               width: "100%",
               height: "100%",
               borderColor: "transparent",
-              maskImage: `url(${mask})`, 
+              maskImage: `url(${mask})`,
               maskPosition: "center",
               maskSize: "cover",
               zIndex: 1,
               opacity: 0.9,
             }}
             loading="lazy"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              target.src = accountIcon;
+            }}
           />
         </div>
       </Tooltip>

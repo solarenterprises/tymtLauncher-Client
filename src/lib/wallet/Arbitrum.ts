@@ -2,7 +2,7 @@ import { IWallet } from "./IWallet";
 import { ethers } from "ethers";
 import * as ethereumjsWallet from "ethereumjs-wallet";
 import * as bip39 from "bip39";
-import { arb_api_key, arb_api_url, arb_rpc_url } from "../../configs";
+import { arb_api_key, arb_api_url, arb_rpc_url, net_name } from "../../configs";
 import { IToken, IGetTokenBalanceRes } from "../../types/walletTypes";
 
 class Arbitrum implements IWallet {
@@ -20,53 +20,47 @@ class Arbitrum implements IWallet {
     const change = node.deriveChild(0);
     const childNode = change.deriveChild(0);
     const childWallet = childNode.getWallet();
-    const wallet = new ethers.Wallet(
-      childWallet.getPrivateKey().toString("hex")
-    );
+    const wallet = new ethers.Wallet(childWallet.getPrivateKey().toString("hex"));
     return wallet;
   }
 
   static async getAddress(mnemonic: string): Promise<string> {
-    const wallet = await Arbitrum.getWalletFromMnemonic(
-      mnemonic.normalize("NFD")
-    );
+    const wallet = await Arbitrum.getWalletFromMnemonic(mnemonic.normalize("NFD"));
     return wallet.address;
   }
 
   static async getBalance(addr: string): Promise<number> {
     try {
-      const result = (
-        await (
-          await fetch(
-            `${arb_api_url}?module=account&action=balance&address=${addr}&tag=latest&apikey=${arb_api_key}`
-          )
-        ).json()
-      ).result;
+      const result = (await (await fetch(`${arb_api_url}?module=account&action=balance&address=${addr}&tag=latest&apikey=${arb_api_key}`)).json()).result;
       return (result as number) / 1e9 / 1e9;
     } catch {
       return 0;
     }
   }
 
-  static async getTokenBalance(
-    addr: string,
-    tokens: IToken[]
-  ): Promise<IGetTokenBalanceRes[]> {
+  static async getTokenBalance(addr: string, tokens: IToken[]): Promise<IGetTokenBalanceRes[]> {
     try {
       let result: IGetTokenBalanceRes[] = [];
       for (let i = 0; i < tokens.length; i++) {
-        result.push({
-          cmc: tokens[i].cmc,
-          balance:
-            ((
-              await (
-                await fetch(
-                  `${arb_api_url}?module=account&action=tokenbalance&contractAddress=${tokens[i].address}&address=${addr}&tag=latest&apikey=${arb_api_key}`
-                )
-              ).json()
-            ).result as number) /
-            10 ** (tokens[i].decimals as number),
-        });
+        if (net_name === "testnet") {
+          result.push({
+            cmc: tokens[i].cmc,
+            balance: 0,
+          });
+        } else {
+          result.push({
+            cmc: tokens[i].cmc,
+            balance:
+              ((
+                await (
+                  await fetch(
+                    `${arb_api_url}?module=account&action=tokenbalance&contractAddress=${tokens[i].address}&address=${addr}&tag=latest&apikey=${arb_api_key}`
+                  )
+                ).json()
+              ).result as number) /
+              10 ** (tokens[i].decimals as number),
+          });
+        }
       }
       return result;
     } catch (err) {
@@ -89,10 +83,7 @@ class Arbitrum implements IWallet {
     }
   }
 
-  static async sendTransaction(
-    passphrase: string,
-    tx: { recipients: any[]; fee: string; vendorField?: string }
-  ) {
+  static async sendTransaction(passphrase: string, tx: { recipients: any[]; fee: string; vendorField?: string }) {
     if (tx.recipients.length > 0) {
       try {
         let wallet = await Arbitrum.getWalletFromMnemonic(passphrase);

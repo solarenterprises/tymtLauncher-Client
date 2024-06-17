@@ -48,11 +48,11 @@ export const formatDecimal = (number, count = 8) => {
 };
 
 export const formatBalance = (number, count = 2) => {
-  const cryptoAmount = number.toLocaleString("en", {
+  const cryptoAmount = number?.toLocaleString("en", {
     minimumFractionDigits: count,
     maximumFractionDigits: count,
   });
-  return numeral(cryptoAmount).format("0,0.0[0000]");
+  return numeral(cryptoAmount)?.format("0,0.0[0000]");
 };
 export const getExplorerUrl = (chain: IChain): string => {
   let url = "";
@@ -75,8 +75,7 @@ export const getExplorerUrl = (chain: IChain): string => {
     }
     case "Solana": {
       if (net_name == "testnet") {
-        url =
-          sol_scan_path + "account/" + chain.chain.wallet + "?cluster=testnet";
+        url = sol_scan_path + "account/" + chain.chain.wallet + "?cluster=testnet";
       } else {
         url = sol_scan_path + "account/" + chain.chain.wallet;
       }
@@ -114,118 +113,152 @@ export const formatTransaction = (chain: IChain, data: any) => {
     logo = chain.chain.logo;
     symbol = chain.chain.symbol;
     if (chain.chain.symbol == "SXP") {
-      if (chain.chain.wallet?.toLowerCase() == data.sender?.toLowerCase()) {
-        direction = 1;
-        address = data.asset.transfers[0].recipientId;
+      if (data?.type === 6) {
+        // transfer
+        if (chain.chain.wallet?.toLowerCase() == data?.sender?.toLowerCase()) {
+          //send
+          direction = 1;
+          address = data?.asset.transfers[0].recipientId;
+          amount = formatDecimal(data?.amount ?? 0, 8);
+        } else {
+          // receive
+          direction = 0;
+          address = data?.sender;
+          amount = formatDecimal(
+            data?.asset?.transfers.find((element: any) => element?.recipientId?.toLowerCase() === chain.chain.wallet?.toLocaleLowerCase())?.amount ?? 0,
+            8
+          );
+        }
+        time = formatDate(data?.timestamp?.unix);
+        url = solar_scan_path + "transaction/" + data?.id;
+      } else if (data?.type === 2) {
+        // vote
+        direction = 2;
+        address = data?.sender;
+        time = formatDate(data?.timestamp?.unix);
+        url = solar_scan_path + "transaction/" + data?.id;
+        amount = formatDecimal(data?.fee ?? 0, 8);
       } else {
         direction = 0;
-        address = data.sender;
+        address = "";
+        time = formatDate(0);
+        url = "";
+        amount = formatDecimal(0);
       }
-      time = formatDate(data.timestamp.unix);
-      url = solar_scan_path + "transaction/" + data.id;
-      amount = formatDecimal(data.amount);
     } else if (chain.chain.symbol === "BTC") {
       if (data?.result >= 0) {
         direction = 0;
-        address = data?.inputs[0]?.prev_out?.addr;
+        if (Array.isArray(data?.inputs)) address = data?.inputs[0]?.prev_out?.addr ?? "";
         time = formatDate(data?.time);
         url = btc_scan_path + "tx/" + data?.hash;
         amount = formatDecimal(data?.result, 8);
-      } else {
+      } else if (data?.result < 0) {
         direction = 1;
-        address = data?.out[0]?.addr;
+        if (Array.isArray(data?.out)) address = data?.out[0]?.addr ?? "";
         time = formatDate(data?.time);
         url = btc_scan_path + "tx/" + data?.hash;
         amount = formatDecimal(-data?.result, 8);
       }
+    } else if (chain.chain.symbol === "SOL") {
+      const amountSOL = data?.result?.meta?.postBalances[1] - data?.result?.meta?.preBalances[1];
+      if (chain.chain.wallet === data?.result?.transaction.message.instructions[0].parsed.info.source) {
+        direction = 1;
+        address = data?.result?.transaction.message.instructions[0].parsed.info.destination;
+      } else {
+        direction = 0;
+        address = data?.result?.transaction.message.instructions[0].parsed.info.source;
+      }
+      amount = formatDecimal(amountSOL ?? 0, 9);
+      time = formatDate(data?.result?.blockTime);
+      url = sol_scan_path + "tx/" + data?.result?.transaction.signatures[0];
     } else if (chain.chain.symbol == "ETH") {
-      if (chain.chain.wallet?.toLowerCase() == data.from?.toLowerCase()) {
+      if (chain.chain.wallet?.toLowerCase() == data?.from?.toLowerCase()) {
         direction = 1;
-        address = data.to;
+        address = data?.to;
       } else {
         direction = 0;
-        address = data.from;
+        address = data?.from;
       }
-      time = formatDate(data.timeStamp);
-      url = eth_scan_path + "tx/" + data.hash;
-      amount = formatDecimal(data.value, 18);
+      time = formatDate(data?.timeStamp);
+      url = eth_scan_path + "tx/" + data?.hash;
+      amount = formatDecimal(data?.value ?? 0, 18);
     } else if (chain.chain.symbol == "ARBETH") {
-      if (chain.chain.wallet?.toLowerCase() == data.from?.toLowerCase()) {
+      if (chain.chain.wallet?.toLowerCase() == data?.from?.toLowerCase()) {
         direction = 1;
-        address = data.to;
+        address = data?.to;
       } else {
         direction = 0;
-        address = data.from;
+        address = data?.from;
       }
-      time = formatDate(data.timeStamp);
-      url = arb_scan_path + "tx/" + data.hash;
-      amount = formatDecimal(data.value, 18);
+      time = formatDate(data?.timeStamp);
+      url = arb_scan_path + "tx/" + data?.hash;
+      amount = formatDecimal(data?.value ?? 0, 18);
     } else if (chain.chain.symbol == "AVAX") {
-      if (chain.chain.wallet?.toLowerCase() == data.from?.toLowerCase()) {
+      if (chain.chain.wallet?.toLowerCase() == data?.from?.toLowerCase()) {
         direction = 1;
-        address = data.to;
+        address = data?.to;
       } else {
         direction = 0;
-        address = data.from;
+        address = data?.from;
       }
       if (net_name === "mainnet") {
-        url = avax_scan_path + "tx/" + data.txHash;
-        time = data.timeStamp;
-        amount = formatDecimal(data.amount, 18);
+        url = avax_scan_path + "tx/" + data?.txHash;
+        time = data?.timeStamp;
+        amount = formatDecimal(data?.amount ?? 0, 18);
       } else {
-        time = data.timestamp;
-        url = avax_scan_path + "tx/" + data.id;
-        amount = formatDecimal(data.value, 18);
+        time = data?.timestamp;
+        url = avax_scan_path + "tx/" + data?.id;
+        amount = formatDecimal(data?.value ?? 0, 18);
       }
     } else if (chain.chain.symbol == "BNB") {
-      if (chain.chain.wallet?.toLowerCase() == data.from?.toLowerCase()) {
+      if (chain.chain.wallet?.toLowerCase() == data?.from?.toLowerCase()) {
         direction = 1;
-        address = data.to;
+        address = data?.to;
       } else {
         direction = 0;
-        address = data.from;
+        address = data?.from;
       }
-      time = formatDate(data.timeStamp);
-      url = bsc_scan_path + "tx/" + data.hash;
-      amount = formatDecimal(data.value, 18);
+      time = formatDate(data?.timeStamp);
+      url = bsc_scan_path + "tx/" + data?.hash;
+      amount = formatDecimal(data?.value ?? 0, 18);
     } else if (chain.chain.symbol == "OETH") {
-      if (chain.chain.wallet?.toLowerCase() == data.from?.toLowerCase()) {
+      if (chain.chain.wallet?.toLowerCase() == data?.from?.toLowerCase()) {
         direction = 1;
-        address = data.to;
+        address = data?.to;
       } else {
         direction = 0;
-        address = data.from;
+        address = data?.from;
       }
-      time = formatDate(data.timeStamp);
-      url = opt_scan_path + "tx/" + data.hash;
-      amount = formatDecimal(data.value, 18);
+      time = formatDate(data?.timeStamp);
+      url = opt_scan_path + "tx/" + data?.hash;
+      amount = formatDecimal(data?.value ?? 0, 18);
     } else if (chain.chain.symbol == "MATIC") {
-      if (chain.chain.wallet?.toLowerCase() == data.from?.toLowerCase()) {
+      if (chain.chain.wallet?.toLowerCase() == data?.from?.toLowerCase()) {
         direction = 1;
-        address = data.to;
+        address = data?.to;
       } else {
         direction = 0;
-        address = data.from;
+        address = data?.from;
       }
-      time = formatDate(data.timeStamp);
-      url = pol_scan_path + "tx/" + data.hash;
-      amount = formatDecimal(data.value, 18);
+      time = formatDate(data?.timeStamp);
+      url = pol_scan_path + "tx/" + data?.hash;
+      amount = formatDecimal(data?.value ?? 0, 18);
     }
   } else {
     chain.tokens.map((token) => {
       if (token.symbol == chain.currentToken) {
         logo = token.logo;
         symbol = token.displaySymbol;
-        if (chain.chain.wallet?.toLowerCase() == data.from?.toLowerCase()) {
+        if (chain.chain.wallet?.toLowerCase() == data?.from?.toLowerCase()) {
           direction = 1;
-          address = data.to;
+          address = data?.to;
         } else {
           direction = 0;
-          address = data.from;
+          address = data?.from;
         }
-        time = formatDate(data.timeStamp);
-        url = bsc_scan_path + "tx/" + data.hash;
-        amount = formatDecimal(data.value, 18);
+        time = formatDate(data?.timeStamp);
+        url = bsc_scan_path + "tx/" + data?.hash;
+        amount = formatDecimal(data?.value ?? 0, 18);
       }
     });
   }
@@ -257,29 +290,29 @@ export const getBalanceUrl = (chain: IChain): string => {
     return `${matic_api_url}?module=account&action=balance&address=${chain.chain.wallet}&apikey=${matic_api_key}`;
   }
 };
-export const getTransactionUrl = (chain: IChain): string => {
+export const getTransactionUrl = (chain: IChain, page: number): string => {
   if (chain.chain.symbol === "ETH") {
-    return `${eth_api_url}?module=account&action=txlist&address=${chain.chain.wallet}&startblock=0&endblock=99999999&page=1&offset=10&sort=desc&apikey=${eth_api_key}`;
+    return `${eth_api_url}?module=account&action=txlist&address=${chain.chain.wallet}&page=${page}&offset=15&sort=desc&apikey=${eth_api_key}`;
   }
   if (chain.chain.symbol === "ARBETH") {
-    return `${arb_api_url}?module=account&action=txlist&address=${chain.chain.wallet}&tag=latest&apikey=${arb_api_key}`;
+    return `${arb_api_url}?module=account&action=txlist&address=${chain.chain.wallet}&page=${page}&offset=15&sort=desc&apikey=${arb_api_key}`;
   }
   if (chain.chain.symbol === "AVAX") {
     if (net_name === "mainnet") {
-      return `${avax_api_url}/address/${chain.chain.wallet}/erc20-transfers?limit=25`;
+      return `${avax_api_url}/address/${chain.chain.wallet}/erc20-transfers?limit=15`;
     } else {
-      return `${avax_api_url}/address/${chain.chain.wallet}/transactions?sort=desc&limit=10`;
+      return `${avax_api_url}/address/${chain.chain.wallet}/transactions?sort=desc&limit=15`;
     }
   }
 
   if (chain.chain.symbol === "BNB") {
-    return `${bsc_api_url}?module=account&action=txlist&address=${chain.chain.wallet}&startblock=0&endblock=99999999&page=1&offset=10&sort=desc&apikey=${bsc_api_key}`;
+    return `${bsc_api_url}?module=account&action=txlist&address=${chain.chain.wallet}&page=${page}&offset=15&sort=desc&apikey=${bsc_api_key}`;
   }
   if (chain.chain.symbol === "OETH") {
-    return `${op_api_url}?module=account&action=txlist&address=${chain.chain.wallet}&startblock=0&endblock=99999999&page=1&offset=10&sort=desc&apikey=${op_api_key}`;
+    return `${op_api_url}?module=account&action=txlist&address=${chain.chain.wallet}&page=${page}&offset=15&sort=desc&apikey=${op_api_key}`;
   }
   if (chain.chain.symbol === "MATIC") {
-    return `${matic_api_url}?module=account&action=txlist&address=${chain.chain.wallet}&apikey=${matic_api_key}`;
+    return `${matic_api_url}?module=account&action=txlist&address=${chain.chain.wallet}&page=${page}&offset=15&sort=desc&apikey=${matic_api_key}`;
   }
 };
 

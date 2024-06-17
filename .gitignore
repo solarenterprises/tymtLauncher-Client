@@ -12,9 +12,15 @@ node_modules/*
 dist
 dist-ssr
 .env
+.env.prod
+.env.dev
+.env.staging
+
 *.local
 configs/*
-vite.config.ts
+
+# Intercom config
+/public/intercom.json
 
 # Editor directories and files
 .vscode/*

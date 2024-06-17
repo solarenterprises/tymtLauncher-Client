@@ -2,9 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useSelector, useDispatch } from "react-redux";
 import { useEffect, useState } from "react";
-
 import { Grid, Box, Stack } from "@mui/material";
-
 import tymt1 from "../../assets/account/tymt1.png";
 import wallet from "../../assets/account/wallet.png";
 import mail from "../../assets/account/mail.png";
@@ -12,16 +10,14 @@ import facebookIcon from "../../assets/account/facebook-icon.svg";
 import googleIcon from "../../assets/account/google-icon.svg";
 import discordIcon from "../../assets/account/discord-icon.svg";
 import binanceIcon from "../../assets/account/binance-icon.svg";
-
 import Back from "../../components/account/Back";
 import AccountButton from "../../components/account/AccountButton";
 import SwitchButton from "../../components/account/SwitchButton";
 import OrLine from "../../components/account/OrLine";
-
 import { getAccount, setAccount } from "../../features/account/AccountSlice";
-
 import { loginEnum, walletEnum, accountType } from "../../types/accountTypes";
 import ComingModal from "../../components/ComingModal";
+import { setMnemonic } from "../../features/account/MnemonicSlice";
 
 const Start = () => {
   const navigate = useNavigate();
@@ -30,15 +26,16 @@ const Start = () => {
   const accountStore: accountType = useSelector(getAccount);
   const [coming, setComing] = useState<boolean>(false);
 
+  // set all sensitive variables as empty Sign out here
   useEffect(() => {
     dispatch(
       setAccount({
         ...accountStore,
         mode: loginEnum.login,
-        accessToken: "",
         isLoggedIn: false,
       })
     );
+    dispatch(setMnemonic({ mnemonic: "" }));
   }, []);
 
   const handleBackClick = () => {
@@ -48,20 +45,16 @@ const Start = () => {
   return (
     <>
       <Grid container className="basic-container">
-        <Grid item xs={12}>
-          <Stack direction={"row"}>
-            <Stack
-              sx={{
-                width: "calc(100vw - 656px)",
-                height: "1008px",
-              }}
-            >
-              <Grid container justifyContent={"center"} pt={"56px"}>
+        <Grid item xs={12} container justifyContent={"center"}>
+          <Stack direction={"row"} alignItems={"center"} justifyContent={"center"} gap={"64px"}>
+            <Stack alignItems={"center"} justifyContent={"center"}>
+              <Grid container justifyContent={"center"}>
                 <Grid
                   item
                   container
                   sx={{
                     width: "520px",
+                    padding: "10px 0px",
                   }}
                 >
                   <Grid item xs={12}>
@@ -71,9 +64,7 @@ const Start = () => {
                     <SwitchButton />
                   </Grid>
                   <Grid item xs={12} mt={"24px"}>
-                    <Box className="fs-h1 white">
-                      {t("wc-1_welcome-player")}
-                    </Box>
+                    <Box className="fs-h1 white">{t("wc-1_welcome-player")}</Box>
                   </Grid>
                   <Grid item xs={12} mt={"48px"}>
                     <AccountButton
@@ -86,8 +77,7 @@ const Start = () => {
                             wallet: walletEnum.noncustodial,
                           })
                         );
-                        if (accountStore.mode === loginEnum.login)
-                          navigate("/non-custodial/login/1");
+                        if (accountStore.mode === loginEnum.login) navigate("/non-custodial/login/1");
                         else navigate("/non-custodial/signup/1");
                       }}
                     />
@@ -149,9 +139,7 @@ const Start = () => {
               component={"img"}
               src={tymt1}
               sx={{
-                width: "656px",
-                height: "1008px",
-                padding: "32px",
+                height: "calc(100vh - 64px)",
               }}
             />
           </Stack>

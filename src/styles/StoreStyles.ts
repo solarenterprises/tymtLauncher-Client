@@ -50,12 +50,10 @@ const storeStyles = makeStyles({
     border: "1px solid rgba(82, 225, 242, 0.40)",
     background: "var(--bg-stroke-card-bg, rgba(27, 53, 56, 0.20))",
     "&:hover": {
-      backgroundColor:
-        "var(--bg-stroke-blue-stroke-default-10, rgba(82, 225, 242, 0.10))",
+      backgroundColor: "var(--bg-stroke-blue-stroke-default-10, rgba(82, 225, 242, 0.10))",
     },
     "&:active": {
-      backgroundColor:
-        "var(--bg-stroke-blue-stroke-default-20, rgba(82, 225, 242, 0.20))",
+      backgroundColor: "var(--bg-stroke-blue-stroke-default-20, rgba(82, 225, 242, 0.20))",
     },
     "& .MuiSelect-icon": {
       color: "var(--Basic-Light, #AFAFAF)",
@@ -73,12 +71,10 @@ const storeStyles = makeStyles({
     border: "1px solid rgba(82, 225, 242, 0.40)",
     background: "var(--bg-stroke-card-bg, rgba(27, 53, 56, 0.20))",
     "&:hover": {
-      backgroundColor:
-        "var(--bg-stroke-blue-stroke-default-10, rgba(82, 225, 242, 0.10))",
+      backgroundColor: "var(--bg-stroke-blue-stroke-default-10, rgba(82, 225, 242, 0.10))",
     },
     "&:active": {
-      backgroundColor:
-        "var(--bg-stroke-blue-stroke-default-20, rgba(82, 225, 242, 0.20))",
+      backgroundColor: "var(--bg-stroke-blue-stroke-default-20, rgba(82, 225, 242, 0.20))",
     },
     "& .MuiSelect-icon": {
       color: "var(--Basic-Light, #AFAFAF)",
@@ -135,13 +131,11 @@ const storeStyles = makeStyles({
     backgroundBlendMode: "luminosity",
     backdropFilter: "blur(50px)",
     "&:hover": {
-      backgroundColor:
-        "var(--bg-stroke-icon-button-bg-10, rgba(128, 128, 128, 0.10))",
+      backgroundColor: "var(--bg-stroke-icon-button-bg-10, rgba(128, 128, 128, 0.10))",
       border: "2px solid var(--Stroke-linear-Hover, rgba(255, 255, 255, 0.10))",
     },
     "&:active": {
-      background:
-        "var(--bg-stroke-icon-button-bg-active-30, rgba(128, 128, 128, 0.30))",
+      background: "var(--bg-stroke-icon-button-bg-active-30, rgba(128, 128, 128, 0.30))",
     },
   },
   card_genre_label: {
@@ -175,13 +169,11 @@ const storeStyles = makeStyles({
     backgroundBlendMode: "luminosity",
     backdropFilter: "blur(50px)",
     "&:hover": {
-      backgroundColor:
-        "var(--bg-stroke-icon-button-bg-10, rgba(128, 128, 128, 0.10))",
+      backgroundColor: "var(--bg-stroke-icon-button-bg-10, rgba(128, 128, 128, 0.10))",
       border: "2px solid var(--Stroke-linear-Hover, rgba(255, 255, 255, 0.10))",
     },
     "&:active": {
-      background:
-        "var(--bg-stroke-icon-button-bg-active-30, rgba(128, 128, 128, 0.30))",
+      background: "var(--bg-stroke-icon-button-bg-active-30, rgba(128, 128, 128, 0.30))",
     },
   },
   modal_btn_left: {

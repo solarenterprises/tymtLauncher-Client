@@ -1,62 +1,35 @@
 import { useTranslation } from "react-i18next";
 import { useCallback, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-
 import createKeccakHash from "keccak";
-
-import {
-  Grid,
-  Box,
-  Stack,
-  IconButton,
-  Button,
-  Menu,
-  MenuItem,
-} from "@mui/material";
+import { Grid, Box, Stack, IconButton, Button, Menu, MenuItem } from "@mui/material";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
-
 import InputText from "../../components/account/InputText";
 import InputBox from "../../components/wallet/InputBox";
 import AddressBookDrawer from "../../components/wallet/AddressBookDrawer";
 import TransactionFeeDrawer from "../../components/wallet/TransactionFeeDrawer";
 import ChooseChainDrawer from "../../components/wallet/ChooseChainDrawer";
-
 import SettingStyle from "../../styles/SettingStyle";
 import walletIcon from "../../assets/wallet.svg";
-
 import { AppDispatch } from "../../store";
 import { getNonCustodial } from "../../features/account/NonCustodialSlice";
 import { getAccount } from "../../features/account/AccountSlice";
 import { getChain, setChainAsync } from "../../features/wallet/ChainSlice";
-import { selectWallet } from "../../features/settings/WalletSlice";
-import {
-  INotification,
-  selectPending,
-  sendCoinAsync,
-} from "../../features/wallet/CryptoSlice";
-
+import { selectWallet, setWallet } from "../../features/settings/WalletSlice";
+import { INotification, selectPending, sendCoinAsync } from "../../features/wallet/CryptoSlice";
 import { walletType } from "../../types/settingTypes";
 import { IChain, multiWalletType } from "../../types/walletTypes";
 import { nonCustodialType, walletEnum } from "../../types/accountTypes";
-import {
-  IRecipient,
-  ISendCoin,
-  ISendCoinData,
-} from "../../features/wallet/CryptoApi";
+import { IRecipient, ISendCoin, ISendCoinData } from "../../features/wallet/CryptoApi";
 import tymtCore from "../../lib/core/tymtCore";
-import {
-  getMultiWallet,
-  refreshBalancesAsync,
-} from "../../features/wallet/MultiWalletSlice";
+import { getMultiWallet, refreshBalancesAsync } from "../../features/wallet/MultiWalletSlice";
 import { formatBalance } from "../../lib/helper";
 import { getPriceData } from "../../features/wallet/ChainApi";
 import { refreshCurrencyAsync } from "../../features/wallet/CurrencySlice";
-
 import { ICurrency } from "../../types/walletTypes";
 import { getCurrency } from "../../features/wallet/CurrencySlice";
 import { currencySymbols } from "../../consts/currency";
-
 import { useNotification } from "../../providers/NotificationProvider";
 
 interface IPriceData {
@@ -94,13 +67,7 @@ const WalletSendSXP = () => {
   const [options, setOptions] = useState([]);
   const open = Boolean(anchorEl);
 
-  const {
-    setNotificationStatus,
-    setNotificationTitle,
-    setNotificationDetail,
-    setNotificationOpen,
-    setNotificationLink,
-  } = useNotification();
+  const { setNotificationStatus, setNotificationTitle, setNotificationDetail, setNotificationOpen, setNotificationLink } = useNotification();
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
@@ -127,9 +94,7 @@ const WalletSendSXP = () => {
         decimals: chainStore.chain.decimals,
       };
     } else {
-      const temp = chainStore.tokens.find(
-        (element) => element.symbol === chainStore.currentToken
-      );
+      const temp = chainStore.tokens.find((element) => element.symbol === chainStore.currentToken);
       currentToken = {
         address: temp.address,
         symbol: temp.symbol,
@@ -149,17 +114,13 @@ const WalletSendSXP = () => {
 
     let recipientAddrIsValid: boolean = false;
     if (chainStore.chain.name === tymtCore.Blockchains.solar.name) {
-      recipientAddrIsValid = tymtCore.Blockchains.solar.wallet.validateAddress(
-        newItem.address
-      );
+      recipientAddrIsValid = tymtCore.Blockchains.solar.wallet.validateAddress(newItem.address);
     } else if (chainStore.chain.name === tymtCore.Blockchains.btc.name) {
-      recipientAddrIsValid = tymtCore.Blockchains.btc.wallet.validateAddress(
-        newItem.address
-      );
+      recipientAddrIsValid = tymtCore.Blockchains.btc.wallet.validateAddress(newItem.address);
+    } else if (chainStore.chain.name === tymtCore.Blockchains.solana.name) {
+      recipientAddrIsValid = tymtCore.Blockchains.solana.wallet.validateAddress(newItem.address);
     } else {
-      recipientAddrIsValid = tymtCore.Blockchains.eth.wallet.validateAddress(
-        newItem.address
-      );
+      recipientAddrIsValid = tymtCore.Blockchains.eth.wallet.validateAddress(newItem.address);
     }
     if (!recipientAddrIsValid) {
       setNotificationStatus("failed");
@@ -197,9 +158,7 @@ const WalletSendSXP = () => {
             decimals: chainStore.chain.decimals,
           };
         } else {
-          const temp = chainStore.tokens.find(
-            (element) => element.symbol === chainStore.currentToken
-          );
+          const temp = chainStore.tokens.find((element) => element.symbol === chainStore.currentToken);
           currentToken = {
             address: temp.address,
             symbol: temp.symbol,
@@ -235,7 +194,6 @@ const WalletSendSXP = () => {
             dispatch(
               refreshBalancesAsync({
                 _multiWalletStore: multiWalletStore,
-                _accountStore: accountStore,
               })
             ).then(() => {
               dispatch(refreshCurrencyAsync()).then(() => {
@@ -305,6 +263,26 @@ const WalletSendSXP = () => {
     [chainStore]
   );
 
+  useEffect(() => {
+    if (chainStore.chain.symbol === "SXP") {
+      dispatch(
+        setWallet({
+          ...data,
+          status: "minimum",
+          fee: "0.0183",
+        })
+      );
+    } else if (chainStore.chain.symbol === "BTC") {
+      dispatch(
+        setWallet({
+          ...data,
+          status: "minimum",
+          fee: "7.5",
+        })
+      );
+    }
+  }, [chainStore]);
+
   return (
     <div>
       <Grid container>
@@ -314,72 +292,27 @@ const WalletSendSXP = () => {
               <Box className={"fs-h2 white"} mb={"32px"}>
                 {t("wal-7_send-sxp")}
               </Box>
-              <Box
-                className={"wallet-form-card-hover p-24-16 br-16"}
-                mb={"32px"}
-                onClick={() => setChooseChainView(true)}
-              >
+              <Box className={"wallet-form-card-hover p-24-16 br-16"} mb={"32px"} onClick={() => setChooseChainView(true)}>
                 <Stack direction="row" alignItems={"center"} spacing={"16px"}>
-                  <Box
-                    component={"img"}
-                    src={chainStore.chain.logo}
-                    width={"36px"}
-                    height={"36px"}
-                  />
+                  <Box component={"img"} src={chainStore.chain.logo} width={"36px"} height={"36px"} />
                   <Stack>
                     <Stack direction={"row"} spacing={"10px"}>
-                      <Box className={"fs-18-regular light"}>
-                        {t("wal-8_from")}
-                      </Box>
-                      <Box className={"fs-18-regular white"}>
-                        {chainStore.chain.name}
-                      </Box>
+                      <Box className={"fs-18-regular light"}>{t("wal-8_from")}</Box>
+                      <Box className={"fs-18-regular white"}>{chainStore.chain.name}</Box>
                     </Stack>
-                    <Stack
-                      direction={"row"}
-                      alignItems={"center"}
-                      spacing={"8px"}
-                    >
-                      <Box
-                        component={"img"}
-                        src={walletIcon}
-                        width={"12px"}
-                        height={"12px"}
-                      />
-                      <Box className={"fs-14-regular light"}>
-                        {chainStore.chain.wallet}
-                      </Box>
+                    <Stack direction={"row"} alignItems={"center"} spacing={"8px"}>
+                      <Box component={"img"} src={walletIcon} width={"12px"} height={"12px"} />
+                      <Box className={"fs-14-regular light"}>{chainStore.chain.wallet}</Box>
                     </Stack>
                   </Stack>
                 </Stack>
               </Box>
-              <Box
-                className={"wallet-form-card p-16-16 br-16 blur"}
-                mb={"32px"}
-              >
-                <Stack
-                  direction={"row"}
-                  alignItems={"center"}
-                  justifyContent={"space-between"}
-                  mb={"16px"}
-                >
-                  <Box className={"fs-18-regular light"}>
-                    {t("wal-9_you-send")}
-                  </Box>
-                  <Stack
-                    direction={"row"}
-                    alignItems={"center"}
-                    spacing={"8px"}
-                  >
-                    <Box
-                      component={"img"}
-                      src={walletIcon}
-                      width={"18px"}
-                      height={"18px"}
-                    />
-                    <Box className={"fs-12-light light"}>
-                      {priceData ? formatBalance(priceData.balance, 4) : "0.0"}
-                    </Box>
+              <Box className={"wallet-form-card p-16-16 br-16 blur"} mb={"32px"}>
+                <Stack direction={"row"} alignItems={"center"} justifyContent={"space-between"} mb={"16px"}>
+                  <Box className={"fs-18-regular light"}>{t("wal-9_you-send")}</Box>
+                  <Stack direction={"row"} alignItems={"center"} spacing={"8px"}>
+                    <Box component={"img"} src={walletIcon} width={"18px"} height={"18px"} />
+                    <Box className={"fs-12-light light"}>{priceData ? formatBalance(priceData.balance, 4) : "0.0"}</Box>
                     <Box
                       className={"fs-14-bold blue"}
                       onClick={() => {
@@ -394,36 +327,14 @@ const WalletSendSXP = () => {
                     </Box>
                   </Stack>
                 </Stack>
-                <Stack
-                  direction={"row"}
-                  alignItems={"center"}
-                  justifyContent={"space-between"}
-                >
+                <Stack direction={"row"} alignItems={"center"} justifyContent={"space-between"}>
                   <Stack width={"100%"}>
-                    <InputBox
-                      id="send-amount"
-                      placeholder="0.0"
-                      label=""
-                      align="left"
-                      onChange={handleAmount}
-                      value={amount?.toString()}
-                    />
+                    <InputBox id="send-amount" placeholder="0.0" label="" align="left" onChange={handleAmount} value={amount?.toString()} />
                     <Box className={"fs-12-light light"}>
-                      {`~${symbol} ${
-                        priceData
-                          ? formatBalance(
-                              Number(amount) * Number(priceData.price) * reserve
-                            )
-                          : "0.0"
-                      }`}
+                      {`~${symbol} ${priceData ? formatBalance(Number(amount) * Number(priceData.price) * reserve) : "0.0"}`}
                     </Box>
                   </Stack>
-                  <Stack
-                    direction={"row"}
-                    alignItems={"center"}
-                    padding={"4px 8px"}
-                    spacing={"8px"}
-                  >
+                  <Stack direction={"row"} alignItems={"center"} padding={"4px 8px"} spacing={"8px"}>
                     {/* <Box component={"img"} src={chainStore.chain.logo} width={30}/>
                     <Box className={"fs-18-regular white"}>
                       {chainStore.chain.symbol}
@@ -437,14 +348,9 @@ const WalletSendSXP = () => {
                     >
                       <Stack direction={"row"} gap={1}>
                         <Box>
-                          <img
-                            src={priceData ? priceData.logo : ""}
-                            width={30}
-                          />
+                          <img src={priceData ? priceData.logo : ""} width={30} />
                         </Box>
-                        <Box className="fs-18-regular white">
-                          {priceData ? priceData.label : ""}
-                        </Box>
+                        <Box className="fs-18-regular white">{priceData ? priceData.label : ""}</Box>
                       </Stack>
                     </Button>
                     <Menu
@@ -470,10 +376,7 @@ const WalletSendSXP = () => {
                   </Stack>
                 </Stack>
               </Box>
-              <Box
-                className={"wallet-form-card p-16-16 br-16 blur"}
-                mb={"32px"}
-              >
+              <Box className={"wallet-form-card p-16-16 br-16 blur"} mb={"32px"}>
                 <Box className={"fs-18-regular light"} mb={"8px"}>
                   {t("wal-11_to")}
                 </Box>
@@ -488,66 +391,41 @@ const WalletSendSXP = () => {
                   }}
                   onAddressButtonClick={() => setAddressBookView(true)}
                 />
-                {Number(amount) > 0 &&
-                  address !== "" &&
-                  Number(data.fee) > 0 && (
-                    <Button
-                      fullWidth
-                      className={classname.action_button}
-                      onClick={() => {
-                        updateDraft();
-                      }}
-                    >
-                      {t("set-57_save")}
-                    </Button>
-                  )}
-              </Box>
-              {chainStore.chain.symbol === "SXP" && (
-                <Box className={"wallet-form-card p-16-16 br-16"} mb={"32px"}>
-                  <Stack
-                    direction={"row"}
-                    alignItems={"center"}
-                    justifyContent={"space-between"}
+                {Number(amount) > 0 && address !== "" && (Number(data.fee) > 0 || chainStore.chain.symbol !== "SXP") && (
+                  <Button
+                    fullWidth
+                    className={classname.action_button}
+                    onClick={() => {
+                      updateDraft();
+                    }}
                   >
-                    <Box className={"fs-16-regular light"}>
-                      {t("wal-13_trans-fee")}
-                    </Box>
-                    <Stack
-                      direction={"row"}
-                      alignItems={"center"}
-                      spacing={"8px"}
-                    >
-                      <Box className={"fs-16-regular white"}>
-                        {data.fee} USD
-                      </Box>
+                    {t("set-57_save")}
+                  </Button>
+                )}
+              </Box>
+              {(chainStore.chain.symbol === "SXP" || chainStore.chain.symbol === "BTC") && (
+                <Box className={"wallet-form-card p-16-16 br-16"} mb={"32px"}>
+                  <Stack direction={"row"} alignItems={"center"} justifyContent={"space-between"}>
+                    <Box className={"fs-16-regular light"}>{t("wal-13_trans-fee")}</Box>
+                    <Stack direction={"row"} alignItems={"center"} spacing={"8px"}>
+                      <Box className={"fs-16-regular white"}>{data.fee} USD</Box>
                       <IconButton className="icon-button">
-                        <EditOutlinedIcon
-                          className="icon-button"
-                          onClick={() => setTransactionFeeView(true)}
-                        />
+                        <EditOutlinedIcon className="icon-button" onClick={() => setTransactionFeeView(true)} />
                       </IconButton>
                     </Stack>
                   </Stack>
                 </Box>
               )}
               <Box mb={"32px"}>
-                <InputText
-                  id="send-password"
-                  type="password"
-                  label={t("ncca-3_password")}
-                  value={password}
-                  setValue={setPassword}
-                />
+                <InputText id="send-password" type="password" label={t("ncca-3_password")} value={password} setValue={setPassword} />
               </Box>
               <Button
                 disabled={
                   pending ||
                   Number(amount) === 0 ||
                   address === "" ||
-                  Number(data.fee) === 0 ||
-                  createKeccakHash("keccak256")
-                    .update(password)
-                    .digest("hex") !== nonCustodialStore.password
+                  (Number(data.fee) === 0 && chainStore.chain.symbol === "SXP") ||
+                  createKeccakHash("keccak256").update(password).digest("hex") !== nonCustodialStore.password
                 }
                 className={"red-button fw"}
                 onClick={handleTransfer}
@@ -561,18 +439,10 @@ const WalletSendSXP = () => {
               {draft.map((data, index) => (
                 <Box className={"wallet-form-card p-16-16 br-16"} key={index}>
                   <Stack spacing={"15px"}>
-                    <Stack
-                      direction={"row"}
-                      alignItems={"center"}
-                      justifyContent={"space-between"}
-                    >
+                    <Stack direction={"row"} alignItems={"center"} justifyContent={"space-between"}>
                       <Stack>
-                        <Box className="fs-18-regular light">
-                          {t("wal-11_to")}
-                        </Box>
-                        <Box className="fs-18-regular white">
-                          {data.address}
-                        </Box>
+                        <Box className="fs-18-regular light">{t("wal-11_to")}</Box>
+                        <Box className="fs-18-regular white">{data.address}</Box>
                       </Stack>
                       <IconButton
                         className="icon-button"
@@ -583,17 +453,9 @@ const WalletSendSXP = () => {
                         <DeleteOutlineIcon className="icon-button" />
                       </IconButton>
                     </Stack>
-                    <Stack
-                      direction={"row"}
-                      alignItems={"center"}
-                      justifyContent={"space-between"}
-                    >
-                      <Box className="fs-16-regular light">
-                        {t("wal-15_amount")}
-                      </Box>
-                      <Box className="fs-16-regular white">
-                        {data.amount + " " + data.tokenSymbol}
-                      </Box>
+                    <Stack direction={"row"} alignItems={"center"} justifyContent={"space-between"}>
+                      <Box className="fs-16-regular light">{t("wal-15_amount")}</Box>
+                      <Box className="fs-16-regular white">{data.amount + " " + data.tokenSymbol}</Box>
                     </Stack>
                   </Stack>
                 </Box>
@@ -602,15 +464,8 @@ const WalletSendSXP = () => {
           </Grid>
         </Grid>
       </Grid>
-      <AddressBookDrawer
-        view={addressBookView}
-        setView={setAddressBookView}
-        setAddress={setAddress}
-      />
-      <TransactionFeeDrawer
-        view={transactionFeeView}
-        setView={setTransactionFeeView}
-      />
+      <AddressBookDrawer view={addressBookView} setView={setAddressBookView} setAddress={setAddress} />
+      <TransactionFeeDrawer view={transactionFeeView} setView={setTransactionFeeView} />
       <ChooseChainDrawer view={chooseChainView} setView={setChooseChainView} />
     </div>
   );

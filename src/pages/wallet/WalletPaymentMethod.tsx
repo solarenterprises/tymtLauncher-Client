@@ -2,9 +2,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { Grid, Box, Stack, Button } from "@mui/material";
-
 import PaymentButton from "../../components/wallet/PaymentButton";
-
 import cardIcon from "../../assets/wallet/card.svg";
 import biboxIcon from "../../assets/wallet/bibox.svg";
 import binanceIcon from "../../assets/wallet/binance.svg";
@@ -22,21 +20,20 @@ const WalletPaymentMethod = () => {
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
 
-  const handleConnect = useCallback((icon:any, title: string)=> {
-    setIcon(icon);
-    setTitle(title);
-    setOpen(true);
-  }, [title, open, setTitle, setOpen, icon, setIcon])
+  const handleConnect = useCallback(
+    (icon: any, title: string) => {
+      setIcon(icon);
+      setTitle(title);
+      setOpen(true);
+    },
+    [title, open, setTitle, setOpen, icon, setIcon]
+  );
 
   return (
     <>
       <Grid container>
         <Grid item xs={12} container justifyContent="center">
-          <Box
-            className={"wallet-form-card br-16"}
-            padding="32px 56px"
-            width="592px"
-          >
+          <Box className={"wallet-form-card br-16"} padding="32px 56px" width="592px">
             <Box className="fs-h2 white" mb={"40px"}>
               {t("wal-35_choose-payment-method")}
             </Box>
@@ -51,29 +48,37 @@ const WalletPaymentMethod = () => {
               <PaymentButton
                 src={biboxIcon}
                 text={"Bibox"}
-                onClick={() => {handleConnect(biboxIcon, "Bibox")}}
+                onClick={() => {
+                  handleConnect(biboxIcon, "Bibox");
+                }}
               />
               <PaymentButton
                 src={binanceIcon}
                 text={"Binance"}
-                onClick={() => {handleConnect(binanceIcon, "Binance")}}
+                onClick={() => {
+                  handleConnect(binanceIcon, "Binance");
+                }}
               />
               <PaymentButton
                 src={bitayIcon}
                 text={"Bitay"}
-                onClick={() => {handleConnect(bitayIcon, "Bitay")}}
+                onClick={() => {
+                  handleConnect(bitayIcon, "Bitay");
+                }}
               />
               <PaymentButton
                 src={bitgetIcon}
                 text={"Bitget"}
-                onClick={() => {handleConnect(biboxIcon, "Bitget")}}
+                onClick={() => {
+                  handleConnect(biboxIcon, "Bitget");
+                }}
               />
             </Stack>
             <Button className="red-button fw">{t("ncca-7_next")}</Button>
           </Box>
         </Grid>
       </Grid>
-      <ConnectModal coin={chain.icon} src={icon} open = {open} setOpen={setOpen} title={title}/>
+      <ConnectModal coin={chain.icon} src={icon} open={open} setOpen={setOpen} title={title} />
     </>
   );
 };

@@ -21,8 +21,8 @@ export const getMnemonic = (_length: number) => {
 export const checkMnemonic = (_mnemonic: string) => {
   if (_mnemonic.split(" ").length == 24) {
     return (
-      bip39.validateMnemonic(_mnemonic.split(" ").slice(0, 12).join(" ")) &&
-      bip39.validateMnemonic(_mnemonic.split(" ").slice(12, 24).join(" "))
+      (bip39.validateMnemonic(_mnemonic.split(" ").slice(0, 12).join(" ")) && bip39.validateMnemonic(_mnemonic.split(" ").slice(12, 24).join(" "))) ||
+      bip39.validateMnemonic(_mnemonic)
     );
   } else if (_mnemonic.split(" ").length == 12) {
     return bip39.validateMnemonic(_mnemonic);

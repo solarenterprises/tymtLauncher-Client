@@ -3,23 +3,39 @@
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 
-///// For SystemTray
+use actix_web::{ web, App, HttpRequest, HttpResponse, HttpServer };
+use machineid_rs::{ Encryption, HWIDComponent, IdBuilder };
+use reqwest::{ header, Client };
+use serde::{ Deserialize, Serialize };
+use std::fs::File;
+use std::io::prelude::*;
+use std::path::{ Path, PathBuf };
+use std::process::Command;
+use std::sync::OnceLock;
+use std::{ fs, io };
+use tauri::Manager;
 use tauri::{ CustomMenuItem, SystemTray, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem };
+// use dotenv::dotenv;
+// use std::env;
 
-fn main() {
-    ///// For SystemTray
+static APPHANDLE: OnceLock<tauri::AppHandle> = OnceLock::new();
+
+#[tokio::main]
+async fn main() -> std::io::Result<()> {
+    let showvisible = CustomMenuItem::new("showVisible".to_string(), "Show tymtLauncher");
     let fullscreen = CustomMenuItem::new("fullscreen".to_string(), "Full-screen Mode  (F11)");
     let games = CustomMenuItem::new("games".to_string(), "Games");
     let wallet = CustomMenuItem::new("wallet".to_string(), "Wallet");
     let about = CustomMenuItem::new("about".to_string(), "About tymt");
     let signout = CustomMenuItem::new("signout".to_string(), "Sign Out");
     let quit = CustomMenuItem::new("quit".to_string(), "Quit");
-    // here `"quit".to_string()` defines the menu item id, and the second parameter is the menu item label.
     let disable_notifications = CustomMenuItem::new(
         "disable_notifications".to_string(),
         "Disable Notifications"
     );
     let tray_menu = SystemTrayMenu::new()
+        .add_item(showvisible)
+        .add_native_item(SystemTrayMenuItem::Separator)
         .add_item(fullscreen)
         .add_native_item(SystemTrayMenuItem::Separator)
         .add_item(games)
@@ -47,13 +63,28 @@ fn main() {
                 download_and_untarbz2_macos,
                 download_and_unzip_windows,
                 run_exe,
+                run_url_args,
                 run_linux,
                 run_macos,
                 run_app_macos,
                 run_command,
-                open_directory
+                open_directory,
+                get_machine_id,
+                is_window_visible,
+                show_transaction_window,
+                hide_transaction_window,
+                set_tray_items_enabled
             ]
         )
+        .on_window_event(|event| {
+            match event.event() {
+                tauri::WindowEvent::CloseRequested { api, .. } => {
+                    event.window().hide().unwrap();
+                    api.prevent_close();
+                }
+                _ => {}
+            }
+        })
         .system_tray(tray)
         ///// SystemTray Event handlers
         .on_system_tray_event(|app, event| {
@@ -66,6 +97,9 @@ fn main() {
                 }
                 SystemTrayEvent::DoubleClick { position: _, size: _, .. } => {
                     println!("system tray received a double click");
+                    let window = app.get_window("tymtLauncher").unwrap();
+                    window.show().unwrap();
+                    window.set_focus().unwrap();
                 }
                 SystemTrayEvent::MenuItemClick { id, .. } =>
                     match id.as_str() {
@@ -75,6 +109,12 @@ fn main() {
                         "hide" => {
                             let window = app.get_window("tymtLauncher").unwrap();
                             window.hide().unwrap();
+                        }
+                        "showVisible" => {
+                            println!("showVisible received a left click");
+                            let window = app.get_window("tymtLauncher").unwrap();
+                            window.show().unwrap();
+                            window.set_focus().unwrap();
                         }
                         "fullscreen" => {
                             let window = app.get_window("tymtLauncher").unwrap();
@@ -119,18 +159,443 @@ fn main() {
                 _ => {}
             }
         })
-        .run(tauri::generate_context!())
-        .expect("error while running tymtlauncher");
-}
+        .setup(|app| {
+            let app_handle = app.handle().clone();
+            _ = APPHANDLE.set(app_handle);
 
-// use std::os::unix::fs::PermissionsExt;
-use std::fs::File;
-use std::io::prelude::*;
-use std::path::Path;
-use std::path::PathBuf;
-use std::process::Command;
-use std::{ fs, io };
-use tauri::Manager;
+            #[derive(Deserialize, Serialize)]
+            struct GetAccountReqType {
+                chain: String, // solar, evm, bitcoin, solana
+            }
+
+            #[derive(Deserialize, Serialize)]
+            struct GetBalanceReqType {
+                chain: String, // solar, bitcoin, solana, ethereum, polygon, avalanche, arbitrum, binance, optimism
+                address: String,
+            }
+
+            #[derive(Serialize, Deserialize, Clone)]
+            struct Transfer {
+                to: String,
+                amount: String,
+            }
+
+            #[derive(Deserialize, Serialize)]
+            struct SendTransactionReqType {
+                chain: String, // solar, bitcoin, solana, ethereum, polygon, avalanche, arbitrum, binance, optimism
+                transfers: Vec<Transfer>,
+                note: String,
+                memo: Option<String>,
+                token: Option<String>,
+                status: Option<String>,
+                transaction: Option<String>,
+            }
+
+            #[derive(Deserialize, Serialize, Clone)]
+            struct GetOrderResResultDataType {
+                requestUserId: String,
+                chain: String,
+                transfers: Vec<Transfer>,
+                note: String,
+                memo: String,
+                status: String,
+                transaction: String,
+                _id: String,
+                createdAt: String,
+                updatedAt: String,
+            }
+
+            #[derive(Deserialize, Serialize, Clone)]
+            struct GetOrderResResultType {
+                data: GetOrderResResultDataType,
+                msg: String,
+            }
+
+            #[derive(Deserialize, Serialize)]
+            struct GetOrderResType {
+                msg: String,
+                result: GetOrderResResultType,
+            }
+
+            async fn validate_token(token: String) -> bool {
+                APPHANDLE.get()
+                    .expect("APPHANDLE is available")
+                    .emit_all("validate-token", token)
+                    .expect("failed to emit event validate-token");
+
+                let (tx, rx) = std::sync::mpsc::channel();
+
+                let response = APPHANDLE.get()
+                    .expect("APPHANDLE is available")
+                    .listen_global("res-validate-token", move |event| {
+                        let payload = event.payload().unwrap().to_string();
+                        match tx.send(payload) {
+                            Ok(()) => {
+                                // println!("Message sent successfully");
+                            }
+                            Err(err) => {
+                                println!("Error sending message: {:?}", err);
+                            }
+                        }
+                    });
+
+                match rx.recv() {
+                    Ok(received) => {
+                        // println!("Received: {}", received);
+                        APPHANDLE.get().expect("APPHANDLE is available").unlisten(response);
+                        let res = received == "true";
+                        if !res {
+                            println!("Invalid token");
+                        }
+                        return res;
+                    }
+                    Err(err) => {
+                        println!("Error receiving message: {:?}", err);
+                        APPHANDLE.get().expect("APPHANDLE is available").unlisten(response);
+                        return false;
+                    }
+                }
+            }
+
+            async fn validate_chain(name: String) -> bool {
+                if
+                    name != "solar" &&
+                    name != "bitcoin" &&
+                    name != "solana" &&
+                    name != "ethereum" &&
+                    name != "polygon" &&
+                    name != "binance" &&
+                    name != "avalanche" &&
+                    name != "arbitrum" &&
+                    name != "optimism"
+                {
+                    println!("Invalid chain");
+                    return false;
+                }
+                return true;
+            }
+
+            async fn get_account(
+                request: HttpRequest,
+                request_param: web::Json<GetAccountReqType>
+            ) -> HttpResponse {
+                println!("-------> POST /get-account");
+
+                let is_valid_token = validate_token(
+                    request.headers().get("x-token").unwrap().to_str().unwrap().to_string()
+                ).await;
+                if !is_valid_token {
+                    return HttpResponse::InternalServerError().body("Invalid token");
+                }
+
+                let is_valid_chain = validate_chain(request_param.chain.clone()).await;
+                if !is_valid_chain {
+                    return HttpResponse::InternalServerError().body("Invalid chain");
+                }
+
+                let json_data = serde_json
+                    ::to_string(&request_param)
+                    .expect("Failed to serialize JSON data");
+                println!("{}", json_data);
+
+                APPHANDLE.get()
+                    .expect("APPHANDLE is available")
+                    .emit_all("POST-/get-account", json_data)
+                    .expect("failed to emit event POST /get-account");
+
+                let (tx, rx) = std::sync::mpsc::channel();
+
+                let response = APPHANDLE.get()
+                    .expect("APPHANDLE is available")
+                    .listen_global("res-POST-/get-account", move |event| {
+                        let payload = event.payload().unwrap().to_string();
+                        println!("!!!----> res POST /get-account");
+                        println!("{}", payload);
+                        match tx.send(payload) {
+                            Ok(()) => {
+                                // println!("Message sent successfully");
+                            }
+                            Err(err) => {
+                                println!("Error sending message: {:?}", err);
+                            }
+                        }
+                    });
+
+                match rx.recv() {
+                    Ok(received) => {
+                        // println!("Received: {}", received);
+                        APPHANDLE.get().expect("APPHANDLE is available").unlisten(response);
+                        return HttpResponse::Ok().body(received);
+                    }
+                    Err(err) => {
+                        println!("Error receiving message: {:?}", err);
+                        APPHANDLE.get().expect("APPHANDLE is available").unlisten(response);
+                        return HttpResponse::InternalServerError().finish();
+                    }
+                }
+            }
+
+            async fn get_balance(
+                request: HttpRequest,
+                request_param: web::Json<GetBalanceReqType>
+            ) -> HttpResponse {
+                println!("-------> POST /get-balance");
+
+                let is_valid_token = validate_token(
+                    request.headers().get("x-token").unwrap().to_str().unwrap().to_string()
+                ).await;
+                if !is_valid_token {
+                    return HttpResponse::InternalServerError().body("Invalid token");
+                }
+
+                let is_valid_chain = validate_chain(request_param.chain.clone()).await;
+                if !is_valid_chain {
+                    return HttpResponse::InternalServerError().body("Invalid chain");
+                }
+                let json_data = serde_json
+                    ::to_string(&request_param)
+                    .expect("Failed to serialize JSON data");
+                println!("{}", json_data);
+
+                APPHANDLE.get()
+                    .expect("APPHANDLE is available")
+                    .emit_all("POST-/get-balance", json_data)
+                    .expect("failed to emit event POST /get-balance");
+
+                let (tx, rx) = std::sync::mpsc::channel();
+
+                let response = APPHANDLE.get()
+                    .expect("APPHANDLE is available")
+                    .listen_global("res-POST-/get-balance", move |event| {
+                        let payload = event.payload().unwrap().to_string();
+                        println!("!!!----> res POST /get-balance");
+                        println!("{}", payload);
+                        match tx.send(payload) {
+                            Ok(()) => {
+                                // println!("Message sent successfully");
+                            }
+                            Err(err) => {
+                                println!("Error sending message: {:?}", err);
+                            }
+                        }
+                    });
+
+                match rx.recv() {
+                    Ok(received) => {
+                        APPHANDLE.get().expect("APPHANDLE is available").unlisten(response);
+                        return HttpResponse::Ok().json(received);
+                    }
+                    Err(err) => {
+                        println!("Error receiving message: {:?}", err);
+                        APPHANDLE.get().expect("APPHANDLE is available").unlisten(response);
+                        return HttpResponse::InternalServerError().finish();
+                    }
+                }
+            }
+
+            async fn send_transaction(request_param: GetOrderResResultDataType) -> HttpResponse {
+                println!("-------> POST /send-transaction");
+
+                if request_param.transfers.len() > 1 && request_param.chain != "solar" {
+                    println!("Invalid batch transfer {}", request_param.chain);
+                    return HttpResponse::BadRequest().body(
+                        format!(
+                            "Batch transfer is not enabled for now on {} chain",
+                            request_param.chain
+                        )
+                    );
+                }
+
+                show_transaction_window(APPHANDLE.get().unwrap().clone()).await;
+
+                let json_data = serde_json
+                    ::to_string(&request_param)
+                    .expect("Failed to serialize JSON data");
+                println!("{}", json_data);
+
+                APPHANDLE.get()
+                    .expect("APPHANDLE is available")
+                    .emit_all("POST-/send-transaction", json_data)
+                    .expect("failed to emit event POST /send-transaction");
+
+                let (tx, rx) = std::sync::mpsc::channel();
+
+                let response = APPHANDLE.get()
+                    .expect("APPHANDLE is available")
+                    .listen_global("res-POST-/send-transaction", move |event| {
+                        let payload = event.payload().unwrap().to_string();
+                        println!("!!!----> res POST /send-transaction");
+                        println!("{}", payload);
+                        match tx.send(payload) {
+                            Ok(()) => {
+                                // println!("Message sent successfully");
+                            }
+                            Err(err) => {
+                                println!("Error sending message: {:?}", err);
+                            }
+                        }
+                    });
+
+                match rx.recv() {
+                    Ok(received) => {
+                        // println!("Received: {}", received);
+                        APPHANDLE.get().expect("APPHANDLE is available").unlisten(response);
+                        return HttpResponse::Ok().body(received);
+                    }
+                    Err(err) => {
+                        println!("Error receiving message: {:?}", err);
+                        APPHANDLE.get().expect("APPHANDLE is available").unlisten(response);
+                        return HttpResponse::InternalServerError().finish();
+                    }
+                }
+            }
+
+            async fn request_new_order(
+                request: HttpRequest,
+                request_param: web::Json<SendTransactionReqType>
+            ) -> HttpResponse {
+                println!("-------> POST /request-new-order");
+
+                let is_valid_token = validate_token(
+                    request.headers().get("x-token").unwrap().to_str().unwrap().to_string()
+                ).await;
+                if !is_valid_token {
+                    return HttpResponse::InternalServerError().body("Invalid token");
+                }
+
+                let is_valid_chain = validate_chain(request_param.chain.clone()).await;
+                if !is_valid_chain {
+                    return HttpResponse::InternalServerError().body("Invalid chain");
+                }
+
+                if request_param.transfers.len() > 1 && request_param.chain != "solar" {
+                    println!("Invalid batch transfer {}", request_param.chain);
+                    return HttpResponse::BadRequest().body(
+                        format!(
+                            "Batch transfer is not enabled for now on {} chain",
+                            request_param.chain
+                        )
+                    );
+                }
+
+                let mut param = request_param.into_inner();
+                param.status = Some("pending".to_string());
+                param.transaction = Some("transaction".to_string());
+
+                let client = Client::new();
+
+                match
+                    client
+                        .post("https://tymt.com/api/orders/request-new-order")
+                        .header(header::CONTENT_TYPE, "application/json")
+                        .header(
+                            "x-token",
+                            request.headers().get("x-token").unwrap().to_str().unwrap().to_string()
+                        )
+                        .body(serde_json::to_string(&param).unwrap())
+                        .send().await
+                {
+                    Ok(response) =>
+                        match response.text().await {
+                            Ok(json) => {
+                                println!("!!!----> POST /request-new-order");
+                                println!("{}", json);
+                                HttpResponse::Ok().body(json)
+                            }
+                            Err(err) => {
+                                eprintln!("Failed to parse response as JSON: {:?}", err);
+                                HttpResponse::InternalServerError().body(
+                                    "Failed to parse response as JSON"
+                                )
+                            }
+                        }
+                    Err(err) => {
+                        eprintln!("Failed to send request: {:?}", err);
+                        HttpResponse::InternalServerError().body("Failed to send request")
+                    }
+                }
+            }
+
+            #[derive(Deserialize, Serialize)]
+            struct ExecuteOrderReqType {
+                id: String,
+            }
+            async fn execute_order(
+                request: HttpRequest,
+                request_param: web::Json<ExecuteOrderReqType>
+            ) -> HttpResponse {
+                println!("-------> POST /execute-order");
+
+                let is_valid_token = validate_token(
+                    request.headers().get("x-token").unwrap().to_str().unwrap().to_string()
+                ).await;
+                if !is_valid_token {
+                    return HttpResponse::InternalServerError().body("Invalid token");
+                }
+
+                let client = Client::new();
+
+                match
+                    client
+                        .get(format!("https://tymt.com/api/orders/orders/{}", request_param.id))
+                        .send().await
+                {
+                    Ok(response) =>
+                        match response.text().await {
+                            Ok(json) => {
+                                println!("{}", json);
+                                let parsed_struct: GetOrderResType = serde_json
+                                    ::from_str(&json)
+                                    .unwrap();
+                                let json_struct: web::Json<GetOrderResType> = web::Json(
+                                    parsed_struct
+                                );
+                                send_transaction(json_struct.result.data.clone()).await
+                            }
+                            Err(err) => {
+                                eprintln!("Failed to parse response as JSON: {:?}", err);
+                                HttpResponse::InternalServerError().body(
+                                    "Failed to parse response as JSON"
+                                )
+                            }
+                        }
+                    Err(err) => {
+                        eprintln!("Failed to send request: {:?}", err);
+                        HttpResponse::InternalServerError().body("Failed to send request")
+                    }
+                }
+            }
+
+            // dotenv().ok();
+            // let port_str = dotenv
+            //     ::var("VITE_APP_LOCAL_SERVER_PORT")
+            //     .expect("VITE_APP_LOCAL_SERVER_PORT must be set");
+            // let port: u16 = port_str
+            //     .parse()
+            //     .expect("VITE_APP_LOCAL_SERVER_PORT must be a valid u16");
+            // println!("port {}", port);
+
+            tauri::async_runtime::spawn(
+                HttpServer::new(move || {
+                    App::new()
+                        .route("/get-account", web::post().to(get_account))
+                        .route("/get-balance", web::post().to(get_balance))
+                        // .route("/send-transaction", web::post().to(send_transaction))
+                        .route("/request-new-order", web::post().to(request_new_order))
+                        .route("/execute-order", web::post().to(execute_order))
+                })
+                    .bind(("127.0.0.1", 3331))
+                    .expect("Failed to bind address")
+                    .run()
+            );
+
+            Ok(())
+        })
+        .run(tauri::generate_context!())
+        .expect("error while running tymtLauncher");
+
+    Ok(())
+}
 
 fn copy_dir_all(src: impl AsRef<Path>, dst: impl AsRef<Path>) -> io::Result<()> {
     fs::create_dir_all(&dst)?;
@@ -150,7 +615,8 @@ fn copy_dir_all(src: impl AsRef<Path>, dst: impl AsRef<Path>) -> io::Result<()> 
 async fn download_appimage_linux(
     app_handle: tauri::AppHandle,
     url: String,
-    target: String
+    target: String,
+    authorization: Option<String>
 ) -> bool {
     let app_dir = app_handle
         .path_resolver()
@@ -160,7 +626,19 @@ async fn download_appimage_linux(
         .into_string()
         .to_owned()
         .unwrap();
-    let response = reqwest::get(&url).await.unwrap();
+
+    let client = Client::new();
+    let response = if let Some(auth) = authorization {
+        client
+            .get(&url)
+            .header(header::CONTENT_TYPE, "application/json")
+            .header(header::AUTHORIZATION, format!("{}", auth))
+            .send().await
+            .unwrap()
+    } else {
+        client.get(&url).send().await.unwrap()
+    };
+
     let location = (app_dir.to_string() + &target + "/tmp.AppImage").to_owned();
 
     println!("{}", location);
@@ -185,7 +663,7 @@ async fn download_appimage_linux(
     };
 
     let content = response.bytes().await.unwrap();
-    file.write_all(content.as_ref());
+    let _ = file.write_all(content.as_ref());
     println!("download done");
 
     let status = Command::new("chmod")
@@ -239,11 +717,14 @@ async fn download_and_unzip(app_handle: tauri::AppHandle, url: String, target: S
         Ok(file) => file,
     };
     let content = response.bytes().await.unwrap();
-    file.write_all(content.as_ref());
+    let _ = file.write_all(content.as_ref());
 
     let final_location = app_dir.to_string() + &target;
     println!("{}", final_location);
-    zip_extensions::read::zip_extract(&PathBuf::from(path), &PathBuf::from(final_location.clone()));
+    let _ = zip_extensions::read::zip_extract(
+        &PathBuf::from(path),
+        &PathBuf::from(final_location.clone())
+    );
     println!("checking for folders");
 
     let count = fs::read_dir(final_location.clone()).unwrap().count();
@@ -251,15 +732,15 @@ async fn download_and_unzip(app_handle: tauri::AppHandle, url: String, target: S
     if count == 1 {
         for file in fs::read_dir(final_location.clone()).unwrap() {
             if fs::metadata(file.as_ref().unwrap().path()).unwrap().is_dir() {
-                copy_dir_all(file.as_ref().unwrap().path(), final_location.clone());
+                let _ = copy_dir_all(file.as_ref().unwrap().path(), final_location.clone());
                 fs::remove_dir_all(file.as_ref().unwrap().path()).unwrap();
             }
         }
     }
 
-    fs::remove_file(&path);
+    let _ = fs::remove_file(&path);
 
-    Command::new("chmod").args(["+x", &final_location]).spawn();
+    let _ = Command::new("chmod").args(["+x", &final_location]).spawn();
 
     println!("done");
     return true;
@@ -269,7 +750,8 @@ async fn download_and_unzip(app_handle: tauri::AppHandle, url: String, target: S
 async fn download_and_unzip_windows(
     app_handle: tauri::AppHandle,
     url: String,
-    target: String
+    target: String,
+    authorization: Option<String>
 ) -> bool {
     println!("{}", url);
     println!("{}", target);
@@ -283,7 +765,17 @@ async fn download_and_unzip_windows(
         .to_owned()
         .unwrap();
 
-    let response = reqwest::get(&url).await.unwrap();
+    let client = Client::new();
+    let response = if let Some(auth) = authorization {
+        client
+            .get(&url)
+            .header(header::CONTENT_TYPE, "application/json")
+            .header(header::AUTHORIZATION, format!("{}", auth))
+            .send().await
+            .unwrap()
+    } else {
+        client.get(&url).send().await.unwrap()
+    };
 
     let zip_location = (app_dir.to_string() + "/tmp.zip").to_owned();
     println!("{}", zip_location);
@@ -326,7 +818,10 @@ async fn download_and_unzip_windows(
 
     let final_location = app_dir.to_string() + &target;
     println!("{}", final_location);
-    zip_extensions::read::zip_extract(&PathBuf::from(path), &PathBuf::from(final_location.clone()));
+    let _ = zip_extensions::read::zip_extract(
+        &PathBuf::from(path),
+        &PathBuf::from(final_location.clone())
+    );
     println!("checking for folders");
 
     let count = fs::read_dir(final_location.clone()).unwrap().count();
@@ -334,15 +829,15 @@ async fn download_and_unzip_windows(
     if count == 1 {
         for file in fs::read_dir(final_location.clone()).unwrap() {
             if fs::metadata(file.as_ref().unwrap().path()).unwrap().is_dir() {
-                copy_dir_all(file.as_ref().unwrap().path(), final_location.clone());
+                let _ = copy_dir_all(file.as_ref().unwrap().path(), final_location.clone());
                 fs::remove_dir_all(file.as_ref().unwrap().path()).unwrap();
             }
         }
     }
 
-    fs::remove_file(&path);
+    let _ = fs::remove_file(&path);
 
-    Command::new("chmod").args(["+x", &final_location]).spawn();
+    let _ = Command::new("chmod").args(["+x", &final_location]).spawn();
 
     println!("done");
     return true;
@@ -412,7 +907,10 @@ async fn download_and_unzip_linux(
 
     let final_location = app_dir.to_string() + &target;
     println!("{}", final_location);
-    zip_extensions::read::zip_extract(&PathBuf::from(path), &PathBuf::from(final_location.clone()));
+    let _ = zip_extensions::read::zip_extract(
+        &PathBuf::from(path),
+        &PathBuf::from(final_location.clone())
+    );
     println!("checking for folders");
 
     let count = fs::read_dir(final_location.clone()).unwrap().count();
@@ -420,17 +918,17 @@ async fn download_and_unzip_linux(
     if count == 1 {
         for file in fs::read_dir(final_location.clone()).unwrap() {
             if fs::metadata(file.as_ref().unwrap().path()).unwrap().is_dir() {
-                copy_dir_all(file.as_ref().unwrap().path(), final_location.clone());
+                let _ = copy_dir_all(file.as_ref().unwrap().path(), final_location.clone());
                 fs::remove_dir_all(file.as_ref().unwrap().path()).unwrap();
             }
         }
     }
 
-    fs::remove_file(&path);
+    let _ = fs::remove_file(&path);
 
-    let mut exePath = app_dir.to_string() + &target + &exeLocation;
+    let exePath = app_dir.to_string() + &target + &exeLocation;
 
-    Command::new("chmod").args(["u+x", &exePath]).spawn();
+    let _ = Command::new("chmod").args(["u+x", &exePath]).spawn();
 
     println!("done");
     return true;
@@ -441,7 +939,8 @@ async fn download_and_unzip_macos(
     app_handle: tauri::AppHandle,
     url: String,
     target: String,
-    exeLocation: String
+    exeLocation: String,
+    authorization: Option<String>
 ) -> bool {
     println!("{}", url);
     println!("{}", target);
@@ -455,7 +954,17 @@ async fn download_and_unzip_macos(
         .to_owned()
         .unwrap();
 
-    let response = reqwest::get(&url).await.unwrap();
+    let client = Client::new();
+    let response = if let Some(auth) = authorization {
+        client
+            .get(&url)
+            .header(header::CONTENT_TYPE, "application/json")
+            .header(header::AUTHORIZATION, format!("{}", auth))
+            .send().await
+            .unwrap()
+    } else {
+        client.get(&url).send().await.unwrap()
+    };
 
     let zip_location = (app_dir.to_string() + "/tmp.zip").to_owned();
     println!("{}", zip_location);
@@ -478,11 +987,14 @@ async fn download_and_unzip_macos(
         Ok(file) => file,
     };
     let content = response.bytes().await.unwrap();
-    file.write_all(content.as_ref());
+    let _ = file.write_all(content.as_ref());
 
     let final_location = app_dir.to_string() + &target;
     println!("{}", final_location);
-    zip_extensions::read::zip_extract(&PathBuf::from(path), &PathBuf::from(final_location.clone()));
+    let _ = zip_extensions::read::zip_extract(
+        &PathBuf::from(path),
+        &PathBuf::from(final_location.clone())
+    );
     println!("checking for folders");
 
     let count = fs::read_dir(final_location.clone()).unwrap().count();
@@ -490,17 +1002,17 @@ async fn download_and_unzip_macos(
     if count == 1 {
         for file in fs::read_dir(final_location.clone()).unwrap() {
             if fs::metadata(file.as_ref().unwrap().path()).unwrap().is_dir() {
-                copy_dir_all(file.as_ref().unwrap().path(), final_location.clone());
+                let _ = copy_dir_all(file.as_ref().unwrap().path(), final_location.clone());
                 fs::remove_dir_all(file.as_ref().unwrap().path()).unwrap();
             }
         }
     }
 
-    fs::remove_file(&path);
+    let _ = fs::remove_file(&path);
 
     let exePath = app_dir.to_string() + &target + &exeLocation;
 
-    Command::new("chmod").args(["+x", &exePath]).spawn();
+    let _ = Command::new("chmod").args(["+x", &exePath]).spawn();
 
     println!("done");
     return true;
@@ -571,7 +1083,7 @@ async fn download_and_untarbz2_macos(
         .expect("failed to unzip");
 
     // Remove tar.bz2
-    fs::remove_file(&path);
+    let _ = fs::remove_file(&path);
 
     let exePath = app_dir.to_string() + &target + &exeLocation;
 
@@ -638,6 +1150,45 @@ fn run_exe(url: String) {
 }
 
 #[tauri::command]
+fn run_url_args(url: String, args: Vec<String>) {
+    println!("{}", url);
+    for arg in args.clone() {
+        println!("{}", arg);
+    }
+
+    let path = if url == "open" { Path::new(&args[0]) } else { Path::new(&url) };
+    let working_directory = match path.parent() {
+        Some(dir) => dir,
+        None => {
+            eprintln!("Failed to determine directory for {}", url);
+            return;
+        }
+    };
+
+    let mut command = Command::new(&url);
+    command.current_dir(working_directory);
+    println!("Setting working directory to: {:?}", working_directory);
+
+    if args.is_empty() {
+        println!("No command provided");
+
+        match command.spawn() {
+            Ok(_) => println!("Process started successfully"),
+            Err(e) => eprintln!("Failed to start process: {}", e),
+        }
+    } else {
+        for arg in args {
+            command.arg(arg);
+        }
+
+        match command.spawn() {
+            Ok(_) => println!("Process started successfully"),
+            Err(e) => eprintln!("Failed to start process: {}", e),
+        }
+    }
+}
+
+#[tauri::command]
 fn run_linux(url: String) {
     // Use std::process::Command to run your .exe file
     Command::new(url).spawn().expect("failed to execute process");
@@ -667,5 +1218,95 @@ fn open_directory(path: &str) {
     match cmd.output() {
         Ok(output) => println!("Opened directory successfully: {:?}", output),
         Err(e) => println!("Failed to open directory: {}", e),
+    }
+}
+
+#[tauri::command]
+fn get_machine_id() -> Result<String, String> {
+    let mut builder = IdBuilder::new(Encryption::SHA256);
+    builder.add_component(HWIDComponent::SystemID);
+    let hwid = builder.build("tymtLauncher").map_err(|err| err.to_string())?;
+
+    Ok(hwid)
+}
+
+#[tauri::command]
+fn is_window_visible(window: tauri::Window) -> bool {
+    window.is_visible().unwrap_or(false)
+}
+
+#[tauri::command]
+async fn show_transaction_window(app_handle: tauri::AppHandle) {
+    if let Some(window) = app_handle.get_window("tymt_d53_transaction") {
+        if let Err(e) = window.show() {
+            eprintln!("Failed to show window: {}", e);
+        }
+    } else {
+        eprintln!("Window 'tymt_d53_transaction' not found");
+    }
+
+    if let Some(window_to_hide) = app_handle.get_window("tymtLauncher") {
+        if let Err(e) = window_to_hide.hide() {
+            eprintln!("Failed to hide window 'tymtLauncher': {}", e);
+        }
+    } else {
+        eprintln!("Window 'tymtLauncher' not found");
+    }
+
+    let item_ids = vec![
+        "showVisible".to_string(),
+        "fullscreen".to_string(),
+        "games".to_string(),
+        "wallet".to_string(),
+        "about".to_string(),
+        "signout".to_string(),
+        "quit".to_string(),
+        "disable_notifications".to_string()
+    ];
+    let enabled = false;
+    set_tray_items_enabled(app_handle, item_ids, enabled).await
+}
+
+#[tauri::command]
+async fn hide_transaction_window(app_handle: tauri::AppHandle) {
+    if let Some(window) = app_handle.get_window("tymt_d53_transaction") {
+        if let Err(e) = window.hide() {
+            eprintln!("Failed to hide window: {}", e);
+        }
+    } else {
+        eprintln!("Window 'tymt_d53_transaction' not found");
+    }
+
+    if let Some(window_to_hide) = app_handle.get_window("tymtLauncher") {
+        if let Err(e) = window_to_hide.show() {
+            eprintln!("Failed to show window 'tymtLauncher': {}", e);
+        }
+    } else {
+        eprintln!("Window 'tymtLauncher' not found");
+    }
+
+    let item_ids = vec![
+        "showVisible".to_string(),
+        "fullscreen".to_string(),
+        "games".to_string(),
+        "wallet".to_string(),
+        "about".to_string(),
+        "signout".to_string(),
+        "quit".to_string(),
+        "disable_notifications".to_string()
+    ];
+    let enabled = true;
+    set_tray_items_enabled(app_handle, item_ids, enabled).await
+}
+
+#[tauri::command]
+async fn set_tray_items_enabled(
+    app_handle: tauri::AppHandle,
+    item_ids: Vec<String>,
+    enabled: bool
+) {
+    let tray_handle = app_handle.tray_handle();
+    for item_id in item_ids {
+        let _ = tray_handle.get_item(&item_id).set_enabled(enabled);
     }
 }

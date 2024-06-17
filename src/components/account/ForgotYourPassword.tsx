@@ -17,15 +17,13 @@ const ForgotYourPassword = () => {
       <Link href="#" underline="none">
         <Box
           onClick={() => {
-            accountStore.wallet === walletEnum.custodial
-              ? navigate("/custodial/reset/1")
-              : navigate("/non-custodial/reset/1");
+            accountStore.wallet === walletEnum.custodial ? navigate("/custodial/reset/1") : navigate("/non-custodial/reset/1");
           }}
         >
           <Box
             className={"fs-14-regular blue t-right"}
             sx={{
-              width: "100%"
+              width: "100%",
             }}
           >
             {t("ncl-5_forgot-your-password")}

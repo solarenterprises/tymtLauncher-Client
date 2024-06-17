@@ -27,8 +27,6 @@ import { formatBalance } from "../../lib/helper";
 import { IChain, ICurrency, multiWalletType } from "../../types/walletTypes";
 import { setTransasctions } from "../../features/wallet/CryptoSlice";
 import Loading from "../../components/Loading";
-import { accountType } from "../../types/accountTypes";
-import { getAccount } from "../../features/account/AccountSlice";
 import {
   getCurrency,
   refreshCurrencyAsync,
@@ -50,7 +48,6 @@ const ChooseChainDrawer = ({ view, setView }: props) => {
   const [state, setState] = useState({ right: false });
   const dispatch = useDispatch<AppDispatch>();
   const wallets: multiWalletType = useSelector(getMultiWallet);
-  const accountStore: accountType = useSelector(getAccount);
   const currencyStore: ICurrency = useSelector(getCurrency);
   const reserve: number = currencyStore.data[currencyStore.current] as number;
   const symbol: string = currencySymbols[currencyStore.current];
@@ -65,13 +62,14 @@ const ChooseChainDrawer = ({ view, setView }: props) => {
   } = useNotification();
 
   useEffect(() => {
-    dispatch(
-      refreshBalancesAsync({
-        _multiWalletStore: wallets,
-        _accountStore: accountStore,
-      })
-    ).then(() => dispatch(refreshCurrencyAsync()));
-  }, [dispatch]);
+    if (view) {
+      dispatch(
+        refreshBalancesAsync({
+          _multiWalletStore: wallets,
+        })
+      ).then(() => dispatch(refreshCurrencyAsync()));
+    }
+  }, [dispatch, view]);
 
   const selectChain = useCallback((data: IChain) => {
     const udpateData = { ...data, currentToken: "chain" };
@@ -79,9 +77,11 @@ const ChooseChainDrawer = ({ view, setView }: props) => {
     dispatch(setTransasctions());
     dispatch(setChainAsync(udpateData)).then(() => {
       setNotificationOpen(true);
-      setNotificationTitle(`Switched network to ${data?.chain.name}`);
+      setNotificationTitle(
+        `${t("alt-11_switched-network")} ${data?.chain?.name}`
+      );
       setNotificationDetail(
-        `Network is successfully switched to ${data?.chain.name}`
+        `${t("alt-12_switched-network-intro")} ${data?.chain?.name}`
       );
       setNotificationStatus("success");
       setNotificationLink(null);
@@ -157,7 +157,6 @@ const ChooseChainDrawer = ({ view, setView }: props) => {
               onClick={() => selectChain(wallets[rowKey])}
               fullWidth
               key={index}
-              disabled={wallets[rowKey].chain.name === "Solana"}
             >
               <Stack
                 direction={"row"}
@@ -171,40 +170,24 @@ const ChooseChainDrawer = ({ view, setView }: props) => {
                     src={wallets[rowKey].chain.logo}
                     width="32px"
                     height="32px"
-                    sx={{
-                      filter:
-                        wallets[rowKey].chain.name === "Solana"
-                          ? "grayscale(100%)"
-                          : "none",
-                    }}
                   />
                   <Stack>
                     <Box className="fs-18-regular white">
                       {wallets[rowKey].chain.name}
-                      {wallets[rowKey].chain.name === "Solana" &&
-                        " (Coming soon)"}
                     </Box>
-                    <Box
-                      className="fs-12-regular blue"
-                      sx={{
-                        filter:
-                          wallets[rowKey].chain.name === "Solana"
-                            ? "grayscale(100%)"
-                            : "none",
-                      }}
-                    >
+                    <Box className="fs-12-regular blue">
                       {wallets[rowKey]?.chain.wallet}
                     </Box>
                   </Stack>
                 </Stack>
                 <Stack>
                   <Box className="fs-18-regular white t-right">
-                    {formatBalance(wallets[rowKey].chain.balance, 4)}
+                    {formatBalance(wallets[rowKey].chain.balance ?? 0, 4)}
                   </Box>
                   <Box className="fs-12-regular light t-right">
                     {`${symbol} ${formatBalance(
-                      Number(wallets[rowKey].chain.balance) *
-                        Number(wallets[rowKey].chain.price) *
+                      Number(wallets[rowKey].chain.balance ?? 0) *
+                        Number(wallets[rowKey].chain.price ?? 0) *
                         reserve
                     )}`}
                   </Box>

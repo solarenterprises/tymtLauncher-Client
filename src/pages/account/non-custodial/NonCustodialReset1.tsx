@@ -23,16 +23,12 @@ import tymt2 from "../../../assets/account/tymt2.png";
 import "../../../global.css";
 import { nonCustodialType } from "../../../types/accountTypes";
 import { checkMnemonic } from "../../../consts/mnemonics";
-import {
-  getTempNonCustodial,
-  setTempNonCustodial,
-} from "../../../features/account/TempNonCustodialSlice";
+import { getTempNonCustodial, setTempNonCustodial } from "../../../features/account/TempNonCustodialSlice";
 import { getTempAddressesFromMnemonicAsync } from "../../../features/wallet/TempMultiWalletSlice";
 
 const NonCustodialReset1 = () => {
   const navigate = useNavigate();
-  const tempNonCustodialStore: nonCustodialType =
-    useSelector(getTempNonCustodial);
+  const tempNonCustodialStore: nonCustodialType = useSelector(getTempNonCustodial);
   const dispatch = useDispatch<AppDispatch>();
   const { t } = useTranslation();
 
@@ -43,15 +39,11 @@ const NonCustodialReset1 = () => {
     validationSchema: Yup.object({
       mnemonic: Yup.string()
         .required(t("cca-63_required"))
-        .test(
-          "wordCount",
-          "Mnemonic must contain either 12 or 24 words",
-          (value) => {
-            const words = value ? value.trim().split(/\s+/) : [];
-            const wordCount = words.length;
-            return wordCount === 12 || wordCount === 24;
-          }
-        )
+        .test("wordCount", "Mnemonic must contain either 12 or 24 words", (value) => {
+          const words = value ? value.trim().split(/\s+/) : [];
+          const wordCount = words.length;
+          return wordCount === 12 || wordCount === 24;
+        })
         .test("validation", "Invalid Mnemonic", (value) => {
           return checkMnemonic(value);
         }),
@@ -63,9 +55,7 @@ const NonCustodialReset1 = () => {
           mnemonic: formik.values.mnemonic,
         })
       );
-      dispatch(
-        getTempAddressesFromMnemonicAsync({ mnemonic: formik.values.mnemonic })
-      );
+      dispatch(getTempAddressesFromMnemonicAsync({ mnemonic: formik.values.mnemonic }));
       navigate("/non-custodial/reset/2");
     },
   });
@@ -86,44 +76,27 @@ const NonCustodialReset1 = () => {
   return (
     <>
       <Grid container className="basic-container">
-        <Grid item xs={12}>
-          <Stack direction={"row"}>
-            <Stack
-              sx={{
-                width: "calc(100vw - 656px)",
-                height: "1008px",
-              }}
-            >
-              <Grid container justifyContent={"center"} pt={"56px"}>
+        <Grid item xs={12} container justifyContent={"center"}>
+          <Stack direction={"row"} alignItems={"center"} justifyContent={"center"} gap={"64px"}>
+            <Stack alignItems={"center"} justifyContent={"center"}>
+              <Grid container justifyContent={"center"}>
                 <Grid
                   item
                   container
                   sx={{
                     width: "520px",
+                    padding: "10px 0px",
                   }}
                 >
                   <Grid item xs={12} container justifyContent={"space-between"}>
                     <Back onClick={handleBackClick} />
-                    <Stepper
-                      all={2}
-                      now={2}
-                      texts={[
-                        t("ncl-1_password"),
-                        t("ncl-11_secure-passphrase"),
-                      ]}
-                    />
+                    <Stepper all={2} now={1} texts={[t("ncl-11_secure-passphrase"), t("ncl-1_password")]} />
                   </Grid>
 
                   <Grid item xs={12} mt={"80px"}>
-                    <AccountHeader
-                      title={t("ncl-2_welcome-back")}
-                      text={t("ncl-12_type-your-mnemonic")}
-                    />
+                    <AccountHeader title={t("ncl-2_welcome-back")} text={t("ncl-12_type-your-mnemonic")} />
                   </Grid>
-                  <form
-                    onSubmit={formik.handleSubmit}
-                    style={{ width: "100%" }}
-                  >
+                  <form onSubmit={formik.handleSubmit} style={{ width: "100%" }}>
                     <Grid item xs={12} mt={"48px"}>
                       <InputText
                         id="non-custodial-login"
@@ -133,11 +106,7 @@ const NonCustodialReset1 = () => {
                         value={formik.values.mnemonic}
                         onChange={formik.handleChange}
                         onBlur={formik.handleBlur}
-                        error={
-                          formik.touched.mnemonic && formik.errors.mnemonic
-                            ? true
-                            : false
-                        }
+                        error={formik.touched.mnemonic && formik.errors.mnemonic ? true : false}
                         onIconButtonClick={handlePasteClick}
                       />
                     </Grid>
@@ -149,21 +118,13 @@ const NonCustodialReset1 = () => {
                         padding: "0px 6px",
                       }}
                     >
-                      {formik.touched.mnemonic && formik.errors.mnemonic && (
-                        <Box className={"fs-16-regular red"}>
-                          {formik.errors.mnemonic}
-                        </Box>
-                      )}
+                      {formik.touched.mnemonic && formik.errors.mnemonic && <Box className={"fs-16-regular red"}>{formik.errors.mnemonic}</Box>}
                     </Grid>
                     <Grid item xs={12} mt={"40px"}>
-                      <AccountNextButton
-                        text={t("ncl-6_next")}
-                        isSubmit={true}
-                        disabled={formik.errors.mnemonic ? true : false}
-                      />
+                      <AccountNextButton text={t("ncl-6_next")} isSubmit={true} disabled={formik.errors.mnemonic ? true : false} />
                     </Grid>
                   </form>
-                  <Grid item xs={12} mt={"275px"}>
+                  <Grid item xs={12} mt={"50px"}>
                     <DontHaveAccount />
                   </Grid>
                 </Grid>
@@ -173,9 +134,7 @@ const NonCustodialReset1 = () => {
               component={"img"}
               src={tymt2}
               sx={{
-                width: "656px",
-                height: "1008px",
-                padding: "32px",
+                height: "calc(100vh - 64px)",
               }}
             />
           </Stack>

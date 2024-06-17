@@ -50,36 +50,25 @@ const CustodialSignUp2 = () => {
   return (
     <>
       <Grid container className="basic-container">
-        <Grid item xs={12}>
-          <Stack direction={"row"}>
-            <Stack
-              sx={{
-                width: "calc(100vw - 656px)",
-                height: "1008px",
-              }}
-            >
-              <Grid container justifyContent={"center"} pt={"56px"}>
+        <Grid item xs={12} container justifyContent={"center"}>
+          <Stack direction={"row"} alignItems={"center"} justifyContent={"center"} gap={"64px"}>
+            <Stack alignItems={"center"} justifyContent={"center"}>
+              <Grid container justifyContent={"center"}>
                 <Grid
                   item
                   container
                   sx={{
                     width: "520px",
+                    padding: "10px 0px",
                   }}
                 >
                   <Grid item xs={12} container justifyContent={"space-between"}>
                     <Back onClick={handleBackClick} />
-                    <Stepper
-                      all={3}
-                      now={2}
-                      texts={["", t("cca-21_secure-wallet"), ""]}
-                    />
+                    <Stepper all={3} now={2} texts={["", t("cca-21_secure-wallet"), ""]} />
                   </Grid>
 
                   <Grid item xs={12} mt={"80px"}>
-                    <AccountHeader
-                      title={t("cca-22_6-digit-code")}
-                      text={t("cca-23_enter-6-code")}
-                    />
+                    <AccountHeader title={t("cca-22_6-digit-code")} text={t("cca-23_enter-6-code")} />
                   </Grid>
                   <Grid item xs={12} mb={"30px"}>
                     <OtpInput value={value} setValue={handleSetValue} />
@@ -92,19 +81,12 @@ const CustodialSignUp2 = () => {
                       padding: "0px 6px",
                     }}
                   >
-                    {error && (
-                      <Box className={"fs-16-regular red"}>
-                        {t("cca-58_wrong-code")}
-                      </Box>
-                    )}
+                    {error && <Box className={"fs-16-regular red"}>{t("cca-58_wrong-code")}</Box>}
                   </Grid>
                   <Grid item xs={12} mt={"48px"}>
-                    <AccountNextButton
-                      text={t("cca-20_next")}
-                      onClick={handleNextClick}
-                    />
+                    <AccountNextButton text={t("cca-20_next")} onClick={handleNextClick} />
                   </Grid>
-                  <Grid item xs={12} mt={"100px"}>
+                  <Grid item xs={12} mt={"50px"}>
                     <HaveAccount />
                   </Grid>
                 </Grid>
@@ -114,9 +96,7 @@ const CustodialSignUp2 = () => {
               component={"img"}
               src={tymt5}
               sx={{
-                width: "656px",
-                height: "1008px",
-                padding: "32px",
+                height: "calc(100vh - 64px)",
               }}
             />
           </Stack>

@@ -1,6 +1,6 @@
 [package]
-name = "tymtlauncher"
-version = "2.0.1"
+name = "tymtLauncher"
+version = "2.1.2"
 description = "tymtLauncher"
 authors = ["solar"]
 edition = "2021"
@@ -11,7 +11,7 @@ edition = "2021"
 tauri-build = { version = "1.5", features = [] }
 
 [dependencies]
-tauri = { version = "1.5", features = [ "system-tray", "api-all"] }
+tauri = { version = "1.6", features = [ "macos-private-api", "system-tray", "api-all"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 reqwest = { version = "0.12"}
@@ -20,6 +20,12 @@ zip-extensions = "*"
 tauri-plugin-fs-watch = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1" }
 tar = "0.4"
 flate2 = "1.0"
+machineid-rs = "1.2.4"
+tokio = { version = "1.2", features = ["full"] }
+tokio-tungstenite = "0.23"
+futures-util = "0.3"
+actix-web = "4.5"
+dotenv = "0.15"
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem

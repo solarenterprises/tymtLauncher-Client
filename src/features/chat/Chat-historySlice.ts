@@ -3,16 +3,24 @@ import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import tymtStorage from "../../lib/Storage";
 import { ChatHistoryType } from "../../types/chatTypes";
 import { setChatHistoryFunc } from "./Chat-historyApi";
-import { tymt_version } from "../../configs";
+import { compareJSONStructure } from "../../lib/api/JSONHelper";
+
+const init: ChatHistoryType = {
+  messages: [],
+};
 
 const loadData: () => ChatHistoryType = () => {
-  const data = tymtStorage.get(`chatHistory_${tymt_version}`);
-  if (data === null || data === "") {
-    return {
-      messages: [],
-    };
+  const data = tymtStorage.get(`chatHistory`);
+  if (data === null || data === "" || data === undefined) {
+    tymtStorage.set(`chatHistory`, JSON.stringify(init));
+    return init;
   } else {
-    return JSON.parse(data);
+    if (compareJSONStructure(JSON.parse(data), init)) {
+      return JSON.parse(data);
+    } else {
+      tymtStorage.set(`chatHistory`, JSON.stringify(init));
+      return init;
+    }
   }
 };
 
@@ -22,10 +30,7 @@ const initialState = {
   msg: "",
 };
 
-export const setChatHistoryAsync = createAsyncThunk(
-  "chatHistory/setChatHistory",
-  setChatHistoryFunc
-);
+export const setChatHistoryAsync = createAsyncThunk("chatHistory/setChatHistory", setChatHistoryFunc);
 
 const chatHistorySlice = createSlice({
   name: "chatHistory",
@@ -33,10 +38,11 @@ const chatHistorySlice = createSlice({
   reducers: {
     setChatHistory(state, action) {
       state.data = action.payload;
-      tymtStorage.set(
-        `chatHistory_${tymt_version}`,
-        JSON.stringify(action.payload)
-      );
+      tymtStorage.set(`chatHistory`, JSON.stringify(action.payload));
+    },
+    addChatHistory(state, action) {
+      state.data.messages = [action.payload, ...state.data.messages];
+      tymtStorage.set(`chatHistory`, JSON.stringify(action.payload));
     },
   },
   extraReducers: (builder) => {
@@ -44,18 +50,12 @@ const chatHistorySlice = createSlice({
       .addCase(setChatHistoryAsync.pending, (state) => {
         state.status = "loading";
       })
-      .addCase(
-        setChatHistoryAsync.fulfilled,
-        (state, action: PayloadAction<any>) => {
-          console.log(action.payload, "action.payload");
-          state.data.messages = action.payload.messages;
-          tymtStorage.set(
-            `chatHistory_${tymt_version}`,
-            JSON.stringify(state.data)
-          );
-          state.status = "succeeded";
-        }
-      );
+      .addCase(setChatHistoryAsync.fulfilled, (state, action: PayloadAction<any>) => {
+        console.log(action.payload, "action.payload");
+        state.data.messages = action.payload.messages;
+        tymtStorage.set(`chatHistory`, JSON.stringify(state.data));
+        state.status = "succeeded";
+      });
   },
 });
 
@@ -63,4 +63,4 @@ export const getChatHistory = (state: any) => state.chatHistory.data;
 
 export default chatHistorySlice.reducer;
 
-export const { setChatHistory } = chatHistorySlice.actions;
+export const { setChatHistory, addChatHistory } = chatHistorySlice.actions;

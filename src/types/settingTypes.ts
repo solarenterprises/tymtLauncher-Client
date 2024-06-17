@@ -13,6 +13,8 @@ export interface notificationType {
   update: boolean;
   sound: boolean;
   hour: number;
+  trigger: boolean;
+  alertbadge: boolean;
 }
 
 export interface chatType {
@@ -31,6 +33,7 @@ export interface propsSettingType {
 }
 
 export interface walletType {
+  refreshed: boolean;
   hidde: boolean;
   currency: string;
   status: string;

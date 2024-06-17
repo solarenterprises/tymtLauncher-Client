@@ -47,12 +47,7 @@ const Review = () => {
   const [view, setView] = useState(false);
   return (
     <>
-      <Stack
-        direction={"row"}
-        alignItems={"center"}
-        justifyContent={"space-between"}
-        display={"flex"}
-      >
+      <Stack direction={"row"} alignItems={"center"} justifyContent={"space-between"} display={"flex"}>
         <Box className={"fs-40-bold white"} marginTop={"24px"}>
           {t("ga-11_review")}
           <Box
@@ -63,23 +58,13 @@ const Review = () => {
               marginTop: "16px",
             }}
           >
-            <Rating
-              name="hover-feedback"
-              value={5}
-              precision={0.5}
-              readOnly
-              getLabelText={getLabelText}
-              IconContainerComponent={StyledStarIcon}
-            />
+            <Rating name="hover-feedback" value={5} precision={0.5} readOnly getLabelText={getLabelText} IconContainerComponent={StyledStarIcon} />
             <Box className={"fs-18-bold white"} marginLeft={"5px"}>
               {labels[5]}
             </Box>
           </Box>
         </Box>
-        <Button
-          className={classes.modal_btn_left}
-          onClick={() => setView(true)}
-        >
+        <Button className={classes.modal_btn_left} onClick={() => setView(true)}>
           <Box className={"fs-18-bold"} color={"var(--Main-Blue, #52E1F2)"}>
             {t("ga-26_leave-review")}
           </Box>
@@ -96,11 +81,7 @@ const Review = () => {
         <Box sx={{ justifyContent: "center", display: "flex" }}>
           <img src={noreviews} width={"300px"} height={"300px"} />
         </Box>
-        <Box
-          className={"fs-20-regular white"}
-          textAlign={"center"}
-          marginTop={"24px"}
-        >
+        <Box className={"fs-20-regular white"} textAlign={"center"} marginTop={"24px"}>
           {t("ga-27_no-review")}
         </Box>
       </Box>

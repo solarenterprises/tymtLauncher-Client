@@ -14,29 +14,19 @@ const DontHaveAccount = () => {
   const dispatch = useDispatch();
   const accountStore: accountType = useSelector(getAccount);
   return (
-    <Stack
-      direction="row"
-      width={"100%"}
-      spacing={"16px"}
-      className={"center-align"}
-    >
-      <Box className={"fs-16-regular white t-center"}>
-        {t("ncl-9_dont-have-account")}
-      </Box>
+    <Stack direction="row" width={"100%"} spacing={"16px"} className={"center-align"}>
+      <Box className={"fs-16-regular white t-center"}>{t("ncl-9_dont-have-account")}</Box>
       <Box
         onClick={() => {
           dispatch(setAccount({ ...accountStore, mode: loginEnum.signup }));
-          if (accountStore.wallet === walletEnum.custodial)
-            navigate("/custodial/signup/1");
+          if (accountStore.wallet === walletEnum.custodial) navigate("/custodial/signup/1");
           else navigate("/non-custodial/signup/1");
         }}
         sx={{
-          cursor: "pointer"
+          cursor: "pointer",
         }}
       >
-        <Box className={"fs-18-regular blue t-center"}>
-          {t("ncl-10_sign-up")}
-        </Box>
+        <Box className={"fs-18-regular blue t-center"}>{t("ncl-10_sign-up")}</Box>
       </Box>
     </Stack>
   );

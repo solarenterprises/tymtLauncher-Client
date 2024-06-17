@@ -13,11 +13,7 @@ const Store = () => {
 
   return (
     <AnimatePresence mode="wait">
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-      >
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
         <Grid item xs={12}>
           <Box className={"fs-60-bold white"}>{t("hom-2_store")}</Box>
           <Grid

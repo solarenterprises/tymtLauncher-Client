@@ -1,9 +1,4 @@
-import {
-  transactionEnum,
-  transactionType,
-  chainEnum,
-  transStatusEnum
-} from "../types/walletTypes";
+import { transactionEnum, transactionType, chainEnum, transStatusEnum } from "../types/walletTypes";
 
 export const transactionData: transactionType[] = [
   {
@@ -14,7 +9,7 @@ export const transactionData: transactionType[] = [
     amount: 12,
     symbol: "SXP",
     usd: 20,
-    status: transStatusEnum.done
+    status: transStatusEnum.done,
   },
   {
     mode: transactionEnum.out,
@@ -24,7 +19,7 @@ export const transactionData: transactionType[] = [
     amount: 232,
     symbol: "SXP",
     usd: 20,
-    status: transStatusEnum.done
+    status: transStatusEnum.done,
   },
   {
     mode: transactionEnum.out,
@@ -34,7 +29,7 @@ export const transactionData: transactionType[] = [
     amount: 232,
     symbol: "SXP",
     usd: 20,
-    status: transStatusEnum.done
+    status: transStatusEnum.done,
   },
   {
     mode: transactionEnum.out,
@@ -44,7 +39,7 @@ export const transactionData: transactionType[] = [
     amount: 232,
     symbol: "SXP",
     usd: 20,
-    status: transStatusEnum.done
+    status: transStatusEnum.done,
   },
   {
     mode: transactionEnum.out,
@@ -54,7 +49,7 @@ export const transactionData: transactionType[] = [
     amount: 232,
     symbol: "SXP",
     usd: 20,
-    status: transStatusEnum.done
+    status: transStatusEnum.done,
   },
   {
     mode: transactionEnum.switch,
@@ -64,7 +59,7 @@ export const transactionData: transactionType[] = [
     amount: 5,
     symbol: "SXP",
     usd: 20,
-    status: transStatusEnum.done
+    status: transStatusEnum.done,
   },
   {
     mode: transactionEnum.in,
@@ -74,7 +69,7 @@ export const transactionData: transactionType[] = [
     amount: 12,
     symbol: "SXP",
     usd: 20,
-    status: transStatusEnum.done
+    status: transStatusEnum.done,
   },
   {
     mode: transactionEnum.out,
@@ -84,7 +79,7 @@ export const transactionData: transactionType[] = [
     amount: 232,
     symbol: "SXP",
     usd: 20,
-    status: transStatusEnum.done
+    status: transStatusEnum.done,
   },
   {
     mode: transactionEnum.out,
@@ -94,7 +89,7 @@ export const transactionData: transactionType[] = [
     amount: 232,
     symbol: "SXP",
     usd: 20,
-    status: transStatusEnum.done
+    status: transStatusEnum.done,
   },
   {
     mode: transactionEnum.out,
@@ -104,7 +99,7 @@ export const transactionData: transactionType[] = [
     amount: 232,
     symbol: "SXP",
     usd: 20,
-    status: transStatusEnum.done
+    status: transStatusEnum.done,
   },
   {
     mode: transactionEnum.out,
@@ -114,7 +109,7 @@ export const transactionData: transactionType[] = [
     amount: 232,
     symbol: "SXP",
     usd: 20,
-    status: transStatusEnum.done
+    status: transStatusEnum.done,
   },
   {
     mode: transactionEnum.switch,
@@ -124,7 +119,7 @@ export const transactionData: transactionType[] = [
     amount: 5,
     symbol: "SXP",
     usd: 20,
-    status: transStatusEnum.done
+    status: transStatusEnum.done,
   },
   {
     mode: transactionEnum.in,
@@ -134,7 +129,7 @@ export const transactionData: transactionType[] = [
     amount: 12,
     symbol: "SXP",
     usd: 20,
-    status: transStatusEnum.done
+    status: transStatusEnum.done,
   },
   {
     mode: transactionEnum.out,
@@ -144,7 +139,7 @@ export const transactionData: transactionType[] = [
     amount: 232,
     symbol: "SXP",
     usd: 20,
-    status: transStatusEnum.done
+    status: transStatusEnum.done,
   },
   {
     mode: transactionEnum.out,
@@ -154,7 +149,7 @@ export const transactionData: transactionType[] = [
     amount: 232,
     symbol: "SXP",
     usd: 20,
-    status: transStatusEnum.done
+    status: transStatusEnum.done,
   },
   {
     mode: transactionEnum.out,
@@ -164,7 +159,7 @@ export const transactionData: transactionType[] = [
     amount: 232,
     symbol: "SXP",
     usd: 20,
-    status: transStatusEnum.done
+    status: transStatusEnum.done,
   },
   {
     mode: transactionEnum.out,
@@ -174,7 +169,7 @@ export const transactionData: transactionType[] = [
     amount: 232,
     symbol: "SXP",
     usd: 20,
-    status: transStatusEnum.done
+    status: transStatusEnum.done,
   },
   {
     mode: transactionEnum.switch,
@@ -184,7 +179,7 @@ export const transactionData: transactionType[] = [
     amount: 5,
     symbol: "SXP",
     usd: 20,
-    status: transStatusEnum.done
+    status: transStatusEnum.done,
   },
   {
     mode: transactionEnum.in,
@@ -194,7 +189,7 @@ export const transactionData: transactionType[] = [
     amount: 12,
     symbol: "SXP",
     usd: 20,
-    status: transStatusEnum.done
+    status: transStatusEnum.done,
   },
   {
     mode: transactionEnum.out,
@@ -204,7 +199,7 @@ export const transactionData: transactionType[] = [
     amount: 232,
     symbol: "SXP",
     usd: 20,
-    status: transStatusEnum.done
+    status: transStatusEnum.done,
   },
   {
     mode: transactionEnum.out,
@@ -214,7 +209,7 @@ export const transactionData: transactionType[] = [
     amount: 232,
     symbol: "SXP",
     usd: 20,
-    status: transStatusEnum.done
+    status: transStatusEnum.done,
   },
   {
     mode: transactionEnum.out,
@@ -224,7 +219,7 @@ export const transactionData: transactionType[] = [
     amount: 232,
     symbol: "SXP",
     usd: 20,
-    status: transStatusEnum.done
+    status: transStatusEnum.done,
   },
   {
     mode: transactionEnum.out,
@@ -234,7 +229,7 @@ export const transactionData: transactionType[] = [
     amount: 232,
     symbol: "SXP",
     usd: 20,
-    status: transStatusEnum.done
+    status: transStatusEnum.done,
   },
   {
     mode: transactionEnum.switch,
@@ -244,7 +239,7 @@ export const transactionData: transactionType[] = [
     amount: 5,
     symbol: "SXP",
     usd: 20,
-    status: transStatusEnum.done
+    status: transStatusEnum.done,
   },
   {
     mode: transactionEnum.out,
@@ -254,7 +249,7 @@ export const transactionData: transactionType[] = [
     amount: 232,
     symbol: "SXP",
     usd: 20,
-    status: transStatusEnum.saved
+    status: transStatusEnum.saved,
   },
   {
     mode: transactionEnum.out,
@@ -264,6 +259,6 @@ export const transactionData: transactionType[] = [
     amount: 232,
     symbol: "SXP",
     usd: 20,
-    status: transStatusEnum.saved
-  }
+    status: transStatusEnum.saved,
+  },
 ];

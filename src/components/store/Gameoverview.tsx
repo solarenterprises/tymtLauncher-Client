@@ -1,50 +1,28 @@
 import { useEffect, useState } from "react";
 import { Grid, Stack, Box, Button, Tooltip } from "@mui/material";
-
 import { AnimatePresence, motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { viewType } from "../../types/storeTypes";
-
 import { Swiper, SwiperSlide } from "swiper/react";
-
 import storeStyles from "../../styles/StoreStyles";
-
 import solar from "../../assets/chains/solar.svg";
-import bitcoin from "../../assets/chains/bitcoin.svg";
-import ether from "../../assets/chains/ethereum.svg";
-import solana from "../../assets/chains/solana.svg";
-import avalanche from "../../assets/chains/avalanche.svg";
-import binance from "../../assets/chains/binance.svg";
-import polygon from "../../assets/chains/polygon.svg";
-import arbitrum from "../../assets/chains/arbitrum.svg";
-import optimism from "../../assets/chains/optimism.svg";
-import windows from "../../assets/main/windows.png";
-import mac from "../../assets/main/mac.svg";
-import linux from "../../assets/main/linux.svg";
 import Xicon from "../../assets/main/XIcon.png";
 import linkicon from "../../assets/main/linkIcon.png";
 import facebookicon from "../../assets/main/facebookIcon.png";
 import discordicon from "../../assets/main/discordIcon.png";
 import gradient1 from "../../assets/main/gradient-gameoverview.svg";
-
 import SwitchBtnGameview from "./SwitchButton";
 import { getViewmode } from "../../features/store/Gameview";
 import AdviceModal from "./AdviceModal";
 import Overview from "./Overview";
 import Review from "./Review";
-import { downloadGame, isInstalled, openLink } from "../../lib/api/Downloads";
+import { downloadGame, getGameFileSize, isInstalled, openLink } from "../../lib/api/Downloads";
 import ComingModal from "../ComingModal";
-import { processType } from "../../types/homeTypes";
-import {
-  getProcess,
-  setProcess,
-} from "../../features/home/InstallprocessSlice";
 import { AppDispatch } from "../../store";
 import Games, { Game } from "../../lib/game/Game";
 import WarningModal from "../home/WarningModal";
-
 import { selectLanguage } from "../../features/settings/LanguageSlice";
 import { languageType } from "../../types/settingTypes";
 import { removeDir } from "@tauri-apps/api/fs";
@@ -53,20 +31,13 @@ import Loading from "../Loading";
 import DeleteOutlineRoundedIcon from "@mui/icons-material/DeleteOutlineRounded";
 import D53Modal from "../home/D53Modal";
 import { tymt_version } from "../../configs";
-
 import { useNotification } from "../../providers/NotificationProvider";
-
-const chains = [
-  solar,
-  bitcoin,
-  ether,
-  solana,
-  avalanche,
-  binance,
-  polygon,
-  arbitrum,
-  optimism,
-];
+import { platformIconMap } from "../../types/GameTypes";
+import { chainIconMap } from "../../types/walletTypes";
+import { ThreeDots } from "react-loader-spinner";
+import { IDownloadStatus, IInstallStatus } from "../../types/homeTypes";
+import { getDownloadStatus, setDownloadStatus } from "../../features/home/DownloadStatusSlice";
+import { getInstallStatus } from "../../features/home/InstallStatusSlice";
 
 const GameOverview = () => {
   const viewmode: viewType = useSelector(getViewmode);
@@ -75,7 +46,8 @@ const GameOverview = () => {
   const param = useParams();
   const id: string = param.gameid ?? "";
   const game: Game = Games[id];
-  const processStore: processType = useSelector(getProcess);
+  const downloadStatusStore: IDownloadStatus = useSelector(getDownloadStatus);
+  const installStatusStore: IInstallStatus = useSelector(getInstallStatus);
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [installed, setInstalled] = useState(false);
@@ -87,14 +59,9 @@ const GameOverview = () => {
   const lang = langStore.language;
   const [loading, setLoading] = useState<boolean>(false);
   const [d53Open, setD53Open] = useState<boolean>(false);
+  const [gameFileSize, setGameFileSize] = useState<string>("");
 
-  const {
-    setNotificationStatus,
-    setNotificationTitle,
-    setNotificationDetail,
-    setNotificationOpen,
-    setNotificationLink,
-  } = useNotification();
+  const { setNotificationStatus, setNotificationTitle, setNotificationDetail, setNotificationOpen, setNotificationLink } = useNotification();
 
   const checkInstalled = async (_id: string) => {
     setInstalled(await isInstalled(_id));
@@ -113,41 +80,25 @@ const GameOverview = () => {
 
   useEffect(() => {
     checkInstalled(id);
-  }, []);
+  }, [id]);
+
+  useEffect(() => {
+    const init = async () => {
+      const sizeMB = await getGameFileSize(id);
+      if (sizeMB) setGameFileSize(`(${sizeMB} MB)`);
+      else setGameFileSize("");
+    };
+    init();
+  }, [id]);
 
   return (
     <>
       <AnimatePresence mode="wait">
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-        >
-          <Grid
-            item
-            xs={12}
-            container
-            className={classes.gameoverview_container}
-          >
-            <img
-              src={gradient1}
-              style={{ position: "absolute", right: 0, top: 0 }}
-            />
-            <Grid
-              item
-              xs={12}
-              display={"flex"}
-              justifyContent={"space-between"}
-              alignItems={"center"}
-            >
-              <Grid
-                item
-                xs={8}
-                flexDirection={"row"}
-                justifyContent={"space-between"}
-                display={"flex"}
-                paddingRight={"20px"}
-              >
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+          <Grid item xs={12} container className={classes.gameoverview_container}>
+            <img src={gradient1} style={{ position: "absolute", right: 0, top: 0 }} />
+            <Grid item xs={12} display={"flex"} justifyContent={"space-between"} alignItems={"center"}>
+              <Grid item xs={8} flexDirection={"row"} justifyContent={"space-between"} display={"flex"} paddingRight={"20px"}>
                 <Stack flexDirection={"row"} alignItems={"center"}>
                   <Box
                     component={"img"}
@@ -167,19 +118,12 @@ const GameOverview = () => {
                   <Box className={classes.chip_free}>{t("hom-15_free")}</Box>
                 </Stack>
               </Grid>
-              <Grid
-                item
-                xs={4}
-                display={"flex"}
-                flexDirection={"row"}
-                justifyContent={"space-between"}
-                paddingLeft={"10px"}
-              >
+              <Grid item xs={4} display={"flex"} flexDirection={"row"} justifyContent={"space-between"} paddingLeft={"10px"}>
                 <Grid item xs={9}>
                   <Button
                     className={"red-button-Gameoverview"}
                     fullWidth
-                    disabled={processStore.inprogress && !installed}
+                    disabled={downloadStatusStore.isDownloading || installStatusStore.isInstalling}
                     onClick={async () => {
                       const online = await checkOnline();
                       if (!online) {
@@ -190,16 +134,15 @@ const GameOverview = () => {
                         setNotificationLink(null);
                       } else {
                         if (!installed) {
-                          console.log("downloadGame");
                           setNotificationStatus("success");
                           setNotificationTitle(t("alt-28_download-start"));
                           setNotificationDetail(t("alt-29_wait-for-a-few"));
                           setNotificationOpen(true);
                           setNotificationLink(null);
                           dispatch(
-                            setProcess({
-                              ...processStore,
-                              inprogress: true,
+                            setDownloadStatus({
+                              ...downloadStatusStore,
+                              isDownloading: true,
                               name: id,
                             })
                           );
@@ -207,9 +150,7 @@ const GameOverview = () => {
                           if (!downloadable) {
                             setNotificationStatus("failed");
                             setNotificationTitle(t("alt-5_os-not-support"));
-                            setNotificationDetail(
-                              t("alt-6_os-not-support-intro")
-                            );
+                            setNotificationDetail(t("alt-6_os-not-support-intro"));
                             setNotificationOpen(true);
                             setNotificationLink(null);
                           } else {
@@ -220,9 +161,9 @@ const GameOverview = () => {
                             setNotificationLink(null);
                           }
                           dispatch(
-                            setProcess({
-                              ...processStore,
-                              inprogress: false,
+                            setDownloadStatus({
+                              ...downloadStatusStore,
+                              isDownloading: false,
                               name: "",
                             })
                           );
@@ -237,13 +178,20 @@ const GameOverview = () => {
                       }
                     }}
                   >
-                    {installed && t("hom-7_play-game")}
-                    {!processStore.inprogress &&
-                      !installed &&
-                      t("hom-20_install-game")}
-                    {processStore.inprogress &&
-                      !installed &&
-                      t("hom-21_downloading")}
+                    {!downloadStatusStore.isDownloading && !installStatusStore.isInstalling && installed && t("hom-7_play-game")}
+                    {!downloadStatusStore.isDownloading && !installStatusStore.isInstalling && !installed && t("hom-20_install-game")}
+                    {downloadStatusStore.isDownloading && (
+                      <Stack direction={"row"} alignItems={"center"} gap={"4px"}>
+                        <Box className={"fs-14-regular white t-center"}>{`${t("hom-21_downloading")} ${gameFileSize}`}</Box>
+                        <ThreeDots height="12px" width={"24px"} radius={4} color={`white`} />
+                      </Stack>
+                    )}
+                    {!downloadStatusStore.isDownloading && installStatusStore.isInstalling && (
+                      <Stack direction={"row"} alignItems={"center"} gap={"4px"}>
+                        <Box className={"fs-14-regular white t-center"}>{t("hom-26_installing")}</Box>
+                        <ThreeDots height="12px" width={"24px"} radius={4} color={`white`} />
+                      </Stack>
+                    )}
                   </Button>
                 </Grid>
                 <Grid item xs={2}>
@@ -252,12 +200,9 @@ const GameOverview = () => {
                     disabled={!installed}
                     onClick={async () => {
                       setLoading(true);
-                      await removeDir(
-                        (await appDataDir()) + `v${tymt_version}/games/${id}`,
-                        {
-                          recursive: true,
-                        }
-                      );
+                      await removeDir((await appDataDir()) + `v${tymt_version}/games/${id}`, {
+                        recursive: true,
+                      });
                       setNotificationStatus("success");
                       setNotificationTitle(t("alt-30_game-removed"));
                       setNotificationDetail(t("alt-31_game-removed-intro"));
@@ -276,19 +221,8 @@ const GameOverview = () => {
                 </Grid>
               </Grid>
             </Grid>
-            <Grid
-              item
-              xs={12}
-              container
-              display={"flex"}
-              justifyContent={"space-between"}
-              marginTop={"32px"}
-            >
-              <Grid
-                item
-                paddingRight={"25px"}
-                sx={{ width: "calc(100% - 320px)" }}
-              >
+            <Grid item xs={12} container display={"flex"} justifyContent={"space-between"} marginTop={"32px"}>
+              <Grid item paddingRight={"25px"} sx={{ width: "calc(100% - 320px)" }}>
                 <Grid item xs={12}>
                   <img
                     className="District53"
@@ -327,8 +261,7 @@ const GameOverview = () => {
                           style={{
                             cursor: "pointer",
                             opacity: selected === index ? 1 : 0.7,
-                            border:
-                              selected === index ? "2px solid #52e1f2" : "none",
+                            border: selected === index ? "2px solid #52e1f2" : "none",
                             borderRadius: "16px",
                             marginRight: "10px",
                           }}
@@ -364,98 +297,50 @@ const GameOverview = () => {
                     }}
                   ></div>
                 </Box>
-                <Box
-                  gap={1.5}
-                  marginTop={"30px"}
-                  display={"flex"}
-                  flexDirection={"row"}
-                  flexWrap={"wrap"}
-                >
+                <Box gap={1.5} marginTop={"30px"} display={"flex"} flexDirection={"row"} flexWrap={"wrap"}>
                   {game.tabs.map((tab) => (
-                    <Box className="fs-14-regular white card_genre_label_GO">
-                      {tab}
-                    </Box>
+                    <Box className="fs-14-regular white card_genre_label_GO">{tab}</Box>
                   ))}
                 </Box>
                 <Box marginTop={"24px"}>
                   <Box className={classes.box_gameoption}>
-                    <Box className={"fs-14-regular gray"}>
-                      {t("sto-4_platform")}
-                    </Box>
+                    <Box className={"fs-14-regular gray"}>{t("sto-4_platform")}</Box>
                     <Box>
-                      {Object.keys(game.executables).map(
-                        (rowKey) =>
-                          game.executables[rowKey].url !== "" && (
-                            <img
-                              src={
-                                rowKey === "windows64"
-                                  ? windows
-                                  : rowKey === "linux"
-                                  ? linux
-                                  : mac
-                              }
-                              width={"16px"}
-                              className={classes.platform}
-                            />
-                          )
-                      )}
+                      {game.platforms.map((os) => (
+                        <img src={platformIconMap.get(os)} width={"16px"} className={classes.platform} />
+                      ))}
                     </Box>
                   </Box>
                   <Box className={classes.box_gameoption}>
-                    <Box className={"fs-14-regular gray"}>
-                      {t("sto-2_chains") + ":" + "9"}
-                    </Box>
+                    <Box className={"fs-14-regular gray"}>{`${t("sto-2_chains")}: ${game.chains.length}`}</Box>
                     <Stack direction={"row"}>
-                      {chains.map((one) => (
-                        <img
-                          src={one}
-                          width={"16px"}
-                          style={{ marginRight: "-4px" }}
-                        />
+                      {game.chains.map((element) => (
+                        <img src={chainIconMap.get(element)} width={"16px"} style={{ marginRight: "-4px" }} />
                       ))}
                     </Stack>
                   </Box>
                   <Box className={classes.box_gameoption}>
-                    <Box className={"fs-14-regular gray"}>
-                      {t("ga-1_developer")}
-                    </Box>
-                    <Box className={"fs-14-regular white"}>
-                      {game.developers}
-                    </Box>
+                    <Box className={"fs-14-regular gray"}>{t("ga-1_developer")}</Box>
+                    <Box className={"fs-14-regular white"}>{game.developers}</Box>
                   </Box>
                   <Box className={classes.box_gameoption}>
-                    <Box className={"fs-14-regular gray"}>
-                      {t("ga-2_publisher")}
-                    </Box>
-                    <Box className={"fs-14-regular white"}>
-                      {game.publisher}
-                    </Box>
+                    <Box className={"fs-14-regular gray"}>{t("ga-2_publisher")}</Box>
+                    <Box className={"fs-14-regular white"}>{game.publisher}</Box>
                   </Box>
                   <Box className={classes.box_gameoption}>
-                    <Box className={"fs-14-regular gray"}>
-                      {t("sto-1_release-date")}
-                    </Box>
+                    <Box className={"fs-14-regular gray"}>{t("sto-1_release-date")}</Box>
                     <Box className={"fs-14-regular white"}>{game.release}</Box>
                   </Box>
                   <Box className={classes.box_gameoption}>
-                    <Box className={"fs-14-regular gray"}>
-                      {t("ga-3_recommended-age")}
-                    </Box>
+                    <Box className={"fs-14-regular gray"}>{t("ga-3_recommended-age")}</Box>
                     <Box className={"fs-14-regular white"}>12</Box>
                   </Box>
                 </Box>
                 {id === "district53" && (
-                  <Box marginTop={"24px"}>
-                    <Box className={"fs-20-regular white"}>
-                      {t("ga-5_follow-game-on")}
-                    </Box>
+                  <Box marginTop={"24px"} borderBottom={"1px solid rgba(255, 255, 255, 0.10)"} paddingBottom={"16px"}>
+                    <Box className={"fs-20-regular white"}>{t("ga-5_follow-game-on")}</Box>
 
-                    <Box
-                      marginTop={"16px"}
-                      display={"flex"}
-                      flexDirection={"row"}
-                      gap={2}
-                    >
+                    <Box marginTop={"16px"} display={"flex"} flexDirection={"row"} gap={2}>
                       <Tooltip
                         key={`tooltip-website`}
                         title={t("ga-17_open-website")}
@@ -560,39 +445,32 @@ const GameOverview = () => {
                   </Box>
                 )}
 
-                <Box
-                  marginTop={"24px"}
-                  borderBottom={"1px solid rgba(255, 255, 255, 0.10)"}
-                  paddingBottom={"16px"}
-                >
-                  <Box className={"fs-20-regular white"}>
-                    {t("ga-6_permissions")}
-                  </Box>
+                <Box marginTop={"16px"} borderBottom={"1px solid rgba(255, 255, 255, 0.10)"} paddingBottom={"16px"}>
+                  <Box className={"fs-20-regular white"}>{t("ga-28_minimum-requirement")}</Box>
                   <Box className={"fs-16 white"} marginTop={"14px"}>
-                    {t("ga-7_this-game-will")}
+                    <div
+                      dangerouslySetInnerHTML={{
+                        __html: game.requirement.replace(/\n/g, "<br>"),
+                      }}
+                    ></div>
                   </Box>
                 </Box>
-                <Stack
-                  marginTop={"16px"}
-                  direction={"row"}
-                  alignItems={"center"}
-                  justifyContent={"space-between"}
-                >
-                  <Box className={"fs-20-regular white"}>
-                    {t("ga-6_permissions")}
+                {id === "district53" && (
+                  <Box marginTop={"24px"} paddingBottom={"16px"}>
+                    <Box className={"fs-20-regular white"}>{t("ga-6_permissions")}</Box>
+                    <Box className={"fs-16 white"} marginTop={"14px"}>
+                      {t("ga-7_this-game-will")}
+                    </Box>
                   </Box>
-                  <Button
-                    className={classes.modal_btn_left}
-                    onClick={() => setView(true)}
-                  >
-                    <Box
-                      className={"fs-18-bold"}
-                      color={"var(--Main-Blue, #52E1F2)"}
-                    >
+                )}
+                {/* <Stack marginTop={"16px"} direction={"row"} alignItems={"center"} justifyContent={"space-between"}>
+                  <Box className={"fs-20-regular white"}>{t("ga-6_permissions")}</Box>
+                  <Button className={classes.modal_btn_left} onClick={() => setView(true)}>
+                    <Box className={"fs-18-bold"} color={"var(--Main-Blue, #52E1F2)"}>
                       {t("ga-9_report")}
                     </Box>
                   </Button>
-                </Stack>
+                </Stack> */}
               </Grid>
             </Grid>
             <AdviceModal open={open} setOpen={setOpen} />

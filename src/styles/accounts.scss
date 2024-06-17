@@ -25,6 +25,13 @@
   top: 10px;
   cursor: pointer;
 }
+
+.tymt-top-left-icon {
+  position: absolute;
+  left: 10px;
+  top: 10px;
+}
+
 .red-button {
   &.MuiButtonBase-root {
     height: 46px;
@@ -46,6 +53,32 @@
     }
   }
 }
+
+.red-border-button {
+  &.MuiButtonBase-root {
+    height: 46px;
+    color: #52e1f2;
+    font-family: Cobe-Bold;
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+    border-radius: 16px;
+    border: 1px solid #ef4444;
+    background-color: transparent;
+    text-transform: none;
+    &:hover {
+      background-color: #992727;
+      border: 1px solid #992727;
+      color: white;
+    }
+    &.Mui-disabled {
+      border: 1px solid #2a2525;
+      color: #7c7c7c;
+    }
+  }
+}
+
 .oauth-modal {
   padding: 40px;
   gap: 40px;

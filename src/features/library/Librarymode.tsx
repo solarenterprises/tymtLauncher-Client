@@ -1,15 +1,21 @@
 import { createSlice } from "@reduxjs/toolkit";
 import tymtStorage from "../../lib/Storage";
-import { tymt_version } from "../../configs";
+import { compareJSONStructure } from "../../lib/api/JSONHelper";
+
+const init = { mode: 0 };
 
 const loadData = () => {
-  const data = tymtStorage.get(`librarymode_${tymt_version}`);
-  if (data === null || data === "") {
-    return {
-      mode: 0,
-    };
+  const data = tymtStorage.get(`librarymode`);
+  if (data === null || data === "" || data === undefined) {
+    tymtStorage.set(`librarymode`, JSON.stringify(init));
+    return init;
   } else {
-    return JSON.parse(data);
+    if (compareJSONStructure(JSON.parse(data), init)) {
+      return JSON.parse(data);
+    } else {
+      tymtStorage.set(`librarymode`, JSON.stringify(init));
+      return init;
+    }
   }
 };
 const initialState = {
@@ -24,10 +30,7 @@ export const LibrarymodeSlice = createSlice({
   reducers: {
     setLibraryMode: (state, action) => {
       state.data = action.payload;
-      tymtStorage.set(
-        `librarymode_${tymt_version}`,
-        JSON.stringify(action.payload)
-      );
+      tymtStorage.set(`librarymode`, JSON.stringify(action.payload));
     },
   },
 });

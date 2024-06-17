@@ -1,18 +1,14 @@
 import { IWallet } from "./IWallet";
 import * as bip39 from "bip39";
 import * as ed25519 from "ed25519-hd-key";
-import {
-  Keypair,
-  Connection,
-  clusterApiUrl,
-  PublicKey,
-  Transaction,
-  SystemProgram,
-  LAMPORTS_PER_SOL,
-  sendAndConfirmTransaction,
-} from "@solana/web3.js";
+import { Keypair, PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SOL } from "@solana/web3.js";
 import * as multichainWallet from "multichain-crypto-wallet";
-import { net_name } from "../../configs";
+import { validate } from "multicoin-address-validator";
+import { INotification } from "../../features/wallet/CryptoSlice";
+import { IRecipient } from "../../features/wallet/CryptoApi";
+import { Body, fetch as tauriFetch, ResponseType } from "@tauri-apps/api/http";
+import * as bs58 from "bs58";
+import { translateString } from "../api/Translate";
 
 class Solana implements IWallet {
   address: string;
@@ -26,7 +22,7 @@ class Solana implements IWallet {
     try {
       const wallet = multichainWallet.generateWalletFromMnemonic({
         mnemonic: mnemonic,
-        derivationPath: "m/44'/501'/0'/0'", // Leave empty to use default derivation path
+        derivationPath: "m/44'/501'/0'/0'",
         network: "solana",
       });
       if (!wallet) return "";
@@ -37,33 +33,37 @@ class Solana implements IWallet {
     }
   }
 
+  static validateAddress(addr: string) {
+    if (!addr) return false;
+    return validate(addr, "sol");
+  }
+
   static async getKeyPair(mnemonic: string): Promise<Keypair> {
     const seed = await bip39.mnemonicToSeed(mnemonic);
     const derivationPath = "m/44'/501'/0'/0'";
-    const derivedSeed = ed25519.derivePath(
-      derivationPath,
-      seed.toString("hex")
-    ).key;
+    const derivedSeed = ed25519.derivePath(derivationPath, seed.toString("hex")).key;
     const keypair = Keypair.fromSeed(derivedSeed);
     return keypair;
   }
 
   static async getBalance(addr: string): Promise<number> {
     try {
-      let network = undefined;
-      if (net_name === "mainnet") {
-        network = clusterApiUrl("mainnet-beta");
-      } else {
-        network = clusterApiUrl("devnet");
-      }
-      console.log("network", network);
-      const connection = new Connection(network);
-      const pbKey = new PublicKey(addr);
-      console.log("pbKey", pbKey);
-      console.log("address", addr);
-      const balance = await connection.getBalance(pbKey);
-      console.log("balance", balance);
-      const sols = balance / 1e9;
+      const apiURL = "https://api.mainnet-beta.solana.com";
+      const pbKey = new PublicKey(addr).toBase58();
+      const bodyContent = {
+        jsonrpc: "2.0",
+        id: 1,
+        method: "getBalance",
+        params: [pbKey],
+      };
+      const body = Body.json(bodyContent);
+      const response: any = await tauriFetch(apiURL, {
+        method: "POST",
+        timeout: 30,
+        body: body,
+        responseType: ResponseType.JSON,
+      });
+      const sols = response?.data?.result?.value / 1e9;
       return sols;
     } catch (err) {
       console.error("Failed to SOLANA getBalance: ", err);
@@ -71,39 +71,53 @@ class Solana implements IWallet {
     }
   }
 
-  static async getTransactions(addr: string): Promise<any> {
+  static async getTransactions(addr: string, page: number): Promise<any> {
     try {
-      let network = undefined;
-      if (net_name === "mainnet") {
-        network = clusterApiUrl("mainnet-beta");
-      } else {
-        network = clusterApiUrl("devnet");
-      }
-      const connection = new Connection(network);
-      const pbKey = new PublicKey(addr);
-      const signatures = await connection.getSignaturesForAddress(pbKey, {
-        limit: 10,
+      const apiURL = "https://api.mainnet-beta.solana.com";
+      const pbKey = new PublicKey(addr).toBase58();
+      //get signatures
+      const bodyContent1 = {
+        jsonrpc: "2.0",
+        id: 1,
+        method: "getSignaturesForAddress",
+        params: [pbKey, { limit: 15 * page }],
+      };
+      const body1 = Body.json(bodyContent1);
+      const response1: any = await tauriFetch(apiURL, {
+        method: "POST",
+        timeout: 30,
+        body: body1,
+        responseType: ResponseType.JSON,
       });
-      return signatures;
-    } catch {
-      return undefined;
+      const signatures: string[] = response1?.data?.result.slice(-15).map((signature: any) => signature?.signature);
+      // get transactions
+      let bodyContent2 = [];
+      for (let i = 0; i < signatures?.length; i++) {
+        bodyContent2.push({
+          jsonrpc: "2.0",
+          id: i,
+          method: "getTransaction",
+          params: [signatures[i], { encoding: "jsonParsed", commitment: "finalized" }],
+        });
+      }
+      const body2 = Body.json(bodyContent2);
+      const response2: any = await tauriFetch(apiURL, {
+        method: "POST",
+        timeout: 30,
+        body: body2,
+        responseType: ResponseType.JSON,
+      });
+      return Array.isArray(response2?.data) ? response2?.data : [];
+    } catch (err) {
+      console.error("Failed to SOLANA getTransactions: ", err);
+      return [];
     }
   }
 
-  static async sendTransaction(
-    passphrase: string,
-    tx: { recipients: any[]; fee: string; vendorField?: string }
-  ) {
+  static async sendTransaction(passphrase: string, tx: { recipients: IRecipient[]; fee: string; vendorField?: string }) {
     if (tx.recipients.length > 0) {
       try {
         const keypair = await Solana.getKeyPair(passphrase);
-        let network = undefined;
-        if (net_name === "mainnet") {
-          network = clusterApiUrl("mainnet-beta");
-        } else {
-          network = clusterApiUrl("devnet");
-        }
-        const connection = new Connection(network);
         let trx = new Transaction();
         tx.recipients.map((recipient) => {
           const toPbKey = new PublicKey(recipient.address);
@@ -111,17 +125,147 @@ class Solana implements IWallet {
             SystemProgram.transfer({
               fromPubkey: keypair.publicKey,
               toPubkey: toPbKey,
-              lamports: (recipient.amount as number) * LAMPORTS_PER_SOL,
+              lamports: (Number(recipient.amount) * LAMPORTS_PER_SOL) as number,
             })
           );
         });
-        const trxSign = await sendAndConfirmTransaction(connection, trx, [
-          keypair,
-        ]);
-        console.log("trxSign", trxSign);
-        return true;
-      } catch {
-        return false;
+
+        const apiURL = "https://api.mainnet-beta.solana.com";
+        const bodyContent1 = {
+          jsonrpc: "2.0",
+          id: 1,
+          method: "getLatestBlockhash",
+          params: [
+            {
+              commitment: "finalized",
+            },
+          ],
+        };
+        const body1 = Body.json(bodyContent1);
+        const response1: any = await tauriFetch(apiURL, {
+          method: "POST",
+          timeout: 30,
+          body: body1,
+          responseType: ResponseType.JSON,
+        });
+        console.log(response1);
+        const recentBlockhash = response1?.data?.result?.value?.blockhash;
+
+        console.log("recentBlockhash: ", recentBlockhash);
+        trx.recentBlockhash = recentBlockhash;
+        trx.sign(keypair);
+        const rawTx = trx.serialize();
+        const rawTxString = bs58.encode(rawTx);
+        console.log("rawTx: ", rawTxString);
+
+        const bodyContent2 = {
+          jsonrpc: "2.0",
+          id: 1,
+          method: "sendTransaction",
+          params: [rawTxString],
+        };
+        const body2 = Body.json(bodyContent2);
+        const response2: any = await tauriFetch(apiURL, {
+          method: "POST",
+          timeout: 30,
+          body: body2,
+          responseType: ResponseType.JSON,
+        });
+        console.log(response2);
+
+        const noti: INotification = {
+          status: "success",
+          title: await translateString("Success"),
+          message: await translateString("Successfully Transferred!"),
+        };
+        return noti;
+      } catch (err) {
+        console.error("Failed to send SOL transaction: ", err);
+        const translated = await translateString(err.toString());
+        const noti: INotification = {
+          status: "failed",
+          title: await translateString("Failed"),
+          message: translated,
+        };
+        return noti;
+      }
+    }
+  }
+
+  static async sendTransactionAPI(passphrase: string, tx: { recipients: IRecipient[]; fee: string; vendorField?: string }) {
+    if (tx.recipients.length > 0) {
+      try {
+        const keypair = await Solana.getKeyPair(passphrase);
+        let trx = new Transaction();
+        tx.recipients.map((recipient) => {
+          const toPbKey = new PublicKey(recipient.address);
+          trx.add(
+            SystemProgram.transfer({
+              fromPubkey: keypair.publicKey,
+              toPubkey: toPbKey,
+              lamports: (Number(recipient.amount) * LAMPORTS_PER_SOL) as number,
+            })
+          );
+        });
+
+        const apiURL = "https://api.mainnet-beta.solana.com";
+        const bodyContent1 = {
+          jsonrpc: "2.0",
+          id: 1,
+          method: "getLatestBlockhash",
+          params: [
+            {
+              commitment: "finalized",
+            },
+          ],
+        };
+        const body1 = Body.json(bodyContent1);
+        const response1: any = await tauriFetch(apiURL, {
+          method: "POST",
+          timeout: 30,
+          body: body1,
+          responseType: ResponseType.JSON,
+        });
+        console.log(response1);
+        const recentBlockhash = response1?.data?.result?.value?.blockhash;
+
+        console.log("recentBlockhash: ", recentBlockhash);
+        trx.recentBlockhash = recentBlockhash;
+        trx.sign(keypair);
+        const rawTx = trx.serialize();
+        const rawTxString = bs58.encode(rawTx);
+        console.log("rawTx: ", rawTxString);
+
+        const bodyContent2 = {
+          jsonrpc: "2.0",
+          id: 1,
+          method: "sendTransaction",
+          params: [rawTxString],
+        };
+        const body2 = Body.json(bodyContent2);
+        const response2: any = await tauriFetch(apiURL, {
+          method: "POST",
+          timeout: 30,
+          body: body2,
+          responseType: ResponseType.JSON,
+        });
+        console.log(response2);
+
+        const noti: INotification = {
+          status: "success",
+          title: "Send SOL",
+          message: "Transaction confirmed.",
+          transactionId: response2?.data?.result,
+        };
+        return noti;
+      } catch (err) {
+        console.error("Failed to send SOL transaction: ", err);
+        const noti: INotification = {
+          status: "failed",
+          title: "Send SOL",
+          message: err.toString(),
+        };
+        return noti;
       }
     }
   }

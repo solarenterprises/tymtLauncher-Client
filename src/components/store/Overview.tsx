@@ -2,7 +2,6 @@ import { Grid, Box } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-
 import Games, { Game } from "../../lib/game/Game";
 import { languageType } from "../../types/settingTypes";
 import { useSelector } from "react-redux";

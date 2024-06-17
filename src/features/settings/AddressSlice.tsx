@@ -1,10 +1,10 @@
 import { createSlice } from "@reduxjs/toolkit";
 import tymtStorage from "../../lib/Storage";
-import { tymt_version } from "../../configs";
 
 const loadAddress = () => {
-  const data = tymtStorage.get(`address_${tymt_version}`);
-  if (data === null || data === "") {
+  const data = tymtStorage.get(`address`);
+  if (data === null || data === "" || data === undefined) {
+    tymtStorage.set(`address`, JSON.stringify([]));
     return [];
   } else {
     return JSON.parse(data);
@@ -19,14 +19,10 @@ const initialState = {
 export const addressSlice = createSlice({
   name: "address",
   initialState,
-  // Reducers to save the language as global state
   reducers: {
     setAddress: (state, action) => {
       state.data = action.payload;
-      tymtStorage.set(
-        `address_${tymt_version}`,
-        JSON.stringify(action.payload)
-      );
+      tymtStorage.set(`address`, JSON.stringify(action.payload));
     },
   },
 });

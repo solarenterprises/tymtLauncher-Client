@@ -1,50 +1,32 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
-import {
-  Box,
-  Divider,
-  Stack,
-  TextField,
-  InputAdornment,
-  Grid,
-  Button,
-  Modal,
-} from "@mui/material";
-
+import { Box, Divider, Stack, TextField, InputAdornment, Grid, Button, Tabs, Tab } from "@mui/material";
+import { debounce } from "lodash";
 import ChatStyle from "../../styles/ChatStyles";
-
 import searchlg from "../../assets/searchlg.svg";
 import settingicon from "../../assets/chat/settings.svg";
 import nocontact from "../../assets/chat/nocontact.png";
-import Avatar from "../../components/home/Avatar";
-
-import { propsType, selecteduserType, userType } from "../../types/chatTypes";
-import { nonCustodialType } from "../../types/accountTypes";
-import {
-  selectPartner,
-  setCurrentChatPartner,
-} from "../../features/chat/Chat-currentPartnerSlice";
-import { multiWalletType } from "../../types/walletTypes";
-import {
-  getUserlist,
-  setUserList,
-} from "../../features/chat/Chat-userlistSlice";
-import {
-  createContact,
-  deleteContact,
-  getaccessToken,
-  receiveContactlist,
-  searchUsers,
-} from "../../features/chat/Chat-contactApi";
-import { getNonCustodial } from "../../features/account/NonCustodialSlice";
-import { getMultiWallet } from "../../features/wallet/MultiWalletSlice";
-import {
-  getSelectedUser,
-  setSelectedUsertoDelete,
-} from "../../features/chat/Chat-selecteduserSlice";
-import { setChatHistory } from "../../features/chat/Chat-historySlice";
+import BlockModal from "../../components/chat/BlockModal";
+import DeleteModal from "../../components/chat/DeleteModal";
+import RequestModal from "../../components/chat/RequestModal";
+import { useSocket } from "../../providers/SocketProvider";
+import { IAlert, IContactList, propsType, selecteduserType, userType } from "../../types/chatTypes";
+import { accountType } from "../../types/accountTypes";
+import { getSelectedUser } from "../../features/chat/Chat-selecteduserSlice";
+import { getAccount } from "../../features/account/AccountSlice";
+import { IAlertList } from "../../types/alertTypes";
+import FRcontextmenu from "../../components/chat/FRcontextmenu";
+import Userlist from "../../components/chat/Userlist";
+import { createContactAsync, deleteContactAsync, getContactList } from "../../features/chat/ContactListSlice";
+import { AppDispatch } from "../../store";
+import { getAlertList } from "../../features/alert/AlertListSlice";
+import { searchUsers } from "../../features/chat/ContactListApi";
+import { createFriendAsync, deleteFriendAsync, getFriendList } from "../../features/chat/FriendListSlice";
+import SwipeableViews from "react-swipeable-views";
+import { useTheme } from "@mui/material/styles";
+import { deleteBlockAsync, getBlockList } from "../../features/chat/BlockListSlice";
 
 const theme = createTheme({
   palette: {
@@ -61,14 +43,11 @@ const theme = createTheme({
 
 const Chatmain = ({ view, setView }: propsType) => {
   const classes = ChatStyle();
-  const dispatch = useDispatch();
+  const { socket } = useSocket();
   const { t } = useTranslation();
+  const otheme = useTheme();
+
   const [value, setValue] = useState<string>("");
-  const chatuserlist: userType[] = useSelector(getUserlist);
-  const userdata: userType[] = useSelector(selectPartner);
-  const nonCustodial: nonCustodialType = useSelector(getNonCustodial);
-  const multiwallet: multiWalletType = useSelector(getMultiWallet);
-  const selectedusertoDelete: selecteduserType = useSelector(getSelectedUser);
   const [searchedresult, setSearchedresult] = useState<userType[]>([]);
   const [isClickedBlock, setIsClickedBlock] = useState(false);
   const [isClickedDelete, setIsClickedDelete] = useState(false);
@@ -81,48 +60,126 @@ const Chatmain = ({ view, setView }: propsType) => {
     x: 0,
     y: 0,
   });
+  const [tab, setTab] = useState<number>(0);
+
+  const valueRef = useRef(value);
+
+  useEffect(() => {
+    valueRef.current = value;
+  }, [value]);
+
+  const dispatch = useDispatch<AppDispatch>();
+  const contactListStore: IContactList = useSelector(getContactList);
+  const friendListStore: IContactList = useSelector(getFriendList);
+  const blockListStore: IContactList = useSelector(getBlockList);
+  const selectedUserToDeleteStore: selecteduserType = useSelector(getSelectedUser);
+  const accountStore: accountType = useSelector(getAccount);
+  const alertListStore: IAlertList = useSelector(getAlertList);
+
+  const selectedUserToDeleteStoreRef = useRef(selectedUserToDeleteStore);
+  const accountStoreRef = useRef(accountStore);
+  const friendListStoreRef = useRef(friendListStore);
+  const blockListStoreRef = useRef(blockListStore);
+
+  useEffect(() => {
+    selectedUserToDeleteStoreRef.current = selectedUserToDeleteStore;
+  }, [selectedUserToDeleteStore]);
+  useEffect(() => {
+    accountStoreRef.current = accountStore;
+  }, [accountStore]);
+  useEffect(() => {
+    friendListStoreRef.current = friendListStore;
+  }, [friendListStore]);
+  useEffect(() => {
+    blockListStoreRef.current = blockListStore;
+  }, [blockListStore]);
 
   const deleteSelectedUser = async () => {
-    const accessToken: string = await getaccessToken(
-      multiwallet.Solar.chain.wallet,
-      nonCustodial.password
-    );
-    await deleteContact(selectedusertoDelete.id, accessToken);
+    try {
+      dispatch(deleteFriendAsync(selectedUserToDeleteStoreRef.current.id)).then(() => {
+        dispatch(deleteContactAsync(selectedUserToDeleteStoreRef.current.id)).then(() => {
+          dispatch(deleteBlockAsync(selectedUserToDeleteStoreRef.current.id));
+        });
+      });
+      console.log("deleteSelectedUser");
+    } catch (err) {
+      console.error("Failed to deleteSelectedUser: ", err);
+    }
     setOpenDeleteModal(false);
-    const contacts: userType[] = await receiveContactlist(accessToken);
-    dispatch(setUserList(contacts));
-    dispatch(setChatHistory({ messages: [] }));
   };
 
-  const handleContextMenu = (e: any, id: string) => {
-    e.preventDefault();
-    const mouseX = e.clientX + window.scrollX;
-    const mouseY = e.clientY + window.scrollY;
-    process.platform === "linux" || process.platform === "darwin"
-      ? setShowContextMenu(true)
-      : setShowContextMenu(false);
-    setContextMenuPosition({ x: mouseX, y: mouseY });
-    e.stopPropagation();
-    dispatch(setSelectedUsertoDelete({ ...selectedusertoDelete, id: id }));
+  const sendFriendRequest = async () => {
+    try {
+      if (friendListStoreRef.current.contacts.find((element) => element._id === selectedUserToDeleteStoreRef.current.id)) {
+        console.log("sendFriendRequest: Already in the friend list!");
+        return;
+      }
+      const data: IAlert = {
+        alertType: "friend-request",
+        note: {
+          sender: `${accountStoreRef.current.uid}`,
+          status: "pending",
+        },
+        receivers: [selectedUserToDeleteStoreRef.current.id],
+      };
+      socket.current.emit("post-alert", JSON.stringify(data));
+      dispatch(deleteBlockAsync(selectedUserToDeleteStoreRef.current.id)).then(() => {
+        dispatch(createContactAsync(selectedUserToDeleteStoreRef.current.id)).then(() => {
+          dispatch(createFriendAsync(selectedUserToDeleteStoreRef.current.id));
+        });
+      });
+      console.log("sendFriendRequest");
+    } catch (err) {
+      console.error("Failed to sendFriendRequest: ", err);
+    }
+    setOpenRequestModal(false);
   };
 
-  const filterUsers = async (value: string) => {
+  const debouncedFilterUsers = debounce(async (value: string) => {
     setSearchedresult(await searchUsers(value));
-  };
+  }, 1000);
 
-  const updateContact = async (_id) => {
-    const accessToken: string = await getaccessToken(
-      multiwallet.Solar.chain.wallet,
-      nonCustodial.password
-    );
-    await createContact(_id, accessToken);
-    const contacts: userType[] = await receiveContactlist(accessToken);
-    dispatch(setUserList(contacts));
+  const filterUsers = (value: string) => {
+    debouncedFilterUsers(value);
   };
 
   useEffect(() => {
-    filterUsers(value);
-  }, [value]);
+    if (view === "chatmain" && !value) {
+      filterUsers(value);
+    }
+  }, [value, view]);
+
+  const handleTabChange = (_event: React.SyntheticEvent, index: number) => {
+    setTab(index);
+  };
+
+  const handleChangeIndex = (index: number) => {
+    setTab(index);
+  };
+
+  function a11yProps(index: number) {
+    return {
+      id: `full-width-tab-${index}`,
+      "aria-controls": `full-width-tabpanel-${index}`,
+    };
+  }
+
+  interface TabPanelProps {
+    children?: React.ReactNode;
+    dir?: string;
+    index: number;
+    value: number;
+  }
+
+  function TabPanel(props: TabPanelProps) {
+    const { children, value, index, ...other } = props;
+
+    return (
+      <div role="tabpanel" hidden={value !== index} id={`full-width-tabpanel-${index}`} aria-labelledby={`full-width-tab-${index}`} {...other}>
+        {value === index && children}
+      </div>
+    );
+  }
 
   return (
     <>
@@ -147,31 +204,7 @@ const Chatmain = ({ view, setView }: propsType) => {
               <Box className={"fs-24-bold white"} marginTop={"0px"}>
                 {t("cha-1_chat")}
               </Box>
-              {/* <Button
-                className={"common-btn"}
-                sx={{
-                  position: "absolute",
-                  marginRight: "8px",
-                  top: 0,
-                  right: 0,
-                  cursor: "pointer",
-                }}
-              >
-                <Box
-                  className={"center-align"}
-                  onClick={() => {
-                    setView("chatsetting");
-                  }}
-                >
-                  <img src={minimize} />
-                </Box>
-              </Button> */}
-              <Stack
-                flexDirection={"row"}
-                justifyContent={"space-between"}
-                alignItems={"center"}
-                marginTop={"30px"}
-              >
+              <Stack flexDirection={"row"} justifyContent={"space-between"} alignItems={"center"} marginTop={"30px"}>
                 <ThemeProvider theme={theme}>
                   <TextField
                     className={classes.search_bar}
@@ -197,12 +230,7 @@ const Chatmain = ({ view, setView }: propsType) => {
                               onClick={() => setValue("")}
                               style={{ cursor: "pointer" }}
                             >
-                              <path
-                                d="M17 7L7 17M7 7L17 17"
-                                stroke="white"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                              />
+                              <path d="M17 7L7 17M7 7L17 17" stroke="white" strokeLinecap="round" strokeLinejoin="round" />
                             </svg>
                           )}
                         </InputAdornment>
@@ -235,280 +263,233 @@ const Chatmain = ({ view, setView }: propsType) => {
                 marginBottom: "22px",
               }}
             />
-            {/* userlist section */}
-            <Box className={classes.scroll_bar}>
-              {chatuserlist?.length === 0 && value === "" ? (
-                <>
-                  <Grid container sx={{ justifyContent: "center" }}>
-                    <img
-                      src={nocontact}
-                      style={{ marginTop: "40%", display: "block" }}
-                    ></img>
-                  </Grid>
-                  <Box className={"fs-20-regular white"} textAlign={"center"}>
-                    {t("cha-2_you-havenot-friends")}
-                  </Box>
-                </>
-              ) : (
-                <>
-                  {(value === "" ? chatuserlist : searchedresult)?.map(
-                    (user, index) => (
-                      <Box key={index}>
-                        <Grid
-                          item
-                          xs={12}
-                          container
-                          sx={{
-                            overflowX: "hidden",
-                            height: "64px",
-                            flexDirection: "row",
-                            justifyContent: "left",
-                            alignItems: "center",
-                            padding: "12px 5px 12px 5px",
-                            cursor: "pointer",
-                            "&:hover": {
-                              borderRadius: "5px",
-                              borderTopRightRadius: "0",
-                              borderBottomRightRadius: "0",
-                              backgroundColor: "#FFFFFF1A",
-                            },
-                            "&:active": {
-                              backgroundColor: "#52E1F21A",
-                            },
-                          }}
-                          onContextMenu={(e) => handleContextMenu(e, user._id)}
-                          onClick={() => {
-                            dispatch(
-                              setCurrentChatPartner({
-                                ...userdata,
-                                _id: user._id,
-                                nickName: user.nickName,
-                                avatar: user.avatar,
-                                lang: user.lang,
-                                sxpAddress: user.sxpAddress,
-                                onlineStatus: user.onlineStatus,
-                                notificationStatus: user.notificationStatus,
-                              })
-                            );
-                            setView("chatbox");
-                            updateContact(user._id);
-                          }}
-                        >
-                          <Avatar
-                            onlineStatus={user.onlineStatus}
-                            userid={user._id}
-                            size={40}
-                          />
-                          <Stack
-                            flexDirection={"row"}
-                            alignItems={"center"}
-                            justifyContent={"space-between"}
-                            display={"flex"}
-                            sx={{ marginLeft: "25px", width: "320px" }}
-                          >
-                            <Box>
-                              <Stack
-                                direction={"column"}
-                                justifyContent={"flex-start"}
-                                spacing={1}
-                              >
-                                <Box className={"fs-16 white"}>
-                                  {user?.nickName}
-                                </Box>
-                                <Box className={"fs-12-light gray"}>
-                                  {user?.sxpAddress}
-                                </Box>
-                              </Stack>
-                            </Box>
-
-                            <Box
-                              className={"fs-16 white"}
-                              sx={{ opacity: 0.3 }}
-                            >
-                              {user?.lang}
-                            </Box>
-                          </Stack>
-                        </Grid>
-                      </Box>
-                    )
-                  )}
-                  {showContextMenu && (
+            <ThemeProvider theme={theme}>
+              <Tabs
+                value={tab}
+                onChange={handleTabChange}
+                indicatorColor="primary"
+                textColor="inherit"
+                variant="fullWidth"
+                aria-label="full width tabs example"
+              >
+                <Tab
+                  label={
+                    <Box className={"fs-14-regular white t-center"} sx={{ textTransform: "none" }}>
+                      {t("cha-36_contact")}
+                    </Box>
+                  }
+                  {...a11yProps(0)}
+                />
+                <Tab
+                  label={
+                    <Box className={"fs-14-regular white t-center"} sx={{ textTransform: "none" }}>
+                      {t("cha-37_friend")}
+                    </Box>
+                  }
+                  {...a11yProps(1)}
+                />
+                <Tab
+                  label={
+                    <Box className={"fs-14-regular white t-center"} sx={{ textTransform: "none" }}>
+                      {t("cha-38_block")}
+                    </Box>
+                  }
+                  {...a11yProps(2)}
+                />
+              </Tabs>
+            </ThemeProvider>
+            <SwipeableViews axis={otheme.direction === "rtl" ? "x-reverse" : "x"} index={tab} onChangeIndex={handleChangeIndex} width={"100%"}>
+              <TabPanel value={tab} index={0} dir={otheme.direction}>
+                <Box className={classes.scroll_bar}>
+                  {contactListStore?.contacts?.length === 0 && value === "" ? (
                     <>
-                      <Box
-                        sx={{
-                          position: "fixed",
-                          top: contextMenuPosition.y,
-                          left: contextMenuPosition.x,
-                          display: "inline-flex",
-                          flexDirection: "column",
-                          alignItems: "flex-start",
-                          cursor: "pointer",
-                          zIndex: 1000,
-                        }}
-                      >
-                        {value === "" ? (
-                          <>
-                            <Box
-                              className={"fs-16 white context_menu_block"}
-                              textAlign={"left"}
-                              sx={{
-                                backdropFilter: "blur(10px)",
-                              }}
-                              onClick={() => {
-                                setIsClickedBlock(!isClickedBlock),
-                                  setOpenBlockModal(true),
-                                  setShowContextMenu(false);
-                              }}
-                            >
-                              {t("cha-4_block")}
-                            </Box>
-
-                            <Box
-                              className={"fs-16 white context_menu_delete"}
-                              textAlign={"left"}
-                              sx={{
-                                backdropFilter: "blur(10px)",
-                              }}
-                              onClick={() => {
-                                setIsClickedDelete(!isClickedDelete),
-                                  setOpenDeleteModal(true),
-                                  setShowContextMenu(false);
-                              }}
-                            >
-                              {t("cha-5_delete-chat")}
-                            </Box>
-                          </>
-                        ) : (
-                          <>
-                            <Box
-                              className={
-                                "fs-16 white context_menu_friendrequest"
-                              }
-                              textAlign={"center"}
-                              sx={{
-                                backdropFilter: "blur(10px)",
-                              }}
-                              onClick={() => {
-                                setIsClickedRequest(!isClickedRequest),
-                                  setOpenRequestModal(true),
-                                  setShowContextMenu(false);
-                              }}
-                            >
-                              {t("cha-20_send-request")}
-                            </Box>
-                          </>
-                        )}
+                      <Grid container sx={{ justifyContent: "center" }}>
+                        <img src={nocontact} style={{ marginTop: "40%", display: "block" }}></img>
+                      </Grid>
+                      <Box className={"fs-20-regular white"} textAlign={"center"}>
+                        {t("cha-2_you-havenot-friends")}
                       </Box>
                     </>
+                  ) : (
+                    <>
+                      {(value === "" ? contactListStore?.contacts : searchedresult)?.map((user, index) => {
+                        const count =
+                          value === "" ? alertListStore.unread?.filter((alert) => alert.note.sender === user._id && alert.alertType === "chat").length : 0;
+                        const numberofunreadmessages = count;
+
+                        return (
+                          <Userlist
+                            user={user}
+                            index={index}
+                            numberofunreadmessages={numberofunreadmessages}
+                            setShowContextMenu={setShowContextMenu}
+                            setContextMenuPosition={setContextMenuPosition}
+                            setView={setView}
+                          />
+                        );
+                      })}
+                      {showContextMenu && (
+                        <FRcontextmenu
+                          tab={tab}
+                          value={value}
+                          isClickedBlock={isClickedBlock}
+                          isClickedDelete={isClickedDelete}
+                          isClickedRequest={isClickedRequest}
+                          setIsClickedBlock={setIsClickedBlock}
+                          setOpenBlockModal={setOpenBlockModal}
+                          setShowContextMenu={setShowContextMenu}
+                          setIsClickedDelete={setIsClickedDelete}
+                          setOpenDeleteModal={setOpenDeleteModal}
+                          setOpenRequestModal={setOpenRequestModal}
+                          setIsClickedRequest={setIsClickedRequest}
+                          contextMenuPosition={contextMenuPosition}
+                        />
+                      )}
+                      <BlockModal block={tab !== 2} openBlockModal={openBlockModal} setOpenBlockModal={setOpenBlockModal} roommode={false} />
+                      <DeleteModal
+                        openDeleteModal={openDeleteModal}
+                        setOpenDeleteModal={setOpenDeleteModal}
+                        deleteSelectedUser={deleteSelectedUser}
+                        roommode={false}
+                      />
+                      <RequestModal
+                        openRequestModal={openRequestModal}
+                        setOpenRequestModal={setOpenRequestModal}
+                        sendFriendRequest={sendFriendRequest}
+                        roommode={false}
+                      />
+                    </>
                   )}
-                  <Modal open={openBlockModal}>
-                    <Box className="modal_content">
-                      <Box className={"fs-18-light white"} textAlign={"center"}>
-                        {t("cha-9_are-you-sure-block")}
+                </Box>
+              </TabPanel>
+              <TabPanel value={tab} index={1} dir={otheme.direction}>
+                <Box className={classes.scroll_bar}>
+                  {friendListStore?.contacts?.length === 0 && value === "" ? (
+                    <>
+                      <Grid container sx={{ justifyContent: "center" }}>
+                        <img src={nocontact} style={{ marginTop: "40%", display: "block" }}></img>
+                      </Grid>
+                      <Box className={"fs-20-regular white"} textAlign={"center"}>
+                        {t("cha-2_you-havenot-friends")}
                       </Box>
-                      <Stack
-                        marginTop={"20px"}
-                        width={"100%"}
-                        flexDirection={"row"}
-                        alignSelf={"center"}
-                        justifyContent={"space-around"}
-                      >
-                        <Button
-                          className="modal_btn_left"
-                          onClick={() => setOpenBlockModal(false)}
-                        >
-                          <Box
-                            className={"fs-18-bold"}
-                            color={"var(--Main-Blue, #52E1F2)"}
-                          >
-                            {t("cha-7_cancel")}
-                          </Box>
-                        </Button>
-                        <Button
-                          className="modal_btn_right"
-                          onClick={() => setOpenBlockModal(false)}
-                        >
-                          <Box className={"fs-18-bold white"}>
-                            {t("cha-4_block")}
-                          </Box>
-                        </Button>
-                      </Stack>
-                    </Box>
-                  </Modal>
-                  <Modal open={openDeleteModal}>
-                    <Box className="modal_content">
-                      <Box className={"fs-18-bold white"} textAlign={"center"}>
-                        {t("cha-6_are-you-sure-delete")}
+                    </>
+                  ) : (
+                    <>
+                      {(value === "" ? friendListStore?.contacts : searchedresult)?.map((user, index) => {
+                        const count =
+                          value === "" ? alertListStore.unread?.filter((alert) => alert.note.sender === user._id && alert.alertType === "chat").length : 0;
+                        const numberofunreadmessages = count;
+
+                        return (
+                          <Userlist
+                            user={user}
+                            index={index}
+                            numberofunreadmessages={numberofunreadmessages}
+                            setShowContextMenu={setShowContextMenu}
+                            setContextMenuPosition={setContextMenuPosition}
+                            setView={setView}
+                          />
+                        );
+                      })}
+                      {showContextMenu && (
+                        <FRcontextmenu
+                          tab={tab}
+                          value={value}
+                          isClickedBlock={isClickedBlock}
+                          isClickedDelete={isClickedDelete}
+                          isClickedRequest={isClickedRequest}
+                          setIsClickedBlock={setIsClickedBlock}
+                          setOpenBlockModal={setOpenBlockModal}
+                          setShowContextMenu={setShowContextMenu}
+                          setIsClickedDelete={setIsClickedDelete}
+                          setOpenDeleteModal={setOpenDeleteModal}
+                          setOpenRequestModal={setOpenRequestModal}
+                          setIsClickedRequest={setIsClickedRequest}
+                          contextMenuPosition={contextMenuPosition}
+                        />
+                      )}
+                      <BlockModal block={tab !== 2} openBlockModal={openBlockModal} setOpenBlockModal={setOpenBlockModal} roommode={false} />
+                      <DeleteModal
+                        openDeleteModal={openDeleteModal}
+                        setOpenDeleteModal={setOpenDeleteModal}
+                        deleteSelectedUser={deleteSelectedUser}
+                        roommode={false}
+                      />
+                      <RequestModal
+                        openRequestModal={openRequestModal}
+                        setOpenRequestModal={setOpenRequestModal}
+                        sendFriendRequest={sendFriendRequest}
+                        roommode={false}
+                      />
+                    </>
+                  )}
+                </Box>
+              </TabPanel>
+              <TabPanel value={tab} index={2} dir={otheme.direction}>
+                <Box className={classes.scroll_bar}>
+                  {blockListStore?.contacts?.length === 0 && value === "" ? (
+                    <>
+                      <Grid container sx={{ justifyContent: "center" }}>
+                        <img src={nocontact} style={{ marginTop: "40%", display: "block" }}></img>
+                      </Grid>
+                      <Box className={"fs-20-regular white"} textAlign={"center"}>
+                        {t("cha-2_you-havenot-friends")}
                       </Box>
-                      <Stack
-                        marginTop={"20px"}
-                        width={"100%"}
-                        flexDirection={"row"}
-                        alignSelf={"center"}
-                        justifyContent={"space-around"}
-                      >
-                        <Button
-                          className="modal_btn_left"
-                          onClick={() => {
-                            setOpenDeleteModal(false);
-                          }}
-                        >
-                          <Box
-                            className={"fs-18-bold white"}
-                            color={"var(--Main-Blue, #52E1F2)"}
-                          >
-                            {t("cha-7_cancel")}
-                          </Box>
-                        </Button>
-                        <Button
-                          className="modal_btn_right"
-                          onClick={() => {
-                            deleteSelectedUser();
-                          }}
-                        >
-                          <Box className={"fs-18-bold white"}>
-                            {t("cha-8_delete")}
-                          </Box>
-                        </Button>
-                      </Stack>
-                    </Box>
-                  </Modal>
-                  <Modal open={openRequestModal}>
-                    <Box className="modal_content">
-                      <Box className={"fs-18-bold white"} textAlign={"center"}>
-                        {t("cha-20_send-request")}?
-                      </Box>
-                      <Stack
-                        marginTop={"20px"}
-                        width={"100%"}
-                        flexDirection={"row"}
-                        alignSelf={"center"}
-                        justifyContent={"space-around"}
-                      >
-                        <Button
-                          className="modal_btn_left"
-                          onClick={() => {
-                            setOpenRequestModal(false);
-                          }}
-                        >
-                          <Box
-                            className={"fs-18-bold white"}
-                            color={"var(--Main-Blue, #52E1F2)"}
-                          >
-                            {t("cha-7_cancel")}
-                          </Box>
-                        </Button>
-                        <Button className="modal_btn_right" onClick={() => {}}>
-                          <Box className={"fs-18-bold white"}>
-                            {t("cha-27_request")}
-                          </Box>
-                        </Button>
-                      </Stack>
-                    </Box>
-                  </Modal>
-                </>
-              )}
-            </Box>
+                    </>
+                  ) : (
+                    <>
+                      {(value === "" ? blockListStore?.contacts : searchedresult)?.map((user, index) => {
+                        const count =
+                          value === "" ? alertListStore.unread?.filter((alert) => alert.note.sender === user._id && alert.alertType === "chat").length : 0;
+                        const numberofunreadmessages = count;
+
+                        return (
+                          <Userlist
+                            user={user}
+                            index={index}
+                            numberofunreadmessages={numberofunreadmessages}
+                            setShowContextMenu={setShowContextMenu}
+                            setContextMenuPosition={setContextMenuPosition}
+                            setView={setView}
+                          />
+                        );
+                      })}
+                      {showContextMenu && (
+                        <FRcontextmenu
+                          tab={tab}
+                          value={value}
+                          isClickedBlock={isClickedBlock}
+                          isClickedDelete={isClickedDelete}
+                          isClickedRequest={isClickedRequest}
+                          setIsClickedBlock={setIsClickedBlock}
+                          setOpenBlockModal={setOpenBlockModal}
+                          setShowContextMenu={setShowContextMenu}
+                          setIsClickedDelete={setIsClickedDelete}
+                          setOpenDeleteModal={setOpenDeleteModal}
+                          setOpenRequestModal={setOpenRequestModal}
+                          setIsClickedRequest={setIsClickedRequest}
+                          contextMenuPosition={contextMenuPosition}
+                        />
+                      )}
+                      <BlockModal block={tab !== 2} openBlockModal={openBlockModal} setOpenBlockModal={setOpenBlockModal} roommode={false} />
+                      <DeleteModal
+                        openDeleteModal={openDeleteModal}
+                        setOpenDeleteModal={setOpenDeleteModal}
+                        deleteSelectedUser={deleteSelectedUser}
+                        roommode={false}
+                      />
+                      <RequestModal
+                        openRequestModal={openRequestModal}
+                        setOpenRequestModal={setOpenRequestModal}
+                        sendFriendRequest={sendFriendRequest}
+                        roommode={false}
+                      />
+                    </>
+                  )}
+                </Box>
+              </TabPanel>
+            </SwipeableViews>
+            {/* userlist section */}
           </Box>
         </>
       )}

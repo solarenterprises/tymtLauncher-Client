@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
 import LinearProgress from "@mui/material/LinearProgress";
-
 import "../../global.css";
 import "./styles.css";
 
@@ -29,13 +27,7 @@ const Splash = () => {
   return (
     <>
       <div className="splash-logo">
-        <svg
-          width="300"
-          height="87"
-          viewBox="0 0 300 87"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
+        <svg width="300" height="87" viewBox="0 0 300 87" fill="none" xmlns="http://www.w3.org/2000/svg">
           <g clip-path="url(#clip0_6609_59505)">
             <path
               d="M169.286 85.0581C167.006 84.6123 165.321 82.5716 165.321 80.2636C165.321 78.639 166.243 76.9648 167.591 76.103C168.354 75.6277 169.038 75.4493 170.524 75.3503C173.983 75.1126 176.351 74.211 178.862 72.1804C180.862 70.5558 182.457 68.1091 183.211 65.5136C183.35 65.0283 183.439 64.6122 183.42 64.5925C183.4 64.5727 183.002 64.8004 182.538 65.1076C179.911 66.8212 176.076 68.1389 172.567 68.5349C171.031 68.7035 167.75 68.6044 166.312 68.337C162.942 67.7028 160.197 66.6231 157.541 64.8797C153.933 62.5221 151.188 59.4315 149.314 55.6277C148.472 53.904 148.006 52.6559 147.59 50.9818C146.926 48.2875 146.945 48.7035 146.916 37.4306C146.886 30.1497 146.906 27.0393 146.985 26.6628C147.352 24.8996 148.829 23.3741 150.603 22.9085C153.249 22.2251 156.014 23.9782 156.589 26.7023C156.669 27.0691 156.698 30.1001 156.698 36.7569C156.698 47.0789 156.708 47.2372 157.253 49.159C157.382 49.6544 157.769 50.5955 158.086 51.2592C159.91 55.0035 163.319 57.6683 167.373 58.5399C168.275 58.7283 168.731 58.7678 170.277 58.7678C171.426 58.7678 172.327 58.7183 172.706 58.6389C173.944 58.3618 175.291 57.8962 176.312 57.3711C180.406 55.2909 183.18 51.2294 183.656 46.6331C183.718 46.0089 183.756 42.0467 183.756 36.2321C183.756 27.1086 183.768 26.8214 183.954 26.1973C185.045 22.6709 189.653 21.5912 192.152 24.2855C192.815 24.9987 193.321 26.0189 193.471 26.9205C193.608 27.8021 193.608 61.7791 193.471 63.5325C193.043 68.8619 191.031 73.4977 187.413 77.5395C184.499 80.7787 180.267 83.3147 175.937 84.4242C173.616 85.0183 170.563 85.3058 169.286 85.0581Z"
@@ -81,68 +73,28 @@ const Splash = () => {
             />
           </g>
           <defs>
-            <linearGradient
-              id="paint0_linear_6609_59505"
-              x1="47.7877"
-              y1="14.8729"
-              x2="35.0512"
-              y2="81.2155"
-              gradientUnits="userSpaceOnUse"
-            >
+            <linearGradient id="paint0_linear_6609_59505" x1="47.7877" y1="14.8729" x2="35.0512" y2="81.2155" gradientUnits="userSpaceOnUse">
               <stop stop-color="#942121" />
               <stop offset="1" stop-color="#892727" />
             </linearGradient>
-            <linearGradient
-              id="paint1_linear_6609_59505"
-              x1="47.7897"
-              y1="14.8728"
-              x2="35.0532"
-              y2="81.2154"
-              gradientUnits="userSpaceOnUse"
-            >
+            <linearGradient id="paint1_linear_6609_59505" x1="47.7897" y1="14.8728" x2="35.0532" y2="81.2154" gradientUnits="userSpaceOnUse">
               <stop stop-color="#D03232" />
               <stop offset="1" stop-color="#892727" />
             </linearGradient>
-            <linearGradient
-              id="paint2_linear_6609_59505"
-              x1="33.5105"
-              y1="12.7858"
-              x2="78.2711"
-              y2="150.92"
-              gradientUnits="userSpaceOnUse"
-            >
+            <linearGradient id="paint2_linear_6609_59505" x1="33.5105" y1="12.7858" x2="78.2711" y2="150.92" gradientUnits="userSpaceOnUse">
               <stop stop-color="#EF4444" />
               <stop offset="1" stop-color="#892727" />
             </linearGradient>
-            <linearGradient
-              id="paint3_linear_6609_59505"
-              x1="47.786"
-              y1="14.8728"
-              x2="35.0495"
-              y2="81.2154"
-              gradientUnits="userSpaceOnUse"
-            >
+            <linearGradient id="paint3_linear_6609_59505" x1="47.786" y1="14.8728" x2="35.0495" y2="81.2154" gradientUnits="userSpaceOnUse">
               <stop stop-color="#D03232" />
               <stop offset="1" stop-color="#892727" />
             </linearGradient>
-            <linearGradient
-              id="paint4_linear_6609_59505"
-              x1="47.7892"
-              y1="14.8729"
-              x2="35.0527"
-              y2="81.2155"
-              gradientUnits="userSpaceOnUse"
-            >
+            <linearGradient id="paint4_linear_6609_59505" x1="47.7892" y1="14.8729" x2="35.0527" y2="81.2155" gradientUnits="userSpaceOnUse">
               <stop stop-color="#942121" />
               <stop offset="1" stop-color="#892727" />
             </linearGradient>
             <clipPath id="clip0_6609_59505">
-              <rect
-                width="300"
-                height="85.7944"
-                fill="white"
-                transform="translate(0 0.929199)"
-              />
+              <rect width="300" height="85.7944" fill="white" transform="translate(0 0.929199)" />
             </clipPath>
           </defs>
         </svg>

@@ -1,4 +1,4 @@
-import React from "react";
+// import React from "react";
 import ReactDOM from "react-dom/client";
 import { Routes, Route, BrowserRouter } from "react-router-dom";
 
@@ -41,19 +41,22 @@ import Store from "./pages/main/Store";
 import Library from "./pages/main/Library";
 import GameOverview from "./components/store/Gameoverview";
 
-import Wallet from "./pages/wallet";
+import Wallet from "./pages/wallet/index";
 import WalletSendSXP from "./pages/wallet/WalletSendSXP";
 import WalletVote from "./pages/wallet/WalletVote";
 import WalletBuyCrypto from "./pages/wallet/WalletBuyCrypto";
 import WalletPaymentMethod from "./pages/wallet/WalletPaymentMethod";
 import WalletPaymentCard from "./pages/wallet/WalletPaymentCard";
 import WalletBuyGame from "./pages/wallet/WalletBuyGame";
+import WalletD53Transaction from "./pages/wallet/WalletD53Transaction";
 
+import { AuthProvider } from "./providers/AuthProvider";
 import { TrayProvider } from "./providers/TrayProvider";
 import { FullscreenProvider } from "./providers/FullscreenProvider";
 import { Provider as StoreProvider } from "react-redux";
-import ChatProvider from "./pages/chat/Chatprovider";
-import { AuthProvider } from "./providers/AuthProvider";
+import ChatProvider from "./providers/Chatprovider";
+import AlertProvider from "./providers/AlertProvider";
+import { SocketProvider } from "./providers/SocketProvider";
 
 import store from "./store";
 
@@ -68,153 +71,76 @@ import "./locale/i18n";
 
 import { Buffer } from "buffer";
 import { NotificationProvider } from "./providers/NotificationProvider";
+import TransactionProvider from "./providers/TransactionProvider";
 
 window.Buffer = Buffer;
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
-  <React.StrictMode>
-    <StoreProvider store={store}>
-      <FullscreenProvider>
-        <BrowserRouter>
-          <TrayProvider>
-            <NotificationProvider>
-              <Routes>
+  // <React.StrictMode>
+  <StoreProvider store={store}>
+    <FullscreenProvider>
+      <BrowserRouter>
+        <TrayProvider>
+          <NotificationProvider>
+            <Routes>
+              <Route path="/" element={<TransactionProvider />}>
                 <Route path="/" element={<Splash />} />
                 <Route path="/get-started" element={<GetStarted />} />
                 <Route path="/start" element={<Start />} />
-                <Route
-                  path="/non-custodial/signup/1"
-                  element={<NonCustodialSignUp1 />}
-                />
-                <Route
-                  path="/non-custodial/signup/2"
-                  element={<NonCustodialSignUp2 />}
-                />
-                <Route
-                  path="/non-custodial/signup/3"
-                  element={<NonCustodialSignUp3 />}
-                />
-                <Route
-                  path="/non-custodial/signup/4"
-                  element={<NonCustodialSignUp4 />}
-                />
-                <Route
-                  path="/non-custodial/login/1"
-                  element={<NonCustodialLogIn1 />}
-                />
-                <Route
-                  path="/non-custodial/login/2"
-                  element={<NonCustodialLogIn2 />}
-                />
-                <Route
-                  path="/non-custodial/reset/1"
-                  element={<NonCustodialReset1 />}
-                />
-                <Route
-                  path="/non-custodial/reset/2"
-                  element={<NonCustodialReset2 />}
-                />
-                <Route
-                  path="/non-custodial/import/1"
-                  element={<NonCustodialImport1 />}
-                />
-                <Route
-                  path="/non-custodial/import/2"
-                  element={<NonCustodialImport2 />}
-                />
-                <Route
-                  path="/non-custodial/import/3"
-                  element={<NonCustodialImport3 />}
-                />
-                <Route
-                  path="/non-custodial/import/4"
-                  element={<NonCustodialImport4 />}
-                />
-                <Route
-                  path="/custodial/signup/1"
-                  element={<CustodialSignUp1 />}
-                />
-                <Route
-                  path="/custodial/signup/1/verify-email"
-                  element={<CustodialSignUp1VerifyEmail />}
-                />
-                <Route
-                  path="/custodial/signup/2"
-                  element={<CustodialSignUp2 />}
-                />
-                <Route
-                  path="/custodial/signup/3"
-                  element={<CustodialSignUp3 />}
-                />
-                <Route
-                  path="/custodial/login/1"
-                  element={<CustodialLogin1 />}
-                />
-                <Route
-                  path="/custodial/login/2"
-                  element={<CustodialLogin2 />}
-                />
-                <Route
-                  path="/custodial/reset/1"
-                  element={<CustodialReset1 />}
-                />
-                <Route
-                  path="/custodial/reset/1/reset-link"
-                  element={<CustodialReset1ResetLink />}
-                />
-                <Route
-                  path="/custodial/reset/2"
-                  element={<CustodialReset2 />}
-                />
-                <Route
-                  path="/custodial/reset/3"
-                  element={<CustodialReset3 />}
-                />
-                <Route
-                  path="/confirm-information"
-                  element={<ConfirmInformation />}
-                />
-                <Route element={<AuthProvider />}>
+                <Route path="/non-custodial/signup/1" element={<NonCustodialSignUp1 />} />
+                <Route path="/non-custodial/signup/2" element={<NonCustodialSignUp2 />} />
+                <Route path="/non-custodial/signup/3" element={<NonCustodialSignUp3 />} />
+                <Route path="/non-custodial/signup/4" element={<NonCustodialSignUp4 />} />
+                <Route path="/non-custodial/login/1" element={<NonCustodialLogIn1 />} />
+                <Route path="/non-custodial/login/2" element={<NonCustodialLogIn2 />} />
+                <Route path="/non-custodial/reset/1" element={<NonCustodialReset1 />} />
+                <Route path="/non-custodial/reset/2" element={<NonCustodialReset2 />} />
+                <Route path="/non-custodial/import/1" element={<NonCustodialImport1 />} />
+                <Route path="/non-custodial/import/2" element={<NonCustodialImport2 />} />
+                <Route path="/non-custodial/import/3" element={<NonCustodialImport3 />} />
+                <Route path="/non-custodial/import/4" element={<NonCustodialImport4 />} />
+                <Route path="/custodial/signup/1" element={<CustodialSignUp1 />} />
+                <Route path="/custodial/signup/1/verify-email" element={<CustodialSignUp1VerifyEmail />} />
+                <Route path="/custodial/signup/2" element={<CustodialSignUp2 />} />
+                <Route path="/custodial/signup/3" element={<CustodialSignUp3 />} />
+                <Route path="/custodial/login/1" element={<CustodialLogin1 />} />
+                <Route path="/custodial/login/2" element={<CustodialLogin2 />} />
+                <Route path="/custodial/reset/1" element={<CustodialReset1 />} />
+                <Route path="/custodial/reset/1/reset-link" element={<CustodialReset1ResetLink />} />
+                <Route path="/custodial/reset/2" element={<CustodialReset2 />} />
+                <Route path="/custodial/reset/3" element={<CustodialReset3 />} />
+                <Route path="/confirm-information" element={<ConfirmInformation />} />
+                <Route path="/" element={<SocketProvider />}>
                   <Route path="/" element={<ChatProvider />}>
-                    <Route path="/" element={<Layout />}>
-                      <Route path="/wallet" element={<Wallet />} />
-                      <Route
-                        path="/wallet/send-sxp"
-                        element={<WalletSendSXP />}
-                      />
-                      <Route path="/wallet/vote" element={<WalletVote />} />
-                      <Route
-                        path="/wallet/buy-crypto"
-                        element={<WalletBuyCrypto />}
-                      />
-                      <Route
-                        path="/wallet/payment-method"
-                        element={<WalletPaymentMethod />}
-                      />
-                      <Route
-                        path="/wallet/payment-card"
-                        element={<WalletPaymentCard />}
-                      />
-                      <Route
-                        path="/wallet/buy-game"
-                        element={<WalletBuyGame />}
-                      />
-
-                      <Route path="/home" element={<Homepage />} />
-                      <Route path="/store" element={<Store />} />
-                      <Route path="/store/:gameid" element={<GameOverview />} />
-                      <Route path="/library" element={<Library />} />
-                    </Route>
-                    <Route path="/" element={<Layoutchat />}>
-                      <Route path="/chat" element={<Chatroom />} />
+                    <Route path="/" element={<AlertProvider />}>
+                      <Route path="/d53-transaction" element={<WalletD53Transaction />} />
+                      <Route element={<AuthProvider />}>
+                        <Route path="/" element={<Layout />}>
+                          <Route path="/wallet" element={<Wallet />} />
+                          <Route path="/wallet/send-sxp" element={<WalletSendSXP />} />
+                          <Route path="/wallet/vote" element={<WalletVote />} />
+                          <Route path="/wallet/buy-crypto" element={<WalletBuyCrypto />} />
+                          <Route path="/wallet/payment-method" element={<WalletPaymentMethod />} />
+                          <Route path="/wallet/payment-card" element={<WalletPaymentCard />} />
+                          <Route path="/wallet/buy-game" element={<WalletBuyGame />} />
+                          <Route path="/home" element={<Homepage />} />
+                          <Route path="/store" element={<Store />} />
+                          <Route path="/store/:gameid" element={<GameOverview />} />
+                          <Route path="/library" element={<Library />} />
+                        </Route>
+                        <Route path="/" element={<Layoutchat />}>
+                          <Route path="/chat" element={<Chatroom />} />
+                        </Route>
+                      </Route>
                     </Route>
                   </Route>
                 </Route>
-              </Routes>
-            </NotificationProvider>
-          </TrayProvider>
-        </BrowserRouter>
-      </FullscreenProvider>
-    </StoreProvider>
-  </React.StrictMode>
+              </Route>
+            </Routes>
+          </NotificationProvider>
+        </TrayProvider>
+      </BrowserRouter>
+    </FullscreenProvider>
+  </StoreProvider>
+  // </React.StrictMode>
 );

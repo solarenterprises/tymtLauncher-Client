@@ -1,5 +1,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { sendCoin, walletTransaction } from "./CryptoApi";
+import { sendCoin, sendCoinAPI, walletTransaction } from "./CryptoApi";
+import tymtStorage from "../../lib/Storage";
 
 const initialState = {
   transactions: [],
@@ -12,13 +13,12 @@ export interface INotification {
   status: "failed" | "success" | "warning" | "alert" | "message";
   title: string;
   message: string;
+  transactionId?: string;
 }
 
 export const sendCoinAsync = createAsyncThunk("coin/send", sendCoin);
-export const getTransactionsAsync = createAsyncThunk(
-  "wallet/transaction",
-  walletTransaction
-);
+export const sendCoinAPIAsync = createAsyncThunk("coin/sendAPI", sendCoinAPI);
+export const getTransactionsAsync = createAsyncThunk("wallet/transaction", walletTransaction);
 
 export const cryptoSlice = createSlice({
   name: "crypto",
@@ -39,14 +39,24 @@ export const cryptoSlice = createSlice({
       .addCase(sendCoinAsync.fulfilled, (state) => {
         state.pending = false;
         // state.contactdata = action.payload.data;
-        state.msg = "We will contat you as soon as possible";
+        state.msg = "We will contact you as soon as possible";
+      })
+      .addCase(sendCoinAPIAsync.pending, (state) => {
+        state.pending = true;
+      })
+      .addCase(sendCoinAPIAsync.fulfilled, (state) => {
+        state.pending = false;
+        state.msg = "We will contact you as soon as possible";
       })
       .addCase(getTransactionsAsync.pending, (state) => {
         state.pending = true;
       })
       .addCase(getTransactionsAsync.fulfilled, (state, action) => {
         state.pending = false;
-        state.transactions = action.payload;
+        state.transactions = [...state.transactions, ...action.payload];
+        if (action.payload.length === 0) {
+          tymtStorage.set(`loadMoreAvailable`, false);
+        }
         state.msg = "We will contact you as soon as possible";
       });
   },

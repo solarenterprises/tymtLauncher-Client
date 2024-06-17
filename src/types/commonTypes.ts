@@ -9,11 +9,7 @@ export interface propsInputTypes {
   value?: string;
   onChange?: {
     (e: React.ChangeEvent<any>): void;
-    <T_1 = string | React.ChangeEvent<any>>(
-      field: T_1
-    ): T_1 extends React.ChangeEvent<any>
-      ? void
-      : (e: string | React.ChangeEvent<any>) => void;
+    <T_1 = string | React.ChangeEvent<any>>(field: T_1): T_1 extends React.ChangeEvent<any> ? void : (e: string | React.ChangeEvent<any>) => void;
   };
   onBlur?: {
     (e: React.FocusEvent<any, Element>): void;
@@ -24,11 +20,28 @@ export interface propsInputTypes {
   onAddressButtonClick?: () => void;
 }
 
+export interface propsInputPasswordNoTooltipTypes {
+  id: string;
+  label: string;
+  name?: string;
+  setValue?: (data: string) => void;
+  value?: string;
+  onChange?: {
+    (e: React.ChangeEvent<any>): void;
+    <T_1 = string | React.ChangeEvent<any>>(field: T_1): T_1 extends React.ChangeEvent<any> ? void : (e: string | React.ChangeEvent<any>) => void;
+  };
+  onBlur?: {
+    (e: React.FocusEvent<any, Element>): void;
+    <T = any>(fieldOrEvent: T): T extends string ? (e: any) => void : void;
+  };
+  error?: boolean;
+}
+
 export interface propsAlertTypes {
   open: boolean;
   status: string;
   title: string;
-  detail: string;
+  detail: any;
   setOpen: (open: boolean) => void;
   link: string;
 }
