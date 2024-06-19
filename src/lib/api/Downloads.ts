@@ -273,21 +273,18 @@ export async function runGame(game_key: string, serverIp?: string) {
           args = [`--address`, d53_server, `--port`, d53_port, `--launcher_url`, launcherUrl, `--token`, token, `--go`];
           break;
       }
-      await runUrlArgs(url, args);
-    } else {
-      switch (platform) {
-        case "Linux":
-          await runUrlArgs(url, args);
-          break;
-        case "Windows_NT":
-          await runUrlArgs(url, args);
-          break;
-        case "Darwin":
-          await runUrlArgs("open", [url, ...args]);
-          break;
-      }
     }
-
+    switch (platform) {
+      case "Linux":
+        await runUrlArgs(url, args);
+        break;
+      case "Windows_NT":
+        await runUrlArgs(url, args);
+        break;
+      case "Darwin":
+        await runUrlArgs("open", [url, ...args]);
+        break;
+    }
     return true;
   } catch (err) {
     console.error("Failed to runGame: ", err);
