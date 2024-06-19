@@ -20,8 +20,57 @@ use tauri::{ CustomMenuItem, SystemTray, SystemTrayEvent, SystemTrayMenu, System
 
 static APPHANDLE: OnceLock<tauri::AppHandle> = OnceLock::new();
 
+#[cfg(target_family = "unix")]
+fn create_named_mutex(name: &str) -> std::io::Result<std::fs::File> {
+    use std::os::unix::io::AsRawFd;
+    use std::fs::OpenOptions;
+    use nix::fcntl::{ flock, FlockArg };
+
+    let file = OpenOptions::new().write(true).create(true).open(name)?;
+    flock(file.as_raw_fd(), FlockArg::LockExclusiveNonblock).map_err(|e| {
+        match e {
+            nix::Error::Sys(nix::errno::Errno::EWOULDBLOCK) =>
+                std::io::Error::new(std::io::ErrorKind::AlreadyExists, "Mutex already exists"),
+            _ => std::io::Error::new(std::io::ErrorKind::Other, e.to_string()),
+        }
+    })?;
+    Ok(file)
+}
+
+#[cfg(target_family = "windows")]
+fn create_named_mutex(name: &str) -> std::io::Result<()> {
+    use winapi::um::synchapi::CreateMutexA;
+    use winapi::um::errhandlingapi::GetLastError;
+    use winapi::shared::winerror::ERROR_ALREADY_EXISTS;
+
+    let mutex_name = std::ffi::CString::new(name).expect("CString::new failed");
+    let handle = unsafe { CreateMutexA(std::ptr::null_mut(), 0, mutex_name.as_ptr()) };
+
+    if handle.is_null() {
+        return Err(std::io::Error::last_os_error());
+    }
+    if (unsafe { GetLastError() }) == ERROR_ALREADY_EXISTS {
+        return Err(std::io::Error::new(std::io::ErrorKind::AlreadyExists, "Mutex already exists"));
+    }
+    Ok(())
+}
+
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
+    let mutex_name = "tauri_single_instance";
+
+    if cfg!(target_family = "unix") {
+        if create_named_mutex(mutex_name).is_err() {
+            println!("Another instance is already running.");
+            std::process::exit(1);
+        }
+    } else if cfg!(target_family = "windows") {
+        if create_named_mutex(mutex_name).is_err() {
+            println!("Another instance is already running.");
+            std::process::exit(1);
+        }
+    }
+
     let showvisible = CustomMenuItem::new("showVisible".to_string(), "Show tymtLauncher");
     let fullscreen = CustomMenuItem::new("fullscreen".to_string(), "Full-screen Mode  (F11)");
     let games = CustomMenuItem::new("games".to_string(), "Games");

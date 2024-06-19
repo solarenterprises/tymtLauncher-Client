@@ -26,6 +26,7 @@ tokio-tungstenite = "0.23"
 futures-util = "0.3"
 actix-web = "4.5"
 dotenv = "0.15"
+winapi = "0.3"
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem

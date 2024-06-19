@@ -5062,6 +5062,7 @@ dependencies = [
  "tauri-plugin-fs-watch",
  "tokio",
  "tokio-tungstenite",
+ "winapi",
  "zip",
  "zip-extensions",
 ]
