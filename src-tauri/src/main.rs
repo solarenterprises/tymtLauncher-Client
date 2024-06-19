@@ -991,22 +991,14 @@ async fn download_and_unzip_macos(
 
     let final_location = app_dir.to_string() + &target;
     println!("{}", final_location);
-    let _ = zip_extensions::read::zip_extract(
-        &PathBuf::from(path),
-        &PathBuf::from(final_location.clone())
-    );
-    println!("checking for folders");
 
-    let count = fs::read_dir(final_location.clone()).unwrap().count();
-    println!("found {} folders", count);
-    if count == 1 {
-        for file in fs::read_dir(final_location.clone()).unwrap() {
-            if fs::metadata(file.as_ref().unwrap().path()).unwrap().is_dir() {
-                let _ = copy_dir_all(file.as_ref().unwrap().path(), final_location.clone());
-                fs::remove_dir_all(file.as_ref().unwrap().path()).unwrap();
-            }
-        }
-    }
+    Command::new("ditto")
+        .arg("-x")
+        .arg("-k")
+        .arg(path)
+        .arg(final_location)
+        .status()
+        .expect("Failed to ditto unzip!");
 
     let _ = fs::remove_file(&path);
 
@@ -1156,7 +1148,7 @@ fn run_url_args(url: String, args: Vec<String>) {
         println!("{}", arg);
     }
 
-    let path = if url == "open" { Path::new(&args[0]) } else { Path::new(&url) };
+    let path = if url == "open" { Path::new(&args[1]) } else { Path::new(&url) };
     let working_directory = match path.parent() {
         Some(dir) => dir,
         None => {

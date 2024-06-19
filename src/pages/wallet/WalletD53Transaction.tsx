@@ -296,6 +296,7 @@ const WalletD53Transaction = () => {
       setBlur(true);
       const json_data: ISendTransactionReq = JSON.parse(event.payload as string);
       setJsonData(json_data);
+      // Validation
       let isValid: boolean = await TransactionProviderAPI.validateTransaction(json_data);
       if (!isValid) {
         invoke("hide_transaction_window");
@@ -304,28 +305,45 @@ const WalletD53Transaction = () => {
         } catch (err) {
           console.error("Failed to update transaction status as fail: ", err);
         }
-
         return;
       }
-      // await switchChain(chain);
-      if (chainStoreRef.current.chain.name !== TransactionProviderAPI.getChainName(json_data.chain)) {
-        console.log(chainStore.chain.name, TransactionProviderAPI.getChainName(json_data.chain));
-        setSwitchChainModalOpen(true);
-      } else {
-        switchChain(json_data);
-      }
-      setChain(json_data.chain);
-      setTo(json_data.transfers[0].to);
-      const totalAmount: number = json_data.transfers.reduce((sum, transfer) => {
-        return (sum + Number(transfer.amount)) as number;
-      }, 0);
-      setAmount(numeral(totalAmount).format("0,0.00"));
-      setNote(json_data.note);
-      setMemo(json_data.memo ?? "");
-      setToken(await TransactionProviderAPI.getToken(json_data));
-      setExpired(false);
-      setTimeLeft(120);
-      setBlur(false);
+      // Refresh the balance
+      dispatch(
+        refreshBalancesAsync({
+          _multiWalletStore: multiWalletRef.current,
+        })
+      )
+        .then(() =>
+          dispatch(refreshCurrencyAsync())
+            .then(async () => {
+              if (chainStoreRef.current.chain.name !== TransactionProviderAPI.getChainName(json_data.chain)) {
+                console.log(chainStore.chain.name, TransactionProviderAPI.getChainName(json_data.chain));
+                setSwitchChainModalOpen(true);
+              } else {
+                switchChain(json_data);
+              }
+              setChain(json_data.chain);
+              setTo(json_data.transfers[0].to);
+              const totalAmount: number = json_data.transfers.reduce((sum, transfer) => {
+                return (sum + Number(transfer.amount)) as number;
+              }, 0);
+              setAmount(numeral(totalAmount).format("0,0.00"));
+              setNote(json_data.note);
+              setMemo(json_data.memo ?? "");
+              setToken(await TransactionProviderAPI.getToken(json_data));
+              setExpired(false);
+              setTimeLeft(120);
+              setBlur(false);
+            })
+            .catch((err) => {
+              console.error("Failed to refreshCurrencyAsync: ", err);
+              setBlur(false);
+            })
+        )
+        .catch((err) => {
+          console.error("Failed to refreshBalancesAsync: ", err);
+          setBlur(false);
+        });
     });
 
     return () => {
@@ -447,7 +465,7 @@ const WalletD53Transaction = () => {
             />
             <Stack direction={"row"} justifyContent={"space-between"}>
               <Box className={"fs-16-regular light"}>{t("wal-69_memo")}</Box>
-              <Box className={"fs-16-regular white t-right"} sx={{ textWrap: "wrap" }}>
+              <Box className={"fs-16-regular white t-right"} sx={{ textOverflow: "ellipsis", whiteSpace: "normal", wordWrap: "anywhere" }}>
                 {memo}
               </Box>
             </Stack>

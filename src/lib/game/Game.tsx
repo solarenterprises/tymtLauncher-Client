@@ -129,7 +129,7 @@ const Games: { [key: string]: Game } = {
         prod: {
           url: "https://github.com/solarenterprises/d53-minetest/releases/download/5.9.0.2/District53_5.9.0.2_mac_x64_86.zip",
           type: "zip",
-          exePath: "/District53",
+          exePath: "/District53.app",
         },
         dev: {
           url: "https://dev.district53.io:2000/District53_5.9.0.2_mac_x64_86.zip",
@@ -142,7 +142,7 @@ const Games: { [key: string]: Game } = {
         prod: {
           url: "https://github.com/solarenterprises/d53-minetest/releases/download/5.9.0.2/District53_5.9.0.2_mac_arm.zip",
           type: "zip",
-          exePath: "/District53",
+          exePath: "/District53.app",
         },
         dev: {
           url: "https://dev.district53.io:2000/District53_5.9.0.2_mac_arm.zip",
@@ -222,7 +222,7 @@ const Games: { [key: string]: Game } = {
       },
       macosArm: {
         prod: {
-          url: "https://download.veloren.net/latest/macos/x86_64/nightly",
+          url: "https://download.veloren.net/latest/macos/aarch64/nightly",
           type: "zip",
           exePath: "/veloren-voxygen",
         },

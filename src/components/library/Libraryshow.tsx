@@ -10,6 +10,7 @@ import { isInstalled } from "../../lib/api/Downloads";
 import { useNavigate } from "react-router-dom";
 import solar from "../../assets/chains/solar.svg";
 import Loading from "../Loading";
+import AnimatedComponent from "../AnimatedComponent";
 
 const Libraryshow = () => {
   const { t } = useTranslation();
@@ -55,69 +56,77 @@ const Libraryshow = () => {
         {data.mode === 0 &&
           installList.map((rowKey) => (
             <Grid item>
-              <Box className="card_freegame_container" onClick={() => navigate(`/store/${rowKey}`)}>
-                <Stack>
-                  <img src={Games[rowKey].thumbnail} width={"100%"} height={"180px"} style={{ borderRadius: "16px" }} />
-                </Stack>
-                <Box padding={"16px 14px 14px"}>
-                  <Box className={"fs-20-regular white"}>{Games[rowKey].name}</Box>
-                  <Grid item xs={12} container mt={"8px"} spacing={"8px"}>
-                    {Games[rowKey].tabs.map((tab) => (
-                      <Grid item>
-                        <Box className="fs-14-regular white card_genre_label">{tab}</Box>
-                      </Grid>
-                    ))}
-                  </Grid>
-                  <Stack direction={"row"} alignItems={"center"} spacing={1} mt={"16px"}>
-                    <Box component={"img"} width={"20px"} height={"20px"} src={solar} />
-                    <Box className={"fs-16-regular white"}>0.0</Box>
+              <AnimatedComponent>
+                <Box className="card_freegame_container" onClick={() => navigate(`/store/${rowKey}`)}>
+                  <Stack>
+                    <img src={Games[rowKey].thumbnail} width={"100%"} height={"180px"} style={{ borderRadius: "16px" }} />
                   </Stack>
+                  <Box padding={"16px 14px 14px"}>
+                    <Box className={"fs-20-regular white"}>{Games[rowKey].name}</Box>
+                    <Grid item xs={12} container mt={"8px"} spacing={"8px"}>
+                      {Games[rowKey].tabs.map((tab) => (
+                        <Grid item>
+                          <Box className="fs-14-regular white card_genre_label">{tab}</Box>
+                        </Grid>
+                      ))}
+                    </Grid>
+                    <Stack direction={"row"} alignItems={"center"} spacing={1} mt={"16px"}>
+                      <Box component={"img"} width={"20px"} height={"20px"} src={solar} />
+                      <Box className={"fs-16-regular white"}>0.0</Box>
+                    </Stack>
+                  </Box>
                 </Box>
-              </Box>
+              </AnimatedComponent>
             </Grid>
           ))}
         {data.mode === 0 && installList.length === 0 && (
           <Grid item xs={12} container justifyContent={"center"} marginTop={"32px"}>
-            <Stack flexDirection={"column"} justifyContent={"center"}>
-              <img src={nogames} />
-              <Box className={"fs-18-regular white"} sx={{ alignSelf: "center", marginTop: "24px" }}>
-                {t("sto-36_no-games")}
-              </Box>
-            </Stack>
+            <AnimatedComponent>
+              <Stack flexDirection={"column"} justifyContent={"center"}>
+                <img src={nogames} />
+                <Box className={"fs-18-regular white"} sx={{ alignSelf: "center", marginTop: "24px" }}>
+                  {t("sto-36_no-games")}
+                </Box>
+              </Stack>
+            </AnimatedComponent>
           </Grid>
         )}
         {data.mode === 2 &&
           uninstallList.map((rowKey) => (
             <Grid item>
-              <Box className="card_freegame_container" onClick={() => navigate(`/store/${rowKey}`)}>
-                <Stack>
-                  <img src={Games[rowKey].thumbnail} width={"100%"} height={"180px"} style={{ borderRadius: "16px" }} />
-                </Stack>
-                <Box padding={"16px 14px 14px"}>
-                  <Box className={"fs-20-regular white"}>{Games[rowKey].name}</Box>
-                  <Grid item xs={12} container mt={"8px"} spacing={"8px"}>
-                    {Games[rowKey].tabs.map((tab) => (
-                      <Grid item>
-                        <Box className="fs-14-regular white card_genre_label">{tab}</Box>
-                      </Grid>
-                    ))}
-                  </Grid>
-                  <Stack direction={"row"} alignItems={"center"} spacing={1} mt={"16px"}>
-                    <Box component={"img"} width={"20px"} height={"20px"} src={solar} />
-                    <Box className={"fs-16-regular white"}>0.0</Box>
+              <AnimatedComponent>
+                <Box className="card_freegame_container" onClick={() => navigate(`/store/${rowKey}`)}>
+                  <Stack>
+                    <img src={Games[rowKey].thumbnail} width={"100%"} height={"180px"} style={{ borderRadius: "16px" }} />
                   </Stack>
+                  <Box padding={"16px 14px 14px"}>
+                    <Box className={"fs-20-regular white"}>{Games[rowKey].name}</Box>
+                    <Grid item xs={12} container mt={"8px"} spacing={"8px"}>
+                      {Games[rowKey].tabs.map((tab) => (
+                        <Grid item>
+                          <Box className="fs-14-regular white card_genre_label">{tab}</Box>
+                        </Grid>
+                      ))}
+                    </Grid>
+                    <Stack direction={"row"} alignItems={"center"} spacing={1} mt={"16px"}>
+                      <Box component={"img"} width={"20px"} height={"20px"} src={solar} />
+                      <Box className={"fs-16-regular white"}>0.0</Box>
+                    </Stack>
+                  </Box>
                 </Box>
-              </Box>
+              </AnimatedComponent>
             </Grid>
           ))}
         {data.mode === 2 && uninstallList.length === 0 && (
           <Grid item xs={12} container justifyContent={"center"} marginTop={"32px"}>
-            <Stack flexDirection={"column"} justifyContent={"center"}>
-              <img src={nogames} />
-              <Box className={"fs-18-regular white"} sx={{ alignSelf: "center", marginTop: "24px" }}>
-                {t("sto-36_no-games")}
-              </Box>
-            </Stack>
+            <AnimatedComponent>
+              <Stack flexDirection={"column"} justifyContent={"center"}>
+                <img src={nogames} />
+                <Box className={"fs-18-regular white"} sx={{ alignSelf: "center", marginTop: "24px" }}>
+                  {t("sto-36_no-games")}
+                </Box>
+              </Stack>
+            </AnimatedComponent>
           </Grid>
         )}
       </Grid>

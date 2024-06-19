@@ -3,7 +3,6 @@ import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { Grid, Stack, Box, Tooltip, IconButton, Button } from "@mui/material";
-import { AnimatePresence, motion } from "framer-motion";
 import WalletStyle from "../../styles/WalletStyles";
 import sendIcon from "../../assets/wallet/send-icon.svg";
 import receiveIcon from "../../assets/wallet/receive-icon.svg";
@@ -26,6 +25,7 @@ import { walletType } from "../../types/settingTypes";
 import { selectWallet, setWallet } from "../../features/settings/WalletSlice";
 import { getTransactionsAsync, setTransasctions } from "../../features/wallet/CryptoSlice";
 import numeral from "numeral";
+import AnimatedComponent from "../../components/AnimatedComponent";
 
 const order = ["Solar", "Binance", "Ethereum", "Bitcoin", "Solana", "Polygon", "Avalanche", "Arbitrum", "Optimism"];
 
@@ -142,8 +142,8 @@ const Wallet = () => {
   );
 
   return (
-    <AnimatePresence mode="wait">
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+    <>
+      <AnimatedComponent threshold={0}>
         <div>
           <Grid container>
             <Grid item xs={12} className="p-lr-50 p-tb-20">
@@ -294,9 +294,9 @@ const Wallet = () => {
             </Grid>
           </Grid>
         </div>
-        <ComingModal open={comingSoon} setOpen={setComingSoon} />
-      </motion.div>
-    </AnimatePresence>
+      </AnimatedComponent>
+      <ComingModal open={comingSoon} setOpen={setComingSoon} />
+    </>
   );
 };
 
