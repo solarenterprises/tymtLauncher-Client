@@ -1165,7 +1165,7 @@ fn run_url_args(url: String, args: Vec<String>) {
         println!("{}", arg);
     }
 
-    let path = if url == "open" { Path::new(&args[0]) } else { Path::new(&url) };
+    let path = if url == "open" { Path::new(&args[1]) } else { Path::new(&url) };
     let working_directory = match path.parent() {
         Some(dir) => dir,
         None => {
