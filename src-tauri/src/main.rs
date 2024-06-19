@@ -21,10 +21,10 @@ use tauri::{ CustomMenuItem, SystemTray, SystemTrayEvent, SystemTrayMenu, System
 static APPHANDLE: OnceLock<tauri::AppHandle> = OnceLock::new();
 
 #[cfg(target_family = "unix")]
-fn create_named_mutex(name: &str) -> std::io::Result<UnixListener> {
+fn create_named_mutex(name: &str) -> std::io::Result<std::os::unix::net::UnixListener> {
     let socket_path = Path::new(name);
     if socket_path.exists() {
-        match UnixStream::connect(socket_path) {
+        match std::os::unix::net::UnixStream::connect(socket_path) {
             Ok(mut stream) => {
                 stream.write_all(b"ping")?;
                 return Err(io::Error::new(io::ErrorKind::AlreadyExists, "Socket already in use"));
@@ -35,7 +35,7 @@ fn create_named_mutex(name: &str) -> std::io::Result<UnixListener> {
             }
         }
     }
-    UnixListener::bind(socket_path)
+    std::os::unix::net::UnixListener::bind(socket_path)
 }
 
 #[cfg(target_family = "windows")]
