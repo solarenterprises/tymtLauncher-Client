@@ -1000,23 +1000,6 @@ async fn download_and_unzip_macos(
         .status()
         .expect("Failed to ditto unzip!");
 
-    // let _ = zip_extensions::read::zip_extract(
-    //     &PathBuf::from(path),
-    //     &PathBuf::from(final_location.clone())
-    // );
-    // println!("checking for folders");
-
-    // let count = fs::read_dir(final_location.clone()).unwrap().count();
-    // println!("found {} folders", count);
-    // if count == 1 {
-    //     for file in fs::read_dir(final_location.clone()).unwrap() {
-    //         if fs::metadata(file.as_ref().unwrap().path()).unwrap().is_dir() {
-    //             let _ = copy_dir_all(file.as_ref().unwrap().path(), final_location.clone());
-    //             fs::remove_dir_all(file.as_ref().unwrap().path()).unwrap();
-    //         }
-    //     }
-    // }
-
     let _ = fs::remove_file(&path);
 
     let exePath = app_dir.to_string() + &target + &exeLocation;
