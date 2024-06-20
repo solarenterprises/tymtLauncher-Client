@@ -7,20 +7,27 @@ import { getAccount } from "../features/account/AccountSlice";
 import { fetchContactListAsync } from "../features/chat/ContactListSlice";
 import { fetchFriendListAsync } from "../features/chat/FriendListSlice";
 import { fetchBlockListAsync } from "../features/chat/BlockListSlice";
-import { getMultiWallet, refreshBalancesAsync } from "../features/wallet/MultiWalletSlice";
+import { getMultiWallet, refreshChainBalanceAsync } from "../features/wallet/MultiWalletSlice";
 import { refreshCurrencyAsync } from "../features/wallet/CurrencySlice";
-import { multiWalletType } from "../types/walletTypes";
+import { IChain, multiWalletType } from "../types/walletTypes";
+import { getChain } from "../features/wallet/ChainSlice";
 
 const AlertProvider = () => {
   const dispatch = useDispatch<AppDispatch>();
   const accountStore: accountType = useSelector(getAccount);
   const walletStore: multiWalletType = useSelector(getMultiWallet);
+  const chainStore: IChain = useSelector(getChain);
 
   const walletStoreRef = useRef(walletStore);
+  const chainStoreRef = useRef(chainStore);
 
   useEffect(() => {
     walletStoreRef.current = walletStore;
   }, [walletStore]);
+
+  useEffect(() => {
+    chainStoreRef.current = chainStore;
+  }, [chainStore]);
 
   useEffect(() => {
     let id: NodeJS.Timeout;
@@ -32,10 +39,19 @@ const AlertProvider = () => {
       if (!id) {
         id = setInterval(async () => {
           dispatch(
-            refreshBalancesAsync({
+            refreshChainBalanceAsync({
               _multiWalletStore: walletStoreRef.current,
+              _chain: chainStoreRef.current.chain.name,
             })
-          ).then(() => dispatch(refreshCurrencyAsync()));
+          )
+            .then(() =>
+              dispatch(refreshCurrencyAsync()).catch((err) => {
+                console.error("Failed to refreshCurrencyAsync: ", err);
+              })
+            )
+            .catch((err) => {
+              console.error("Failed to refreshChainBalanceAsync: ", err);
+            });
         }, 60 * 1e3);
       }
     } else {
