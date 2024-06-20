@@ -20,8 +20,58 @@ use tauri::{ CustomMenuItem, SystemTray, SystemTrayEvent, SystemTrayMenu, System
 
 static APPHANDLE: OnceLock<tauri::AppHandle> = OnceLock::new();
 
+#[cfg(target_family = "unix")]
+fn create_named_mutex(name: &str) -> std::io::Result<std::os::unix::net::UnixListener> {
+    let socket_path = Path::new(name);
+    if socket_path.exists() {
+        match std::os::unix::net::UnixStream::connect(socket_path) {
+            Ok(mut stream) => {
+                stream.write_all(b"ping")?;
+                return Err(io::Error::new(io::ErrorKind::AlreadyExists, "Socket already in use"));
+            }
+            Err(_) => {
+                // Previous instance did not clean up socket, remove it
+                std::fs::remove_file(socket_path)?;
+            }
+        }
+    }
+    std::os::unix::net::UnixListener::bind(socket_path)
+}
+
+#[cfg(target_family = "windows")]
+fn create_named_mutex(name: &str) -> std::io::Result<()> {
+    use winapi::um::synchapi::CreateMutexA;
+    use winapi::um::errhandlingapi::GetLastError;
+    use winapi::shared::winerror::ERROR_ALREADY_EXISTS;
+
+    let mutex_name = std::ffi::CString::new(name).expect("CString::new failed");
+    let handle = unsafe { CreateMutexA(std::ptr::null_mut(), 0, mutex_name.as_ptr()) };
+
+    if handle.is_null() {
+        return Err(std::io::Error::last_os_error());
+    }
+    if (unsafe { GetLastError() }) == ERROR_ALREADY_EXISTS {
+        return Err(std::io::Error::new(std::io::ErrorKind::AlreadyExists, "Mutex already exists"));
+    }
+    Ok(())
+}
+
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
+    let mutex_name = "tauri_single_instance";
+
+    if cfg!(target_family = "unix") {
+        if create_named_mutex(mutex_name).is_err() {
+            println!("Another instance is already running.");
+            std::process::exit(1);
+        }
+    } else if cfg!(target_family = "windows") {
+        if create_named_mutex(mutex_name).is_err() {
+            println!("Another instance is already running.");
+            std::process::exit(1);
+        }
+    }
+
     let showvisible = CustomMenuItem::new("showVisible".to_string(), "Show tymtLauncher");
     let fullscreen = CustomMenuItem::new("fullscreen".to_string(), "Full-screen Mode  (F11)");
     let games = CustomMenuItem::new("games".to_string(), "Games");
@@ -97,7 +147,7 @@ async fn main() -> std::io::Result<()> {
                 }
                 SystemTrayEvent::DoubleClick { position: _, size: _, .. } => {
                     println!("system tray received a double click");
-                    let window = app.get_window("tymtLauncher").unwrap();
+                    let window = app.get_window("tymtLauncherDebug").unwrap();
                     window.show().unwrap();
                     window.set_focus().unwrap();
                 }
@@ -107,17 +157,17 @@ async fn main() -> std::io::Result<()> {
                             std::process::exit(0);
                         }
                         "hide" => {
-                            let window = app.get_window("tymtLauncher").unwrap();
+                            let window = app.get_window("tymtLauncherDebug").unwrap();
                             window.hide().unwrap();
                         }
                         "showVisible" => {
                             println!("showVisible received a left click");
-                            let window = app.get_window("tymtLauncher").unwrap();
+                            let window = app.get_window("tymtLauncherDebug").unwrap();
                             window.show().unwrap();
                             window.set_focus().unwrap();
                         }
                         "fullscreen" => {
-                            let window = app.get_window("tymtLauncher").unwrap();
+                            let window = app.get_window("tymtLauncherDebug").unwrap();
                             window.show().unwrap();
                             window.set_focus().unwrap();
                             window
@@ -126,13 +176,13 @@ async fn main() -> std::io::Result<()> {
                         }
                         "wallet" => {
                             app.emit_all("wallet", "wallet").expect("failed to emit event wallet");
-                            let window = app.get_window("tymtLauncher").unwrap();
+                            let window = app.get_window("tymtLauncherDebug").unwrap();
                             window.show().unwrap();
                             window.set_focus().unwrap();
                         }
                         "games" => {
                             app.emit_all("games", "games").expect("failed to emit event games");
-                            let window = app.get_window("tymtLauncher").unwrap();
+                            let window = app.get_window("tymtLauncherDebug").unwrap();
                             window.show().unwrap();
                             window.set_focus().unwrap();
                         }
@@ -145,7 +195,7 @@ async fn main() -> std::io::Result<()> {
                             app.emit_all("signout", "signout").expect(
                                 "failed to emit event signout"
                             );
-                            let window = app.get_window("tymtLauncher").unwrap();
+                            let window = app.get_window("tymtLauncherDebug").unwrap();
                             window.show().unwrap();
                             window.set_focus().unwrap();
                         }
@@ -486,7 +536,7 @@ async fn main() -> std::io::Result<()> {
 
                 match
                     client
-                        .post("https://tymt.com/api/orders/request-new-order")
+                        .post("https://dev.tymt.com/api/orders/request-new-order")
                         .header(header::CONTENT_TYPE, "application/json")
                         .header(
                             "x-token",
@@ -537,7 +587,7 @@ async fn main() -> std::io::Result<()> {
 
                 match
                     client
-                        .get(format!("https://tymt.com/api/orders/orders/{}", request_param.id))
+                        .get(format!("https://dev.tymt.com/api/orders/orders/{}", request_param.id))
                         .send().await
                 {
                     Ok(response) =>
@@ -592,7 +642,7 @@ async fn main() -> std::io::Result<()> {
             Ok(())
         })
         .run(tauri::generate_context!())
-        .expect("error while running tymtLauncher");
+        .expect("error while running tymtLauncherDebug");
 
     Ok(())
 }
@@ -672,7 +722,7 @@ async fn download_appimage_linux(
         .expect("Failed to run chmod command");
 
     if !status.success() {
-        eprintln!("Failed to make tymtLauncher.AppImage executable");
+        eprintln!("Failed to make tymtLauncherDebug.AppImage executable");
         return false;
     }
 
@@ -1217,7 +1267,7 @@ fn open_directory(path: &str) {
 fn get_machine_id() -> Result<String, String> {
     let mut builder = IdBuilder::new(Encryption::SHA256);
     builder.add_component(HWIDComponent::SystemID);
-    let hwid = builder.build("tymtLauncher").map_err(|err| err.to_string())?;
+    let hwid = builder.build("tymtLauncherDebug").map_err(|err| err.to_string())?;
 
     Ok(hwid)
 }
@@ -1237,12 +1287,12 @@ async fn show_transaction_window(app_handle: tauri::AppHandle) {
         eprintln!("Window 'tymt_d53_transaction' not found");
     }
 
-    if let Some(window_to_hide) = app_handle.get_window("tymtLauncher") {
+    if let Some(window_to_hide) = app_handle.get_window("tymtLauncherDebug") {
         if let Err(e) = window_to_hide.hide() {
-            eprintln!("Failed to hide window 'tymtLauncher': {}", e);
+            eprintln!("Failed to hide window 'tymtLauncherDebug': {}", e);
         }
     } else {
-        eprintln!("Window 'tymtLauncher' not found");
+        eprintln!("Window 'tymtLauncherDebug' not found");
     }
 
     let item_ids = vec![
@@ -1269,12 +1319,12 @@ async fn hide_transaction_window(app_handle: tauri::AppHandle) {
         eprintln!("Window 'tymt_d53_transaction' not found");
     }
 
-    if let Some(window_to_hide) = app_handle.get_window("tymtLauncher") {
+    if let Some(window_to_hide) = app_handle.get_window("tymtLauncherDebug") {
         if let Err(e) = window_to_hide.show() {
-            eprintln!("Failed to show window 'tymtLauncher': {}", e);
+            eprintln!("Failed to show window 'tymtLauncherDebug': {}", e);
         }
     } else {
-        eprintln!("Window 'tymtLauncher' not found");
+        eprintln!("Window 'tymtLauncherDebug' not found");
     }
 
     let item_ids = vec![

@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
-import { getAddressesFromMnemonic, refreshBalances } from "./MultiWalletApi";
+import { getAddressesFromMnemonic, refreshBalances, refreshChainBalance } from "./MultiWalletApi";
 import tymtStorage from "../../lib/Storage";
 import { chains } from "../../consts/contracts";
 import { multiWalletType } from "../../types/walletTypes";
@@ -29,6 +29,7 @@ const initialState = {
 export const getAddressesFromMnemonicAsync = createAsyncThunk("multiWallet/getAddressesFromMnemonic", getAddressesFromMnemonic);
 
 export const refreshBalancesAsync = createAsyncThunk("multiWallet/refreshBalances", refreshBalances);
+export const refreshChainBalanceAsync = createAsyncThunk("multiWallet/refreshChainBalance", refreshChainBalance);
 
 export const multiWalletSlice = createSlice({
   name: "multiWallet",
@@ -59,6 +60,17 @@ export const multiWalletSlice = createSlice({
         state.status = "succeeded";
       })
       .addCase(refreshBalancesAsync.rejected, (state) => {
+        state.status = "failed";
+      })
+      .addCase(refreshChainBalanceAsync.pending, (state) => {
+        state.status = "loading";
+      })
+      .addCase(refreshChainBalanceAsync.fulfilled, (state, action: PayloadAction<any>) => {
+        state.data = action.payload;
+        tymtStorage.set(`multiWallet`, JSON.stringify(state.data));
+        state.status = "succeeded";
+      })
+      .addCase(refreshChainBalanceAsync.rejected, (state) => {
         state.status = "failed";
       });
   },
