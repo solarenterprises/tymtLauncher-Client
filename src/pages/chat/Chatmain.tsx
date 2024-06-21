@@ -27,6 +27,7 @@ import { createFriendAsync, deleteFriendAsync, getFriendList } from "../../featu
 import SwipeableViews from "react-swipeable-views";
 import { useTheme } from "@mui/material/styles";
 import { deleteBlockAsync, getBlockList } from "../../features/chat/BlockListSlice";
+import NewGroupButton from "../../components/chat/NewGroupButton";
 
 const theme = createTheme({
   palette: {
@@ -309,6 +310,7 @@ const Chatmain = ({ view, setView }: propsType) => {
             <SwipeableViews axis={otheme.direction === "rtl" ? "x-reverse" : "x"} index={tab} onChangeIndex={handleChangeIndex} width={"100%"}>
               <TabPanel value={tab} index={0} dir={otheme.direction}>
                 <Box className={classes.scroll_bar}>
+                  <NewGroupButton />
                   {contactListStore?.contacts?.length === 0 && value === "" ? (
                     <>
                       <Grid container sx={{ justifyContent: "center" }}>
