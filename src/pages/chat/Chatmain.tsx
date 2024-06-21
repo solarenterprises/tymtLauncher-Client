@@ -275,7 +275,7 @@ const Chatmain = ({ view, setView }: propsType) => {
                 <Tab
                   label={
                     <Box className={"fs-14-regular white t-center"} sx={{ textTransform: "none" }}>
-                      {t("cha-36_contact")}
+                      {t("cha-41_group")}
                     </Box>
                   }
                   {...a11yProps(0)}
@@ -283,7 +283,7 @@ const Chatmain = ({ view, setView }: propsType) => {
                 <Tab
                   label={
                     <Box className={"fs-14-regular white t-center"} sx={{ textTransform: "none" }}>
-                      {t("cha-37_friend")}
+                      {t("cha-36_contact")}
                     </Box>
                   }
                   {...a11yProps(1)}
@@ -291,10 +291,18 @@ const Chatmain = ({ view, setView }: propsType) => {
                 <Tab
                   label={
                     <Box className={"fs-14-regular white t-center"} sx={{ textTransform: "none" }}>
-                      {t("cha-38_block")}
+                      {t("cha-37_friend")}
                     </Box>
                   }
                   {...a11yProps(2)}
+                />
+                <Tab
+                  label={
+                    <Box className={"fs-14-regular white t-center"} sx={{ textTransform: "none" }}>
+                      {t("cha-38_block")}
+                    </Box>
+                  }
+                  {...a11yProps(3)}
                 />
               </Tabs>
             </ThemeProvider>
@@ -307,7 +315,7 @@ const Chatmain = ({ view, setView }: propsType) => {
                         <img src={nocontact} style={{ marginTop: "40%", display: "block" }}></img>
                       </Grid>
                       <Box className={"fs-20-regular white"} textAlign={"center"}>
-                        {t("cha-2_you-havenot-friends")}
+                        {t("cha-42_you-havenot-groups")}
                       </Box>
                     </>
                   ) : (
@@ -363,6 +371,69 @@ const Chatmain = ({ view, setView }: propsType) => {
                 </Box>
               </TabPanel>
               <TabPanel value={tab} index={1} dir={otheme.direction}>
+                <Box className={classes.scroll_bar}>
+                  {contactListStore?.contacts?.length === 0 && value === "" ? (
+                    <>
+                      <Grid container sx={{ justifyContent: "center" }}>
+                        <img src={nocontact} style={{ marginTop: "40%", display: "block" }}></img>
+                      </Grid>
+                      <Box className={"fs-20-regular white"} textAlign={"center"}>
+                        {t("cha-43_you-havenot-contacts")}
+                      </Box>
+                    </>
+                  ) : (
+                    <>
+                      {(value === "" ? contactListStore?.contacts : searchedresult)?.map((user, index) => {
+                        const count =
+                          value === "" ? alertListStore.unread?.filter((alert) => alert.note.sender === user._id && alert.alertType === "chat").length : 0;
+                        const numberofunreadmessages = count;
+
+                        return (
+                          <Userlist
+                            user={user}
+                            index={index}
+                            numberofunreadmessages={numberofunreadmessages}
+                            setShowContextMenu={setShowContextMenu}
+                            setContextMenuPosition={setContextMenuPosition}
+                            setView={setView}
+                          />
+                        );
+                      })}
+                      {showContextMenu && (
+                        <FRcontextmenu
+                          tab={tab}
+                          value={value}
+                          isClickedBlock={isClickedBlock}
+                          isClickedDelete={isClickedDelete}
+                          isClickedRequest={isClickedRequest}
+                          setIsClickedBlock={setIsClickedBlock}
+                          setOpenBlockModal={setOpenBlockModal}
+                          setShowContextMenu={setShowContextMenu}
+                          setIsClickedDelete={setIsClickedDelete}
+                          setOpenDeleteModal={setOpenDeleteModal}
+                          setOpenRequestModal={setOpenRequestModal}
+                          setIsClickedRequest={setIsClickedRequest}
+                          contextMenuPosition={contextMenuPosition}
+                        />
+                      )}
+                      <BlockModal block={tab !== 2} openBlockModal={openBlockModal} setOpenBlockModal={setOpenBlockModal} roommode={false} />
+                      <DeleteModal
+                        openDeleteModal={openDeleteModal}
+                        setOpenDeleteModal={setOpenDeleteModal}
+                        deleteSelectedUser={deleteSelectedUser}
+                        roommode={false}
+                      />
+                      <RequestModal
+                        openRequestModal={openRequestModal}
+                        setOpenRequestModal={setOpenRequestModal}
+                        sendFriendRequest={sendFriendRequest}
+                        roommode={false}
+                      />
+                    </>
+                  )}
+                </Box>
+              </TabPanel>
+              <TabPanel value={tab} index={2} dir={otheme.direction}>
                 <Box className={classes.scroll_bar}>
                   {friendListStore?.contacts?.length === 0 && value === "" ? (
                     <>
@@ -425,7 +496,7 @@ const Chatmain = ({ view, setView }: propsType) => {
                   )}
                 </Box>
               </TabPanel>
-              <TabPanel value={tab} index={2} dir={otheme.direction}>
+              <TabPanel value={tab} index={3} dir={otheme.direction}>
                 <Box className={classes.scroll_bar}>
                   {blockListStore?.contacts?.length === 0 && value === "" ? (
                     <>
@@ -433,7 +504,7 @@ const Chatmain = ({ view, setView }: propsType) => {
                         <img src={nocontact} style={{ marginTop: "40%", display: "block" }}></img>
                       </Grid>
                       <Box className={"fs-20-regular white"} textAlign={"center"}>
-                        {t("cha-2_you-havenot-friends")}
+                        {t("cha-44_you-havenot-blocks")}
                       </Box>
                     </>
                   ) : (

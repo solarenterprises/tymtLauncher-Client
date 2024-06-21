@@ -45,6 +45,7 @@ import chatnotificationReducer from "./features/chat/Chat-notificationSlice";
 import alertReducer from "./features/chat/Chat-alertSlice";
 import chatReducer from "./features/settings/ChatSlice";
 import alertListReducer from "./features/alert/AlertListSlice";
+import rsaReducer from "./features/chat/RsaSlice";
 
 const blacklistActionTypes = ["intercomsupport/setChatMounted", "intercomsupport/setMountedTrue", "intercomsupport/setMountedFalse"];
 
@@ -98,6 +99,7 @@ const store = configureStore({
     mnemonic: mnemonicReducer,
     saltToken: saltTokenReducer,
     alertList: alertListReducer,
+    rsa: rsaReducer,
   },
   middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(stateSyncMiddleware),
 });

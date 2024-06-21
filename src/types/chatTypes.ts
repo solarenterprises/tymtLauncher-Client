@@ -183,3 +183,8 @@ export interface fetchType {
 export interface chathistoryperUserStoreType {
   history: Object;
 }
+
+export interface IRsa {
+  publicKey: string;
+  privateKey: string;
+}

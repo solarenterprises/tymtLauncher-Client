@@ -39,6 +39,7 @@ import { INonCustodyBeforeSignInReq } from "../../types/AuthAPITypes";
 import { getMnemonic } from "../../features/account/MnemonicSlice";
 import { refreshCurrencyAsync } from "../../features/wallet/CurrencySlice";
 import { motion } from "framer-motion";
+import { getRsaKeyPairAsync } from "../../features/chat/RsaSlice";
 
 const ConfirmInformation = () => {
   const navigate = useNavigate();
@@ -135,6 +136,7 @@ const ConfirmInformation = () => {
           ).then(() => {
             dispatch(refreshCurrencyAsync()).then(() => {});
           });
+          dispatch(getRsaKeyPairAsync(mnemonicStore.mnemonic));
         } catch (err) {
           console.error("Failed to Non-custodial Login: ", err);
           setNotificationStatus("failed");
