@@ -32,14 +32,15 @@ import { walletType } from "../../types/settingTypes";
 import { translateString } from "../../lib/api/Translate";
 import { generateSocketHash } from "../../features/chat/SocketHashApi";
 import { getSocketHash, setSocketHash } from "../../features/chat/SocketHashSlice";
-import { ISocketHash } from "../../types/chatTypes";
+import { IRsa, ISocketHash } from "../../types/chatTypes";
 import tymtCore from "../../lib/core/tymtCore";
 import { getSaltToken, setSaltToken } from "../../features/account/SaltTokenSlice";
 import { INonCustodyBeforeSignInReq } from "../../types/AuthAPITypes";
 import { getMnemonic } from "../../features/account/MnemonicSlice";
 import { refreshCurrencyAsync } from "../../features/wallet/CurrencySlice";
 import { motion } from "framer-motion";
-import { getRsaKeyPairAsync } from "../../features/chat/RsaSlice";
+import { setRsa } from "../../features/chat/RsaSlice";
+import { getRsaKeyPair } from "../../features/chat/RsaApi";
 
 const ConfirmInformation = () => {
   const navigate = useNavigate();
@@ -95,6 +96,7 @@ const ConfirmInformation = () => {
         try {
           const publicKey: string = tymtCore.Blockchains.solar.wallet.getPublicKey(mnemonicStore.mnemonic);
           const signature: string = tymtCore.Blockchains.solar.wallet.signMessage("tymt", mnemonicStore.mnemonic);
+          const rsaKeyPair: IRsa = await getRsaKeyPair(mnemonicStore.mnemonic);
           const body0: INonCustodyBeforeSignInReq = {
             sxpAddress: multiWalletStore.Solar.chain.wallet,
             publicKey: publicKey,
@@ -118,6 +120,7 @@ const ConfirmInformation = () => {
           await AuthAPI.nonCustodySignin({
             sxpAddress: multiWalletStore.Solar.chain.wallet,
             token: token,
+            rsa_pub_key: rsaKeyPair.publicKey,
           });
           dispatch(
             setAccount({
@@ -136,7 +139,7 @@ const ConfirmInformation = () => {
           ).then(() => {
             dispatch(refreshCurrencyAsync()).then(() => {});
           });
-          dispatch(getRsaKeyPairAsync(mnemonicStore.mnemonic));
+          dispatch(setRsa(rsaKeyPair));
         } catch (err) {
           console.error("Failed to Non-custodial Login: ", err);
           setNotificationStatus("failed");
@@ -154,6 +157,7 @@ const ConfirmInformation = () => {
           const _avatar = tempNonCustodialStore.avatar;
           const _length = tempNonCustodialStore.mnemonicLength;
           const _publicKey: string = tymtCore.Blockchains.solar.wallet.getPublicKey(tempNonCustodialStore.mnemonic);
+          const _rsaKeyPair: IRsa = await getRsaKeyPair(tempNonCustodialStore.mnemonic.toString());
           dispatch(
             setNonCustodial({
               ...nonCustodialStore,
@@ -241,6 +245,7 @@ const ConfirmInformation = () => {
               ],
               sxpAddress: tempMultiWallet.Solar.chain.wallet,
               publicKey: _publicKey,
+              rsa_pub_key: _rsaKeyPair.publicKey,
             });
             dispatch(
               setAccount({
@@ -275,6 +280,7 @@ const ConfirmInformation = () => {
           const _avatar = tempNonCustodialStore.avatar;
           const _length = tempNonCustodialStore.mnemonicLength;
           const _publicKey: string = tymtCore.Blockchains.solar.wallet.getPublicKey(tempNonCustodialStore.mnemonic);
+          const _rsaKeyPair: IRsa = await getRsaKeyPair(tempNonCustodialStore.mnemonic.toString());
           dispatch(
             setNonCustodial({
               ...nonCustodialStore,
@@ -363,6 +369,7 @@ const ConfirmInformation = () => {
               ],
               sxpAddress: tempMultiWallet.Solar.chain.wallet,
               publicKey: _publicKey,
+              rsa_pub_key: _rsaKeyPair.publicKey,
             });
             dispatch(
               setAccount({
@@ -397,6 +404,7 @@ const ConfirmInformation = () => {
           const _avatar = tempNonCustodialStore.avatar;
           const _length = tempNonCustodialStore.mnemonicLength;
           const _publicKey: string = tymtCore.Blockchains.solar.wallet.getPublicKey(tempNonCustodialStore.mnemonic);
+          const _rsaKeyPair: IRsa = await getRsaKeyPair(tempNonCustodialStore.mnemonic.toString());
           dispatch(
             setNonCustodial({
               ...nonCustodialStore,
@@ -482,6 +490,7 @@ const ConfirmInformation = () => {
             ],
             sxpAddress: tempMultiWallet.Solar.chain.wallet,
             publicKey: _publicKey,
+            rsa_pub_key: _rsaKeyPair.publicKey,
           });
           setLoading(false);
           dispatch(

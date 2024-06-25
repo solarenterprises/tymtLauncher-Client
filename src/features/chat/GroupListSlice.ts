@@ -1,14 +1,14 @@
 import { PayloadAction, createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import tymtStorage from "../../lib/Storage";
 import { compareJSONStructure } from "../../lib/api/JSONHelper";
-import { IContactList } from "../../types/chatTypes";
-import { createGroup, deleteGroup, fetchGroupList } from "./GroupListApi";
+import { IGroupList } from "../../types/chatTypes";
+import { createDM, createGroup, deleteGroup, fetchGroupList } from "./GroupListApi";
 
-const init: IContactList = {
-  contacts: [],
+const init: IGroupList = {
+  groups: [],
 };
 
-const loadGroupList: () => IContactList = () => {
+const loadGroupList: () => IGroupList = () => {
   const data = tymtStorage.get(`groupList`);
   if (!data || !compareJSONStructure(JSON.parse(data), init)) {
     tymtStorage.set(`groupList`, JSON.stringify(init));
@@ -26,6 +26,7 @@ const initialState = {
 
 export const fetchGroupListAsync = createAsyncThunk("groupList/fetchGroupListAsync", fetchGroupList);
 export const createGroupAsync = createAsyncThunk("groupList/createGroupAsync", createGroup);
+export const createDMAsync = createAsyncThunk("groupList/createDMAsync", createDM);
 export const deleteGroupAsync = createAsyncThunk("groupList/deleteGroupAsync", deleteGroup);
 
 export const groupListSlice = createSlice({
@@ -35,6 +36,10 @@ export const groupListSlice = createSlice({
     setGroupList: (state, action) => {
       state.data = action.payload;
       tymtStorage.set(`groupList`, JSON.stringify(action.payload));
+    },
+    createGroupMockup: (state, action) => {
+      state.data.groups = [action.payload, ...state.data.groups];
+      tymtStorage.set(`groupList`, JSON.stringify(state.data));
     },
   },
   extraReducers(builder) {
@@ -59,7 +64,19 @@ export const groupListSlice = createSlice({
           console.log("Failed to createGroupAsync: ", action.payload);
           return;
         }
-        state.data = { ...state.data, ...action.payload };
+        state.data.groups = [...state.data.groups, action.payload];
+        tymtStorage.set(`groupList`, JSON.stringify(state.data));
+        state.status = "groupList";
+      })
+      .addCase(createDMAsync.pending, (state) => {
+        state.status = "pending";
+      })
+      .addCase(createDMAsync.fulfilled, (state, action: PayloadAction<any>) => {
+        if (!action.payload) {
+          console.log("Failed to createDMAsync: ", action.payload);
+          return;
+        }
+        state.data.groups = [...state.data.groups, action.payload];
         tymtStorage.set(`groupList`, JSON.stringify(state.data));
         state.status = "groupList";
       })
@@ -79,6 +96,6 @@ export const groupListSlice = createSlice({
 });
 
 export const getGroupList = (state: any) => state.groupList.data;
-export const { setGroupList } = groupListSlice.actions;
+export const { setGroupList, createGroupMockup } = groupListSlice.actions;
 
 export default groupListSlice.reducer;

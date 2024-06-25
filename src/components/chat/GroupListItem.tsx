@@ -9,9 +9,8 @@ import { AppDispatch } from "../../store";
 import { setCurrentPartner } from "../../features/chat/CurrentPartnerSlice";
 import { useSocket } from "../../providers/SocketProvider";
 import { getBlockList } from "../../features/chat/BlockListSlice";
-import { createDMAsync } from "../../features/chat/GroupListSlice";
 
-const Userlist = ({ user, index, numberofunreadmessages, setShowContextMenu, setContextMenuPosition, setView }: propsUserlistType) => {
+const GroupListItem = ({ user, index, numberofunreadmessages, setShowContextMenu, setContextMenuPosition, setView }: propsUserlistType) => {
   const { askEncryptionKey } = useSocket();
 
   const dispatch = useDispatch<AppDispatch>();
@@ -86,7 +85,6 @@ const Userlist = ({ user, index, numberofunreadmessages, setShowContextMenu, set
           setView("chatbox");
         }
       } else {
-        dispatch(createDMAsync(user._id));
         dispatch(createContactAsync(user._id))
           .then(() => {
             askEncryptionKey(user._id);
@@ -164,4 +162,4 @@ const Userlist = ({ user, index, numberofunreadmessages, setShowContextMenu, set
   );
 };
 
-export default Userlist;
+export default GroupListItem;

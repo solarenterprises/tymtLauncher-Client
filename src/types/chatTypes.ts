@@ -95,6 +95,27 @@ export interface IContactList {
   contacts: IContact[];
 }
 
+export interface IParticipant {
+  userId: string;
+  userKey: string;
+}
+
+export interface IGroup {
+  _id: string;
+  room_id: string;
+  participants: IParticipant[];
+  isDeleted: boolean;
+  isPrivate: boolean;
+  room_name: string;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+}
+
+export interface IGroupList {
+  groups: IGroup[];
+}
+
 export interface ChatMessageType {
   _id: string;
   sender_id: string;

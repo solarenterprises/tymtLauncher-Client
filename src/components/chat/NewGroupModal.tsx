@@ -1,8 +1,11 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Box, Button, Fade, Modal, Stack } from "@mui/material";
 import NewGroupSwitch from "./NewGroupSwitch";
 import InputText from "../account/InputText";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "../../store";
+import { createGroupMockup } from "../../features/chat/GroupListSlice";
 
 export interface IPropsNewGroupModal {
   open: boolean;
@@ -12,25 +15,27 @@ export interface IPropsNewGroupModal {
 
 const NewGroupModal = ({ open, setOpen, roomMode }: IPropsNewGroupModal) => {
   const { t } = useTranslation();
+  const dispatch = useDispatch<AppDispatch>();
   const [newGroupMode, setNewGroupMode] = useState<string>("public");
-  const [groupName, setGroupName] = useState<string>("");
+  const [newGroupName, setNewGroupName] = useState<string>("");
 
   const handleCancelClick = () => {
     setOpen(false);
   };
 
-  const handleCreateClick = () => {
+  const handleCreateClick = useCallback(() => {
     try {
-      if (!groupName) {
+      if (!newGroupName) {
         console.log("handleCreateClick: !groupName");
         return;
       }
-      console.log("handleCreateClick", newGroupMode, groupName);
+      console.log("handleCreateClick", newGroupMode, newGroupName);
+      dispatch(createGroupMockup({ _id: "1", mode: newGroupMode, groupName: newGroupName }));
     } catch (err) {
       console.error("Failed to handleCreateClick: ", err);
     }
     setOpen(false);
-  };
+  }, [newGroupName, newGroupMode]);
 
   return (
     <>
@@ -49,9 +54,9 @@ const NewGroupModal = ({ open, setOpen, roomMode }: IPropsNewGroupModal) => {
                 label={t("cha-49_group-name")}
                 type="text"
                 name="groupName"
-                value={groupName}
-                setValue={setGroupName}
-                error={!groupName}
+                value={newGroupName}
+                setValue={setNewGroupName}
+                error={!newGroupName}
               />
               <Stack width={"100%"} flexDirection={"row"} alignSelf={"center"} justifyContent={"space-around"}>
                 <Button className="modal_btn_left" onClick={handleCancelClick}>

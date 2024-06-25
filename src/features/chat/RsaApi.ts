@@ -31,11 +31,8 @@ export const getRsaKeyPair = async (_mnemonic) => {
 export const rsaEncrypt = (plainText: string, publicKey: string) => {
   try {
     if (!plainText || !publicKey) {
-      console.error("Failed to getRsaKeyPair: plainText or publicKey undefined");
-      return {
-        publicKey: "",
-        privateKey: "",
-      };
+      console.error("Failed to rsaEncrypt: plainText or publicKey undefined");
+      return "";
     }
     const publicKeyForge = pki.publicKeyFromPem(publicKey);
     const encrypted = publicKeyForge.encrypt(plainText, "RSA-OAEP", {
@@ -52,11 +49,8 @@ export const rsaEncrypt = (plainText: string, publicKey: string) => {
 export const rsaDecrypt = (encryptedText: string, privateKey: string) => {
   try {
     if (!encryptedText || !privateKey) {
-      console.error("Failed to getRsaKeyPair: encryptedText or privateKey undefined");
-      return {
-        publicKey: "",
-        privateKey: "",
-      };
+      console.error("Failed to rsaDecrypt: encryptedText or privateKey undefined");
+      return "";
     }
     const privateKeyForge = pki.privateKeyFromPem(privateKey);
     const encryptedBytes = util.decode64(encryptedText);

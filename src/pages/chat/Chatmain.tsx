@@ -12,7 +12,7 @@ import BlockModal from "../../components/chat/BlockModal";
 import DeleteModal from "../../components/chat/DeleteModal";
 import RequestModal from "../../components/chat/RequestModal";
 import { useSocket } from "../../providers/SocketProvider";
-import { IAlert, IContactList, propsType, selecteduserType, userType } from "../../types/chatTypes";
+import { IAlert, IContactList, IGroup, IGroupList, propsType, selecteduserType, userType } from "../../types/chatTypes";
 import { accountType } from "../../types/accountTypes";
 import { getSelectedUser } from "../../features/chat/Chat-selecteduserSlice";
 import { getAccount } from "../../features/account/AccountSlice";
@@ -28,6 +28,8 @@ import SwipeableViews from "react-swipeable-views";
 import { useTheme } from "@mui/material/styles";
 import { deleteBlockAsync, getBlockList } from "../../features/chat/BlockListSlice";
 import NewGroupButton from "../../components/chat/NewGroupButton";
+import { searchGroups } from "../../features/chat/GroupListApi";
+import { getGroupList } from "../../features/chat/GroupListSlice";
 
 const theme = createTheme({
   palette: {
@@ -50,6 +52,7 @@ const Chatmain = ({ view, setView }: propsType) => {
 
   const [value, setValue] = useState<string>("");
   const [searchedresult, setSearchedresult] = useState<userType[]>([]);
+  const [_searchedGroupList, setSearchedGroupList] = useState<IGroup[]>([]);
   const [isClickedBlock, setIsClickedBlock] = useState(false);
   const [isClickedDelete, setIsClickedDelete] = useState(false);
   const [isClickedRequest, setIsClickedRequest] = useState(false);
@@ -70,6 +73,7 @@ const Chatmain = ({ view, setView }: propsType) => {
   }, [value]);
 
   const dispatch = useDispatch<AppDispatch>();
+  const groupListStore: IGroupList = useSelector(getGroupList);
   const contactListStore: IContactList = useSelector(getContactList);
   const friendListStore: IContactList = useSelector(getFriendList);
   const blockListStore: IContactList = useSelector(getBlockList);
@@ -137,7 +141,7 @@ const Chatmain = ({ view, setView }: propsType) => {
   };
 
   const debouncedFilterUsers = debounce(async (value: string) => {
-    setSearchedresult(await searchUsers(value));
+    tab === 0 ? setSearchedGroupList(await searchGroups(value)) : setSearchedresult(await searchUsers(value));
   }, 1000);
 
   const filterUsers = (value: string) => {
@@ -211,7 +215,7 @@ const Chatmain = ({ view, setView }: propsType) => {
                     className={classes.search_bar}
                     color="secondary"
                     value={value}
-                    placeholder={t("cha-3_you-search-user")}
+                    placeholder={tab === 0 ? t("cha-50_search-group") : t("cha-3_you-search-user")}
                     InputProps={{
                       startAdornment: (
                         <InputAdornment position="start">
@@ -311,7 +315,7 @@ const Chatmain = ({ view, setView }: propsType) => {
               <TabPanel value={tab} index={0} dir={otheme.direction}>
                 <Box className={classes.scroll_bar}>
                   <NewGroupButton />
-                  {contactListStore?.contacts?.length === 0 && value === "" ? (
+                  {groupListStore?.groups?.length === 0 && value === "" ? (
                     <>
                       <Grid container sx={{ justifyContent: "center" }}>
                         <img src={nocontact} style={{ marginTop: "40%", display: "block" }}></img>
@@ -322,14 +326,14 @@ const Chatmain = ({ view, setView }: propsType) => {
                     </>
                   ) : (
                     <>
-                      {(value === "" ? contactListStore?.contacts : searchedresult)?.map((user, index) => {
+                      {/* {(value === "" ? groupListStore?.groups : searchedGroupList)?.map((group, index) => {
                         const count =
-                          value === "" ? alertListStore.unread?.filter((alert) => alert.note.sender === user._id && alert.alertType === "chat").length : 0;
+                          value === "" ? alertListStore.unread?.filter((alert) => alert.note.sender === group._id && alert.alertType === "chat").length : 0;
                         const numberofunreadmessages = count;
 
                         return (
                           <Userlist
-                            user={user}
+                            user={group}
                             index={index}
                             numberofunreadmessages={numberofunreadmessages}
                             setShowContextMenu={setShowContextMenu}
@@ -337,7 +341,7 @@ const Chatmain = ({ view, setView }: propsType) => {
                             setView={setView}
                           />
                         );
-                      })}
+                      })} */}
                       {showContextMenu && (
                         <FRcontextmenu
                           tab={tab}

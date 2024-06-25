@@ -37,6 +37,7 @@ import chathistoryperUserReducer from "./features/chat/Chat-historyperUserSlice"
 import friendListReducer from "./features/chat/FriendListSlice";
 import contactListReducer from "./features/chat/ContactListSlice";
 import blockListReducer from "./features/chat/BlockListSlice";
+import groupListReducer from "./features/chat/GroupListSlice";
 import encryptionReducer from "./features/chat/Chat-encryptionkeySlice";
 import currentPartnerReducer from "./features/chat/CurrentPartnerSlice";
 import chatHistoryReducer from "./features/chat/Chat-historySlice";
@@ -91,6 +92,7 @@ const store = configureStore({
     scrolldown: scrolldownReducer,
     friendList: friendListReducer,
     blockList: blockListReducer,
+    groupList: groupListReducer,
     encryption: encryptionReducer,
     machineId: machineIdReducer,
     socketHash: socketHashReducer,
