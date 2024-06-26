@@ -1,15 +1,15 @@
-export interface IChatroomCreateChatroomReq {
+export interface IReqChatroomCreateChatroom {
   room_name: string;
   isPrivate: boolean;
 }
 
-export interface IChatroomAddParticipant {
+export interface IReqChatroomAddParticipant {
   user_id: string;
   user_key: string;
   id: string;
 }
 
-export interface IChatroomLeaveChatroom {
+export interface IReqChatroomLeaveChatroom {
   user_id: string;
   id: string;
 }

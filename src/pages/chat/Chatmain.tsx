@@ -21,7 +21,7 @@ import { AppDispatch } from "../../store";
 import { getAlertList } from "../../features/alert/AlertListSlice";
 import { searchUsers } from "../../features/chat/ContactListApi";
 import { createFriendAsync, deleteFriendAsync, getFriendList } from "../../features/chat/FriendListSlice";
-import { createContactAsync, deleteContactAsync, getContactList } from "../../features/chat/ContactListSlice";
+import { createContactAsync, deleteContactAsync } from "../../features/chat/ContactListSlice";
 
 import { useTheme } from "@mui/material/styles";
 import { getChatroomList } from "../../features/chat/ChatroomListSlice";
@@ -33,10 +33,11 @@ import BlockModal from "../../components/chat/BlockModal";
 import DeleteModal from "../../components/chat/DeleteModal";
 import RequestModal from "../../components/chat/RequestModal";
 import FRcontextmenu from "../../components/chat/FRcontextmenu";
-import Userlist from "../../components/chat/Userlist";
+import UserListItem from "../../components/chat/UserListItem";
 import NewGroupButton from "../../components/chat/NewGroupButton";
 import { searchGroups } from "../../features/chat/ChatroomListApi";
 import GroupListItem from "../../components/chat/GroupListItem";
+import DMListItem from "../../components/chat/DMListItem";
 
 const theme = createTheme({
   palette: {
@@ -81,7 +82,6 @@ const Chatmain = ({ view, setView }: propsType) => {
 
   const dispatch = useDispatch<AppDispatch>();
   const chatroomListStore: IChatroomList = useSelector(getChatroomList);
-  const contactListStore: IContactList = useSelector(getContactList);
   const friendListStore: IContactList = useSelector(getFriendList);
   const blockListStore: IContactList = useSelector(getBlockList);
   const DMList: IChatroom[] = chatroomListStore.chatrooms.filter((element) => !element.room_name);
@@ -324,7 +324,7 @@ const Chatmain = ({ view, setView }: propsType) => {
               <TabPanel value={tab} index={0} dir={otheme.direction}>
                 <Box className={classes.scroll_bar}>
                   <NewGroupButton />
-                  {groupList?.length === 0 && value === "" ? (
+                  {groupList?.length === 0 && !value ? (
                     <>
                       <Grid container sx={{ justifyContent: "center" }}>
                         <img src={nocontact} style={{ marginTop: "40%", display: "block" }}></img>
@@ -340,48 +340,18 @@ const Chatmain = ({ view, setView }: propsType) => {
                         //   value === "" ? alertListStore.unread?.filter((alert) => alert.note.sender === group._id && alert.alertType === "chat").length : 0;
                         // const numberofunreadmessages = count;
 
-                        return <GroupListItem group={group} index={index} />;
+                        return <GroupListItem group={group} index={index} setView={setView} />;
                       })}
-                      {showContextMenu && (
-                        <FRcontextmenu
-                          tab={tab}
-                          value={value}
-                          isClickedBlock={isClickedBlock}
-                          isClickedDelete={isClickedDelete}
-                          isClickedRequest={isClickedRequest}
-                          setIsClickedBlock={setIsClickedBlock}
-                          setOpenBlockModal={setOpenBlockModal}
-                          setShowContextMenu={setShowContextMenu}
-                          setIsClickedDelete={setIsClickedDelete}
-                          setOpenDeleteModal={setOpenDeleteModal}
-                          setOpenRequestModal={setOpenRequestModal}
-                          setIsClickedRequest={setIsClickedRequest}
-                          contextMenuPosition={contextMenuPosition}
-                        />
-                      )}
-                      <BlockModal block={tab !== 2} openBlockModal={openBlockModal} setOpenBlockModal={setOpenBlockModal} roommode={false} />
-                      <DeleteModal
-                        openDeleteModal={openDeleteModal}
-                        setOpenDeleteModal={setOpenDeleteModal}
-                        deleteSelectedUser={deleteSelectedUser}
-                        roommode={false}
-                      />
-                      <RequestModal
-                        openRequestModal={openRequestModal}
-                        setOpenRequestModal={setOpenRequestModal}
-                        sendFriendRequest={sendFriendRequest}
-                        roommode={false}
-                      />
                     </>
                   )}
                 </Box>
               </TabPanel>
               <TabPanel value={tab} index={1} dir={otheme.direction}>
                 <Box className={classes.scroll_bar}>
-                  {contactListStore?.contacts?.length === 0 && value === "" ? (
+                  {DMList?.length === 0 && !value ? (
                     <>
                       <Grid container sx={{ justifyContent: "center" }}>
-                        <img src={nocontact} style={{ marginTop: "40%", display: "block" }}></img>
+                        <img src={nocontact} style={{ marginTop: "40%", display: "block" }} />
                       </Grid>
                       <Box className={"fs-20-regular white"} textAlign={"center"}>
                         {t("cha-43_you-havenot-contacts")}
@@ -389,52 +359,23 @@ const Chatmain = ({ view, setView }: propsType) => {
                     </>
                   ) : (
                     <>
-                      {(value === "" ? DMList : searchedUserList)?.map((user, index) => {
-                        const count =
-                          value === "" ? alertListStore.unread?.filter((alert) => alert.note.sender === user._id && alert.alertType === "chat").length : 0;
-                        const numberofunreadmessages = count;
-
-                        return (
-                          <Userlist
-                            user={user}
-                            index={index}
-                            numberofunreadmessages={numberofunreadmessages}
-                            setShowContextMenu={setShowContextMenu}
-                            setContextMenuPosition={setContextMenuPosition}
-                            setView={setView}
-                          />
-                        );
-                      })}
-                      {showContextMenu && (
-                        <FRcontextmenu
-                          tab={tab}
-                          value={value}
-                          isClickedBlock={isClickedBlock}
-                          isClickedDelete={isClickedDelete}
-                          isClickedRequest={isClickedRequest}
-                          setIsClickedBlock={setIsClickedBlock}
-                          setOpenBlockModal={setOpenBlockModal}
-                          setShowContextMenu={setShowContextMenu}
-                          setIsClickedDelete={setIsClickedDelete}
-                          setOpenDeleteModal={setOpenDeleteModal}
-                          setOpenRequestModal={setOpenRequestModal}
-                          setIsClickedRequest={setIsClickedRequest}
-                          contextMenuPosition={contextMenuPosition}
-                        />
-                      )}
-                      <BlockModal block={tab !== 2} openBlockModal={openBlockModal} setOpenBlockModal={setOpenBlockModal} roommode={false} />
-                      <DeleteModal
-                        openDeleteModal={openDeleteModal}
-                        setOpenDeleteModal={setOpenDeleteModal}
-                        deleteSelectedUser={deleteSelectedUser}
-                        roommode={false}
-                      />
-                      <RequestModal
-                        openRequestModal={openRequestModal}
-                        setOpenRequestModal={setOpenRequestModal}
-                        sendFriendRequest={sendFriendRequest}
-                        roommode={false}
-                      />
+                      {!value &&
+                        DMList.map((DM, index) => {
+                          return <DMListItem DM={DM} index={index} numberOfUnreadMessages={0} />;
+                        })}
+                      {value &&
+                        searchedUserList.map((user, index) => {
+                          return (
+                            <UserListItem
+                              user={user}
+                              index={index}
+                              numberofunreadmessages={0}
+                              setShowContextMenu={setShowContextMenu}
+                              setContextMenuPosition={setContextMenuPosition}
+                              setView={setView}
+                            />
+                          );
+                        })}
                     </>
                   )}
                 </Box>
@@ -456,9 +397,8 @@ const Chatmain = ({ view, setView }: propsType) => {
                         const count =
                           value === "" ? alertListStore.unread?.filter((alert) => alert.note.sender === user._id && alert.alertType === "chat").length : 0;
                         const numberofunreadmessages = count;
-
                         return (
-                          <Userlist
+                          <UserListItem
                             user={user}
                             index={index}
                             numberofunreadmessages={numberofunreadmessages}
@@ -521,7 +461,7 @@ const Chatmain = ({ view, setView }: propsType) => {
                         const numberofunreadmessages = count;
 
                         return (
-                          <Userlist
+                          <UserListItem
                             user={user}
                             index={index}
                             numberofunreadmessages={numberofunreadmessages}

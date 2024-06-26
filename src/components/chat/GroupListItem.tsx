@@ -1,15 +1,32 @@
+import { useDispatch } from "react-redux";
 import { Box, Grid, Stack } from "@mui/material";
-import { IChatroom } from "../../types/ChatroomAPITypes";
 import GroupAvatar from "./GroupAvatar";
+import { AppDispatch } from "../../store";
+import { IChatroom } from "../../types/ChatroomAPITypes";
+import { setCurrentChatroom } from "../../features/chat/CurrentChatroomSlice";
+import { fetchCurrentChatroomMembersAsync } from "../../features/chat/CurrentChatroomMembersSlice";
 
 export interface IPropsGroupListItem {
   group: IChatroom;
   index: number;
+  setView: (_: string) => void;
 }
 
-const GroupListItem = ({ group, index }: IPropsGroupListItem) => {
+const GroupListItem = ({ group, index, setView }: IPropsGroupListItem) => {
+  const dispatch = useDispatch<AppDispatch>();
+
+  const handleGroupListItemClick = () => {
+    try {
+      dispatch(setCurrentChatroom(group));
+      dispatch(fetchCurrentChatroomMembersAsync(group._id));
+      setView("chatGroupMemberList");
+    } catch (err) {
+      console.error("Failed to handleGroupListItemClick: ", err);
+    }
+  };
+
   return (
-    <Box key={`${index}-${new Date().toISOString()}`}>
+    <Box key={`${index}-${new Date().toISOString()}`} onClick={handleGroupListItemClick}>
       <Grid
         item
         xs={12}

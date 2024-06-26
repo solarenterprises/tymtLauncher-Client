@@ -1,5 +1,5 @@
 import { IRsa } from "../../types/chatTypes";
-import { IChatroomAddParticipant, IChatroomCreateChatroomReq } from "../../types/ChatroomAPITypes";
+import { IReqChatroomAddParticipant, IReqChatroomCreateChatroom } from "../../types/ChatroomAPITypes";
 import { rsaDecrypt, rsaEncrypt } from "./RsaApi";
 import ChatroomAPI from "../../lib/api/ChatroomAPI";
 import UserAPI from "../../lib/api/UserAPI";
@@ -18,7 +18,7 @@ export const fetchChatroomList = async (_id: string) => {
   }
 };
 
-export const createGroup = async (payload: IChatroomCreateChatroomReq) => {
+export const createGroup = async (payload: IReqChatroomCreateChatroom) => {
   try {
     const res = await ChatroomAPI.createChatroom(payload);
     if (res?.status === 200 && res?.data?.result) {
@@ -37,7 +37,7 @@ export const createGroup = async (payload: IChatroomCreateChatroomReq) => {
 export const createDM = async (_id: string) => {
   try {
     // Create group
-    const body0: IChatroomCreateChatroomReq = {
+    const body0: IReqChatroomCreateChatroom = {
       room_name: "",
       isPrivate: true,
     };
@@ -57,7 +57,7 @@ export const createDM = async (_id: string) => {
     // Add participant
     const rsaKeyPair: IRsa = JSON.parse(sessionStorage.getItem(`rsa`));
     const s_key = rsaDecrypt(res0?.data?.result?.participants[0]?.userKey, rsaKeyPair?.privateKey);
-    const body2: IChatroomAddParticipant = {
+    const body2: IReqChatroomAddParticipant = {
       user_id: _id,
       user_key: rsaEncrypt(s_key, res1?.data?.result?.data?.rsa_pub_key),
       id: res0?.data?.result?._id,
@@ -77,7 +77,7 @@ export const createDM = async (_id: string) => {
 
 export const searchGroups = async (name: string) => {
   try {
-    const res = await ChatroomAPI.searchChatroom(name);
+    const res = await ChatroomAPI.searchPublicChatrooms(name);
     if (res?.status !== 200 || !res?.data) {
       console.error("Failed to searchGroups: ", res);
       return [];

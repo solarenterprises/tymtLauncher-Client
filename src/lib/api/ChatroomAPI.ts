@@ -1,13 +1,13 @@
 import axios, { AxiosResponse } from "axios";
 import { tymt_backend_url } from "../../configs/index";
-import { IChatroomAddParticipant, IChatroomCreateChatroomReq, IChatroomLeaveChatroom } from "../../types/ChatroomAPITypes";
+import { IReqChatroomAddParticipant, IReqChatroomCreateChatroom, IReqChatroomLeaveChatroom } from "../../types/ChatroomAPITypes";
 import { ISaltToken } from "../../types/accountTypes";
 import tymtStorage from "../Storage";
 
 class ChatroomAPI {
   static saltTokenStore: ISaltToken = JSON.parse(tymtStorage.get(`saltToken`));
 
-  static async createChatroom(body: IChatroomCreateChatroomReq): Promise<AxiosResponse<any, any>> {
+  static async createChatroom(body: IReqChatroomCreateChatroom): Promise<AxiosResponse<any, any>> {
     return await axios.post(`${tymt_backend_url}/chatroom/create-chatroom`, body, {
       headers: {
         "x-token": this.saltTokenStore.token,
@@ -16,7 +16,7 @@ class ChatroomAPI {
     });
   }
 
-  static async addParticipant(body: IChatroomAddParticipant): Promise<AxiosResponse<any, any>> {
+  static async addParticipant(body: IReqChatroomAddParticipant): Promise<AxiosResponse<any, any>> {
     return await axios.post(`${tymt_backend_url}/chatroom/add-participant`, body, {
       headers: {
         "x-token": this.saltTokenStore.token,
@@ -62,7 +62,7 @@ class ChatroomAPI {
   }
 
   static async deleteChatroom(_id: string): Promise<AxiosResponse<any, any>> {
-    return await axios.put(`${tymt_backend_url}/delete-chat-room/${_id}`, {
+    return await axios.put(`${tymt_backend_url}/chatroom/delete-chat-room/${_id}`, {
       headers: {
         "x-token": this.saltTokenStore.token,
         "Content-Type": "application/json",
@@ -70,8 +70,8 @@ class ChatroomAPI {
     });
   }
 
-  static async leaveChatroom(body: IChatroomLeaveChatroom): Promise<AxiosResponse<any, any>> {
-    return await axios.put(`${tymt_backend_url}/leave-chat-room`, body, {
+  static async leaveChatroom(body: IReqChatroomLeaveChatroom): Promise<AxiosResponse<any, any>> {
+    return await axios.put(`${tymt_backend_url}/chatroom/leave-chat-room`, body, {
       headers: {
         "x-token": this.saltTokenStore.token,
         "Content-Type": "application/json",
@@ -79,8 +79,17 @@ class ChatroomAPI {
     });
   }
 
-  static async searchChatroom(name: string): Promise<AxiosResponse<any, any>> {
-    return await axios.get(`${tymt_backend_url}/chatrooms?room_name=${name}`, {
+  static async searchPublicChatrooms(name: string): Promise<AxiosResponse<any, any>> {
+    return await axios.get(`${tymt_backend_url}/chatroom/public-chatrooms/${name}`, {
+      headers: {
+        "x-token": this.saltTokenStore.token,
+        "Content-Type": "application/json",
+      },
+    });
+  }
+
+  static async fetchCurrentChatroomMembers(_chatroomId: string): Promise<AxiosResponse<any, any>> {
+    return await axios.get(`${tymt_backend_url}/chatroom/get-room-members/${_chatroomId}`, {
       headers: {
         "x-token": this.saltTokenStore.token,
         "Content-Type": "application/json",

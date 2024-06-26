@@ -11,7 +11,7 @@ import { useSocket } from "../../providers/SocketProvider";
 import { getBlockList } from "../../features/chat/BlockListSlice";
 import { createDMAsync } from "../../features/chat/ChatroomListSlice";
 
-const Userlist = ({ user, index, numberofunreadmessages, setShowContextMenu, setContextMenuPosition, setView }: propsUserlistType) => {
+const UserListItem = ({ user, index, numberofunreadmessages, setShowContextMenu, setContextMenuPosition, setView }: propsUserlistType) => {
   const { askEncryptionKey } = useSocket();
 
   const dispatch = useDispatch<AppDispatch>();
@@ -164,4 +164,4 @@ const Userlist = ({ user, index, numberofunreadmessages, setShowContextMenu, set
   );
 };
 
-export default Userlist;
+export default UserListItem;

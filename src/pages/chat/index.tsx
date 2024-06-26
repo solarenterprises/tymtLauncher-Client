@@ -8,6 +8,7 @@ import ChatSetting from "./Chatsetting";
 import ChatMsg from "./Chatsetting-Msg.tsx";
 import Chatfriend from "./Chatsetting-friend.tsx";
 import Chatbox from "./Chatbox.tsx";
+import ChatGroupMemberList from "./ChatGroupMemberList.tsx";
 
 type Anchor = "right";
 
@@ -45,6 +46,7 @@ const Chatindex = ({ viewChat, setViewChat }: propsChatType) => {
         <ChatMsg view={panel} setView={setPanel} />
         <Chatfriend view={panel} setView={setPanel} />
         <Chatbox view={panel} setView={setPanel} />
+        <ChatGroupMemberList view={panel} setView={setPanel} />
       </Box>
     </SwipeableDrawer>
   );

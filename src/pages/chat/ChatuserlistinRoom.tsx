@@ -16,7 +16,7 @@ import { selecteduserType } from "../../types/chatTypes";
 import { debounce } from "lodash";
 import { IAlertList } from "../../types/alertTypes";
 import FRcontextmenu from "../../components/chat/FRcontextmenu";
-import Userlist from "../../components/chat/Userlist";
+import Userlist from "../../components/chat/UserListItem";
 import { createContactAsync, deleteContactAsync, getContactList } from "../../features/chat/ContactListSlice";
 import { AppDispatch } from "../../store";
 import { searchUsers } from "../../features/chat/ContactListApi";
