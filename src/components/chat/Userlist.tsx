@@ -9,7 +9,7 @@ import { AppDispatch } from "../../store";
 import { setCurrentPartner } from "../../features/chat/CurrentPartnerSlice";
 import { useSocket } from "../../providers/SocketProvider";
 import { getBlockList } from "../../features/chat/BlockListSlice";
-import { createDMAsync } from "../../features/chat/GroupListSlice";
+import { createDMAsync } from "../../features/chat/ChatroomListSlice";
 
 const Userlist = ({ user, index, numberofunreadmessages, setShowContextMenu, setContextMenuPosition, setView }: propsUserlistType) => {
   const { askEncryptionKey } = useSocket();

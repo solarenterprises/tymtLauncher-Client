@@ -5,7 +5,7 @@ import NewGroupSwitch from "./NewGroupSwitch";
 import InputText from "../account/InputText";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "../../store";
-import { createGroupMockup } from "../../features/chat/GroupListSlice";
+import { createGroupAsync } from "../../features/chat/ChatroomListSlice";
 
 export interface IPropsNewGroupModal {
   open: boolean;
@@ -30,7 +30,12 @@ const NewGroupModal = ({ open, setOpen, roomMode }: IPropsNewGroupModal) => {
         return;
       }
       console.log("handleCreateClick", newGroupMode, newGroupName);
-      dispatch(createGroupMockup({ _id: "1", mode: newGroupMode, groupName: newGroupName }));
+      dispatch(
+        createGroupAsync({
+          room_name: newGroupName,
+          isPrivate: newGroupMode === "private",
+        })
+      );
     } catch (err) {
       console.error("Failed to handleCreateClick: ", err);
     }

@@ -1,12 +1,12 @@
-// import solarIcon from "../assets/chains/solar.svg";
-// import ethereumIcon from "../assets/chains/ethereum.svg";
-// import solanaIcon from "../assets/chains/solana.svg";
-// import avalancheIcon from "../assets/chains/avalanche.svg";
-// import optimismIcon from "../assets/chains/optimism.svg";
-// import binanceIcon from "../assets/chains/binance.svg";
-// import bitcoinIcon from "../assets/chains/bitcoin.svg";
-// import polygonIcon from "../assets/chains/polygon.svg";
-// import arbitrumoneIcon from "../assets/chains/arbitrum.svg";
+import solarIcon from "../assets/chains/solar.svg";
+import ethereumIcon from "../assets/chains/ethereum.svg";
+import solanaIcon from "../assets/chains/solana.svg";
+import avalancheIcon from "../assets/chains/avalanche.svg";
+import optimismIcon from "../assets/chains/optimism.svg";
+import binanceIcon from "../assets/chains/binance.svg";
+import bitcoinIcon from "../assets/chains/bitcoin.svg";
+import polygonIcon from "../assets/chains/polygon.svg";
+import arbitrumoneIcon from "../assets/chains/arbitrum.svg";
 import transactionInIcon from "../assets/wallet/trans-in-icon.svg";
 import transactionOutIcon from "../assets/wallet/trans-out-icon.svg";
 import transactionSwtichIcon from "../assets/wallet/vote-icon.svg";
@@ -24,15 +24,15 @@ export enum chainEnum {
 }
 
 export const chainIconMap: Map<number, string> = new Map([
-  [chainEnum.solar, "solarIcon"],
-  [chainEnum.ethereum, "ethereumIcon"],
-  [chainEnum.solana, "solanaIcon"],
-  [chainEnum.avalanche, "avalancheIcon"],
-  [chainEnum.optimism, "optimismIcon"],
-  [chainEnum.binance, "binanceIcon"],
-  [chainEnum.bitcoin, "bitcoinIcon"],
-  [chainEnum.polygon, "polygonIcon"],
-  [chainEnum.arbitrumone, "arbitrumoneIcon"],
+  [chainEnum.solar, solarIcon],
+  [chainEnum.ethereum, ethereumIcon],
+  [chainEnum.solana, solanaIcon],
+  [chainEnum.avalanche, avalancheIcon],
+  [chainEnum.optimism, optimismIcon],
+  [chainEnum.binance, binanceIcon],
+  [chainEnum.bitcoin, bitcoinIcon],
+  [chainEnum.polygon, polygonIcon],
+  [chainEnum.arbitrumone, arbitrumoneIcon],
 ]);
 
 export enum transactionEnum {

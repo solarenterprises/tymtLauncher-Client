@@ -94,6 +94,7 @@ const ConfirmInformation = () => {
     } else if (accountStore.wallet === walletEnum.noncustodial) {
       if (accountStore.mode === loginEnum.login) {
         try {
+          setLoading(true);
           const publicKey: string = tymtCore.Blockchains.solar.wallet.getPublicKey(mnemonicStore.mnemonic);
           const signature: string = tymtCore.Blockchains.solar.wallet.signMessage("tymt", mnemonicStore.mnemonic);
           const rsaKeyPair: IRsa = await getRsaKeyPair(mnemonicStore.mnemonic);
@@ -148,6 +149,7 @@ const ConfirmInformation = () => {
           setNotificationOpen(true);
           setNotificationLink(null);
         }
+        setLoading(false);
       } else if (accountStore.mode === loginEnum.import) {
         dispatch(setMultiWallet(tempMultiWallet));
         try {

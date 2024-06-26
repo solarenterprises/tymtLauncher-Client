@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useTranslation } from "react-i18next";
+import SwipeableViews from "react-swipeable-views";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import { Box, Divider, Stack, TextField, InputAdornment, Grid, Button, Tabs, Tab } from "@mui/material";
 import { debounce } from "lodash";
@@ -8,28 +9,34 @@ import ChatStyle from "../../styles/ChatStyles";
 import searchlg from "../../assets/searchlg.svg";
 import settingicon from "../../assets/chat/settings.svg";
 import nocontact from "../../assets/chat/nocontact.png";
-import BlockModal from "../../components/chat/BlockModal";
-import DeleteModal from "../../components/chat/DeleteModal";
-import RequestModal from "../../components/chat/RequestModal";
+
 import { useSocket } from "../../providers/SocketProvider";
-import { IAlert, IContactList, IGroup, IGroupList, propsType, selecteduserType, userType } from "../../types/chatTypes";
+import { IAlert, IContactList, propsType, selecteduserType, userType } from "../../types/chatTypes";
 import { accountType } from "../../types/accountTypes";
 import { getSelectedUser } from "../../features/chat/Chat-selecteduserSlice";
 import { getAccount } from "../../features/account/AccountSlice";
 import { IAlertList } from "../../types/alertTypes";
-import FRcontextmenu from "../../components/chat/FRcontextmenu";
-import Userlist from "../../components/chat/Userlist";
-import { createContactAsync, deleteContactAsync, getContactList } from "../../features/chat/ContactListSlice";
+
 import { AppDispatch } from "../../store";
 import { getAlertList } from "../../features/alert/AlertListSlice";
 import { searchUsers } from "../../features/chat/ContactListApi";
 import { createFriendAsync, deleteFriendAsync, getFriendList } from "../../features/chat/FriendListSlice";
-import SwipeableViews from "react-swipeable-views";
+import { createContactAsync, deleteContactAsync, getContactList } from "../../features/chat/ContactListSlice";
+
 import { useTheme } from "@mui/material/styles";
+import { getChatroomList } from "../../features/chat/ChatroomListSlice";
 import { deleteBlockAsync, getBlockList } from "../../features/chat/BlockListSlice";
+
+import { IChatroom, IChatroomList } from "../../types/ChatroomAPITypes";
+
+import BlockModal from "../../components/chat/BlockModal";
+import DeleteModal from "../../components/chat/DeleteModal";
+import RequestModal from "../../components/chat/RequestModal";
+import FRcontextmenu from "../../components/chat/FRcontextmenu";
+import Userlist from "../../components/chat/Userlist";
 import NewGroupButton from "../../components/chat/NewGroupButton";
-import { searchGroups } from "../../features/chat/GroupListApi";
-import { getGroupList } from "../../features/chat/GroupListSlice";
+import { searchGroups } from "../../features/chat/ChatroomListApi";
+import GroupListItem from "../../components/chat/GroupListItem";
 
 const theme = createTheme({
   palette: {
@@ -51,8 +58,8 @@ const Chatmain = ({ view, setView }: propsType) => {
   const otheme = useTheme();
 
   const [value, setValue] = useState<string>("");
-  const [searchedresult, setSearchedresult] = useState<userType[]>([]);
-  const [_searchedGroupList, setSearchedGroupList] = useState<IGroup[]>([]);
+  const [searchedGroupList, setSearchedGroupList] = useState<IChatroom[]>([]);
+  const [searchedUserList, setSearchedUserList] = useState<userType[]>([]);
   const [isClickedBlock, setIsClickedBlock] = useState(false);
   const [isClickedDelete, setIsClickedDelete] = useState(false);
   const [isClickedRequest, setIsClickedRequest] = useState(false);
@@ -73,10 +80,12 @@ const Chatmain = ({ view, setView }: propsType) => {
   }, [value]);
 
   const dispatch = useDispatch<AppDispatch>();
-  const groupListStore: IGroupList = useSelector(getGroupList);
+  const chatroomListStore: IChatroomList = useSelector(getChatroomList);
   const contactListStore: IContactList = useSelector(getContactList);
   const friendListStore: IContactList = useSelector(getFriendList);
   const blockListStore: IContactList = useSelector(getBlockList);
+  const DMList: IChatroom[] = chatroomListStore.chatrooms.filter((element) => !element.room_name);
+  const groupList: IChatroom[] = chatroomListStore.chatrooms.filter((element) => element.room_name);
   const selectedUserToDeleteStore: selecteduserType = useSelector(getSelectedUser);
   const accountStore: accountType = useSelector(getAccount);
   const alertListStore: IAlertList = useSelector(getAlertList);
@@ -141,7 +150,7 @@ const Chatmain = ({ view, setView }: propsType) => {
   };
 
   const debouncedFilterUsers = debounce(async (value: string) => {
-    tab === 0 ? setSearchedGroupList(await searchGroups(value)) : setSearchedresult(await searchUsers(value));
+    tab === 0 ? setSearchedGroupList(await searchGroups(value)) : setSearchedUserList(await searchUsers(value));
   }, 1000);
 
   const filterUsers = (value: string) => {
@@ -315,7 +324,7 @@ const Chatmain = ({ view, setView }: propsType) => {
               <TabPanel value={tab} index={0} dir={otheme.direction}>
                 <Box className={classes.scroll_bar}>
                   <NewGroupButton />
-                  {groupListStore?.groups?.length === 0 && value === "" ? (
+                  {groupList?.length === 0 && value === "" ? (
                     <>
                       <Grid container sx={{ justifyContent: "center" }}>
                         <img src={nocontact} style={{ marginTop: "40%", display: "block" }}></img>
@@ -326,22 +335,13 @@ const Chatmain = ({ view, setView }: propsType) => {
                     </>
                   ) : (
                     <>
-                      {/* {(value === "" ? groupListStore?.groups : searchedGroupList)?.map((group, index) => {
-                        const count =
-                          value === "" ? alertListStore.unread?.filter((alert) => alert.note.sender === group._id && alert.alertType === "chat").length : 0;
-                        const numberofunreadmessages = count;
+                      {(value === "" ? groupList : searchedGroupList)?.map((group, index) => {
+                        // const count =
+                        //   value === "" ? alertListStore.unread?.filter((alert) => alert.note.sender === group._id && alert.alertType === "chat").length : 0;
+                        // const numberofunreadmessages = count;
 
-                        return (
-                          <Userlist
-                            user={group}
-                            index={index}
-                            numberofunreadmessages={numberofunreadmessages}
-                            setShowContextMenu={setShowContextMenu}
-                            setContextMenuPosition={setContextMenuPosition}
-                            setView={setView}
-                          />
-                        );
-                      })} */}
+                        return <GroupListItem group={group} index={index} />;
+                      })}
                       {showContextMenu && (
                         <FRcontextmenu
                           tab={tab}
@@ -389,7 +389,7 @@ const Chatmain = ({ view, setView }: propsType) => {
                     </>
                   ) : (
                     <>
-                      {(value === "" ? contactListStore?.contacts : searchedresult)?.map((user, index) => {
+                      {(value === "" ? DMList : searchedUserList)?.map((user, index) => {
                         const count =
                           value === "" ? alertListStore.unread?.filter((alert) => alert.note.sender === user._id && alert.alertType === "chat").length : 0;
                         const numberofunreadmessages = count;
@@ -452,7 +452,7 @@ const Chatmain = ({ view, setView }: propsType) => {
                     </>
                   ) : (
                     <>
-                      {(value === "" ? friendListStore?.contacts : searchedresult)?.map((user, index) => {
+                      {(value === "" ? friendListStore?.contacts : searchedUserList)?.map((user, index) => {
                         const count =
                           value === "" ? alertListStore.unread?.filter((alert) => alert.note.sender === user._id && alert.alertType === "chat").length : 0;
                         const numberofunreadmessages = count;
@@ -515,7 +515,7 @@ const Chatmain = ({ view, setView }: propsType) => {
                     </>
                   ) : (
                     <>
-                      {(value === "" ? blockListStore?.contacts : searchedresult)?.map((user, index) => {
+                      {(value === "" ? blockListStore?.contacts : searchedUserList)?.map((user, index) => {
                         const count =
                           value === "" ? alertListStore.unread?.filter((alert) => alert.note.sender === user._id && alert.alertType === "chat").length : 0;
                         const numberofunreadmessages = count;

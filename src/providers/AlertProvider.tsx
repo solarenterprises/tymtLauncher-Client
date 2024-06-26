@@ -3,14 +3,15 @@ import { useDispatch, useSelector } from "react-redux";
 import { Outlet } from "react-router-dom";
 import { AppDispatch } from "../store";
 import { accountType } from "../types/accountTypes";
+import { IChain, multiWalletType } from "../types/walletTypes";
+import { getChain } from "../features/wallet/ChainSlice";
 import { getAccount } from "../features/account/AccountSlice";
+import { getMultiWallet, refreshChainBalanceAsync } from "../features/wallet/MultiWalletSlice";
 import { fetchContactListAsync } from "../features/chat/ContactListSlice";
 import { fetchFriendListAsync } from "../features/chat/FriendListSlice";
 import { fetchBlockListAsync } from "../features/chat/BlockListSlice";
-import { getMultiWallet, refreshChainBalanceAsync } from "../features/wallet/MultiWalletSlice";
+import { fetchChatroomListAsync } from "../features/chat/ChatroomListSlice";
 import { refreshCurrencyAsync } from "../features/wallet/CurrencySlice";
-import { IChain, multiWalletType } from "../types/walletTypes";
-import { getChain } from "../features/wallet/ChainSlice";
 
 const AlertProvider = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -35,6 +36,7 @@ const AlertProvider = () => {
       dispatch(fetchContactListAsync());
       dispatch(fetchFriendListAsync());
       dispatch(fetchBlockListAsync());
+      dispatch(fetchChatroomListAsync(accountStore.uid));
 
       if (!id) {
         id = setInterval(async () => {
