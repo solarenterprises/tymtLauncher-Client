@@ -1,8 +1,10 @@
 import { IRsa } from "../../types/chatTypes";
-import { IReqChatroomAddParticipant, IReqChatroomCreateChatroom } from "../../types/ChatroomAPITypes";
+import { IChatroom, IReqChatroomAddParticipant, IReqChatroomCreateChatroom, IReqChatroomLeaveChatroom } from "../../types/ChatroomAPITypes";
 import { rsaDecrypt, rsaEncrypt } from "./RsaApi";
 import ChatroomAPI from "../../lib/api/ChatroomAPI";
 import UserAPI from "../../lib/api/UserAPI";
+import { ISKey } from "./SKeySlice";
+import { ICurrentChatroomMember } from "./CurrentChatroomMembersSlice";
 
 export const fetchChatroomList = async (_id: string) => {
   try {
@@ -72,6 +74,63 @@ export const createDM = async (_id: string) => {
   } catch (err) {
     console.error("Failed to createDM: ", err);
     return null;
+  }
+};
+
+export const addParticipant = async (_member: ICurrentChatroomMember) => {
+  try {
+    const sKeyStore: ISKey = JSON.parse(sessionStorage.getItem(`sKey`));
+    if (!sKeyStore || !sKeyStore.sKey) {
+      console.error("Failed to addOneCurrentChatroomMembers: sKey undefined");
+      return null;
+    }
+
+    const currentChatroomStore: IChatroom = JSON.parse(sessionStorage.getItem(`currentChatroom`));
+    if (!currentChatroomStore) {
+      console.error("Failed to addOneCurrentChatroomMembers: currentChatroomStore undefined");
+      return null;
+    }
+
+    const body: IReqChatroomAddParticipant = {
+      user_id: _member._id,
+      user_key: rsaEncrypt(sKeyStore.sKey, _member.rsa_pub_key),
+      id: currentChatroomStore._id,
+    };
+    const res = await ChatroomAPI.addParticipant(body);
+    if (res?.status !== 200 || !res?.data) {
+      console.error("Failed to addParticipant: ", res);
+      return null;
+    }
+
+    console.log("addParticipant");
+    return res?.data?.result;
+  } catch (err) {
+    console.error("Failed to addParticipant: ", err);
+  }
+};
+
+export const removeParticipant = async (_member: ICurrentChatroomMember) => {
+  try {
+    const currentChatroomStore: IChatroom = JSON.parse(sessionStorage.getItem(`currentChatroom`));
+    if (!currentChatroomStore) {
+      console.error("Failed to addOneCurrentChatroomMembers: currentChatroomStore undefined");
+      return null;
+    }
+
+    const body: IReqChatroomLeaveChatroom = {
+      user_id: _member._id,
+      id: currentChatroomStore._id,
+    };
+    const res = await ChatroomAPI.leaveChatroom(body);
+    if (res?.status !== 200 || !res?.data) {
+      console.error("Failed to addParticipant: ", res);
+      return null;
+    }
+
+    console.log("removeParticipant");
+    return res?.data?.result;
+  } catch (err) {
+    console.error("Failed to removeParticipant: ", err);
   }
 };
 

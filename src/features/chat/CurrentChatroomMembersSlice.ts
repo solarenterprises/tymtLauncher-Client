@@ -1,6 +1,6 @@
 // Current Chat room members are not saved in local stroage, not necessary.
 import { PayloadAction, createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { fetchCurrentChatroomMembers } from "./CurrentChatroomMembersApi";
+import { addOneCurrentChatroomMembers, fetchCurrentChatroomMembers } from "./CurrentChatroomMembersApi";
 
 export interface ICurrentChatroomMemberWallet {
   chainId: number;
@@ -28,6 +28,7 @@ export interface ICurrentChatroomMember {
   notificationStatus: string;
   friend?: string[];
   block?: string[];
+  rsa_pub_key?: string;
 }
 
 export interface ICurrentChatroomMembers {
@@ -50,13 +51,14 @@ const initialState = {
 };
 
 export const fetchCurrentChatroomMembersAsync = createAsyncThunk("currentChatroomMembers/fetchCurrentChatroomMembersAsync", fetchCurrentChatroomMembers);
+export const addOneCurrentChatroomMembersAsync = createAsyncThunk("currentChatroomMembers/addOneCurrentChatroomMembersAsync", addOneCurrentChatroomMembers);
 
 export const currentChatroomMembersSlice = createSlice({
   name: "currentChatroomMembers",
   initialState,
   reducers: {
     setCurrentChatroomMembers: (state, action) => {
-      state.data = action.payload;
+      state.data.members = action.payload;
       sessionStorage.setItem("currentChatroomMembers", JSON.stringify(state.data));
     },
   },
@@ -71,6 +73,19 @@ export const currentChatroomMembersSlice = createSlice({
           return;
         }
         console.log("fetchCurrentChatroomMembersAsync");
+        state.data.members = action.payload;
+        sessionStorage.setItem("currentChatroomMembers", JSON.stringify(state.data));
+        state.status = "currentChatroomMembers";
+      })
+      .addCase(addOneCurrentChatroomMembersAsync.pending, (state) => {
+        state.status = "pending";
+      })
+      .addCase(addOneCurrentChatroomMembersAsync.fulfilled, (state, action: PayloadAction<any>) => {
+        if (!action.payload) {
+          console.log("Failed to addOneCurrentChatroomMembersAsync: ", action.payload);
+          return;
+        }
+        console.log("addOneCurrentChatroomMembersAsync");
         state.data.members = action.payload;
         sessionStorage.setItem("currentChatroomMembers", JSON.stringify(state.data));
         state.status = "currentChatroomMembers";

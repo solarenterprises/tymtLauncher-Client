@@ -2,16 +2,16 @@ import { PayloadAction, createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import tymtStorage from "../../lib/Storage";
 import { compareJSONStructure } from "../../lib/api/JSONHelper";
 import { IChatroomList } from "../../types/ChatroomAPITypes";
-import { createDM, createGroup, fetchChatroomList } from "./ChatroomListApi";
+import { createDM, createGroup, fetchChatroomList, addParticipant, removeParticipant } from "./ChatroomListApi";
 
 const init: IChatroomList = {
   chatrooms: [],
 };
 
 const loadChatroomList: () => IChatroomList = () => {
-  const data = tymtStorage.get(`groupList`);
+  const data = tymtStorage.get(`chatroomList`);
   if (!data || !compareJSONStructure(JSON.parse(data), init)) {
-    tymtStorage.set(`groupList`, JSON.stringify(init));
+    tymtStorage.set(`chatroomList`, JSON.stringify(init));
     return init;
   } else {
     return JSON.parse(data);
@@ -24,9 +24,11 @@ const initialState = {
   msg: "",
 };
 
-export const fetchChatroomListAsync = createAsyncThunk("groupList/fetchGroupListAsync", fetchChatroomList);
-export const createGroupAsync = createAsyncThunk("groupList/createGroupAsync", createGroup);
-export const createDMAsync = createAsyncThunk("groupList/createDMAsync", createDM);
+export const fetchChatroomListAsync = createAsyncThunk("chatroomList/fetchChatroomListAsync", fetchChatroomList);
+export const createGroupAsync = createAsyncThunk("chatroomList/createGroupAsync", createGroup);
+export const createDMAsync = createAsyncThunk("chatroomList/createDMAsync", createDM);
+export const addParticipantAsync = createAsyncThunk("chatroomList/addParticipantAsync", addParticipant);
+export const removeParticipantAsync = createAsyncThunk("chatroomList/removeParticipantAsync", removeParticipant);
 
 export const chatroomListSlice = createSlice({
   name: "chatroomList",
@@ -72,6 +74,32 @@ export const chatroomListSlice = createSlice({
           return;
         }
         state.data.chatrooms = [...state.data.chatrooms, action.payload];
+        tymtStorage.set(`chatroomList`, JSON.stringify(state.data));
+        state.status = "chatroomList";
+      })
+      .addCase(addParticipantAsync.pending, (state) => {
+        state.status = "pending";
+      })
+      .addCase(addParticipantAsync.fulfilled, (state, action: PayloadAction<any>) => {
+        if (!action.payload) {
+          console.error("Failed to addParticipantAsync: ", action.payload);
+          return;
+        }
+        const restOfChatrooms = state.data.chatrooms.filter((element) => element._id !== action.payload?._id);
+        state.data.chatrooms = [...restOfChatrooms, action.payload];
+        tymtStorage.set(`chatroomList`, JSON.stringify(state.data));
+        state.status = "chatroomList";
+      })
+      .addCase(removeParticipantAsync.pending, (state) => {
+        state.status = "pending";
+      })
+      .addCase(removeParticipantAsync.fulfilled, (state, action: PayloadAction<any>) => {
+        if (!action.payload) {
+          console.error("Failed to removeParticipantAsync: ", action.payload);
+          return;
+        }
+        const restOfChatrooms = state.data.chatrooms.filter((element) => element._id !== action.payload?._id);
+        state.data.chatrooms = [...restOfChatrooms, action.payload];
         tymtStorage.set(`chatroomList`, JSON.stringify(state.data));
         state.status = "chatroomList";
       });

@@ -1,16 +1,15 @@
 // sKey is not saved in local stroage, not necessary.
 import { createSlice } from "@reduxjs/toolkit";
-import { IChatroom } from "../../types/ChatroomAPITypes";
 
-export interface SKey {
+export interface ISKey {
   sKey: string;
 }
 
-const init: SKey = {
+const init: ISKey = {
   sKey: "",
 };
 
-const loadSKey: () => IChatroom = () => {
+const loadSKey: () => ISKey = () => {
   const data = sessionStorage.getItem("sKey");
   return data ? JSON.parse(data) : init;
 };
@@ -26,8 +25,8 @@ export const currentSKeySlice = createSlice({
   initialState,
   reducers: {
     setSKey: (state, action) => {
-      state.data = action.payload;
-      sessionStorage.setItem("sKey", JSON.stringify(action.payload));
+      state.data.sKey = action.payload;
+      sessionStorage.setItem("sKey", JSON.stringify(state.data));
     },
   },
 });

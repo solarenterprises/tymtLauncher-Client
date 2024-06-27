@@ -1,13 +1,16 @@
 import { Box, Grid, Stack } from "@mui/material";
 import Avatar from "../home/Avatar";
 import { ICurrentChatroomMember } from "../../features/chat/CurrentChatroomMembersSlice";
+import MemberRemoveButton from "./MemberRemoveButton";
+import MemberInviteButton from "./MemberInviteButton";
 
 export interface IPropsGroupMemberListItem {
   member: ICurrentChatroomMember;
   index: number;
+  invited: boolean;
 }
 
-const GroupMemberListItem = ({ member, index }: IPropsGroupMemberListItem) => {
+const GroupMemberListItem = ({ member, index, invited }: IPropsGroupMemberListItem) => {
   return (
     <Box key={`${index}-${new Date().toISOString()}`}>
       <Grid
@@ -42,6 +45,8 @@ const GroupMemberListItem = ({ member, index }: IPropsGroupMemberListItem) => {
             </Stack>
           </Box>
 
+          {invited && <MemberRemoveButton member={member} />}
+          {!invited && <MemberInviteButton member={member} />}
           {/* <Box
             className={"unread-dot fs-10-light"}
             sx={{

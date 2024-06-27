@@ -1,12 +1,17 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
+import { debounce } from "lodash";
 import { Box, Stack, TextField, ThemeProvider, InputAdornment, Button, Divider, createTheme } from "@mui/material";
-import { ICurrentChatroomMembers, getCurrentChatroomMembers } from "../../features/chat/CurrentChatroomMembersSlice";
+import { ICurrentChatroomMember, ICurrentChatroomMembers, getCurrentChatroomMembers } from "../../features/chat/CurrentChatroomMembersSlice";
+import { searchUsers } from "../../features/chat/ContactListApi";
+import { getCurrentChatroom } from "../../features/chat/CurrentChatroomSlice";
 import GroupMemberListItem from "../../components/chat/GroupMemberListItem";
+import { IChatroom } from "../../types/ChatroomAPITypes";
 import ChatStyle from "../../styles/ChatStyles";
 import searchlg from "../../assets/searchlg.svg";
 import settingicon from "../../assets/chat/settings.svg";
+import backIcon from "../../assets/settings/back-icon.svg";
 
 const theme = createTheme({
   palette: {
@@ -29,8 +34,22 @@ export interface IPropsChatGroupMemberList {
 const ChatGroupMemberList = ({ view, setView }: IPropsChatGroupMemberList) => {
   const classes = ChatStyle();
   const { t } = useTranslation();
-  const currentChatroomMembers: ICurrentChatroomMembers = useSelector(getCurrentChatroomMembers);
+  const currentChatroomStore: IChatroom = useSelector(getCurrentChatroom);
+  const currentChatroomMembersStore: ICurrentChatroomMembers = useSelector(getCurrentChatroomMembers);
   const [value, setValue] = useState<string>("");
+  const [searchedUserList, setSearchedUserList] = useState<ICurrentChatroomMember[]>([]);
+
+  const debouncedFilterUsers = debounce(async (value: string) => {
+    setSearchedUserList(await searchUsers(value));
+  }, 1000);
+
+  const filterUsers = (value: string) => {
+    debouncedFilterUsers(value);
+  };
+
+  useEffect(() => {
+    // This effect will run whenever currentChatroomMembersStore changes
+  }, [currentChatroomMembersStore]);
 
   return (
     <>
@@ -51,9 +70,12 @@ const ChatGroupMemberList = ({ view, setView }: IPropsChatGroupMemberList) => {
                 position: "relative",
               }}
             >
-              <Box className={"fs-24-bold white"} marginTop={"0px"}>
-                {t("cha-1_chat")}
-              </Box>
+              <Stack flexDirection={"row"} justifyContent={"flex-start"} gap={"10px"} alignItems={"center"} textAlign={"center"}>
+                <Button className={"setting-back-button"} onClick={() => setView("chatmain")}>
+                  <Box component={"img"} src={backIcon}></Box>
+                </Button>
+                <Box className="fs-h3 white">{currentChatroomStore?.room_name}</Box>
+              </Stack>
               <Stack flexDirection={"row"} justifyContent={"space-between"} alignItems={"center"} marginTop={"30px"}>
                 <ThemeProvider theme={theme}>
                   <TextField
@@ -86,6 +108,12 @@ const ChatGroupMemberList = ({ view, setView }: IPropsChatGroupMemberList) => {
                         </InputAdornment>
                       ),
                     }}
+                    onChange={(e) => {
+                      if (setValue) {
+                        setValue(e.target.value);
+                        filterUsers(e.target.value);
+                      }
+                    }}
                   />
                 </ThemeProvider>
                 <Button className={"common-btn"}>
@@ -108,9 +136,16 @@ const ChatGroupMemberList = ({ view, setView }: IPropsChatGroupMemberList) => {
               }}
             />
             <Box className={classes.scroll_bar}>
-              {currentChatroomMembers.members.map((member, index) => {
-                return <GroupMemberListItem member={member} index={index} />;
-              })}
+              {!value &&
+                currentChatroomMembersStore?.members?.map((member, index) => {
+                  return <GroupMemberListItem member={member} index={index} invited={true} />;
+                })}
+              {value &&
+                searchedUserList?.map((member, index) => {
+                  if (currentChatroomMembersStore?.members?.some((element) => element._id === member._id))
+                    return <GroupMemberListItem member={member} index={index} invited={true} />;
+                  else return <GroupMemberListItem member={member} index={index} invited={false} />;
+                })}
             </Box>
           </Box>
         </>
