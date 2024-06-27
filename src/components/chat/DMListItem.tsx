@@ -1,27 +1,43 @@
+import { useDispatch, useSelector } from "react-redux";
 import { Box, Grid, Stack } from "@mui/material";
 import Avatar from "../home/Avatar";
+import { AppDispatch } from "../../store";
+import { setCurrentChatroom } from "../../features/chat/CurrentChatroomSlice";
+import { fetchCurrentChatroomMembersAsync } from "../../features/chat/CurrentChatroomMembersSlice";
+import { getAccount } from "../../features/account/AccountSlice";
+import { getContactList } from "../../features/chat/ContactListSlice";
 import { IChatroom } from "../../types/ChatroomAPITypes";
 import { accountType } from "../../types/accountTypes";
-import { useSelector } from "react-redux";
-import { getAccount } from "../../features/account/AccountSlice";
 import { IContactList } from "../../types/chatTypes";
-import { getContactList } from "../../features/chat/ContactListSlice";
 
 export interface IPropsDMListItem {
   DM: IChatroom;
   index: number;
   numberOfUnreadMessages: number;
+  setView: (_: string) => void;
 }
 
-const DMListItem = ({ DM, index, numberOfUnreadMessages }: IPropsDMListItem) => {
+const DMListItem = ({ DM, index, numberOfUnreadMessages, setView }: IPropsDMListItem) => {
+  const dispatch = useDispatch<AppDispatch>();
   const accountStore: accountType = useSelector(getAccount);
   const contactListStore: IContactList = useSelector(getContactList);
   const partnerId = DM.participants.find((element) => element.userId !== accountStore.uid)?.userId ?? "";
   const user = contactListStore.contacts.find((element) => element._id === partnerId);
 
+  const handleDMListItemClick = () => {
+    try {
+      dispatch(setCurrentChatroom(DM));
+      dispatch(fetchCurrentChatroomMembersAsync(DM._id));
+      setView("chatbox");
+      console.log("handleDMListItemClick");
+    } catch (err) {
+      console.error("Failed to handleDMListItemClick: ", err);
+    }
+  };
+
   return (
     user && (
-      <Box key={`${index}-${new Date().toISOString()}`}>
+      <Box key={`${index}-${new Date().toISOString()}`} onClick={handleDMListItemClick}>
         <Grid
           item
           xs={12}

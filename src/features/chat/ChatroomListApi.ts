@@ -3,8 +3,9 @@ import { IChatroom, IReqChatroomAddParticipant, IReqChatroomCreateChatroom, IReq
 import { rsaDecrypt, rsaEncrypt } from "./RsaApi";
 import ChatroomAPI from "../../lib/api/ChatroomAPI";
 import UserAPI from "../../lib/api/UserAPI";
-import { ISKey } from "./SKeySlice";
+import { ISKeyList } from "./SKeyListSlice";
 import { ICurrentChatroomMember } from "./CurrentChatroomMembersSlice";
+import { isArray } from "lodash";
 
 export const fetchChatroomList = async (_id: string) => {
   try {
@@ -13,6 +14,7 @@ export const fetchChatroomList = async (_id: string) => {
       console.error("Failed to fetchChatroomList: ", res);
       return null;
     }
+    console.log("fetchChatroomList");
     return res?.data ?? [];
   } catch (err) {
     console.error("Failed to fetchChatroomList: ", err);
@@ -79,21 +81,27 @@ export const createDM = async (_id: string) => {
 
 export const addParticipant = async (_member: ICurrentChatroomMember) => {
   try {
-    const sKeyStore: ISKey = JSON.parse(sessionStorage.getItem(`sKey`));
-    if (!sKeyStore || !sKeyStore.sKey) {
-      console.error("Failed to addOneCurrentChatroomMembers: sKey undefined");
+    const currentChatroomStore: IChatroom = JSON.parse(sessionStorage.getItem(`currentChatroom`));
+    if (!currentChatroomStore) {
+      console.error("Failed to addOneCurrentChatroomMembers: currentChatroomStore undefined!");
       return null;
     }
 
-    const currentChatroomStore: IChatroom = JSON.parse(sessionStorage.getItem(`currentChatroom`));
-    if (!currentChatroomStore) {
-      console.error("Failed to addOneCurrentChatroomMembers: currentChatroomStore undefined");
+    const sKeyListStore: ISKeyList = JSON.parse(sessionStorage.getItem(`sKeyList`));
+    if (!sKeyListStore || !sKeyListStore.sKeys || !isArray(sKeyListStore.sKeys)) {
+      console.error("Failed to addOneCurrentChatroomMembers: sKeyListStore undefined!");
+      return null;
+    }
+
+    const currentSKey = sKeyListStore?.sKeys?.find((element) => element?.roomId === currentChatroomStore?._id)?.sKey;
+    if (!currentSKey) {
+      console.error("Failed to addOneCurrentChatroomMembers: currentSKey undefined!");
       return null;
     }
 
     const body: IReqChatroomAddParticipant = {
       user_id: _member._id,
-      user_key: rsaEncrypt(sKeyStore.sKey, _member.rsa_pub_key),
+      user_key: rsaEncrypt(currentSKey, _member.rsa_pub_key),
       id: currentChatroomStore._id,
     };
     const res = await ChatroomAPI.addParticipant(body);

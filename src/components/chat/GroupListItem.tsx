@@ -1,16 +1,10 @@
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { Box, Grid, Stack } from "@mui/material";
 import GroupAvatar from "./GroupAvatar";
 import { AppDispatch } from "../../store";
 import { IChatroom } from "../../types/ChatroomAPITypes";
 import { setCurrentChatroom } from "../../features/chat/CurrentChatroomSlice";
 import { fetchCurrentChatroomMembersAsync } from "../../features/chat/CurrentChatroomMembersSlice";
-import { accountType } from "../../types/accountTypes";
-import { getAccount } from "../../features/account/AccountSlice";
-import { rsaDecrypt } from "../../features/chat/RsaApi";
-import { IRsa } from "../../types/chatTypes";
-import { getRsa } from "../../features/chat/RsaSlice";
-import { setSKey } from "../../features/chat/SKeySlice";
 
 export interface IPropsGroupListItem {
   group: IChatroom;
@@ -20,18 +14,13 @@ export interface IPropsGroupListItem {
 
 const GroupListItem = ({ group, index, setView }: IPropsGroupListItem) => {
   const dispatch = useDispatch<AppDispatch>();
-  const accountStore: accountType = useSelector(getAccount);
-  const rsaStore: IRsa = useSelector(getRsa);
 
   const handleGroupListItemClick = () => {
     try {
-      const userKey = group.participants.find((element) => element.userId === accountStore.uid)?.userKey;
-      const sKey = rsaDecrypt(userKey, rsaStore.privateKey);
-
-      dispatch(setSKey(sKey));
       dispatch(setCurrentChatroom(group));
       dispatch(fetchCurrentChatroomMembersAsync(group._id));
       setView("chatGroupMemberList");
+      console.log("handleGroupListItemClick");
     } catch (err) {
       console.error("Failed to handleGroupListItemClick: ", err);
     }

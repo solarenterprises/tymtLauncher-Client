@@ -490,7 +490,7 @@ const Chatroom = () => {
                 </InfiniteScroll>
               </Box>
               {/* Input field section */}
-              <Chatinputfield value={value} setValue={setValue} keyperuser={currentKey} />
+              <Chatinputfield value={value} setValue={setValue} />
             </Box>
           </Box>
         </Grid>

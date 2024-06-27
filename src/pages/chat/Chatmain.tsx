@@ -361,7 +361,7 @@ const Chatmain = ({ view, setView }: propsType) => {
                     <>
                       {!value &&
                         DMList.map((DM, index) => {
-                          return <DMListItem DM={DM} index={index} numberOfUnreadMessages={0} />;
+                          return <DMListItem DM={DM} index={index} numberOfUnreadMessages={0} setView={setView} />;
                         })}
                       {value &&
                         searchedUserList.map((user, index) => {

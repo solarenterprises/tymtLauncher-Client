@@ -1,23 +1,29 @@
-import { Box, Grid, Stack } from "@mui/material";
+import { useCallback, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
+
+import { Box, Grid, Stack } from "@mui/material";
+
 import Avatar from "../home/Avatar";
+
+import { AppDispatch } from "../../store";
+import { createContactAsync, getContactList } from "../../features/chat/ContactListSlice";
+import { getBlockList } from "../../features/chat/BlockListSlice";
+import { createDMAsync, getChatroomList } from "../../features/chat/ChatroomListSlice";
+
 import { IContactList, propsUserlistType, selecteduserType } from "../../types/chatTypes";
 import { getSelectedUser, setSelectedUsertoDelete } from "../../features/chat/Chat-selecteduserSlice";
-import { useCallback, useEffect, useRef } from "react";
-import { createContactAsync, getContactList } from "../../features/chat/ContactListSlice";
-import { AppDispatch } from "../../store";
-import { setCurrentPartner } from "../../features/chat/CurrentPartnerSlice";
-import { useSocket } from "../../providers/SocketProvider";
-import { getBlockList } from "../../features/chat/BlockListSlice";
-import { createDMAsync } from "../../features/chat/ChatroomListSlice";
+import { IChatroom, IChatroomList } from "../../types/ChatroomAPITypes";
+import { setCurrentChatroom } from "../../features/chat/CurrentChatroomSlice";
+import { fetchCurrentChatroomMembersAsync } from "../../features/chat/CurrentChatroomMembersSlice";
+import { getFriendList } from "../../features/chat/FriendListSlice";
 
 const UserListItem = ({ user, index, numberofunreadmessages, setShowContextMenu, setContextMenuPosition, setView }: propsUserlistType) => {
-  const { askEncryptionKey } = useSocket();
-
   const dispatch = useDispatch<AppDispatch>();
   const selectedUserToDeleteStore: selecteduserType = useSelector(getSelectedUser);
   const contactListStore: IContactList = useSelector(getContactList);
   const blockListStore: IContactList = useSelector(getBlockList);
+  const friendListStore: IContactList = useSelector(getFriendList);
+  const chatroomListStore: IChatroomList = useSelector(getChatroomList);
 
   const selectedUserToDeleteStoreRef = useRef(selectedUserToDeleteStore);
 
@@ -49,73 +55,53 @@ const UserListItem = ({ user, index, numberofunreadmessages, setShowContextMenu,
     return false;
   };
 
-  const handleBoxClick = useCallback(async () => {
+  const handleUserListItemClick = useCallback(async () => {
     try {
-      if (blockListStore.contacts.some((element) => element._id === user._id)) {
-        console.log("handleBoxClick: Already in the block list!");
-        askEncryptionKey(user._id);
-        dispatch(
-          setCurrentPartner({
-            _id: user._id,
-            nickName: user.nickName,
-            avatar: user.avatar,
-            lang: user.lang,
-            sxpAddress: user.sxpAddress,
-            onlineStatus: user.onlineStatus,
-            notificationStatus: user.notificationStatus,
-          })
-        );
-        if (setView) {
+      if (
+        blockListStore.contacts.some((element) => element._id === user._id) ||
+        contactListStore.contacts.some((element) => element._id === user._id) ||
+        friendListStore.contacts.some((element) => element._id === user._id)
+      ) {
+        console.log("handleUserListItemClick: Already in the block/contact/friend list!");
+        const haveDMWithUser = chatroomListStore.chatrooms
+          .filter((chatroom) => !chatroom.room_name)
+          .some((dm) => dm.participants.some((participant) => participant.userId === user._id));
+        if (haveDMWithUser) {
+          const newCurrentChatroom = chatroomListStore.chatrooms
+            .filter((chatroom) => !chatroom.room_name)
+            .find((dm) => dm.participants.some((participant) => participant.userId === user._id));
+          dispatch(setCurrentChatroom(newCurrentChatroom));
+          dispatch(fetchCurrentChatroomMembersAsync(newCurrentChatroom._id));
           setView("chatbox");
-        }
-      } else if (contactListStore.contacts.some((element) => element._id === user._id)) {
-        console.log("handleBoxClick: Already in the contact list!");
-        askEncryptionKey(user._id);
-        dispatch(
-          setCurrentPartner({
-            _id: user._id,
-            nickName: user.nickName,
-            avatar: user.avatar,
-            lang: user.lang,
-            sxpAddress: user.sxpAddress,
-            onlineStatus: user.onlineStatus,
-            notificationStatus: user.notificationStatus,
-          })
-        );
-        if (setView) {
-          setView("chatbox");
-        }
-      } else {
-        dispatch(createDMAsync(user._id));
-        dispatch(createContactAsync(user._id))
-          .then(() => {
-            askEncryptionKey(user._id);
-            dispatch(
-              setCurrentPartner({
-                _id: user._id,
-                nickName: user.nickName,
-                avatar: user.avatar,
-                lang: user.lang,
-                sxpAddress: user.sxpAddress,
-                onlineStatus: user.onlineStatus,
-                notificationStatus: user.notificationStatus,
-              })
-            );
-            if (setView) {
+        } else {
+          dispatch(createDMAsync(user._id)).then((action) => {
+            if (action.type.endsWith("/fulfilled")) {
+              const newCurrentChatroom = action.payload as IChatroom;
+              dispatch(setCurrentChatroom(newCurrentChatroom));
+              dispatch(fetchCurrentChatroomMembersAsync(newCurrentChatroom._id));
               setView("chatbox");
             }
-          })
-          .catch((err) => {
-            console.error("Failed to createContactAsync: ", err);
           });
+        }
+      } else {
+        dispatch(createDMAsync(user._id)).then((action) => {
+          if (action.type.endsWith("/fulfilled")) {
+            const newCurrentChatroom = action.payload as IChatroom;
+            dispatch(setCurrentChatroom(newCurrentChatroom));
+            dispatch(fetchCurrentChatroomMembersAsync(newCurrentChatroom._id));
+            setView("chatbox");
+          }
+        });
+        dispatch(createContactAsync(user._id));
       }
+      console.log("handleUserListItemClick");
     } catch (err) {
-      console.error("Failed to handleBoxClick: ", err);
+      console.error("Failed to handleUserListItemClick: ", err);
     }
-  }, [user, contactListStore, blockListStore]);
+  }, [user, contactListStore, blockListStore, friendListStore, chatroomListStore]);
 
   return (
-    <Box key={`${index}-${new Date().toISOString()}`}>
+    <Box key={`${index}-${new Date().toISOString()}`} onClick={handleUserListItemClick}>
       <Grid
         item
         xs={12}
@@ -139,7 +125,6 @@ const UserListItem = ({ user, index, numberofunreadmessages, setShowContextMenu,
           },
         }}
         onContextMenu={(e) => handleContextMenu(e, user._id)}
-        onClick={handleBoxClick}
       >
         <Avatar onlineStatus={user.onlineStatus} userid={user._id} size={40} status={user.notificationStatus} />
         <Stack flexDirection={"row"} alignItems={"center"} justifyContent={"space-between"} display={"flex"} sx={{ marginLeft: "25px", width: "320px" }}>
@@ -149,7 +134,6 @@ const UserListItem = ({ user, index, numberofunreadmessages, setShowContextMenu,
               <Box className={"fs-12-light gray"}>{user?.sxpAddress}</Box>
             </Stack>
           </Box>
-
           <Box
             className={"unread-dot fs-10-light"}
             sx={{
