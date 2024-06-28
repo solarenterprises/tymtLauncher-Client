@@ -34,3 +34,13 @@ export interface IChatroom {
 export interface IChatroomList {
   chatrooms: IChatroom[];
 }
+
+export interface IParamsJoinPublicGroup {
+  _userId: string;
+  _groupId: string;
+}
+
+export interface IParamsLeaveGroup {
+  _userId: string;
+  _groupId: string;
+}

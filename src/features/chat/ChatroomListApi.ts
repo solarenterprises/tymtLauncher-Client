@@ -1,5 +1,12 @@
 import { IRsa } from "../../types/chatTypes";
-import { IChatroom, IReqChatroomAddParticipant, IReqChatroomCreateChatroom, IReqChatroomLeaveChatroom } from "../../types/ChatroomAPITypes";
+import {
+  IChatroom,
+  IParamsJoinPublicGroup,
+  IParamsLeaveGroup,
+  IReqChatroomAddParticipant,
+  IReqChatroomCreateChatroom,
+  IReqChatroomLeaveChatroom,
+} from "../../types/ChatroomAPITypes";
 import { rsaDecrypt, rsaEncrypt } from "./RsaApi";
 import ChatroomAPI from "../../lib/api/ChatroomAPI";
 import UserAPI from "../../lib/api/UserAPI";
@@ -94,14 +101,14 @@ export const addParticipant = async (_member: ICurrentChatroomMember) => {
     }
 
     const currentSKey = sKeyListStore?.sKeys?.find((element) => element?.roomId === currentChatroomStore?._id)?.sKey;
-    if (!currentSKey) {
+    if (!currentSKey && currentChatroomStore.isPrivate) {
       console.error("Failed to addOneCurrentChatroomMembers: currentSKey undefined!");
       return null;
     }
 
     const body: IReqChatroomAddParticipant = {
       user_id: _member._id,
-      user_key: rsaEncrypt(currentSKey, _member.rsa_pub_key),
+      user_key: currentChatroomStore.isPrivate ? rsaEncrypt(currentSKey, _member.rsa_pub_key) : "",
       id: currentChatroomStore._id,
     };
     const res = await ChatroomAPI.addParticipant(body);
@@ -139,6 +146,45 @@ export const removeParticipant = async (_member: ICurrentChatroomMember) => {
     return res?.data?.result;
   } catch (err) {
     console.error("Failed to removeParticipant: ", err);
+  }
+};
+
+export const joinPublicGroup = async ({ _userId, _groupId }: IParamsJoinPublicGroup) => {
+  try {
+    const body: IReqChatroomAddParticipant = {
+      user_id: _userId,
+      user_key: "",
+      id: _groupId,
+    };
+    const res = await ChatroomAPI.addParticipant(body);
+    if (res?.status !== 200 || !res?.data) {
+      console.error("Failed to joinPublicGroup: ", res);
+      return null;
+    }
+
+    console.log("joinPublicGroup");
+    return res?.data?.result;
+  } catch (err) {
+    console.error("Failed to joinPublicGroup: ", err);
+  }
+};
+
+export const leaveGroup = async ({ _userId, _groupId }: IParamsLeaveGroup) => {
+  try {
+    const body: IReqChatroomLeaveChatroom = {
+      user_id: _userId,
+      id: _groupId,
+    };
+    const res = await ChatroomAPI.leaveChatroom(body);
+    if (res?.status !== 200 || !res?.data) {
+      console.error("Failed to leaveGroup: ", res);
+      return null;
+    }
+
+    console.log("leaveGroup");
+    return res?.data?.result;
+  } catch (err) {
+    console.error("Failed to leaveGroup: ", err);
   }
 };
 

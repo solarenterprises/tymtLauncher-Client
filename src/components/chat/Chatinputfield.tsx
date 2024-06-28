@@ -65,7 +65,7 @@ const Chatinputfield = ({ value, setValue }: propsChatinputfieldType) => {
         if (value.trim() !== "") {
           // Encrypt & send the message
           const currentSKey = sKeyListStore?.sKeys?.find((element) => element?.roomId === currentChatroomStore?._id)?.sKey;
-          const encryptedMessage = await encrypt(value, currentSKey);
+          const encryptedMessage = currentChatroomStore.isPrivate ? await encrypt(value, currentSKey) : value;
           const message = {
             sender_id: accountStore?.uid,
             room_id: currentChatroomStore?._id,
@@ -74,7 +74,7 @@ const Chatinputfield = ({ value, setValue }: propsChatinputfieldType) => {
           socket.current.emit("post-message", JSON.stringify(message));
           console.log("socket.current.emit > post-message", message);
 
-          // Trigger the alerts
+          // Trigger the alert
           const data = {
             alertType: "chat",
             note: {

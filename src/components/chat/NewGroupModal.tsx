@@ -32,7 +32,7 @@ const NewGroupModal = ({ open, setOpen, roomMode }: IPropsNewGroupModal) => {
   const handleCreateClick = useCallback(() => {
     try {
       if (!newGroupName) {
-        console.log("handleCreateClick: !groupName");
+        console.log("handleCreateClick: !newGroupName");
         return;
       }
       console.log("handleCreateClick", newGroupMode, newGroupName);

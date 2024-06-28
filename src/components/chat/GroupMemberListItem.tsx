@@ -1,8 +1,11 @@
+import { useSelector } from "react-redux";
 import { Box, Grid, Stack } from "@mui/material";
 import Avatar from "../home/Avatar";
-import { ICurrentChatroomMember } from "../../features/chat/CurrentChatroomMembersSlice";
 import MemberRemoveButton from "./MemberRemoveButton";
 import MemberInviteButton from "./MemberInviteButton";
+import { ICurrentChatroomMember } from "../../features/chat/CurrentChatroomMembersSlice";
+import { getAccount } from "../../features/account/AccountSlice";
+import { accountType } from "../../types/accountTypes";
 
 export interface IPropsGroupMemberListItem {
   member: ICurrentChatroomMember;
@@ -11,6 +14,8 @@ export interface IPropsGroupMemberListItem {
 }
 
 const GroupMemberListItem = ({ member, index, invited }: IPropsGroupMemberListItem) => {
+  const accountStore: accountType = useSelector(getAccount);
+
   return (
     <Box key={`${index}-${new Date().toISOString()}`}>
       <Grid
@@ -45,8 +50,8 @@ const GroupMemberListItem = ({ member, index, invited }: IPropsGroupMemberListIt
             </Stack>
           </Box>
 
-          {invited && <MemberRemoveButton member={member} />}
-          {!invited && <MemberInviteButton member={member} />}
+          {invited && accountStore.uid !== member._id && <MemberRemoveButton member={member} />}
+          {!invited && accountStore.uid !== member._id && <MemberInviteButton member={member} />}
           {/* <Box
             className={"unread-dot fs-10-light"}
             sx={{

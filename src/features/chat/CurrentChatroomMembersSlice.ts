@@ -8,7 +8,7 @@ export interface ICurrentChatroomMemberWallet {
   address: string;
 }
 
-export interface ICurrentChatroomMember {
+export interface  ICurrentChatroomMember {
   _id: string;
   nickName: string;
   wallet?: ICurrentChatroomMemberWallet[];

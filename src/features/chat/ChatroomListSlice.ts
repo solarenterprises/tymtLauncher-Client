@@ -2,7 +2,7 @@ import { PayloadAction, createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import tymtStorage from "../../lib/Storage";
 import { compareJSONStructure } from "../../lib/api/JSONHelper";
 import { IChatroomList } from "../../types/ChatroomAPITypes";
-import { createDM, createGroup, fetchChatroomList, addParticipant, removeParticipant } from "./ChatroomListApi";
+import { createDM, createGroup, fetchChatroomList, addParticipant, removeParticipant, joinPublicGroup, leaveGroup } from "./ChatroomListApi";
 
 const init: IChatroomList = {
   chatrooms: [],
@@ -29,6 +29,8 @@ export const createGroupAsync = createAsyncThunk("chatroomList/createGroupAsync"
 export const createDMAsync = createAsyncThunk("chatroomList/createDMAsync", createDM);
 export const addParticipantAsync = createAsyncThunk("chatroomList/addParticipantAsync", addParticipant);
 export const removeParticipantAsync = createAsyncThunk("chatroomList/removeParticipantAsync", removeParticipant);
+export const joinPublicGroupAsync = createAsyncThunk("chatroomList/joinPublicGroupAsync", joinPublicGroup);
+export const leaveGroupAsync = createAsyncThunk("chatroomList/leaveGroupAsync", leaveGroup);
 
 export const chatroomListSlice = createSlice({
   name: "chatroomList",
@@ -100,6 +102,31 @@ export const chatroomListSlice = createSlice({
         }
         const restOfChatrooms = state.data.chatrooms.filter((element) => element._id !== action.payload?._id);
         state.data.chatrooms = [...restOfChatrooms, action.payload];
+        tymtStorage.set(`chatroomList`, JSON.stringify(state.data));
+        state.status = "chatroomList";
+      })
+      .addCase(joinPublicGroupAsync.pending, (state) => {
+        state.status = "pending";
+      })
+      .addCase(joinPublicGroupAsync.fulfilled, (state, action: PayloadAction<any>) => {
+        if (!action.payload) {
+          console.error("Failed to joinPublicGroupAsync: ", action.payload);
+          return;
+        }
+        state.data.chatrooms = [...state.data.chatrooms, action.payload];
+        tymtStorage.set(`chatroomList`, JSON.stringify(state.data));
+        state.status = "chatroomList";
+      })
+      .addCase(leaveGroupAsync.pending, (state) => {
+        state.status = "pending";
+      })
+      .addCase(leaveGroupAsync.fulfilled, (state, action: PayloadAction<any>) => {
+        if (!action.payload) {
+          console.error("Failed to leaveGroupAsync: ", action.payload);
+          return;
+        }
+        const restOfChatrooms = state.data.chatrooms.filter((element) => element._id !== action.payload?._id);
+        state.data.chatrooms = [...restOfChatrooms];
         tymtStorage.set(`chatroomList`, JSON.stringify(state.data));
         state.status = "chatroomList";
       });
