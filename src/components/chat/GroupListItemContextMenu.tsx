@@ -8,9 +8,12 @@ import { IChatroom, IParamsLeaveGroup } from "../../types/ChatroomAPITypes";
 import { IPoint } from "../../types/homeTypes";
 import { accountType } from "../../types/accountTypes";
 
+import { useSocket } from "../../providers/SocketProvider";
+
 import { AppDispatch } from "../../store";
 import { leaveGroupAsync } from "../../features/chat/ChatroomListSlice";
 import { getAccount } from "../../features/account/AccountSlice";
+import { ISocketParamsLeaveMessageGroup } from "../../types/SocketTypes";
 
 export interface IPropsGroupListItemContextMenu {
   view: boolean;
@@ -20,6 +23,8 @@ export interface IPropsGroupListItemContextMenu {
 }
 
 const GroupListItemContextMenu = ({ view, setView, group, contextMenuPosition }: IPropsGroupListItemContextMenu) => {
+  const { socket } = useSocket();
+
   const { t } = useTranslation();
   const dispatch = useDispatch<AppDispatch>();
   const accountStore: accountType = useSelector(getAccount);
@@ -30,14 +35,20 @@ const GroupListItemContextMenu = ({ view, setView, group, contextMenuPosition }:
         _groupId: group._id,
         _userId: accountStore.uid,
       };
-      dispatch(leaveGroupAsync(data));
+      dispatch(leaveGroupAsync(data)).then(() => {
+        const data_2: ISocketParamsLeaveMessageGroup = {
+          room_id: group._id,
+          joined_user_id: accountStore.uid,
+        };
+        socket.current.emit("leave-message-group", data_2);
+      });
 
       console.log("handleLeaveGroupClick", group);
       setView(false);
     } catch (err) {
       console.error("Failed to handleLeaveGroupClick: ", err);
     }
-  }, [accountStore]);
+  }, [accountStore, socket.current]);
 
   const handleOnClose = () => {
     setView(false);

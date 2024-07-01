@@ -38,12 +38,8 @@ export const sKeyListSlice = createSlice({
         console.error("Failed to addOneSkeyList: action.payload undefined!", action.payload);
         return;
       }
-      if (state.data.sKeys.some((element) => element.roomId === action.payload.roomId)) {
-        const restOfSkeys = state.data.sKeys.filter((element) => element.roomId !== action.payload.roomId);
-        state.data.sKeys = [...restOfSkeys, action.payload];
-      } else {
-        state.data.sKeys = [...state.data.sKeys, action.payload];
-      }
+      const restOfSkeys = state.data.sKeys.filter((element) => element.roomId !== action.payload.roomId);
+      state.data.sKeys = [...restOfSkeys, action.payload];
       sessionStorage.setItem("sKeyList", JSON.stringify(state.data));
     },
   },

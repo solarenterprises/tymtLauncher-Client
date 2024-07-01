@@ -1,16 +1,24 @@
 import { useCallback, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
+
 import { Box, Button, Fade, Modal, Stack } from "@mui/material";
+
+import { useSocket } from "../../providers/SocketProvider";
 import NewGroupSwitch from "./NewGroupSwitch";
 import InputText from "../account/InputText";
-import { useDispatch, useSelector } from "react-redux";
+
 import { AppDispatch } from "../../store";
 import { createGroupAsync } from "../../features/chat/ChatroomListSlice";
-import { IChatroom } from "../../types/ChatroomAPITypes";
+import { getAccount } from "../../features/account/AccountSlice";
 import { addOneSKeyList } from "../../features/chat/SKeyListSlice";
-import { rsaDecrypt } from "../../features/chat/RsaApi";
-import { IRsa } from "../../types/chatTypes";
 import { getRsa } from "../../features/chat/RsaSlice";
+import { rsaDecrypt } from "../../features/chat/RsaApi";
+
+import { IChatroom } from "../../types/ChatroomAPITypes";
+import { IRsa } from "../../types/chatTypes";
+import { ISocketParamsJoinMessageGroup } from "../../types/SocketTypes";
+import { accountType } from "../../types/accountTypes";
 
 export interface IPropsNewGroupModal {
   open: boolean;
@@ -20,7 +28,10 @@ export interface IPropsNewGroupModal {
 
 const NewGroupModal = ({ open, setOpen, roomMode }: IPropsNewGroupModal) => {
   const { t } = useTranslation();
+  const { socket } = useSocket();
+
   const dispatch = useDispatch<AppDispatch>();
+  const accountStore: accountType = useSelector(getAccount);
   const rsaStore: IRsa = useSelector(getRsa);
   const [newGroupMode, setNewGroupMode] = useState<string>("public");
   const [newGroupName, setNewGroupName] = useState<string>("");
@@ -30,32 +41,45 @@ const NewGroupModal = ({ open, setOpen, roomMode }: IPropsNewGroupModal) => {
   };
 
   const handleCreateClick = useCallback(() => {
-    try {
-      if (!newGroupName) {
-        console.log("handleCreateClick: !newGroupName");
-        return;
-      }
-      console.log("handleCreateClick", newGroupMode, newGroupName);
-      dispatch(
-        createGroupAsync({
-          room_name: newGroupName,
-          isPrivate: newGroupMode === "private",
-        })
-      ).then((action) => {
-        if (action.type.endsWith("/fulfilled")) {
-          dispatch(
-            addOneSKeyList({
-              roomId: (action.payload as IChatroom)._id,
-              sKey: rsaDecrypt((action.payload as IChatroom).participants[0].userKey, rsaStore.privateKey),
-            })
-          );
+    if (socket.current && socket.current.connected) {
+      try {
+        if (!newGroupName) {
+          console.log("handleCreateClick: !newGroupName");
+          return;
         }
-      });
-    } catch (err) {
-      console.error("Failed to handleCreateClick: ", err);
+        console.log("handleCreateClick", newGroupMode, newGroupName);
+        dispatch(
+          createGroupAsync({
+            room_name: newGroupName,
+            isPrivate: newGroupMode === "private",
+          })
+        ).then((action) => {
+          if (action.type.endsWith("/fulfilled")) {
+            const newChatroom: IChatroom = action.payload as IChatroom;
+
+            const data_1: ISocketParamsJoinMessageGroup = {
+              room_id: newChatroom._id,
+              joined_user_id: accountStore.uid,
+            };
+            socket.current.emit("join-message-group", data_1);
+            console.log("socket.current.emit > join-message-group", data_1);
+
+            dispatch(
+              addOneSKeyList({
+                roomId: newChatroom._id,
+                sKey: rsaDecrypt((action.payload as IChatroom).participants[0].userKey, rsaStore.privateKey),
+              })
+            );
+          }
+        });
+        setOpen(false);
+      } catch (err) {
+        console.error("Failed to handleCreateClick: ", err);
+      }
+    } else {
+      console.error("Failed to handleCreateClick: socket not connected!");
     }
-    setOpen(false);
-  }, [newGroupName, newGroupMode, rsaStore]);
+  }, [newGroupName, newGroupMode, rsaStore, accountStore, socket.current]);
 
   return (
     <>
