@@ -70,6 +70,7 @@ const Chatinputfield = ({ value, setValue }: propsChatinputfieldType) => {
             sender_id: accountStore?.uid,
             room_id: currentChatroomStore?._id,
             message: encryptedMessage,
+            createdAt: Date.now(),
           };
           socket.current.emit("post-message", JSON.stringify(message));
           console.log("socket.current.emit > post-message", message);

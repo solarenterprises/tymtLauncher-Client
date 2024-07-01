@@ -37,7 +37,7 @@ const MemberRemoveButton = ({ member }: IPropsMemberRemoveButton) => {
             room_id: currentChatroomStore._id,
             joined_user_id: member._id,
           };
-          socket.current.emit("leave-message-group", data);
+          socket.current.emit("leave-message-group", JSON.stringify(data));
         });
 
         console.log("handleMemberRemoveButtonClick");

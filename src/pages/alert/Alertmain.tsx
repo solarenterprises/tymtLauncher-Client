@@ -13,9 +13,6 @@ import {
   getAlertList,
   updateAllAlertReadStatusAsync,
 } from "../../features/alert/AlertListSlice";
-import { encryptionkeyStoreType } from "../../types/chatTypes";
-import { selectEncryptionKeyStore } from "../../features/chat/Chat-encryptionkeySlice";
-import { useSocket } from "../../providers/SocketProvider";
 import { AppDispatch } from "../../store";
 import InfiniteScroll from "react-infinite-scroll-component";
 import { accountType } from "../../types/accountTypes";
@@ -23,12 +20,10 @@ import { getAccount } from "../../features/account/AccountSlice";
 
 const Alertmain = () => {
   const { t } = useTranslation();
-  const { askEncryptionKey } = useSocket();
 
   const dispatch = useDispatch<AppDispatch>();
 
   const alertListStore: IAlertList = useSelector(getAlertList);
-  const encryptionKeyStore: encryptionkeyStoreType = useSelector(selectEncryptionKeyStore);
   const accountStore: accountType = useSelector(getAccount);
 
   const [alertStatus, setAlertStatus] = useState<string>("unread");
@@ -136,10 +131,6 @@ const Alertmain = () => {
           >
             {alertStatus === "unread" &&
               [...alertListStore.unread].map((alert, index) => {
-                if (alert.alertType === "chat") {
-                  const key = encryptionKeyStore.encryption_Keys[alert?.note?.sender];
-                  if (!key) askEncryptionKey(alert?.note?.sender);
-                }
                 return (
                   <AlertList
                     key={`${alert._id}-${index}`}
@@ -152,10 +143,6 @@ const Alertmain = () => {
               })}
             {alertStatus === "read" &&
               [...alertListStore.read].map((alert, index) => {
-                if (alert.alertType === "chat") {
-                  const key = encryptionKeyStore.encryption_Keys[alert?.note?.sender];
-                  if (!key) askEncryptionKey(alert?.note?.sender);
-                }
                 return (
                   <AlertList
                     key={`${alert._id}-${index}`}

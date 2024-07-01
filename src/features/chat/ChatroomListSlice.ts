@@ -2,7 +2,16 @@ import { PayloadAction, createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import tymtStorage from "../../lib/Storage";
 import { compareJSONStructure } from "../../lib/api/JSONHelper";
 import { IChatroomList } from "../../types/ChatroomAPITypes";
-import { createDM, createGroup, fetchChatroomList, addParticipant, removeParticipant, joinPublicGroup, leaveGroup } from "./ChatroomListApi";
+import {
+  createDM,
+  createGroup,
+  fetchChatroomList,
+  addParticipant,
+  removeParticipant,
+  joinPublicGroup,
+  leaveGroup,
+  addOneToChatroomList,
+} from "./ChatroomListApi";
 
 const init: IChatroomList = {
   chatrooms: [],
@@ -25,6 +34,7 @@ const initialState = {
 };
 
 export const fetchChatroomListAsync = createAsyncThunk("chatroomList/fetchChatroomListAsync", fetchChatroomList);
+export const addOneToChatroomListAsync = createAsyncThunk("chatroomList/addOneToChatroomListAsync", addOneToChatroomList);
 export const createGroupAsync = createAsyncThunk("chatroomList/createGroupAsync", createGroup);
 export const createDMAsync = createAsyncThunk("chatroomList/createDMAsync", createDM);
 export const addParticipantAsync = createAsyncThunk("chatroomList/addParticipantAsync", addParticipant);
@@ -52,6 +62,19 @@ export const chatroomListSlice = createSlice({
           return;
         }
         state.data.chatrooms = action.payload;
+        tymtStorage.set(`chatroomList`, JSON.stringify(state.data));
+        state.status = "chatroomList";
+      })
+      .addCase(addOneToChatroomListAsync.pending, (state) => {
+        state.status = "pending";
+      })
+      .addCase(addOneToChatroomListAsync.fulfilled, (state, action: PayloadAction<any>) => {
+        if (!action.payload) {
+          console.error("Failed to addOneToChatroomListAsync: ", action.payload);
+          return;
+        }
+        const restOfChatrooms = state.data.chatrooms.filter((element) => element._id !== action.payload?._id);
+        state.data.chatrooms = [...restOfChatrooms, action.payload];
         tymtStorage.set(`chatroomList`, JSON.stringify(state.data));
         state.status = "chatroomList";
       })

@@ -13,3 +13,11 @@ export interface ISocketParamsPostMessage {
   sender_id: string;
   message: string;
 }
+
+export interface ISocketParamsJoinedMessageGroup {
+  room_id: string;
+}
+
+export interface ISocketParamsLeftMessageGroup {
+  room_id: string;
+}

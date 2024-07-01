@@ -29,6 +29,22 @@ export const fetchChatroomList = async (_id: string) => {
   }
 };
 
+export const addOneToChatroomList = async (room_id: string) => {
+  try {
+    const res = await ChatroomAPI.fetchChatroom(room_id);
+    if (res?.status !== 200 || !res?.data || !res?.data?.result) {
+      console.error("Failed to addOneToChatroomList: ", res);
+      return null;
+    }
+
+    console.log("addOneToChatroomList", room_id);
+    return res?.data?.result;
+  } catch (err) {
+    console.error("Failed to addOneToChatroomList: ", err);
+    return null;
+  }
+};
+
 export const createGroup = async (payload: IReqChatroomCreateChatroom) => {
   try {
     const res = await ChatroomAPI.createChatroom(payload);

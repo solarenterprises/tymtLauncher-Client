@@ -104,8 +104,8 @@ const UserListItem = ({ user, index, numberofunreadmessages, setShowContextMenu,
                   room_id: newCurrentChatroom._id,
                   joined_user_id: accountStore.uid,
                 };
-                socket.current.emit("join-message-group", data_1);
-                socket.current.emit("join-message-group", data_2);
+                socket.current.emit("join-message-group", JSON.stringify(data_1));
+                socket.current.emit("join-message-group", JSON.stringify(data_2));
                 console.log("socket.current.emit > join-message-group", data_1);
                 console.log("socket.current.emit > join-message-group", data_2);
 
@@ -138,8 +138,8 @@ const UserListItem = ({ user, index, numberofunreadmessages, setShowContextMenu,
                 room_id: newCurrentChatroom._id,
                 joined_user_id: accountStore.uid,
               };
-              socket.current.emit("join-message-group", data_1);
-              socket.current.emit("join-message-group", data_2);
+              socket.current.emit("join-message-group", JSON.stringify(data_1));
+              socket.current.emit("join-message-group", JSON.stringify(data_2));
               console.log("socket.current.emit > join-message-group", data_1);
               console.log("socket.current.emit > join-message-group", data_2);
 

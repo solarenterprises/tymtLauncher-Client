@@ -10,9 +10,9 @@ import { getMultiWallet, refreshChainBalanceAsync } from "../features/wallet/Mul
 import { fetchContactListAsync } from "../features/chat/ContactListSlice";
 import { fetchFriendListAsync } from "../features/chat/FriendListSlice";
 import { fetchBlockListAsync } from "../features/chat/BlockListSlice";
-import { fetchChatroomListAsync, getChatroomList } from "../features/chat/ChatroomListSlice";
+import { fetchChatroomListAsync } from "../features/chat/ChatroomListSlice";
 import { refreshCurrencyAsync } from "../features/wallet/CurrencySlice";
-import { IChatroomList, IParticipant } from "../types/ChatroomAPITypes";
+import { IChatroom, IParticipant } from "../types/ChatroomAPITypes";
 import { ISKey, setSKeyList } from "../features/chat/SKeyListSlice";
 import { rsaDecrypt } from "../features/chat/RsaApi";
 import { IRsa } from "../types/chatTypes";
@@ -23,7 +23,6 @@ const AlertProvider = () => {
   const accountStore: accountType = useSelector(getAccount);
   const walletStore: multiWalletType = useSelector(getMultiWallet);
   const chainStore: IChain = useSelector(getChain);
-  const chatroomListStore: IChatroomList = useSelector(getChatroomList);
   const rsaStore: IRsa = useSelector(getRsa);
 
   const walletStoreRef = useRef(walletStore);
@@ -43,17 +42,20 @@ const AlertProvider = () => {
       dispatch(fetchContactListAsync());
       dispatch(fetchFriendListAsync());
       dispatch(fetchBlockListAsync());
-      dispatch(fetchChatroomListAsync(accountStore.uid)).then(() => {
+      dispatch(fetchChatroomListAsync(accountStore.uid)).then((action) => {
         try {
-          const newSKeyArray = chatroomListStore.chatrooms.map((chatroom) => {
-            const mySelf: IParticipant = chatroom.participants.find((participant) => participant.userId === accountStore.uid);
-            const sKey: ISKey = {
-              roomId: chatroom._id,
-              sKey: rsaDecrypt(mySelf.userKey, rsaStore.privateKey),
-            };
-            return sKey;
-          });
-          dispatch(setSKeyList(newSKeyArray));
+          if (action.type.endsWith("/fulfilled")) {
+            const newChatroomList = action.payload as IChatroom[];
+            const newSKeyArray = newChatroomList.map((chatroom) => {
+              const mySelf: IParticipant = chatroom.participants.find((participant) => participant.userId === accountStore.uid);
+              const sKey: ISKey = {
+                roomId: chatroom._id,
+                sKey: rsaDecrypt(mySelf.userKey, rsaStore.privateKey),
+              };
+              return sKey;
+            });
+            dispatch(setSKeyList(newSKeyArray));
+          }
         } catch (err) {
           console.error("Failed to newSKeyArray: ", err);
         }

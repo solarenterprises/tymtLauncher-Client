@@ -15,7 +15,7 @@ import { getCurrentPartner } from "../features/chat/CurrentPartnerSlice";
 import { createContactAsync, getContactList, updateOneInContactList } from "../features/chat/ContactListSlice";
 import { addOneToUnreadList, updateFriendRequestAsync } from "../features/alert/AlertListSlice";
 import { getBlockList } from "../features/chat/BlockListSlice";
-import { createDMAsync, getChatroomList } from "../features/chat/ChatroomListSlice";
+import { addOneToChatroomListAsync, getChatroomList, leaveGroupAsync } from "../features/chat/ChatroomListSlice";
 import { selectNotification } from "../features/settings/NotificationSlice";
 import { selectEncryptionKeyStore } from "../features/chat/Chat-encryptionkeySlice";
 import { createFriendAsync, getFriendList } from "../features/chat/FriendListSlice";
@@ -23,22 +23,20 @@ import { selectChat } from "../features/settings/ChatSlice";
 import { setChatHistory, getChatHistory } from "../features/chat/Chat-historySlice";
 import { getSocketHash } from "../features/chat/SocketHashSlice";
 
-import { IChatroom, IChatroomList } from "../types/ChatroomAPITypes";
-import { ISocketParamsPostMessage } from "../types/SocketTypes";
+import { IChatroom, IChatroomList, IParamsLeaveGroup } from "../types/ChatroomAPITypes";
+import { ISocketParamsJoinedMessageGroup, ISocketParamsLeftMessageGroup, ISocketParamsPostMessage } from "../types/SocketTypes";
 import { accountType } from "../types/accountTypes";
 import { chatType, notificationType } from "../types/settingTypes";
-import { ChatHistoryType, ISocketHash, IAlert, askEncryptionKeyType, encryptionkeyStoreType, IContact, IContactList } from "../types/chatTypes";
+import { ChatHistoryType, ISocketHash, IAlert, encryptionkeyStoreType, IContact, IContactList } from "../types/chatTypes";
 
 interface SocketContextType {
   socket: MutableRefObject<Socket>;
-  askEncryptionKey: (recipientId: string) => void;
   approveFriendRequest: (alert: IAlert) => void;
   declineFriendRequest: (alert: IAlert) => void;
 }
 
 const SocketContext = createContext<SocketContextType>({
   socket: undefined,
-  askEncryptionKey: (_) => {},
   approveFriendRequest: (_) => {},
   declineFriendRequest: (_) => {},
 });
@@ -187,9 +185,16 @@ export const SocketProvider = () => {
                 const senderInBlockList = blockListStoreRef.current.contacts.find((element) => element._id === senderId);
                 const senderInContactList = contactListStoreRef.current.contacts.find((element) => element._id === senderId);
                 const senderInFriendList = friendListStoreRef.current.contacts.find((element) => element._id === senderId);
-                // Block
+
+                // Block if the alert is from someone in the block list
                 if (senderInBlockList) {
-                  console.log("Blocked the message from someone in the block list!", alert);
+                  console.log("Blocked the alert from someone in the block list!", alert);
+                  return;
+                }
+
+                // Ignore if the alert is from someone not in the contact list or not in the chat room list
+                if (!senderInContactList) {
+                  console.log("Ignored the alert from a stranger not in the contact list or not in the chat room list!", alert);
                   return;
                 }
 
@@ -198,10 +203,6 @@ export const SocketProvider = () => {
                   if (senderInFriendList) {
                     console.log("Sender is already in my friend list!");
                     return;
-                  }
-                  if (!senderInContactList) {
-                    dispatch(createDMAsync(senderId));
-                    dispatch(createContactAsync(senderId));
                   }
                   dispatch(addOneToUnreadList(alert));
                   setNotificationOpen(true);
@@ -223,6 +224,37 @@ export const SocketProvider = () => {
                 else if (alert.alertType === "chat") {
                   dispatch(addOneToUnreadList(alert));
                 }
+              });
+            }
+
+            if (!socket.current.hasListeners("joined-message-group")) {
+              socket.current.on("joined-message-group", async (data: ISocketParamsJoinedMessageGroup) => {
+                console.log("socket.current.on > joined-message-group", data);
+
+                const { room_id } = data;
+                dispatch(addOneToChatroomListAsync(room_id)).then((action) => {
+                  if (action.type.endsWith("/fulfilled")) {
+                    const newAddedChatroom = action.payload as IChatroom;
+
+                    if (!newAddedChatroom.room_name) {
+                      const partner = newAddedChatroom.participants.find((participant) => participant.userId !== accountStoreRef.current.uid);
+                      dispatch(createContactAsync(partner.userId));
+                    }
+                  }
+                });
+              });
+            }
+
+            if (!socket.current.hasListeners("left-message-group")) {
+              socket.current.on("left-message-group", async (data: ISocketParamsLeftMessageGroup) => {
+                console.log("socket.current.on > left-message-group", data);
+
+                const { room_id } = data;
+                const data_2: IParamsLeaveGroup = {
+                  _userId: accountStoreRef.current.uid,
+                  _groupId: room_id,
+                };
+                dispatch(leaveGroupAsync(data_2));
               });
             }
 
@@ -300,27 +332,6 @@ export const SocketProvider = () => {
     };
   }, [accountStore.uid, socketHashStore.socketHash]);
 
-  const askEncryptionKey = useCallback(
-    async (recipientId: string) => {
-      try {
-        if (encryptionKeyStore.encryption_Keys[recipientId]) return;
-        if (!socket.current) {
-          console.error("Failed to askEncryptionKey: socket.current undefined");
-          return;
-        }
-        const askData: askEncryptionKeyType = {
-          sender_id: accountStore.uid,
-          recipient_id: recipientId,
-        };
-        socket.current.emit("ask-encryption-key", JSON.stringify(askData));
-        console.log("askEncryptionKey");
-      } catch (err) {
-        console.error("Failed to askEncryptionKey: ", err);
-      }
-    },
-    [accountStore, encryptionKeyStore]
-  );
-
   const approveFriendRequest = useCallback(
     (alert: IAlert) => {
       try {
@@ -370,7 +381,6 @@ export const SocketProvider = () => {
     <SocketContext.Provider
       value={{
         socket,
-        askEncryptionKey,
         approveFriendRequest,
         declineFriendRequest,
       }}
