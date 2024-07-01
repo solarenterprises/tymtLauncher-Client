@@ -4,6 +4,7 @@
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 
 use actix_web::{ web, App, HttpRequest, HttpResponse, HttpServer };
+use actix_cors::Cors;
 use machineid_rs::{ Encryption, HWIDComponent, IdBuilder };
 use reqwest::{ header, Client };
 use serde::{ Deserialize, Serialize };
@@ -650,6 +651,9 @@ async fn main() -> std::io::Result<()> {
             tauri::async_runtime::spawn(
                 HttpServer::new(move || {
                     App::new()
+                        .wrap(
+                            Cors::default().allow_any_origin().allow_any_method().allow_any_header()
+                        )
                         .route("/get-account", web::post().to(get_account))
                         .route("/get-balance", web::post().to(get_balance))
                         // .route("/send-transaction", web::post().to(send_transaction))
