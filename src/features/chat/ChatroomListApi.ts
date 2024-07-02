@@ -117,15 +117,15 @@ export const addParticipant = async (_member: ICurrentChatroomMember) => {
     }
 
     const currentSKey = sKeyListStore?.sKeys?.find((element) => element?.roomId === currentChatroomStore?._id)?.sKey;
-    if (!currentSKey && currentChatroomStore.isPrivate) {
+    if (!currentSKey && currentChatroomStore?.isPrivate) {
       console.error("Failed to addOneCurrentChatroomMembers: currentSKey undefined!");
       return null;
     }
 
     const body: IReqChatroomAddParticipant = {
       user_id: _member._id,
-      user_key: currentChatroomStore.isPrivate ? rsaEncrypt(currentSKey, _member.rsa_pub_key) : "",
-      id: currentChatroomStore._id,
+      user_key: currentChatroomStore?.isPrivate ? rsaEncrypt(currentSKey, _member.rsa_pub_key) : "",
+      id: currentChatroomStore?._id,
     };
     const res = await ChatroomAPI.addParticipant(body);
     if (res?.status !== 200 || !res?.data) {
@@ -150,7 +150,7 @@ export const removeParticipant = async (_member: ICurrentChatroomMember) => {
 
     const body: IReqChatroomLeaveChatroom = {
       user_id: _member._id,
-      id: currentChatroomStore._id,
+      id: currentChatroomStore?._id,
     };
     const res = await ChatroomAPI.leaveChatroom(body);
     if (res?.status !== 200 || !res?.data) {

@@ -16,8 +16,14 @@ export interface ISocketParamsPostMessage {
 
 export interface ISocketParamsJoinedMessageGroup {
   room_id: string;
+  joined_user_id: string;
 }
 
 export interface ISocketParamsLeftMessageGroup {
   room_id: string;
+  left_user_id: string;
+}
+
+export interface ISocketParamsActiveUsers {
+  users: string[];
 }

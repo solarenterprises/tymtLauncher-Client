@@ -4,16 +4,17 @@ import { useTranslation } from "react-i18next";
 
 import { Modal, Box, Fade } from "@mui/material";
 
-import { IChatroom, IParamsLeaveGroup } from "../../types/ChatroomAPITypes";
-import { IPoint } from "../../types/homeTypes";
-import { accountType } from "../../types/accountTypes";
-
 import { useSocket } from "../../providers/SocketProvider";
 
 import { AppDispatch } from "../../store";
 import { leaveGroupAsync } from "../../features/chat/ChatroomListSlice";
 import { getAccount } from "../../features/account/AccountSlice";
+import { delOneSkeyList } from "../../features/chat/SKeyListSlice";
+
 import { ISocketParamsLeaveMessageGroup } from "../../types/SocketTypes";
+import { IChatroom, IParamsLeaveGroup } from "../../types/ChatroomAPITypes";
+import { IPoint } from "../../types/homeTypes";
+import { accountType } from "../../types/accountTypes";
 
 export interface IPropsGroupListItemContextMenu {
   view: boolean;
@@ -36,11 +37,16 @@ const GroupListItemContextMenu = ({ view, setView, group, contextMenuPosition }:
         _userId: accountStore.uid,
       };
       dispatch(leaveGroupAsync(data)).then(() => {
-        const data_2: ISocketParamsLeaveMessageGroup = {
-          room_id: group._id,
-          joined_user_id: accountStore.uid,
-        };
-        socket.current.emit("leave-message-group", JSON.stringify(data_2));
+        dispatch(delOneSkeyList(group._id));
+
+        if (socket.current && socket.current.connected) {
+          const data: ISocketParamsLeaveMessageGroup = {
+            room_id: group._id,
+            joined_user_id: accountStore.uid,
+          };
+          socket.current.emit("leave-message-group", JSON.stringify(data));
+          console.log("socket.current.emit > leave-message-group", data);
+        }
       });
 
       console.log("handleLeaveGroupClick", group);

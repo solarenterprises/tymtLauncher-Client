@@ -23,6 +23,7 @@ import { ISocketParamsJoinMessageGroup } from "../../types/SocketTypes";
 import { accountType } from "../../types/accountTypes";
 import { getAccount } from "../../features/account/AccountSlice";
 import { getRsa } from "../../features/chat/RsaSlice";
+import { IActiveUserList, getActiveUserList } from "../../features/chat/ActiveUserListSlice";
 
 const UserListItem = ({ user, index, numberofunreadmessages, setShowContextMenu, setContextMenuPosition, setView }: propsUserlistType) => {
   const { socket } = useSocket();
@@ -35,6 +36,7 @@ const UserListItem = ({ user, index, numberofunreadmessages, setShowContextMenu,
   const chatroomListStore: IChatroomList = useSelector(getChatroomList);
   const accountStore: accountType = useSelector(getAccount);
   const rsaStore: IRsa = useSelector(getRsa);
+  const activeUserListStore: IActiveUserList = useSelector(getActiveUserList);
 
   const selectedUserToDeleteStoreRef = useRef(selectedUserToDeleteStore);
 
@@ -86,7 +88,7 @@ const UserListItem = ({ user, index, numberofunreadmessages, setShowContextMenu,
               .find((dm) => dm.participants.some((participant) => participant.userId === user._id));
             dispatch(setCurrentChatroom(newCurrentChatroom));
             dispatch(fetchCurrentChatroomMembersAsync(newCurrentChatroom._id));
-            setView("chatbox");
+            if (setView) setView("chatbox");
           }
           // Else if we didn't have any DM in the past
           else {
@@ -117,7 +119,7 @@ const UserListItem = ({ user, index, numberofunreadmessages, setShowContextMenu,
                   })
                 );
 
-                setView("chatbox");
+                if (setView) setView("chatbox");
               }
             });
           }
@@ -151,7 +153,7 @@ const UserListItem = ({ user, index, numberofunreadmessages, setShowContextMenu,
                 })
               );
 
-              setView("chatbox");
+              if (setView) setView("chatbox");
             }
           });
           dispatch(createContactAsync(user._id));
@@ -191,7 +193,7 @@ const UserListItem = ({ user, index, numberofunreadmessages, setShowContextMenu,
         }}
         onContextMenu={(e) => handleContextMenu(e, user._id)}
       >
-        <Avatar onlineStatus={user.onlineStatus} userid={user._id} size={40} status={user.notificationStatus} />
+        <Avatar onlineStatus={activeUserListStore.users.some((active) => active === user._id)} userid={user._id} size={40} status={user.notificationStatus} />
         <Stack flexDirection={"row"} alignItems={"center"} justifyContent={"space-between"} display={"flex"} sx={{ marginLeft: "25px", width: "320px" }}>
           <Box>
             <Stack direction={"column"} justifyContent={"flex-start"} spacing={1}>

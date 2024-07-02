@@ -50,6 +50,7 @@ import rsaReducer from "./features/chat/RsaSlice";
 import currentChatroomReducer from "./features/chat/CurrentChatroomSlice";
 import currentChatroomMembersReducer from "./features/chat/CurrentChatroomMembersSlice";
 import sKeyListReducer from "./features/chat/SKeyListSlice";
+import activeUserListReducer from "./features/chat/ActiveUserListSlice";
 
 const blacklistActionTypes = ["intercomsupport/setChatMounted", "intercomsupport/setMountedTrue", "intercomsupport/setMountedFalse"];
 
@@ -108,6 +109,7 @@ const store = configureStore({
     currentChatroom: currentChatroomReducer,
     currentChatroomMembers: currentChatroomMembersReducer,
     sKeyList: sKeyListReducer,
+    activeUserList: activeUserListReducer,
   },
   middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(stateSyncMiddleware),
 });

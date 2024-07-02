@@ -17,8 +17,10 @@ import { AppDispatch } from "../../store";
 import { getAccount } from "../../features/account/AccountSlice";
 import { getChatHistory, setChatHistory } from "../../features/chat/Chat-historySlice";
 import { selectChat } from "../../features/settings/ChatSlice";
-import { selectEncryptionKeyStore } from "../../features/chat/Chat-encryptionkeySlice";
 import { setMountedFalse, setMountedTrue } from "../../features/chat/Chat-intercomSupportSlice";
+import { getCurrentChatroom } from "../../features/chat/CurrentChatroomSlice";
+import { ICurrentChatroomMembers, getCurrentChatroomMembers } from "../../features/chat/CurrentChatroomMembersSlice";
+import { ISKeyList, getSKeyList } from "../../features/chat/SKeyListSlice";
 
 import { useSocket } from "../../providers/SocketProvider";
 import OrLinechat from "../../components/chat/Orlinechat";
@@ -26,17 +28,15 @@ import Chatinputfield from "../../components/chat/Chatinputfield";
 import GroupAvatar from "../../components/chat/GroupAvatar";
 import Avatar from "../../components/home/Avatar";
 
-import { ChatHistoryType, encryptionkeyStoreType, propsType } from "../../types/chatTypes";
+import { ChatHistoryType, propsType } from "../../types/chatTypes";
 import { accountType } from "../../types/accountTypes";
 import { chatType } from "../../types/settingTypes";
+import { IChatroom } from "../../types/ChatroomAPITypes";
 
 import maximize from "../../assets/chat/maximize.svg";
 import backIcon from "../../assets/settings/back-icon.svg";
 import ChatStyle from "../../styles/ChatStyles";
-import { IChatroom } from "../../types/ChatroomAPITypes";
-import { getCurrentChatroom } from "../../features/chat/CurrentChatroomSlice";
-import { ICurrentChatroomMembers, getCurrentChatroomMembers } from "../../features/chat/CurrentChatroomMembersSlice";
-import { ISKeyList, getSKeyList } from "../../features/chat/SKeyListSlice";
+import { IActiveUserList, getActiveUserList } from "../../features/chat/ActiveUserListSlice";
 
 const Chatbox = ({ view, setView }: propsType) => {
   const { t } = useTranslation();
@@ -57,21 +57,20 @@ const Chatbox = ({ view, setView }: propsType) => {
   const currentChatroomStore: IChatroom = useSelector(getCurrentChatroom);
   const chatHistoryStore: ChatHistoryType = useSelector(getChatHistory);
   const chatStore: chatType = useSelector(selectChat);
-  const encryptionKeyStore: encryptionkeyStoreType = useSelector(selectEncryptionKeyStore);
   const currentChatroomMembersStore: ICurrentChatroomMembers = useSelector(getCurrentChatroomMembers);
   const sKeyListStore: ISKeyList = useSelector(getSKeyList);
+  const activeUserListStore: IActiveUserList = useSelector(getActiveUserList);
 
-  const sKey = sKeyListStore.sKeys.find((element) => element.roomId === currentChatroomStore._id)?.sKey;
-  const isDM = currentChatroomStore.room_name ? false : true;
+  const sKey = sKeyListStore.sKeys.find((element) => element.roomId === currentChatroomStore?._id)?.sKey;
+  const isDM = currentChatroomStore?.room_name ? false : true;
   const currentPartner = isDM ? currentChatroomMembersStore.members.find((member) => member._id !== accountStore.uid) : null;
-  const displayChatroomName = currentChatroomStore.room_name ? currentChatroomStore.room_name : currentPartner?.nickName;
-  const displayChatroomSubName = currentChatroomStore.room_name ? `${currentChatroomStore.participants.length} Joined` : currentPartner?.sxpAddress;
+  const displayChatroomName = currentChatroomStore?.room_name ? currentChatroomStore?.room_name : currentPartner?.nickName;
+  const displayChatroomSubName = currentChatroomStore?.room_name ? `${currentChatroomStore?.participants?.length ?? 0} Joined` : currentPartner?.sxpAddress;
 
   const accountStoreRef = useRef(accountStore);
   const currentChatroomStoreRef = useRef(currentChatroomStore);
   const chatHistoryStoreRef = useRef(chatHistoryStore);
   const chatStoreRef = useRef(chatStore);
-  const encryptionKeyStoreRef = useRef(encryptionKeyStore);
 
   useEffect(() => {
     accountStoreRef.current = accountStore;
@@ -85,15 +84,12 @@ const Chatbox = ({ view, setView }: propsType) => {
   useEffect(() => {
     chatStoreRef.current = chatStore;
   }, [chatStore]);
-  useEffect(() => {
-    encryptionKeyStoreRef.current = encryptionKeyStore;
-  }, [encryptionKeyStore]);
 
   const fetchMessages = async () => {
     try {
-      if (accountStoreRef.current.uid && currentChatroomStoreRef.current._id) {
+      if (accountStoreRef.current.uid && currentChatroomStoreRef?.current._id) {
         const query = {
-          room_id: currentChatroomStoreRef.current._id,
+          room_id: currentChatroomStoreRef.current?._id,
           pagination: { page: Math.floor(chatHistoryStoreRef.current.messages.length / 20) + 1, pageSize: 20 },
         };
         socket.current.emit("get-messages-by-room", JSON.stringify(query));
@@ -161,12 +157,12 @@ const Chatbox = ({ view, setView }: propsType) => {
 
   const decryptMessage = useCallback(
     (encryptedmessage: string) => {
-      if (currentChatroomStore.isPrivate) {
+      if (currentChatroomStore?.isPrivate ?? false) {
         return Chatdecrypt(encryptedmessage, sKey);
       }
       return encryptedmessage;
     },
-    [sKey]
+    [sKey, currentChatroomStore]
   );
 
   // Set mounted to true when chatbox is mounted
@@ -211,7 +207,12 @@ const Chatbox = ({ view, setView }: propsType) => {
               </Button>
               <Stack alignItems={"center"} flexDirection={"row"}>
                 {isDM && currentPartner && (
-                  <Avatar onlineStatus={currentPartner.onlineStatus} userid={currentPartner._id} size={40} status={currentPartner.notificationStatus} />
+                  <Avatar
+                    onlineStatus={activeUserListStore.users.some((user) => user === currentPartner._id)}
+                    userid={currentPartner._id}
+                    size={40}
+                    status={currentPartner.notificationStatus}
+                  />
                 )}
                 {!isDM && <GroupAvatar size={40} url={""} onClick={() => setView("chatGroupMemberList")} />}
                 <Stack marginLeft={"16px"} justifyContent={"flex-start"} direction={"column"} spacing={1}>

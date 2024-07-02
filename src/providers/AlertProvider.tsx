@@ -1,9 +1,9 @@
 import { useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Outlet } from "react-router-dom";
+
 import { AppDispatch } from "../store";
-import { accountType } from "../types/accountTypes";
-import { IChain, multiWalletType } from "../types/walletTypes";
+
 import { getChain } from "../features/wallet/ChainSlice";
 import { getAccount } from "../features/account/AccountSlice";
 import { getMultiWallet, refreshChainBalanceAsync } from "../features/wallet/MultiWalletSlice";
@@ -12,11 +12,14 @@ import { fetchFriendListAsync } from "../features/chat/FriendListSlice";
 import { fetchBlockListAsync } from "../features/chat/BlockListSlice";
 import { fetchChatroomListAsync } from "../features/chat/ChatroomListSlice";
 import { refreshCurrencyAsync } from "../features/wallet/CurrencySlice";
-import { IChatroom, IParticipant } from "../types/ChatroomAPITypes";
 import { ISKey, setSKeyList } from "../features/chat/SKeyListSlice";
-import { rsaDecrypt } from "../features/chat/RsaApi";
-import { IRsa } from "../types/chatTypes";
 import { getRsa } from "../features/chat/RsaSlice";
+import { rsaDecrypt } from "../features/chat/RsaApi";
+
+import { accountType } from "../types/accountTypes";
+import { IChain, multiWalletType } from "../types/walletTypes";
+import { IChatroom, IParticipant } from "../types/ChatroomAPITypes";
+import { IRsa } from "../types/chatTypes";
 
 const AlertProvider = () => {
   const dispatch = useDispatch<AppDispatch>();

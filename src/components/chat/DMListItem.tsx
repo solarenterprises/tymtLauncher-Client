@@ -10,6 +10,7 @@ import { setCurrentChatroom } from "../../features/chat/CurrentChatroomSlice";
 import { fetchCurrentChatroomMembersAsync } from "../../features/chat/CurrentChatroomMembersSlice";
 import { getAccount } from "../../features/account/AccountSlice";
 import { getContactList } from "../../features/chat/ContactListSlice";
+import { IActiveUserList, getActiveUserList } from "../../features/chat/ActiveUserListSlice";
 
 import { IChatroom } from "../../types/ChatroomAPITypes";
 import { accountType } from "../../types/accountTypes";
@@ -20,13 +21,15 @@ export interface IPropsDMListItem {
   DM: IChatroom;
   index: number;
   numberOfUnreadMessages: number;
-  setView: (_: string) => void;
+  setView?: (_: string) => void;
 }
 
 const DMListItem = ({ DM, index, numberOfUnreadMessages, setView }: IPropsDMListItem) => {
   const dispatch = useDispatch<AppDispatch>();
   const accountStore: accountType = useSelector(getAccount);
   const contactListStore: IContactList = useSelector(getContactList);
+  const activeUserListStore: IActiveUserList = useSelector(getActiveUserList);
+
   const partnerId = DM.participants.find((element) => element.userId !== accountStore.uid)?.userId ?? "";
   const user = contactListStore.contacts.find((element) => element._id === partnerId);
   const [showContextMenu, setShowContextMenu] = useState<boolean>(false);
@@ -39,7 +42,7 @@ const DMListItem = ({ DM, index, numberOfUnreadMessages, setView }: IPropsDMList
     try {
       dispatch(setCurrentChatroom(DM));
       dispatch(fetchCurrentChatroomMembersAsync(DM._id));
-      setView("chatbox");
+      if (setView) setView("chatbox");
       console.log("handleDMListItemClick");
     } catch (err) {
       console.error("Failed to handleDMListItemClick: ", err);
@@ -82,7 +85,12 @@ const DMListItem = ({ DM, index, numberOfUnreadMessages, setView }: IPropsDMList
               },
             }}
           >
-            <Avatar onlineStatus={user.onlineStatus} userid={user._id} size={40} status={user.notificationStatus} />
+            <Avatar
+              onlineStatus={activeUserListStore.users.some((active) => active === user._id)}
+              userid={user._id}
+              size={40}
+              status={user.notificationStatus}
+            />
             <Stack flexDirection={"row"} alignItems={"center"} justifyContent={"space-between"} display={"flex"} sx={{ marginLeft: "25px", width: "320px" }}>
               <Box>
                 <Stack direction={"column"} justifyContent={"flex-start"} spacing={1}>

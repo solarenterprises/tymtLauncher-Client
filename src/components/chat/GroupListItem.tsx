@@ -2,6 +2,8 @@ import { useCallback, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import { Box, Grid, Stack } from "@mui/material";
+
+import { useSocket } from "../../providers/SocketProvider";
 import GroupAvatar from "./GroupAvatar";
 import GroupListItemContextMenu from "./GroupListItemContextMenu";
 
@@ -14,14 +16,17 @@ import { getChatroomList, joinPublicGroupAsync } from "../../features/chat/Chatr
 import { accountType } from "../../types/accountTypes";
 import { IChatroom, IChatroomList } from "../../types/ChatroomAPITypes";
 import { IPoint } from "../../types/homeTypes";
+import { ISocketParamsJoinMessageGroup } from "../../types/SocketTypes";
 
 export interface IPropsGroupListItem {
   group: IChatroom;
   index: number;
-  setView: (_: string) => void;
+  setView?: (_: string) => void;
 }
 
 const GroupListItem = ({ group, index, setView }: IPropsGroupListItem) => {
+  const { socket } = useSocket();
+
   const dispatch = useDispatch<AppDispatch>();
   const accountStore: accountType = useSelector(getAccount);
   const chatroomListStore: IChatroomList = useSelector(getChatroomList);
@@ -43,15 +48,24 @@ const GroupListItem = ({ group, index, setView }: IPropsGroupListItem) => {
             _groupId: group._id,
           })
         );
+
+        if (socket.current && socket.current.connected) {
+          const data: ISocketParamsJoinMessageGroup = {
+            room_id: group._id,
+            joined_user_id: accountStore.uid,
+          };
+          socket.current.emit("join-message-group", JSON.stringify(data));
+          console.log("socket.current.emit > join-message-group", data);
+        }
       }
       dispatch(setCurrentChatroom(group));
       dispatch(fetchCurrentChatroomMembersAsync(group._id));
-      setView("chatbox");
+      if (setView) setView("chatbox");
       console.log("handleGroupListItemClick");
     } catch (err) {
       console.error("Failed to handleGroupListItemClick: ", err);
     }
-  }, [accountStore]);
+  }, [accountStore, socket.current]);
 
   const handleGroupListItemRightClick = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     e.preventDefault();

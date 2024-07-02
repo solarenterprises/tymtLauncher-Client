@@ -65,7 +65,7 @@ const Chatinputfield = ({ value, setValue }: propsChatinputfieldType) => {
         if (value.trim() !== "") {
           // Encrypt & send the message
           const currentSKey = sKeyListStore?.sKeys?.find((element) => element?.roomId === currentChatroomStore?._id)?.sKey;
-          const encryptedMessage = currentChatroomStore.isPrivate ? await encrypt(value, currentSKey) : value;
+          const encryptedMessage = currentChatroomStore?.isPrivate ? await encrypt(value, currentSKey) : value;
           const message = {
             sender_id: accountStore?.uid,
             room_id: currentChatroomStore?._id,
@@ -80,7 +80,7 @@ const Chatinputfield = ({ value, setValue }: propsChatinputfieldType) => {
             alertType: "chat",
             note: {
               sender: accountStore?.uid,
-              room_id: currentChatroomStore._id,
+              room_id: currentChatroomStore?._id,
               message: encryptedMessage,
             },
             receivers: currentChatroomStore?.participants?.filter((element) => element.userId !== accountStore.uid)?.map((element_2) => element_2.userId),

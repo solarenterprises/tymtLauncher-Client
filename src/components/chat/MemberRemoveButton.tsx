@@ -34,11 +34,14 @@ const MemberRemoveButton = ({ member }: IPropsMemberRemoveButton) => {
             dispatch(setCurrentChatroom(newCurrentChatroom));
             dispatch(fetchCurrentChatroomMembersAsync(newCurrentChatroom._id));
 
-            const data: ISocketParamsLeaveMessageGroup = {
-              room_id: currentChatroomStore._id,
-              joined_user_id: member._id,
-            };
-            socket.current.emit("leave-message-group", JSON.stringify(data));
+            if (socket.current && socket.current.connected) {
+              const data: ISocketParamsLeaveMessageGroup = {
+                room_id: newCurrentChatroom._id,
+                joined_user_id: member._id,
+              };
+              socket.current.emit("leave-message-group", JSON.stringify(data));
+              console.log("socket.current.emit > leave-message-group", data);
+            }
           }
         });
 

@@ -1,10 +1,15 @@
 import { useSelector } from "react-redux";
+
 import { Box, Grid, Stack } from "@mui/material";
+
 import Avatar from "../home/Avatar";
 import MemberRemoveButton from "./MemberRemoveButton";
 import MemberInviteButton from "./MemberInviteButton";
+
 import { ICurrentChatroomMember } from "../../features/chat/CurrentChatroomMembersSlice";
 import { getAccount } from "../../features/account/AccountSlice";
+import { IActiveUserList, getActiveUserList } from "../../features/chat/ActiveUserListSlice";
+
 import { accountType } from "../../types/accountTypes";
 
 export interface IPropsGroupMemberListItem {
@@ -15,6 +20,7 @@ export interface IPropsGroupMemberListItem {
 
 const GroupMemberListItem = ({ member, index, invited }: IPropsGroupMemberListItem) => {
   const accountStore: accountType = useSelector(getAccount);
+  const activeUserListStore: IActiveUserList = useSelector(getActiveUserList);
 
   return (
     <Box key={`${index}-${new Date().toISOString()}`}>
@@ -41,7 +47,7 @@ const GroupMemberListItem = ({ member, index, invited }: IPropsGroupMemberListIt
           },
         }}
       >
-        <Avatar onlineStatus={member.onlineStatus} userid={member._id} size={40} status={member.notificationStatus} />
+        <Avatar onlineStatus={activeUserListStore.users.some((user) => user === member._id)} userid={member._id} size={40} status={member.notificationStatus} />
         <Stack flexDirection={"row"} alignItems={"center"} justifyContent={"space-between"} display={"flex"} sx={{ marginLeft: "25px", width: "320px" }}>
           <Box>
             <Stack direction={"column"} justifyContent={"flex-start"} spacing={1}>
