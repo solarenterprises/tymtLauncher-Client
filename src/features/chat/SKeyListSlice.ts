@@ -42,10 +42,15 @@ export const sKeyListSlice = createSlice({
       state.data.sKeys = [...restOfSkeys, action.payload];
       sessionStorage.setItem("sKeyList", JSON.stringify(state.data));
     },
+    delOneSkeyList: (state, action) => {
+      const restOfSkeys = state.data.sKeys.filter((element) => element.roomId !== action.payload);
+      state.data.sKeys = [...restOfSkeys];
+      sessionStorage.setItem("sKeyList", JSON.stringify(state.data));
+    },
   },
 });
 
 export const getSKeyList = (state: any) => state.sKeyList.data;
-export const { setSKeyList, addOneSKeyList } = sKeyListSlice.actions;
+export const { setSKeyList, addOneSKeyList, delOneSkeyList } = sKeyListSlice.actions;
 
 export default sKeyListSlice.reducer;

@@ -28,16 +28,18 @@ const MemberRemoveButton = ({ member }: IPropsMemberRemoveButton) => {
   const handleMemberRemoveButtonClick = useCallback(() => {
     if (socket.current && socket.current.connected) {
       try {
-        dispatch(removeParticipantAsync(member)).then(() => {
-          const newCurrentChatroom = chatroomListStore.chatrooms.find((element) => element._id === currentChatroomStore._id);
-          dispatch(setCurrentChatroom(newCurrentChatroom));
-          dispatch(fetchCurrentChatroomMembersAsync(newCurrentChatroom._id));
+        dispatch(removeParticipantAsync(member)).then((action) => {
+          if (action.type.endsWith("/fulfilled")) {
+            const newCurrentChatroom = action.payload as IChatroom;
+            dispatch(setCurrentChatroom(newCurrentChatroom));
+            dispatch(fetchCurrentChatroomMembersAsync(newCurrentChatroom._id));
 
-          const data: ISocketParamsLeaveMessageGroup = {
-            room_id: currentChatroomStore._id,
-            joined_user_id: member._id,
-          };
-          socket.current.emit("leave-message-group", JSON.stringify(data));
+            const data: ISocketParamsLeaveMessageGroup = {
+              room_id: currentChatroomStore._id,
+              joined_user_id: member._id,
+            };
+            socket.current.emit("leave-message-group", JSON.stringify(data));
+          }
         });
 
         console.log("handleMemberRemoveButtonClick");

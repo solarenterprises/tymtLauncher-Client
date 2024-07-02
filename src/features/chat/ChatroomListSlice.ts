@@ -48,7 +48,14 @@ export const chatroomListSlice = createSlice({
   reducers: {
     setChatroomList: (state, action) => {
       state.data = action.payload;
-      tymtStorage.set(`chatroomList`, JSON.stringify(action.payload));
+      tymtStorage.set(`chatroomList`, JSON.stringify(state.data));
+      console.log("setChatroomList", state.data);
+    },
+    delOneFromChatroomList: (state, action) => {
+      const restOfChatrooms = state.data.chatrooms.filter((element) => element._id !== action.payload);
+      state.data.chatrooms = [...restOfChatrooms];
+      tymtStorage.set(`chatroomList`, JSON.stringify(state.data));
+      console.log("delOneFromChatroomList", action.payload, state.data);
     },
   },
   extraReducers(builder) {
@@ -157,6 +164,6 @@ export const chatroomListSlice = createSlice({
 });
 
 export const getChatroomList = (state: any) => state.chatroomList.data;
-export const { setChatroomList } = chatroomListSlice.actions;
+export const { setChatroomList, delOneFromChatroomList } = chatroomListSlice.actions;
 
 export default chatroomListSlice.reducer;

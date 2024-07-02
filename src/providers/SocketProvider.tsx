@@ -10,12 +10,12 @@ import { useNotification } from "./NotificationProvider";
 
 import { AppDispatch } from "../store";
 import { getAccount } from "../features/account/AccountSlice";
-import { getCurrentChatroom } from "../features/chat/CurrentChatroomSlice";
+import { getCurrentChatroom, setCurrentChatroom } from "../features/chat/CurrentChatroomSlice";
 import { getCurrentPartner } from "../features/chat/CurrentPartnerSlice";
 import { createContactAsync, getContactList, updateOneInContactList } from "../features/chat/ContactListSlice";
 import { addOneToUnreadList, updateFriendRequestAsync } from "../features/alert/AlertListSlice";
 import { getBlockList } from "../features/chat/BlockListSlice";
-import { addOneToChatroomListAsync, getChatroomList, leaveGroupAsync } from "../features/chat/ChatroomListSlice";
+import { addOneToChatroomListAsync, delOneFromChatroomList, getChatroomList } from "../features/chat/ChatroomListSlice";
 import { selectNotification } from "../features/settings/NotificationSlice";
 import { selectEncryptionKeyStore } from "../features/chat/Chat-encryptionkeySlice";
 import { createFriendAsync, getFriendList } from "../features/chat/FriendListSlice";
@@ -23,11 +23,15 @@ import { selectChat } from "../features/settings/ChatSlice";
 import { setChatHistory, getChatHistory } from "../features/chat/Chat-historySlice";
 import { getSocketHash } from "../features/chat/SocketHashSlice";
 
-import { IChatroom, IChatroomList, IParamsLeaveGroup } from "../types/ChatroomAPITypes";
+import { IChatroom, IChatroomList } from "../types/ChatroomAPITypes";
 import { ISocketParamsJoinedMessageGroup, ISocketParamsLeftMessageGroup, ISocketParamsPostMessage } from "../types/SocketTypes";
 import { accountType } from "../types/accountTypes";
 import { chatType, notificationType } from "../types/settingTypes";
-import { ChatHistoryType, ISocketHash, IAlert, encryptionkeyStoreType, IContact, IContactList } from "../types/chatTypes";
+import { ChatHistoryType, ISocketHash, IAlert, encryptionkeyStoreType, IContact, IContactList, IRsa } from "../types/chatTypes";
+import { setCurrentChatroomMembers } from "../features/chat/CurrentChatroomMembersSlice";
+import { ISKey, addOneSKeyList, delOneSkeyList } from "../features/chat/SKeyListSlice";
+import { rsaDecrypt } from "../features/chat/RsaApi";
+import { getRsa } from "../features/chat/RsaSlice";
 
 interface SocketContextType {
   socket: MutableRefObject<Socket>;
@@ -59,6 +63,7 @@ export const SocketProvider = () => {
   const notificationStore: notificationType = useSelector(selectNotification);
   const encryptionKeyStore: encryptionkeyStoreType = useSelector(selectEncryptionKeyStore);
   const chatroomListStore: IChatroomList = useSelector(getChatroomList);
+  const rsaStore: IRsa = useSelector(getRsa);
 
   const accountStoreRef = useRef(accountStore);
   const socketHashStoreRef = useRef(socketHashStore);
@@ -72,6 +77,7 @@ export const SocketProvider = () => {
   const notificationStoreRef = useRef(notificationStore);
   const encryptionKeyStoreRef = useRef(encryptionKeyStore);
   const chatroomListStoreRef = useRef(chatroomListStore);
+  const rsaStoreRef = useRef(rsaStore);
 
   useEffect(() => {
     accountStoreRef.current = accountStore;
@@ -109,6 +115,9 @@ export const SocketProvider = () => {
   useEffect(() => {
     chatroomListStoreRef.current = chatroomListStore;
   }, [chatroomListStore]);
+  useEffect(() => {
+    rsaStoreRef.current = rsaStore;
+  }, [rsaStore]);
 
   const socket = useRef<Socket>(null);
 
@@ -230,65 +239,49 @@ export const SocketProvider = () => {
             if (!socket.current.hasListeners("joined-message-group")) {
               socket.current.on("joined-message-group", async (data: ISocketParamsJoinedMessageGroup) => {
                 console.log("socket.current.on > joined-message-group", data);
+                try {
+                  const { room_id } = data;
+                  dispatch(addOneToChatroomListAsync(room_id)).then((action) => {
+                    if (action.type.endsWith("/fulfilled")) {
+                      const newAddedChatroom = action.payload as IChatroom;
 
-                const { room_id } = data;
-                dispatch(addOneToChatroomListAsync(room_id)).then((action) => {
-                  if (action.type.endsWith("/fulfilled")) {
-                    const newAddedChatroom = action.payload as IChatroom;
+                      const newSkey: ISKey = {
+                        roomId: newAddedChatroom._id,
+                        sKey: rsaDecrypt(
+                          newAddedChatroom.participants.find((participant) => participant.userId === accountStoreRef.current.uid).userKey,
+                          rsaStoreRef.current.privateKey
+                        ),
+                      };
+                      dispatch(addOneSKeyList(newSkey));
 
-                    if (!newAddedChatroom.room_name) {
-                      const partner = newAddedChatroom.participants.find((participant) => participant.userId !== accountStoreRef.current.uid);
-                      dispatch(createContactAsync(partner.userId));
+                      // Create the contact when invited to a new DM with a new partner
+                      if (!newAddedChatroom.room_name) {
+                        const partner = newAddedChatroom.participants.find((participant) => participant.userId !== accountStoreRef.current.uid);
+                        if (!contactListStoreRef.current.contacts.some((contact) => contact._id === partner.userId)) {
+                          dispatch(createContactAsync(partner.userId));
+                        }
+                      }
                     }
-                  }
-                });
+                  });
+                } catch (err) {
+                  console.error("Failed to socket.current.on > joined-message-group", data);
+                }
               });
             }
 
             if (!socket.current.hasListeners("left-message-group")) {
               socket.current.on("left-message-group", async (data: ISocketParamsLeftMessageGroup) => {
                 console.log("socket.current.on > left-message-group", data);
-
-                const { room_id } = data;
-                const data_2: IParamsLeaveGroup = {
-                  _userId: accountStoreRef.current.uid,
-                  _groupId: room_id,
-                };
-                dispatch(leaveGroupAsync(data_2));
-              });
-            }
-
-            if (!socket.current.hasListeners("alert-updated")) {
-              socket.current.on("alert-updated", async (alert: IAlert) => {
-                console.log("socket.current.on > alert-updated", alert);
-                if (alert.alertType === "friend-request") {
-                  dispatch(addOneToUnreadList(alert));
-                  setNotificationOpen(true);
-                  setNotificationStatus("alert");
-                  setNotificationTitle(`Friend request ${alert.note.status}`);
-                  setNotificationDetail(`Friend request accepted`);
-                  setNotificationLink(null);
-                  if (alert.note?.status && alert.note?.status === "accepted") {
-                    const senderInFriendList = friendListStoreRef.current.contacts.find((user) => user._id === alert.receivers[0]);
-                    if (senderInFriendList) {
-                      console.log("Already in my friend list!");
-                      return;
-                    }
-                    const senderInContactList = contactListStoreRef.current.contacts.find((user) => user._id === alert.receivers[0]);
-                    if (!senderInContactList) {
-                      console.log("createContactAsync");
-                      dispatch(createContactAsync(alert.receivers[0]));
-                    }
-                    console.log("createFriendAsync");
-                    dispatch(createFriendAsync(alert.receivers[0]));
+                try {
+                  const { room_id } = data;
+                  dispatch(delOneFromChatroomList(room_id));
+                  dispatch(delOneSkeyList(room_id));
+                  if (currentChatroomStoreRef.current._id === room_id) {
+                    dispatch(setCurrentChatroom(null));
+                    dispatch(setCurrentChatroomMembers([]));
                   }
-                } else {
-                  dispatch(addOneToUnreadList(alert));
-                  setNotificationOpen(true);
-                  setNotificationStatus("alert");
-                  setNotificationTitle(`${alert.alertType}`);
-                  setNotificationDetail(`${alert.note.detail}`);
-                  setNotificationLink(null);
+                } catch (err) {
+                  console.error("Failed to socket.current.on > left-message-group", data);
                 }
               });
             }

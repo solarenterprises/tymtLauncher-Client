@@ -19,10 +19,12 @@ const MemberInviteButton = ({ member }: IPropsMemberInviteButton) => {
 
   const handleMemberInviteButtonClick = useCallback(() => {
     try {
-      dispatch(addParticipantAsync(member)).then(() => {
-        const newCurrentChatroom = chatroomListStore.chatrooms.find((element) => element._id === currentChatroomStore._id);
-        dispatch(setCurrentChatroom(newCurrentChatroom));
-        dispatch(fetchCurrentChatroomMembersAsync(newCurrentChatroom._id));
+      dispatch(addParticipantAsync(member)).then((action) => {
+        if (action.type.endsWith("/fulfilled")) {
+          const newCurrentChatroom = action.payload as IChatroom;
+          dispatch(setCurrentChatroom(newCurrentChatroom));
+          dispatch(fetchCurrentChatroomMembersAsync(newCurrentChatroom._id));
+        }
       });
       console.log("handleMemberInviteButtonClick");
     } catch (err) {
