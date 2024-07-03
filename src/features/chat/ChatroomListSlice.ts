@@ -143,7 +143,8 @@ export const chatroomListSlice = createSlice({
           console.error("Failed to joinPublicGroupAsync: ", action.payload);
           return;
         }
-        state.data.chatrooms = [...state.data.chatrooms, action.payload];
+        const restOfChatrooms = state.data.chatrooms.filter((element) => element._id !== action.payload?._id);
+        state.data.chatrooms = [...restOfChatrooms, action.payload];
         tymtStorage.set(`chatroomList`, JSON.stringify(state.data));
         state.status = "chatroomList";
       })

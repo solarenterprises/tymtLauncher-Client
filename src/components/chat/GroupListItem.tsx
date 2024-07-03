@@ -42,25 +42,31 @@ const GroupListItem = ({ group, index, setView }: IPropsGroupListItem) => {
     try {
       // When it is a new public group to me
       if (!isGroupInvited && !group.isPrivate) {
-        await dispatch(
+        dispatch(
           joinPublicGroupAsync({
             _userId: accountStore.uid,
             _groupId: group._id,
           })
-        );
+        ).then((action) => {
+          if (action.type.endsWith("/fulfilled")) {
+            const newChatroom = action.payload as IChatroom;
+            dispatch(setCurrentChatroom(newChatroom));
+            dispatch(fetchCurrentChatroomMembersAsync(newChatroom._id));
 
-        if (socket.current && socket.current.connected) {
-          const data: ISocketParamsJoinMessageGroup = {
-            room_id: group._id,
-            joined_user_id: accountStore.uid,
-          };
-          socket.current.emit("join-message-group", JSON.stringify(data));
-          console.log("socket.current.emit > join-message-group", data);
-        }
+            if (socket.current && socket.current.connected) {
+              const data: ISocketParamsJoinMessageGroup = {
+                room_id: group._id,
+                joined_user_id: accountStore.uid,
+              };
+              socket.current.emit("join-message-group", JSON.stringify(data));
+              console.log("socket.current.emit > join-message-group", data);
+            }
+
+            if (setView) setView("chatbox");
+          }
+        });
       }
-      dispatch(setCurrentChatroom(group));
-      dispatch(fetchCurrentChatroomMembersAsync(group._id));
-      if (setView) setView("chatbox");
+
       console.log("handleGroupListItemClick");
     } catch (err) {
       console.error("Failed to handleGroupListItemClick: ", err);

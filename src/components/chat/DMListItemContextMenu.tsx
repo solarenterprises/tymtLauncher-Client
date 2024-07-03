@@ -12,7 +12,7 @@ import { leaveGroupAsync } from "../../features/chat/ChatroomListSlice";
 import { getAccount } from "../../features/account/AccountSlice";
 import { delOneSkeyList } from "../../features/chat/SKeyListSlice";
 import { createBlockAsync, deleteBlockAsync } from "../../features/chat/BlockListSlice";
-import { createContactAsync } from "../../features/chat/ContactListSlice";
+import { createContactAsync, deleteContactAsync } from "../../features/chat/ContactListSlice";
 
 import { ISocketParamsLeaveMessageGroup } from "../../types/SocketTypes";
 import { IChatroom, IParamsLeaveGroup } from "../../types/ChatroomAPITypes";
@@ -74,7 +74,7 @@ const DMListItemContextMenu = ({ view, setView, DM, contextMenuPosition }: IProp
         return;
       }
       dispatch(deleteFriendAsync(partner.userId)).then(() => {
-        dispatch(createContactAsync(partner.userId)).then(() => {
+        dispatch(deleteContactAsync(partner.userId)).then(() => {
           dispatch(createBlockAsync(partner.userId)).then(() => {
             console.log("handleBlockClick", partner.userId);
           });

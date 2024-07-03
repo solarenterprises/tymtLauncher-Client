@@ -1,9 +1,11 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import { Box, Grid, Stack } from "@mui/material";
 
 import Avatar from "../home/Avatar";
+import UserListItemContextMenu from "./UserListItemContextMenu";
+
 import { useSocket } from "../../providers/SocketProvider";
 
 import { AppDispatch } from "../../store";
@@ -11,25 +13,32 @@ import { createContactAsync, getContactList } from "../../features/chat/ContactL
 import { getBlockList } from "../../features/chat/BlockListSlice";
 import { createDMAsync, getChatroomList } from "../../features/chat/ChatroomListSlice";
 import { addOneSKeyList } from "../../features/chat/SKeyListSlice";
-import { rsaDecrypt } from "../../features/chat/RsaApi";
-
-import { IContactList, IRsa, propsUserlistType, selecteduserType } from "../../types/chatTypes";
-import { getSelectedUser, setSelectedUsertoDelete } from "../../features/chat/Chat-selecteduserSlice";
-import { IChatroom, IChatroomList } from "../../types/ChatroomAPITypes";
-import { setCurrentChatroom } from "../../features/chat/CurrentChatroomSlice";
-import { fetchCurrentChatroomMembersAsync } from "../../features/chat/CurrentChatroomMembersSlice";
-import { getFriendList } from "../../features/chat/FriendListSlice";
-import { ISocketParamsJoinMessageGroup } from "../../types/SocketTypes";
-import { accountType } from "../../types/accountTypes";
 import { getAccount } from "../../features/account/AccountSlice";
 import { getRsa } from "../../features/chat/RsaSlice";
 import { IActiveUserList, getActiveUserList } from "../../features/chat/ActiveUserListSlice";
+import { setCurrentChatroom } from "../../features/chat/CurrentChatroomSlice";
+import { fetchCurrentChatroomMembersAsync } from "../../features/chat/CurrentChatroomMembersSlice";
+import { getFriendList } from "../../features/chat/FriendListSlice";
+import { rsaDecrypt } from "../../features/chat/RsaApi";
 
-const UserListItem = ({ user, index, numberofunreadmessages, setShowContextMenu, setContextMenuPosition, setView }: propsUserlistType) => {
+import { IContactList, IRsa, userType } from "../../types/chatTypes";
+import { IChatroom, IChatroomList } from "../../types/ChatroomAPITypes";
+import { ISocketParamsJoinMessageGroup } from "../../types/SocketTypes";
+import { accountType } from "../../types/accountTypes";
+import { IPoint } from "../../types/homeTypes";
+
+export interface IPropsUserListItem {
+  user: userType;
+  index: number;
+  numberOfUnreadMessages: number;
+  setView?: (_: string) => void;
+  page: string;
+}
+
+const UserListItem = ({ user, index, numberOfUnreadMessages, setView, page }: IPropsUserListItem) => {
   const { socket } = useSocket();
 
   const dispatch = useDispatch<AppDispatch>();
-  const selectedUserToDeleteStore: selecteduserType = useSelector(getSelectedUser);
   const contactListStore: IContactList = useSelector(getContactList);
   const blockListStore: IContactList = useSelector(getBlockList);
   const friendListStore: IContactList = useSelector(getFriendList);
@@ -38,34 +47,19 @@ const UserListItem = ({ user, index, numberofunreadmessages, setShowContextMenu,
   const rsaStore: IRsa = useSelector(getRsa);
   const activeUserListStore: IActiveUserList = useSelector(getActiveUserList);
 
-  const selectedUserToDeleteStoreRef = useRef(selectedUserToDeleteStore);
+  const [showContextMenu, setShowContextMenu] = useState<boolean>(false);
+  const [contextMenuPosition, setContextMenuPosition] = useState<IPoint>({
+    x: 0,
+    y: 0,
+  });
 
-  useEffect(() => {
-    selectedUserToDeleteStoreRef.current = selectedUserToDeleteStore;
-  }, [selectedUserToDeleteStore]);
-
-  const handleContextMenu = (e: any, id: string) => {
+  const handleUserListItemRightClick = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     e.preventDefault();
+    e.stopPropagation();
     const mouseX = e.clientX;
     const mouseY = e.clientY;
-    setShowContextMenu(true);
     setContextMenuPosition({ x: mouseX, y: mouseY });
-    e.stopPropagation();
-    dispatch(
-      setSelectedUsertoDelete({
-        ...selectedUserToDeleteStoreRef.current,
-        id: id,
-      })
-    );
-    const handleClickOutsideContextMenu = (event) => {
-      if (!event.target.closest(".context_menu_block") && !event.target.closest(".context_menu_delete")) {
-        setShowContextMenu(false);
-        document.removeEventListener("click", handleClickOutsideContextMenu);
-      }
-    };
-
-    document.addEventListener("click", handleClickOutsideContextMenu);
-    return false;
+    setShowContextMenu(true);
   };
 
   const handleUserListItemClick = useCallback(async () => {
@@ -168,50 +162,52 @@ const UserListItem = ({ user, index, numberofunreadmessages, setShowContextMenu,
   }, [user, contactListStore, blockListStore, friendListStore, chatroomListStore, accountStore, socket.current]);
 
   return (
-    <Box key={`${index}-${new Date().toISOString()}`} onClick={handleUserListItemClick}>
-      <Grid
-        item
-        xs={12}
-        container
-        sx={{
-          overflowX: "hidden",
-          height: "64px",
-          flexDirection: "row",
-          justifyContent: "left",
-          alignItems: "center",
-          padding: "12px 5px 12px 5px",
-          cursor: "pointer",
-          "&:hover": {
-            borderRadius: "5px",
-            borderTopRightRadius: "0",
-            borderBottomRightRadius: "0",
-            backgroundColor: "#FFFFFF1A",
-          },
-          "&:active": {
-            backgroundColor: "#52E1F21A",
-          },
-        }}
-        onContextMenu={(e) => handleContextMenu(e, user._id)}
-      >
-        <Avatar onlineStatus={activeUserListStore.users.some((active) => active === user._id)} userid={user._id} size={40} status={user.notificationStatus} />
-        <Stack flexDirection={"row"} alignItems={"center"} justifyContent={"space-between"} display={"flex"} sx={{ marginLeft: "25px", width: "320px" }}>
-          <Box>
-            <Stack direction={"column"} justifyContent={"flex-start"} spacing={1}>
-              <Box className={"fs-16 white"}>{user?.nickName}</Box>
-              <Box className={"fs-12-light gray"}>{user?.sxpAddress}</Box>
-            </Stack>
-          </Box>
-          <Box
-            className={"unread-dot fs-10-light"}
-            sx={{
-              display: numberofunreadmessages > 0 ? "block" : "none",
-            }}
-          >
-            {numberofunreadmessages}
-          </Box>
-        </Stack>
-      </Grid>
-    </Box>
+    <>
+      <Box key={`${index}-${new Date().toISOString()}`} onClick={handleUserListItemClick} onContextMenu={handleUserListItemRightClick}>
+        <Grid
+          item
+          xs={12}
+          container
+          sx={{
+            overflowX: "hidden",
+            height: "64px",
+            flexDirection: "row",
+            justifyContent: "left",
+            alignItems: "center",
+            padding: "12px 5px 12px 5px",
+            cursor: "pointer",
+            "&:hover": {
+              borderRadius: "5px",
+              borderTopRightRadius: "0",
+              borderBottomRightRadius: "0",
+              backgroundColor: "#FFFFFF1A",
+            },
+            "&:active": {
+              backgroundColor: "#52E1F21A",
+            },
+          }}
+        >
+          <Avatar onlineStatus={activeUserListStore.users.some((active) => active === user._id)} userid={user._id} size={40} status={user.notificationStatus} />
+          <Stack flexDirection={"row"} alignItems={"center"} justifyContent={"space-between"} display={"flex"} sx={{ marginLeft: "25px", width: "320px" }}>
+            <Box>
+              <Stack direction={"column"} justifyContent={"flex-start"} spacing={1}>
+                <Box className={"fs-16 white"}>{user?.nickName}</Box>
+                <Box className={"fs-12-light gray"}>{user?.sxpAddress}</Box>
+              </Stack>
+            </Box>
+            <Box
+              className={"unread-dot fs-10-light"}
+              sx={{
+                display: numberOfUnreadMessages > 0 ? "block" : "none",
+              }}
+            >
+              {numberOfUnreadMessages}
+            </Box>
+          </Stack>
+        </Grid>
+      </Box>
+      <UserListItemContextMenu user={user} view={showContextMenu} setView={setShowContextMenu} contextMenuPosition={contextMenuPosition} page={page} />
+    </>
   );
 };
 

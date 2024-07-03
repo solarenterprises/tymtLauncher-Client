@@ -127,7 +127,9 @@ const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
           <Stack direction={"row"} justifyContent={"space-between"} alignItems={"center"}>
             <Stack direction={"row"} gap={"8px"} alignItems={"center"}>
               <img src={logo} />
-              <Box className={"fs-h4 white"}>{title === "chat" ? senderUser?.nickName : title === "Friend Request" ? t("not-9_friend-request") : title}</Box>
+              <Box className={"fs-h4 white"}>
+                {title === "chat" ? senderUser?.nickName ?? "Deleted Contact" : title === "Friend Request" ? t("not-9_friend-request") : title}
+              </Box>
             </Stack>
             {read === "unread" && <img src={unreaddot} width={"12px"} height={"12px"} />}
             {read === "read" && <img src={readdot} width={"12px"} height={"12px"} />}
