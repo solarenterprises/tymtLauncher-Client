@@ -141,11 +141,11 @@ const Chatroom = () => {
 
   // Fetch chat history of the first page
   useEffect(() => {
-    if (socket.current && panel === "chatMainRoom") {
+    if (socket.current) {
       dispatch(setChatHistory({ messages: [] }));
       fetchMessages();
     }
-  }, [socket.current, panel]);
+  }, [socket.current, currentChatroomStore]);
 
   useEffect(() => {
     if (socket.current) {

@@ -65,6 +65,10 @@ const GroupListItem = ({ group, index, setView }: IPropsGroupListItem) => {
             if (setView) setView("chatbox");
           }
         });
+      } else {
+        dispatch(setCurrentChatroom(group));
+        dispatch(fetchCurrentChatroomMembersAsync(group._id));
+        if (setView) setView("chatbox");
       }
 
       console.log("handleGroupListItemClick");
