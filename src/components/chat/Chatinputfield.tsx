@@ -9,14 +9,15 @@ import { ThemeProvider, createTheme } from "@mui/material/styles";
 import ChatStyle from "../../styles/ChatStyles";
 import EmojiPicker, { SkinTones } from "emoji-picker-react";
 import { useSocket } from "../../providers/SocketProvider";
-import { ChatHistoryType, IContact, encryptionkeyStoreType, propsChatinputfieldType } from "../../types/chatTypes";
+import { ChatHistoryType, propsChatinputfieldType } from "../../types/chatTypes";
 import { accountType } from "../../types/accountTypes";
 import { getAccount } from "../../features/account/AccountSlice";
 import { getChatHistory, setChatHistory } from "../../features/chat/Chat-historySlice";
 import { encrypt } from "../../lib/api/Encrypt";
-import { selectEncryptionKeyStore } from "../../features/chat/Chat-encryptionkeySlice";
-import { getCurrentPartner } from "../../features/chat/CurrentPartnerSlice";
 import { AppDispatch } from "../../store";
+import { IChatroom } from "../../types/ChatroomAPITypes";
+import { getCurrentChatroom } from "../../features/chat/CurrentChatroomSlice";
+import { ISKeyList, getSKeyList } from "../../features/chat/SKeyListSlice";
 
 const theme = createTheme({
   palette: {
@@ -31,16 +32,16 @@ const theme = createTheme({
   },
 });
 
-const Chatinputfield = ({ value, keyperuser, setValue }: propsChatinputfieldType) => {
+const Chatinputfield = ({ value, setValue }: propsChatinputfieldType) => {
   const { socket } = useSocket();
   const { t } = useTranslation();
   const classes = ChatStyle();
 
   const dispatch = useDispatch<AppDispatch>();
   const accountStore: accountType = useSelector(getAccount);
-  const currentPartnerStore: IContact = useSelector(getCurrentPartner);
   const chatHistoryStore: ChatHistoryType = useSelector(getChatHistory);
-  const encryptionKeyStore: encryptionkeyStoreType = useSelector(selectEncryptionKeyStore);
+  const currentChatroomStore: IChatroom = useSelector(getCurrentChatroom);
+  const sKeyListStore: ISKeyList = useSelector(getSKeyList);
 
   const [anchorEl, setAnchorEl] = useState(null);
   const [EmojiLibraryOpen, setIsEmojiLibraryOpen] = useState(false);
@@ -62,40 +63,47 @@ const Chatinputfield = ({ value, keyperuser, setValue }: propsChatinputfieldType
     if (socket.current && socket.current.connected) {
       try {
         if (value.trim() !== "") {
-          const encryptedvalue = await encrypt(value, keyperuser);
+          // Encrypt & send the message
+          const currentSKey = sKeyListStore?.sKeys?.find((element) => element?.roomId === currentChatroomStore?._id)?.sKey;
+          const encryptedMessage = currentChatroomStore?.isPrivate ? await encrypt(value, currentSKey) : value;
           const message = {
-            sender_id: accountStore.uid,
-            recipient_id: currentPartnerStore._id,
-            message: encryptedvalue,
+            sender_id: accountStore?.uid,
+            room_id: currentChatroomStore?._id,
+            message: encryptedMessage,
             createdAt: Date.now(),
           };
           socket.current.emit("post-message", JSON.stringify(message));
-          console.log("socket.current.emit > post-message");
+          console.log("socket.current.emit > post-message", message);
 
+          // Trigger the alert
           const data = {
             alertType: "chat",
             note: {
-              sender: `${accountStore.uid}`,
-              message: encryptedvalue,
+              sender: accountStore?.uid,
+              room_id: currentChatroomStore?._id,
+              message: encryptedMessage,
             },
-            receivers: [currentPartnerStore._id],
+            receivers: currentChatroomStore?.participants?.filter((element) => element.userId !== accountStore.uid)?.map((element_2) => element_2.userId),
           };
           socket.current.emit("post-alert", JSON.stringify(data));
           console.log("socket.current.emit > post-alert");
 
+          // Update the chatHistoryStore
           const updatedHistory = [message, ...chatHistoryStore.messages];
           dispatch(
             setChatHistory({
               messages: updatedHistory,
             })
           );
+
+          // Clear the input field
           setValue("");
         }
       } catch (err) {
         console.error("Failed to sendMessage: ", err);
       }
     }
-  }, [accountStore, currentPartnerStore, socket.current, value]);
+  }, [socket.current, accountStore, currentChatroomStore, sKeyListStore, value]);
 
   const handleEnter = useCallback(
     async (e: any) => {
@@ -112,14 +120,12 @@ const Chatinputfield = ({ value, keyperuser, setValue }: propsChatinputfieldType
         }, 0);
       } else if (e.key === "Enter") {
         e.preventDefault();
-        console.log("debug", encryptionKeyStore, currentPartnerStore, encryptionKeyStore.encryption_Keys[currentPartnerStore._id]);
-        if (encryptionKeyStore.encryption_Keys[currentPartnerStore._id]) {
-          await sendMessage();
-        }
+
+        await sendMessage();
         setValue("");
       }
     },
-    [encryptionKeyStore, currentPartnerStore, sendMessage]
+    [sendMessage, value]
   );
 
   return (

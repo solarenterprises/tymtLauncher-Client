@@ -61,7 +61,6 @@ export interface contextmenupositionType {
 
 export interface propsChatinputfieldType {
   value: string;
-  keyperuser: string;
   setValue: (value: string) => void;
 }
 
@@ -98,7 +97,6 @@ export interface IContactList {
 export interface ChatMessageType {
   _id: string;
   sender_id: string;
-  recipient_id: string;
   room_id: string;
   message: string;
   timestamp: number;
@@ -135,6 +133,7 @@ export interface scrollDownType {
 export interface INote {
   message?: string;
   sender: string;
+  room_id?: string;
   status?: string;
   detail?: string;
 }
@@ -153,11 +152,6 @@ export interface IAlert {
 
 export interface encryptionkeyStoreType {
   encryption_Keys: Object;
-}
-
-export interface askEncryptionKeyType {
-  sender_id: string;
-  recipient_id: string;
 }
 
 export interface deliverEncryptionKeyType {
@@ -182,4 +176,9 @@ export interface fetchType {
 
 export interface chathistoryperUserStoreType {
   history: Object;
+}
+
+export interface IRsa {
+  publicKey: string;
+  privateKey: string;
 }

@@ -1,9 +1,20 @@
-import { Snackbar, Stack, Box } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
+
+import { notification_duration } from "../configs";
+
+import { Snackbar, Stack, Box } from "@mui/material";
 import Slide from "@mui/material/Slide";
+
+import { setCurrentPartner } from "../features/chat/CurrentPartnerSlice";
+import { getContactList } from "../features/chat/ContactListSlice";
+import { IActiveUserList, getActiveUserList } from "../features/chat/ActiveUserListSlice";
+
+import { propsAlertTypes } from "../types/commonTypes";
+import { IContactList } from "../types/chatTypes";
+
 import CommonStyles from "../styles/commonStyles";
 import failedIcon from "../assets/alert/failed-icon.svg";
 import successIcon from "../assets/alert/success-icon.svg";
@@ -11,13 +22,6 @@ import warnnigIcon from "../assets/alert/warnning-icon.svg";
 import alertIcon from "../assets/alert/alert-icon.png";
 import messageIcon from "../assets/alert/message-icon.svg";
 import closeIcon from "../assets/settings/x-icon.svg";
-import { propsAlertTypes } from "../types/commonTypes";
-import { notification_duration } from "../configs";
-import { IContactList } from "../types/chatTypes";
-import { selectEncryptionKeyByUserId } from "../features/chat/Chat-encryptionkeySlice";
-import { decrypt } from "../lib/api/Encrypt";
-import { setCurrentPartner } from "../features/chat/CurrentPartnerSlice";
-import { getContactList } from "../features/chat/ContactListSlice";
 
 function SlideTransition(props) {
   return <Slide {...props} direction="left" />;
@@ -30,25 +34,16 @@ const AlertComp = ({ open, status, title, detail, setOpen, link }: propsAlertTyp
   const searchParams = new URLSearchParams(link?.split("?")[1]);
 
   const contactListStore: IContactList = useSelector(getContactList);
+  const activeUserListStore: IActiveUserList = useSelector(getActiveUserList);
 
   const senderId = title === "Friend Request" ? detail.note?.sender : searchParams.get("senderId");
   const senderUser = contactListStore.contacts.find((user) => user._id === senderId);
 
   const dispatch = useDispatch();
-  const existkey: string = useSelector((state) => selectEncryptionKeyByUserId(state, senderId));
 
   const [border, setBorder] = useState("");
   const [bg, setBg] = useState("");
   const [logo, setLogo] = useState<any>();
-  const [message, setMessage] = useState<string>("");
-
-  useEffect(() => {
-    const decryptmessage = async () => {
-      const decryptedmessage: string = existkey ? await decrypt(detail, existkey) : t("not-13_cannot-decrypt");
-      setMessage(decryptedmessage);
-    };
-    decryptmessage();
-  }, [detail]);
 
   useEffect(() => {
     if (status == "failed") {
@@ -118,7 +113,8 @@ const AlertComp = ({ open, status, title, detail, setOpen, link }: propsAlertTyp
                 avatar: senderUser?.avatar,
                 lang: senderUser?.lang,
                 sxpAddress: senderUser?.sxpAddress,
-                onlineStatus: senderUser?.onlineStatus,
+                // onlineStatus: senderUser?.onlineStatus,
+                onlineStatus: activeUserListStore.users.some((user) => user === senderUser?._id),
                 notificationStatus: senderUser?.notificationStatus,
               })
             );
@@ -143,7 +139,7 @@ const AlertComp = ({ open, status, title, detail, setOpen, link }: propsAlertTyp
               <Stack direction={"column"} gap={"8px"}>
                 <Box className={"fs-h4 white"}>{title}</Box>
                 <Box className={"fs-16-regular white"}>
-                  {status === "message" && (message.length > 100 ? message.substring(0, 100) + "..." : message)}
+                  {status === "message" && (detail.length > 100 ? detail.substring(0, 100) + "..." : detail)}
                   {status === "alert" && title === "Friend Request" && t("not-10_fr-intro")}
                   {!(status === "message" || (status === "alert" && title === "Friend Request")) &&
                     (detail.length > 100 ? detail.substring(0, 100) + "..." : detail)}

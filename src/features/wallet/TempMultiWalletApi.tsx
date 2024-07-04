@@ -37,6 +37,8 @@ export const getTempAddressesFromMnemonic = async (payload: MnemonicPayload) => 
   const arbitrumAddr = await tymtCore.Blockchains.arbitrum.wallet.getAddress(mnemonic);
   const optimismAddr = await tymtCore.Blockchains.op.wallet.getAddress(mnemonic);
 
+  console.log(ethereumAddr);
+
   return {
     Ethereum: {
       chain: {

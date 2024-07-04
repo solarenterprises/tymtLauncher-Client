@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useSelector, useDispatch } from "react-redux";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { getThreeConfirm } from "../../../features/account/ThreeConfirmSlice";
 import { getTempNonCustodial } from "../../../features/account/TempNonCustodialSlice";
 import { setThreeConfirm } from "../../../features/account/ThreeConfirmSlice";
@@ -33,9 +33,10 @@ const NonCustodialSignUp3 = () => {
     navigate("/start");
   };
 
-  const handleNextClick = async () => {
+  const handleNextClick = useCallback(async () => {
     const mnemonicString = tempNonCustodialStore.mnemonic;
     const mnemonic = mnemonicString.split(" ");
+    console.log(mnemonic, threeConfirmStore, tempNonCustodialStore);
     if (threeConfirmStore.first === mnemonic[2] && threeConfirmStore.second === mnemonic[5] && threeConfirmStore.third === mnemonic[8]) {
       setLoading(true);
       dispatch(
@@ -57,7 +58,7 @@ const NonCustodialSignUp3 = () => {
     } else {
       setError(true);
     }
-  };
+  }, [tempNonCustodialStore, threeConfirmStore]);
 
   useEffect(() => {
     dispatch(

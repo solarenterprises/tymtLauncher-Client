@@ -1,38 +1,48 @@
+import React from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useCallback, useEffect, useRef } from "react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import React from "react";
+import { useTranslation } from "react-i18next";
+import InfiniteScroll from "react-infinite-scroll-component";
+import { ThreeDots } from "react-loader-spinner";
+import _ from "lodash";
+
 import { Box, Grid, Divider, Button, Stack } from "@mui/material";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
+
 import ChatStyle from "../../styles/ChatStyles";
 import x from "../../assets/chat/x.svg";
 import Avatar from "../../components/home/Avatar";
 import OrLinechat from "../../components/chat/Orlinechat";
-import { userType, ChatHistoryType, encryptionkeyStoreType, IContactList } from "../../types/chatTypes";
-import { chatType, notificationType } from "../../types/settingTypes";
-import { accountType } from "../../types/accountTypes";
-import { getAccount } from "../../features/account/AccountSlice";
-import { getChatHistory, setChatHistory } from "../../features/chat/Chat-historySlice";
-import ChatSettinginRoom from "./ChatsettinginRoom";
-import ChatuserlistinRoom from "./ChatuserlistinRoom";
-// import ChatfriendinRoom from "./Chatsetting-friendinRoom";
-import ChatMsginRoom from "./Chatsetting-MsginRoom";
-import Chatinputfield from "../../components/chat/Chatinputfield";
-import { useSocket } from "../../providers/SocketProvider";
+
 import { AppDispatch } from "../../store";
-import _ from "lodash";
-import InfiniteScroll from "react-infinite-scroll-component";
 import { selectNotification } from "../../features/settings/NotificationSlice";
 import { selectChat } from "../../features/settings/ChatSlice";
-import { selectEncryptionKeyStore } from "../../features/chat/Chat-encryptionkeySlice";
 import { setMountedFalse, setMountedTrue } from "../../features/chat/Chat-intercomSupportSlice";
-import { ThreeDots } from "react-loader-spinner";
-import { Chatdecrypt } from "../../lib/api/ChatEncrypt";
-import { useTranslation } from "react-i18next";
+import { getAccount } from "../../features/account/AccountSlice";
+import { getChatHistory, setChatHistory } from "../../features/chat/Chat-historySlice";
 import { getContactList } from "../../features/chat/ContactListSlice";
-import { getCurrentPartner } from "../../features/chat/CurrentPartnerSlice";
+import { getCurrentChatroom } from "../../features/chat/CurrentChatroomSlice";
+import { ISKeyList, getSKeyList } from "../../features/chat/SKeyListSlice";
+import { ICurrentChatroomMembers, getCurrentChatroomMembers } from "../../features/chat/CurrentChatroomMembersSlice";
+
+import { useSocket } from "../../providers/SocketProvider";
+import GroupAvatar from "../../components/chat/GroupAvatar";
+import ChatGroupMemberListRoom from "./ChatGroupMemberListRoom";
+import ChatSettinginRoom from "./ChatsettinginRoom";
+import ChatMainRoom from "./ChatMainRoom";
+import ChatMsginRoom from "./Chatsetting-MsginRoom";
+import Chatinputfield from "../../components/chat/Chatinputfield";
+
+import { Chatdecrypt } from "../../lib/api/ChatEncrypt";
 import { addChatHistory } from "../../lib/api/JSONHelper";
+
+import { ChatHistoryType, IContactList } from "../../types/chatTypes";
+import { chatType, notificationType } from "../../types/settingTypes";
+import { accountType } from "../../types/accountTypes";
+import { IActiveUserList, getActiveUserList } from "../../features/chat/ActiveUserListSlice";
+import { IChatroom } from "../../types/ChatroomAPITypes";
 
 const theme = createTheme({
   palette: {
@@ -54,59 +64,42 @@ const Chatroom = () => {
   const dispatch = useDispatch<AppDispatch>();
   const classes = ChatStyle();
 
-  const [panel, setPanel] = useState("chatroom-chatuserlist");
+  const [panel, setPanel] = useState("chatMainRoom");
   const [value, setValue] = useState<string>("");
-  // const [showChat, setShowChat] = useState(false);
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
-  const [processedPages, setProcessedPages] = useState(new Set());
   const [screenexpanded, setScreenExpanded] = useState<boolean>(false);
 
   const valueRef = useRef(value);
-  const hasMoreRef = useRef(hasMore);
-  const pageRef = useRef(page);
-  const processedPagesRef = useRef(processedPages);
-  // const showChatRef = useRef(showChat);
 
   useEffect(() => {
     valueRef.current = value;
   }, [value]);
-  useEffect(() => {
-    hasMoreRef.current = hasMore;
-  }, [hasMore]);
-  useEffect(() => {
-    pageRef.current = page;
-  }, [page]);
-  useEffect(() => {
-    processedPagesRef.current = processedPages;
-  }, [processedPages]);
-  // useEffect(() => {
-  //   showChatRef.current = showChat;
-  // }, [showChat]);
 
+  const activeUserListStore: IActiveUserList = useSelector(getActiveUserList);
   const chatStore: chatType = useSelector(selectChat);
-  const currentPartnerStore: userType = useSelector(getCurrentPartner);
   const accountStore: accountType = useSelector(getAccount);
   const chatHistoryStore: ChatHistoryType = useSelector(getChatHistory);
   const contactListStore: IContactList = useSelector(getContactList);
   const notificationStore: notificationType = useSelector(selectNotification);
-  const encryptionKeyStore: encryptionkeyStoreType = useSelector(selectEncryptionKeyStore);
-  const currentKey = encryptionKeyStore.encryption_Keys[currentPartnerStore._id];
+  const currentChatroomStore: IChatroom = useSelector(getCurrentChatroom);
+  const sKeyListStore: ISKeyList = useSelector(getSKeyList);
+  const currentChatroomMembersStore: ICurrentChatroomMembers = useSelector(getCurrentChatroomMembers);
+
+  const sKey = sKeyListStore.sKeys.find((element) => element.roomId === currentChatroomStore?._id)?.sKey;
+  const isDM = currentChatroomStore?.room_name ? false : true;
+  const currentPartner = isDM ? currentChatroomMembersStore.members.find((member) => member._id !== accountStore.uid) : null;
+  const displayChatroomName = currentChatroomStore?.room_name ? currentChatroomStore?.room_name : currentPartner?.nickName;
+  const displayChatroomSubName = currentChatroomStore?.room_name ? `${currentChatroomStore?.participants?.length ?? 0} Joined` : currentPartner?.sxpAddress;
 
   const chatStoreRef = useRef(chatStore);
-  const currentPartnerStoreRef = useRef(currentPartnerStore);
   const accountStoreRef = useRef(accountStore);
   const chatHistoryStoreRef = useRef(chatHistoryStore);
   const contactListStoreRef = useRef(contactListStore);
   const notificationStoreRef = useRef(notificationStore);
-  const encryptionKeyStoreRef = useRef(encryptionKeyStore);
+  const currentChatroomStoreRef = useRef(currentChatroomStore);
 
   useEffect(() => {
     chatStoreRef.current = chatStore;
   }, [chatStore]);
-  useEffect(() => {
-    currentPartnerStoreRef.current = currentPartnerStore;
-  }, [currentPartnerStore]);
   useEffect(() => {
     accountStoreRef.current = accountStore;
   }, [accountStore]);
@@ -120,32 +113,25 @@ const Chatroom = () => {
     notificationStoreRef.current = notificationStore;
   }, [notificationStore]);
   useEffect(() => {
-    encryptionKeyStoreRef.current = encryptionKeyStore;
-  }, [encryptionKeyStore]);
+    currentChatroomStoreRef.current = currentChatroomStore;
+  }, [currentChatroomStore]);
 
   useEffect(() => {
-    console.log("NOTICE: currentPartnerStore changed: ", currentPartnerStore._id);
-    if (currentPartnerStore._id) {
-      setPage(1);
-      setHasMore(true);
+    console.log("NOTICE: currentPartnerStore changed: ", currentChatroomStore?._id);
+    if (currentChatroomStore?._id) {
       dispatch(setChatHistory({ messages: [] }));
-      setProcessedPages(new Set());
     }
-  }, [currentPartnerStore]);
+  }, [currentChatroomStore]);
 
   const fetchMessages = async () => {
     try {
-      if (accountStoreRef.current.uid && currentPartnerStoreRef.current._id) {
-        if (!hasMoreRef.current) return;
+      if (accountStoreRef.current.uid && currentChatroomStoreRef?.current._id) {
         const query = {
-          room_user_ids: [accountStoreRef.current.uid, currentPartnerStoreRef.current._id],
+          room_id: currentChatroomStoreRef?.current._id,
           pagination: { page: Math.floor(chatHistoryStoreRef.current.messages.length / 20) + 1, pageSize: 20 },
         };
-        if (!processedPagesRef.current.has(pageRef.current)) {
-          setProcessedPages(new Set(processedPagesRef.current.add(pageRef.current)));
-          socket.current.emit("get-messages-by-room", JSON.stringify(query));
-          console.log("Chatbox > socket.current.emit > get-messages-by-room");
-        }
+        socket.current.emit("get-messages-by-room", JSON.stringify(query));
+        console.log("Chatbox > socket.current.emit > get-messages-by-room");
       }
       console.log("fetchMessages");
     } catch (err) {
@@ -155,43 +141,30 @@ const Chatroom = () => {
 
   // Fetch chat history of the first page
   useEffect(() => {
-    if (socket.current && page === 1) {
+    if (socket.current) {
+      dispatch(setChatHistory({ messages: [] }));
       fetchMessages();
     }
-  }, [socket.current, page]);
+  }, [socket.current, currentChatroomStore]);
 
   useEffect(() => {
     if (socket.current) {
       if (!socket.current.hasListeners("messages-by-room")) {
         socket.current.on("messages-by-room", async (result) => {
-          console.log("Chatroom > socket.current.on > messages-by-room", result);
+          console.log("Chatbox > socket.current.on > messages-by-room", result);
           if (result && result.data.length > 0) {
             if (chatStoreRef.current.message === "anyone" || chatStoreRef.current.message === "friend") {
-              if (pageRef.current === 1) {
-                dispatch(
-                  setChatHistory({
-                    messages: [...result.data],
-                  })
-                );
-              } else if (pageRef.current > 1) {
-                dispatch(
-                  setChatHistory({
-                    messages: addChatHistory([...chatHistoryStoreRef.current.messages], [...result.data]),
-                  })
-                );
-              }
-              setPage((prev) => {
-                return prev + 1;
-              });
-            } else {
-              setHasMore(false);
+              dispatch(
+                setChatHistory({
+                  messages: addChatHistory([...chatHistoryStoreRef.current.messages], [...result.data], 20),
+                })
+              );
             }
-          } else {
-            setHasMore(false);
           }
         });
       }
     }
+
     return () => {
       if (socket.current && socket.current.hasListeners("messages-by-room")) {
         socket.current.off("messages-by-room");
@@ -222,13 +195,14 @@ const Chatroom = () => {
 
   const decryptMessage = useCallback(
     (encryptedmessage: string) => {
-      console.log("decryptMessage", currentKey);
-      return Chatdecrypt(encryptedmessage, currentKey);
+      if (currentChatroomStore?.isPrivate ?? false) {
+        return Chatdecrypt(encryptedmessage, sKey);
+      }
+      return encryptedmessage;
     },
-    [currentKey]
+    [sKey, currentChatroomStore]
   );
 
-  // Set mounted to true when chatroom is mounted
   useEffect(() => {
     dispatch(setMountedTrue());
 
@@ -280,14 +254,14 @@ const Chatroom = () => {
             height: "calc(100vh - 60px)",
           }}
         >
-          {/* // Userlist inbox */}
+          {/* Left section */}
           <Box className={classes.userlist_container}>
             <ChatSettinginRoom view={panel} setView={setPanel} />
-            <ChatuserlistinRoom view={panel} setView={setPanel} />
-            {/* <ChatfriendinRoom view={panel} setView={setPanel} /> */}
+            <ChatMainRoom view={panel} setView={setPanel} />
             <ChatMsginRoom view={panel} setView={setPanel} />
+            <ChatGroupMemberListRoom view={panel} setView={setPanel} />
           </Box>
-          {/* chatroom inbox */}
+          {/* Right section */}
           <Box
             sx={{
               borderLeft: "1px solid var(--bg-stroke-white-20-modal-stroke, rgba(255, 255, 255, 0.20))",
@@ -306,21 +280,19 @@ const Chatroom = () => {
               >
                 <Stack flexDirection={"row"} alignItems={"center"} justifyContent={"space-between"}>
                   <Stack alignItems={"center"} flexDirection={"row"}>
-                    {contactListStore.contacts[0] && (
-                      <>
-                        <Avatar
-                          onlineStatus={currentPartnerStore.onlineStatus}
-                          userid={currentPartnerStore._id}
-                          size={50}
-                          status={currentPartnerStore.notificationStatus}
-                        />
-                        <Stack marginLeft={"16px"} justifyContent={"flex-start"} direction={"column"} spacing={1}>
-                          <Box className={"fs-18-bold white"}>{currentPartnerStore.nickName}</Box>
-                          <Box className={"fs-12-regular gray"}>{currentPartnerStore.sxpAddress}</Box>
-                        </Stack>
-                      </>
+                    {isDM && currentPartner && (
+                      <Avatar
+                        onlineStatus={activeUserListStore.users.some((user) => user === currentPartner._id)}
+                        userid={currentPartner._id}
+                        size={40}
+                        status={currentPartner.notificationStatus}
+                      />
                     )}
-                    {!contactListStore.contacts[0] && <></>}
+                    {!isDM && <GroupAvatar size={40} url={""} onClick={() => setPanel("chatGroupMemberListRoom")} />}
+                    <Stack marginLeft={"16px"} justifyContent={"flex-start"} direction={"column"} spacing={1}>
+                      <Box className={"fs-18-bold white"}>{displayChatroomName}</Box>
+                      <Box className={"fs-12-regular gray"}>{displayChatroomSubName}</Box>
+                    </Stack>
                   </Stack>
                   <Stack alignItems={"center"} flexDirection={"row"}>
                     <Button className={"common-btn"} sx={{ cursor: "pointer", marginLeft: "10px" }} onClick={() => navigate(-1)}>
@@ -339,17 +311,15 @@ const Chatroom = () => {
                 />
               </Box>
 
-              {/* Message inbox */}
               <Box className={"scroll_bar_chatbox"} ref={scrollref} display={"flex"} flexDirection={"column"}>
-                <Box sx={{ width: "100%", flex: "1 1 auto" }}></Box>
-
+                <Box sx={{ width: "100%", flex: "1 1 auto" }} />
                 <InfiniteScroll
                   style={{
                     minHeight: "100%",
                   }}
                   dataLength={chatHistoryStore.messages.length} //This is important field to render the next data
                   next={fetchMessages}
-                  hasMore={hasMore}
+                  hasMore={true}
                   loader={<Box className={"fs-14-regular white t-center"}>{t("cha-32_loading")}</Box>}
                   // endMessage={
                   //   <Box className={"fs-14-regular white t-center"}>
@@ -451,10 +421,10 @@ const Chatroom = () => {
                               <>
                                 {screenexpanded && isLastMessageofStack && (
                                   <Avatar
-                                    onlineStatus={currentPartnerStore.onlineStatus}
-                                    userid={currentPartnerStore._id}
+                                    onlineStatus={activeUserListStore.users.some((user) => user === message.sender_id)}
+                                    userid={message.sender_id}
                                     size={40}
-                                    status={currentPartnerStore.notificationStatus}
+                                    status={currentChatroomMembersStore.members.find((member) => member._id === message._id)?.notificationStatus}
                                   />
                                 )}
                                 {screenexpanded && !isLastMessageofStack && <div style={{ width: "40px", height: "40px" }} />}
@@ -489,8 +459,7 @@ const Chatroom = () => {
                   })}
                 </InfiniteScroll>
               </Box>
-              {/* Input field section */}
-              <Chatinputfield value={value} setValue={setValue} keyperuser={currentKey} />
+              <Chatinputfield value={value} setValue={setValue} />
             </Box>
           </Box>
         </Grid>

@@ -1,48 +1,47 @@
 import { MutableRefObject, createContext, useCallback, useContext, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { socket_backend_url } from "../configs";
-import { io, Socket } from "socket.io-client";
-import { accountType } from "../types/accountTypes";
-import { getAccount } from "../features/account/AccountSlice";
-import {
-  ChatHistoryType,
-  ChatMessageType,
-  ISocketHash,
-  IAlert,
-  askEncryptionKeyType,
-  deliverEncryptionKeyType,
-  deliveredEncryptionKeyType,
-  encryptionkeyStoreType,
-  IContact,
-  IContactList,
-} from "../types/chatTypes";
-import { getSocketHash } from "../features/chat/SocketHashSlice";
 import { Outlet } from "react-router-dom";
-import { AppDispatch } from "../store";
-import { createFriendAsync, getFriendList } from "../features/chat/FriendListSlice";
-import { selectChat } from "../features/settings/ChatSlice";
-import { chatType, notificationType } from "../types/settingTypes";
-import { setChatHistory, getChatHistory } from "../features/chat/Chat-historySlice";
-import { useNotification } from "./NotificationProvider";
-import { selectNotification } from "../features/settings/NotificationSlice";
-import { addEncryptionKey, selectEncryptionKeyStore } from "../features/chat/Chat-encryptionkeySlice";
 import { appWindow } from "@tauri-apps/api/window";
+import { io, Socket } from "socket.io-client";
+
+import { socket_backend_url } from "../configs";
+
+import { useNotification } from "./NotificationProvider";
+
+import { AppDispatch } from "../store";
+import { getAccount } from "../features/account/AccountSlice";
+import { getCurrentChatroom, setCurrentChatroom } from "../features/chat/CurrentChatroomSlice";
 import { getCurrentPartner } from "../features/chat/CurrentPartnerSlice";
 import { createContactAsync, getContactList, updateOneInContactList } from "../features/chat/ContactListSlice";
-import { getsenderName, generateRandomString } from "../features/chat/ContactListApi";
 import { addOneToUnreadList, updateFriendRequestAsync } from "../features/alert/AlertListSlice";
 import { getBlockList } from "../features/chat/BlockListSlice";
+import { addOneToChatroomListAsync, delOneFromChatroomList, getChatroomList } from "../features/chat/ChatroomListSlice";
+import { selectNotification } from "../features/settings/NotificationSlice";
+import { createFriendAsync, getFriendList } from "../features/chat/FriendListSlice";
+import { selectChat } from "../features/settings/ChatSlice";
+import { setChatHistory, getChatHistory } from "../features/chat/Chat-historySlice";
+import { getSocketHash } from "../features/chat/SocketHashSlice";
+import { fetchCurrentChatroomMembersAsync, setCurrentChatroomMembers } from "../features/chat/CurrentChatroomMembersSlice";
+import { ISKey, ISKeyList, addOneSKeyList, delOneSkeyList, getSKeyList } from "../features/chat/SKeyListSlice";
+import { getRsa } from "../features/chat/RsaSlice";
+import { addOneActiveUserList, delOneActiveUserList, setActiveUserList } from "../features/chat/ActiveUserListSlice";
+import { rsaDecrypt } from "../features/chat/RsaApi";
+
+import { IChatroom, IChatroomList } from "../types/ChatroomAPITypes";
+import { ISocketParamsActiveUsers, ISocketParamsJoinedMessageGroup, ISocketParamsLeftMessageGroup, ISocketParamsPostMessage } from "../types/SocketTypes";
+import { accountType } from "../types/accountTypes";
+import { chatType, notificationType } from "../types/settingTypes";
+import { ChatHistoryType, ISocketHash, IAlert, IContact, IContactList, IRsa } from "../types/chatTypes";
+import { Chatdecrypt } from "../lib/api/ChatEncrypt";
 
 interface SocketContextType {
   socket: MutableRefObject<Socket>;
-  askEncryptionKey: (recipientId: string) => void;
   approveFriendRequest: (alert: IAlert) => void;
   declineFriendRequest: (alert: IAlert) => void;
 }
 
 const SocketContext = createContext<SocketContextType>({
   socket: undefined,
-  askEncryptionKey: (_) => {},
   approveFriendRequest: (_) => {},
   declineFriendRequest: (_) => {},
 });
@@ -59,10 +58,13 @@ export const SocketProvider = () => {
   const friendListStore: IContactList = useSelector(getFriendList);
   const blockListStore: IContactList = useSelector(getBlockList);
   const currentPartnerStore: IContact = useSelector(getCurrentPartner);
+  const currentChatroomStore: IChatroom = useSelector(getCurrentChatroom);
   const chatStore: chatType = useSelector(selectChat);
   const chatHistoryStore: ChatHistoryType = useSelector(getChatHistory);
   const notificationStore: notificationType = useSelector(selectNotification);
-  const encryptionKeyStore: encryptionkeyStoreType = useSelector(selectEncryptionKeyStore);
+  const chatroomListStore: IChatroomList = useSelector(getChatroomList);
+  const rsaStore: IRsa = useSelector(getRsa);
+  const sKeyListStore: ISKeyList = useSelector(getSKeyList);
 
   const accountStoreRef = useRef(accountStore);
   const socketHashStoreRef = useRef(socketHashStore);
@@ -70,10 +72,13 @@ export const SocketProvider = () => {
   const friendListStoreRef = useRef(friendListStore);
   const blockListStoreRef = useRef(blockListStore);
   const currentPartnerStoreRef = useRef(currentPartnerStore);
+  const currentChatroomStoreRef = useRef(currentChatroomStore);
   const chatStoreRef = useRef(chatStore);
   const chatHistoryStoreRef = useRef(chatHistoryStore);
   const notificationStoreRef = useRef(notificationStore);
-  const encryptionKeyStoreRef = useRef(encryptionKeyStore);
+  const chatroomListStoreRef = useRef(chatroomListStore);
+  const rsaStoreRef = useRef(rsaStore);
+  const sKeyListStoreRef = useRef(sKeyListStore);
 
   useEffect(() => {
     accountStoreRef.current = accountStore;
@@ -94,6 +99,9 @@ export const SocketProvider = () => {
     currentPartnerStoreRef.current = currentPartnerStore;
   }, [currentPartnerStore]);
   useEffect(() => {
+    currentChatroomStoreRef.current = currentChatroomStore;
+  }, [currentChatroomStore]);
+  useEffect(() => {
     chatStoreRef.current = chatStore;
   }, [chatStore]);
   useEffect(() => {
@@ -103,8 +111,14 @@ export const SocketProvider = () => {
     notificationStoreRef.current = notificationStore;
   }, [notificationStore]);
   useEffect(() => {
-    encryptionKeyStoreRef.current = encryptionKeyStore;
-  }, [encryptionKeyStore]);
+    chatroomListStoreRef.current = chatroomListStore;
+  }, [chatroomListStore]);
+  useEffect(() => {
+    rsaStoreRef.current = rsaStore;
+  }, [rsaStore]);
+  useEffect(() => {
+    sKeyListStoreRef.current = sKeyListStore;
+  }, [sKeyListStore]);
 
   const socket = useRef<Socket>(null);
 
@@ -123,60 +137,50 @@ export const SocketProvider = () => {
             if (!socket.current.hasListeners("connect")) {
               socket.current.on("connect", () => {
                 console.log("socket.current.on > connect");
+                socket.current.emit("get-active-users");
+                console.log("socket.current.emit > get-active-users");
               });
             }
 
             if (!socket.current.hasListeners("message-posted")) {
-              socket.current.on("message-posted", async (message: ChatMessageType) => {
-                console.log("socket.current.on > message-posted");
-                const senderId = message.sender_id;
+              socket.current.on("message-posted", async (data: ISocketParamsPostMessage) => {
+                console.log("socket.current.on > message-posted", data);
+
+                const senderId = data.sender_id;
                 const senderInBlockList = blockListStoreRef.current.contacts.find((user) => user._id === senderId);
-                if (senderInBlockList) {
-                  console.log("Blocked by the block list!");
-                  return;
-                }
                 const senderInContactList = contactListStoreRef.current.contacts.find((user) => user._id === senderId);
                 const senderInFriendlist = friendListStoreRef.current.contacts.find((user) => user._id === senderId);
-                if (message.sender_id === currentPartnerStoreRef.current._id) {
-                  if (chatStoreRef.current.message === "anyone") {
-                    const updatedHistory = [message, ...chatHistoryStoreRef.current.messages];
+                const roomInChatroomList = chatroomListStoreRef.current.chatrooms.find((room) => room._id === data.room_id);
+
+                // Block if the message is from someone in the block list
+                if (senderInBlockList) {
+                  console.log("Blocked the message from someone in the block list!", data);
+                  return;
+                }
+
+                // Ignore if the message is from someone not in the contact list or not in the chat room list
+                if (!senderInContactList || !roomInChatroomList) {
+                  console.log("Ignored the message from a stranger not in the contact list or not in the chat room list!", data);
+                  return;
+                }
+
+                if (chatStoreRef.current.message === "anyone" || (chatStoreRef.current.message === "friend" && senderInFriendlist)) {
+                  if (data.room_id === currentChatroomStoreRef.current?._id) {
+                    const updatedHistory = [data, ...chatHistoryStoreRef.current.messages];
                     dispatch(
                       setChatHistory({
                         messages: updatedHistory,
                       })
                     );
-                  } else if (chatStoreRef.current.message === "friend" && senderInFriendlist) {
-                    const updatedHistory = [message, ...chatHistoryStoreRef.current.messages];
-                    dispatch(setChatHistory({ messages: updatedHistory }));
-                  }
-                } else {
-                  if (chatStoreRef.current.message === "anyone") {
-                    if (!senderInContactList) {
-                      const senderName = await getsenderName(message.sender_id);
-                      dispatch(createContactAsync(message.sender_id)).then(() => {
-                        setNotificationOpen(true);
-                        setNotificationStatus("message");
-                        setNotificationTitle(senderName);
-                        setNotificationDetail(message.message);
-                        setNotificationLink(`/chat?senderId=${message.sender_id}`);
-                      });
-                    } else {
-                      const senderName = senderInContactList.nickName;
-                      setNotificationOpen(true);
-                      setNotificationStatus("message");
-                      setNotificationTitle(senderName);
-                      setNotificationDetail(message.message);
-                      setNotificationLink(`/chat?senderId=${message.sender_id}`);
-                    }
-                  } else if (chatStoreRef.current.message === "friend") {
-                    if (senderInFriendlist) {
-                      const senderName = senderInFriendlist.nickName;
-                      setNotificationOpen(true);
-                      setNotificationStatus("message");
-                      setNotificationTitle(senderName);
-                      setNotificationDetail(message.message);
-                      setNotificationLink(`/chat?senderId=${message.sender_id}`);
-                    }
+                  } else {
+                    const senderName = senderInContactList.nickName;
+                    const sKey = sKeyListStoreRef.current.sKeys.find((element) => element.roomId === data.room_id)?.sKey;
+                    const decryptedMessage = sKey ? Chatdecrypt(data.message, sKey) : data.message;
+                    setNotificationOpen(true);
+                    setNotificationStatus("message");
+                    setNotificationTitle(senderName);
+                    setNotificationDetail(decryptedMessage);
+                    setNotificationLink(`/chat?senderId=${data.sender_id}`);
                   }
                 }
               });
@@ -184,26 +188,35 @@ export const SocketProvider = () => {
 
             if (!socket.current.hasListeners("alert-posted")) {
               socket.current.on("alert-posted", async (alert: IAlert) => {
-                console.log("socket.current.on > alert-posted");
+                console.log("socket.current.on > alert-posted", alert);
+                // Alert wrong format
                 if (!alert || !alert.alertType) {
                   console.error("Alert wrong format!", alert);
                   return;
                 }
+
                 const senderId = alert.note?.sender ?? "";
                 const senderInBlockList = blockListStoreRef.current.contacts.find((element) => element._id === senderId);
+                const senderInContactList = contactListStoreRef.current.contacts.find((element) => element._id === senderId);
+                const senderInFriendList = friendListStoreRef.current.contacts.find((element) => element._id === senderId);
+
+                // Block if the alert is from someone in the block list
                 if (senderInBlockList) {
-                  console.log("Blocked by the block list!");
+                  console.log("Blocked the alert from someone in the block list!", alert);
                   return;
                 }
+
+                // Ignore if the alert is from someone not in the contact list or not in the chat room list
+                if (!senderInContactList) {
+                  console.log("Ignored the alert from a stranger not in the contact list or not in the chat room list!", alert);
+                  return;
+                }
+
+                // Friend request alert
                 if (alert.alertType === "friend-request") {
-                  const senderInContactList = contactListStoreRef.current.contacts.find((element) => element._id === senderId);
-                  const senderInFriendList = friendListStoreRef.current.contacts.find((element) => element._id === senderId);
                   if (senderInFriendList) {
                     console.log("Sender is already in my friend list!");
                     return;
-                  }
-                  if (!senderInContactList) {
-                    dispatch(createContactAsync(senderId));
                   }
                   dispatch(addOneToUnreadList(alert));
                   setNotificationOpen(true);
@@ -211,84 +224,111 @@ export const SocketProvider = () => {
                   setNotificationTitle("Friend Request");
                   setNotificationDetail(alert.note?.detail ?? "");
                   setNotificationLink(null);
-                } else if (alert.alertType !== "chat") {
+                }
+                // General alert
+                else if (alert.alertType !== "chat") {
                   dispatch(addOneToUnreadList(alert));
                   setNotificationOpen(true);
                   setNotificationStatus("alert");
                   setNotificationTitle(`${alert.alertType}`);
                   setNotificationDetail(`${alert.note.detail}`);
                   setNotificationLink(null);
-                } else if (alert.alertType === "chat") {
+                }
+                // Chat alert
+                else if (alert.alertType === "chat") {
                   dispatch(addOneToUnreadList(alert));
-                  const key = encryptionKeyStoreRef.current.encryption_Keys[alert.note?.sender];
-                  if (!key) askEncryptionKey(alert.note?.sender);
                 }
               });
             }
 
-            if (!socket.current.hasListeners("alert-updated")) {
-              socket.current.on("alert-updated", async (alert: IAlert) => {
-                console.log("socket.current.on > alert-updated", alert);
-                if (alert.alertType === "friend-request") {
-                  dispatch(addOneToUnreadList(alert));
-                  setNotificationOpen(true);
-                  setNotificationStatus("alert");
-                  setNotificationTitle(`Friend request ${alert.note.status}`);
-                  setNotificationDetail(`Friend request accepted`);
-                  setNotificationLink(null);
-                  if (alert.note?.status && alert.note?.status === "accepted") {
-                    const senderInFriendList = friendListStoreRef.current.contacts.find((user) => user._id === alert.receivers[0]);
-                    if (senderInFriendList) {
-                      console.log("Already in my friend list!");
-                      return;
+            if (!socket.current.hasListeners("joined-message-group")) {
+              socket.current.on("joined-message-group", async (data: ISocketParamsJoinedMessageGroup) => {
+                console.log("socket.current.on > joined-message-group", data);
+                try {
+                  const { room_id, joined_user_id } = data;
+
+                  dispatch(addOneToChatroomListAsync(room_id)).then((action) => {
+                    if (action.type.endsWith("/fulfilled")) {
+                      const newAddedChatroom = action.payload as IChatroom;
+
+                      if (joined_user_id === accountStoreRef.current.uid) {
+                        const newSkey: ISKey = {
+                          roomId: newAddedChatroom._id,
+                          sKey: rsaDecrypt(
+                            newAddedChatroom.participants.find((participant) => participant.userId === accountStoreRef.current.uid).userKey,
+                            rsaStoreRef.current.privateKey
+                          ),
+                        };
+                        dispatch(addOneSKeyList(newSkey));
+
+                        // Create the contact when invited to a new DM with a new partner
+                        if (!newAddedChatroom.room_name) {
+                          const partner = newAddedChatroom.participants.find((participant) => participant.userId !== accountStoreRef.current.uid);
+                          if (!contactListStoreRef.current.contacts.some((contact) => contact._id === partner.userId)) {
+                            dispatch(createContactAsync(partner.userId));
+                          }
+                        }
+                      } else {
+                        if (currentChatroomStoreRef.current?._id === room_id) {
+                          dispatch(setCurrentChatroom(newAddedChatroom));
+                          dispatch(fetchCurrentChatroomMembersAsync(newAddedChatroom._id));
+                        }
+                      }
                     }
-                    const senderInContactList = contactListStoreRef.current.contacts.find((user) => user._id === alert.receivers[0]);
-                    if (!senderInContactList) {
-                      console.log("createContactAsync");
-                      dispatch(createContactAsync(alert.receivers[0]));
+                  });
+                } catch (err) {
+                  console.error("Failed to socket.current.on > joined-message-group", data);
+                }
+              });
+            }
+
+            if (!socket.current.hasListeners("left-message-group")) {
+              socket.current.on("left-message-group", async (data: ISocketParamsLeftMessageGroup) => {
+                console.log("socket.current.on > left-message-group", data);
+                try {
+                  const { room_id, left_user_id } = data;
+                  if (left_user_id === accountStoreRef.current.uid) {
+                    dispatch(delOneFromChatroomList(room_id));
+                    dispatch(delOneSkeyList(room_id));
+                    if (currentChatroomStoreRef.current?._id === room_id) {
+                      dispatch(setCurrentChatroom(null));
+                      dispatch(setCurrentChatroomMembers([]));
                     }
-                    console.log("createFriendAsync");
-                    dispatch(createFriendAsync(alert.receivers[0]));
+                  } else {
+                    dispatch(addOneToChatroomListAsync(room_id)).then((action) => {
+                      if (action.type.endsWith("/fulfilled")) {
+                        const newChatroom = action.payload as IChatroom;
+                        if (currentChatroomStoreRef.current?._id === room_id) {
+                          dispatch(setCurrentChatroom(newChatroom));
+                          dispatch(fetchCurrentChatroomMembersAsync(newChatroom._id));
+                        }
+                      }
+                    });
                   }
-                } else {
-                  dispatch(addOneToUnreadList(alert));
-                  setNotificationOpen(true);
-                  setNotificationStatus("alert");
-                  setNotificationTitle(`${alert.alertType}`);
-                  setNotificationDetail(`${alert.note.detail}`);
-                  setNotificationLink(null);
+                } catch (err) {
+                  console.error("Failed to socket.current.on > left-message-group", data);
                 }
               });
             }
 
-            if (!socket.current.hasListeners("ask-encryption-key")) {
-              socket.current.on("ask-encryption-key", async (data: askEncryptionKeyType) => {
-                console.log("socket.current.on > ask-encryption-key", data);
-                const userid: string = data.sender_id;
-                const existkey = encryptionKeyStoreRef.current.encryption_Keys[userid];
-                const key = existkey ? existkey : generateRandomString(32);
-                const deliverydata: deliverEncryptionKeyType = {
-                  sender_id: accountStoreRef.current.uid,
-                  recipient_id: data.sender_id,
-                  key: key,
-                };
-                socket.current.emit("deliver-encryption-key", JSON.stringify(deliverydata));
-                dispatch(addEncryptionKey({ userId: userid, encryptionKey: key }));
+            if (!socket.current.hasListeners("user-online")) {
+              socket.current.on("user-online", async (userId: string) => {
+                console.log("socket.current.on > user-online", userId);
+                dispatch(addOneActiveUserList(userId));
               });
             }
 
-            if (!socket.current.hasListeners("deliver-encryption-key")) {
-              socket.current.on("deliver-encryption-key", async (data: deliveredEncryptionKeyType) => {
-                console.log("socket.current.on > deliver-encryption-key", data);
-                const userid = data.sender_id;
-                const encryptionkey = data.key;
-                dispatch(
-                  addEncryptionKey({
-                    userId: userid,
-                    encryptionKey: encryptionkey,
-                  })
-                );
-                socket.current.emit("received-encryption-key", JSON.stringify(data));
+            if (!socket.current.hasListeners("user-offline")) {
+              socket.current.on("user-offline", async (userId: string) => {
+                console.log("socket.current.on > user-offline", userId);
+                dispatch(delOneActiveUserList(userId));
+              });
+            }
+
+            if (!socket.current.hasListeners("active-users")) {
+              socket.current.on("active-users", async (data: ISocketParamsActiveUsers) => {
+                console.log("socket.current.on > active-users", data);
+                dispatch(setActiveUserList(data.users));
               });
             }
 
@@ -331,27 +371,6 @@ export const SocketProvider = () => {
     };
   }, [accountStore.uid, socketHashStore.socketHash]);
 
-  const askEncryptionKey = useCallback(
-    async (recipientId: string) => {
-      try {
-        if (encryptionKeyStore.encryption_Keys[recipientId]) return;
-        if (!socket.current) {
-          console.error("Failed to askEncryptionKey: socket.current undefined");
-          return;
-        }
-        const askData: askEncryptionKeyType = {
-          sender_id: accountStore.uid,
-          recipient_id: recipientId,
-        };
-        socket.current.emit("ask-encryption-key", JSON.stringify(askData));
-        console.log("askEncryptionKey");
-      } catch (err) {
-        console.error("Failed to askEncryptionKey: ", err);
-      }
-    },
-    [accountStore, encryptionKeyStore]
-  );
-
   const approveFriendRequest = useCallback(
     (alert: IAlert) => {
       try {
@@ -363,6 +382,8 @@ export const SocketProvider = () => {
             receivers: [alert.note.sender],
           };
           socket.current.emit("post-alert", JSON.stringify(data));
+          console.log("socket.current.emit > post-alert", data);
+
           // To avoid spam
           dispatch(updateFriendRequestAsync({ alertId: alert._id, status: "accepted" })).then(() => {
             dispatch(createContactAsync(alert.note.sender)).then(() => {
@@ -374,7 +395,7 @@ export const SocketProvider = () => {
         console.error("Failed to approveFriendRequest: ", err);
       }
     },
-    [accountStore]
+    [accountStore, socket.current]
   );
 
   const declineFriendRequest = useCallback(
@@ -401,7 +422,6 @@ export const SocketProvider = () => {
     <SocketContext.Provider
       value={{
         socket,
-        askEncryptionKey,
         approveFriendRequest,
         declineFriendRequest,
       }}

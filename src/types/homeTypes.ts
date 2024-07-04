@@ -27,3 +27,8 @@ export interface IInstallStatus {
   isInstalling: boolean;
   name: string;
 }
+
+export interface IPoint {
+  x: number;
+  y: number;
+}

@@ -1,13 +1,13 @@
-import solarIcon from "../assets/chains/solar.svg";
-import ethereumIcon from "../assets/chains/ethereum.svg";
-import solanaIcon from "../assets/chains/solana.svg";
-import avalancheIcon from "../assets/chains/avalanche.svg";
-import optimismIcon from "../assets/chains/optimism.svg";
-import binanceIcon from "../assets/chains/binance.svg";
-import bitcoinIcon from "../assets/chains/bitcoin.svg";
-import polygonIcon from "../assets/chains/polygon.svg";
-import arbitrumoneIcon from "../assets/chains/arbitrum.svg";
-import { multiWalletType } from "../types/walletTypes";
+// import solarIcon from "../assets/chains/solar.svg";
+// import ethereumIcon from "../assets/chains/ethereum.svg";
+// import solanaIcon from "../assets/chains/solana.svg";
+// import avalancheIcon from "../assets/chains/avalanche.svg";
+// import optimismIcon from "../assets/chains/optimism.svg";
+// import binanceIcon from "../assets/chains/binance.svg";
+// import bitcoinIcon from "../assets/chains/bitcoin.svg";
+// import polygonIcon from "../assets/chains/polygon.svg";
+// import arbitrumoneIcon from "../assets/chains/arbitrum.svg";
+import { chainEnum, chainIconMap, multiWalletType } from "../types/walletTypes";
 
 export const chains: multiWalletType = {
   Ethereum: {
@@ -18,7 +18,7 @@ export const chains: multiWalletType = {
       key: "ethereum",
       decimals: 18,
       // logo: "https://raw.githubusercontent.com/blockchain/coin-definitions/master/extensions/blockchains/ethereum/info/logo.png",
-      logo: ethereumIcon,
+      logo: chainIconMap.get(chainEnum.ethereum),
       website: "https://ethereum.org/",
       chainId: 1,
       wallet: "",
@@ -74,7 +74,7 @@ export const chains: multiWalletType = {
       key: "smartchain",
       decimals: 18,
       // logo: "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/smartchain/info/logo.png",
-      logo: binanceIcon,
+      logo: chainIconMap.get(chainEnum.binance),
       website: null,
       chainId: 56,
       wallet: "",
@@ -118,7 +118,7 @@ export const chains: multiWalletType = {
       key: "polygon",
       decimals: 18,
       // logo: "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/polygon/info/logo.png",
-      logo: polygonIcon,
+      logo: chainIconMap.get(chainEnum.polygon),
       website: "https://polygon.technology/solutions/polygon-pos/",
       chainId: 137,
       wallet: "",
@@ -174,7 +174,7 @@ export const chains: multiWalletType = {
       key: "avalanchec",
       decimals: 18,
       // logo: "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/avalanchec/info/logo.png",
-      logo: avalancheIcon,
+      logo: chainIconMap.get(chainEnum.avalanche),
       website: "http://avax.network",
       chainId: 43114,
       wallet: "",
@@ -206,7 +206,7 @@ export const chains: multiWalletType = {
       key: "arbitrum",
       decimals: 18,
       // logo: "https://cryptologos.cc/logos/arbitrum-arb-logo.png?v=029",
-      logo: arbitrumoneIcon,
+      logo: chainIconMap.get(chainEnum.arbitrumone),
       website: "https://offchainlabs.com",
       chainId: 42161,
       wallet: "",
@@ -262,7 +262,7 @@ export const chains: multiWalletType = {
       key: "optimism",
       decimals: 18,
       // logo: "https://cryptologos.cc/logos/optimism-ethereum-op-logo.png?v=029",
-      logo: optimismIcon,
+      logo: chainIconMap.get(chainEnum.optimism),
       website: "https://www.optimism.io/",
       chainId: 10,
       wallet: "",
@@ -305,7 +305,7 @@ export const chains: multiWalletType = {
       name: "Solar Blockchain",
       key: "sxp",
       decimals: 8,
-      logo: solarIcon,
+      logo: chainIconMap.get(chainEnum.solar),
       website: "https://solar.org/",
       chainId: 0,
       wallet: "",
@@ -324,7 +324,7 @@ export const chains: multiWalletType = {
       key: "bitcoin",
       decimals: 8,
       // logo: "https://cryptologos.cc/logos/bitcoin-btc-logo.png?v=029",
-      logo: bitcoinIcon,
+      logo: chainIconMap.get(chainEnum.bitcoin),
       website: "https://bitcoin.org/",
       chainId: 0,
       wallet: "",
@@ -343,7 +343,7 @@ export const chains: multiWalletType = {
       key: "solana",
       decimals: 9,
       // logo: "https://cryptologos.cc/logos/solana-sol-logo.png?v=029",
-      logo: solanaIcon,
+      logo: chainIconMap.get(chainEnum.solana),
       website: "https://solana.com/",
       chainId: 0,
       wallet: "",

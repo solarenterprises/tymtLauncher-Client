@@ -1,20 +1,31 @@
+import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
+
 import { Box, SwipeableDrawer } from "@mui/material";
-import { useState } from "react";
-import { propsChatType } from "../../types/chatTypes";
-import ChatStyle from "../../styles/ChatStyles";
-import closeicon from "../../assets/settings/collaps-close-btn.svg";
+
 import Chatmain from "./Chatmain";
 import ChatSetting from "./Chatsetting";
 import ChatMsg from "./Chatsetting-Msg.tsx";
 import Chatfriend from "./Chatsetting-friend.tsx";
 import Chatbox from "./Chatbox.tsx";
+import ChatGroupMemberList from "./ChatGroupMemberList.tsx";
+
+import { getCurrentChatroom } from "../../features/chat/CurrentChatroomSlice.ts";
+
+import ChatStyle from "../../styles/ChatStyles";
+import closeicon from "../../assets/settings/collaps-close-btn.svg";
+
+import { propsChatType } from "../../types/chatTypes";
+import { IChatroom } from "../../types/ChatroomAPITypes.ts";
 
 type Anchor = "right";
 
 const Chatindex = ({ viewChat, setViewChat }: propsChatType) => {
+  const classes = ChatStyle();
+  const currentChatroomStore: IChatroom = useSelector(getCurrentChatroom);
   const [state, setState] = useState({ right: false });
   const [panel, setPanel] = useState("chatmain");
-  const classes = ChatStyle();
+
   const toggleDrawer = (anchor: Anchor, open: boolean) => (event: React.KeyboardEvent | React.MouseEvent) => {
     if (event && event.type === "keydown" && ((event as React.KeyboardEvent).key === "Tab" || (event as React.KeyboardEvent).key === "Shift")) {
       return;
@@ -22,6 +33,12 @@ const Chatindex = ({ viewChat, setViewChat }: propsChatType) => {
 
     setState({ ...state, [anchor]: open });
   };
+
+  useEffect(() => {
+    if (!currentChatroomStore) {
+      setPanel("chatmain");
+    }
+  }, [currentChatroomStore]);
 
   return (
     <SwipeableDrawer
@@ -45,6 +62,7 @@ const Chatindex = ({ viewChat, setViewChat }: propsChatType) => {
         <ChatMsg view={panel} setView={setPanel} />
         <Chatfriend view={panel} setView={setPanel} />
         <Chatbox view={panel} setView={setPanel} />
+        <ChatGroupMemberList view={panel} setView={setPanel} />
       </Box>
     </SwipeableDrawer>
   );

@@ -4,6 +4,7 @@
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 
 use actix_web::{ web, App, HttpRequest, HttpResponse, HttpServer };
+use actix_cors::Cors;
 use machineid_rs::{ Encryption, HWIDComponent, IdBuilder };
 use reqwest::{ header, Client };
 use serde::{ Deserialize, Serialize };
@@ -267,6 +268,11 @@ async fn main() -> std::io::Result<()> {
                 result: GetOrderResResultType,
             }
 
+            #[derive(Deserialize, Serialize)]
+            struct ValidateTokenReqType {
+                token: String,
+            }
+
             async fn validate_token(token: String) -> bool {
                 APPHANDLE.get()
                     .expect("APPHANDLE is available")
@@ -323,6 +329,23 @@ async fn main() -> std::io::Result<()> {
                     return false;
                 }
                 return true;
+            }
+
+            async fn validate_token_http(request: HttpRequest) -> HttpResponse {
+                println!("-------> POST /validate-token");
+
+                let token = request.headers().get("x-token");
+                if let Some(token) = token {
+                    let is_valid_token = validate_token(token.to_str().unwrap().to_string()).await;
+
+                    if !is_valid_token {
+                        return HttpResponse::Ok().body("false");
+                    } else {
+                        return HttpResponse::Ok().body("true");
+                    }
+                } else {
+                    return HttpResponse::BadRequest().body("Token header is required");
+                }
             }
 
             async fn get_account(
@@ -628,11 +651,15 @@ async fn main() -> std::io::Result<()> {
             tauri::async_runtime::spawn(
                 HttpServer::new(move || {
                     App::new()
+                        .wrap(
+                            Cors::default().allow_any_origin().allow_any_method().allow_any_header()
+                        )
                         .route("/get-account", web::post().to(get_account))
                         .route("/get-balance", web::post().to(get_balance))
                         // .route("/send-transaction", web::post().to(send_transaction))
                         .route("/request-new-order", web::post().to(request_new_order))
                         .route("/execute-order", web::post().to(execute_order))
+                        .route("/validate-token", web::post().to(validate_token_http))
                 })
                     .bind(("127.0.0.1", 3331))
                     .expect("Failed to bind address")
