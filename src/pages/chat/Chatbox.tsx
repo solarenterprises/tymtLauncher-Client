@@ -15,7 +15,7 @@ import { addChatHistory } from "../../lib/api/JSONHelper";
 
 import { AppDispatch } from "../../store";
 import { getAccount } from "../../features/account/AccountSlice";
-import { getChatHistory, setChatHistory } from "../../features/chat/Chat-historySlice";
+import { getChatHistory, setChatHistory, setChatHistoryAsync } from "../../features/chat/Chat-historySlice";
 import { selectChat } from "../../features/settings/ChatSlice";
 import { setMountedFalse, setMountedTrue } from "../../features/chat/Chat-intercomSupportSlice";
 import { getCurrentChatroom } from "../../features/chat/CurrentChatroomSlice";
@@ -93,7 +93,7 @@ const Chatbox = ({ view, setView }: propsType) => {
           pagination: { page: Math.floor(chatHistoryStoreRef.current.messages.length / 20) + 1, pageSize: 20 },
         };
         socket.current.emit("get-messages-by-room", JSON.stringify(query));
-        console.log("Chatbox > socket.current.emit > get-messages-by-room");
+        console.log("Chatbox > socket.current.emit > get-messages-by-room", query);
       }
       console.log("fetchMessages");
     } catch (err) {
@@ -104,8 +104,9 @@ const Chatbox = ({ view, setView }: propsType) => {
   // Fetch chat history of the first page
   useEffect(() => {
     if (socket.current && view === "chatbox") {
-      dispatch(setChatHistory({ messages: [] }));
-      fetchMessages();
+      dispatch(setChatHistoryAsync({ messages: [] })).then(() => {
+        fetchMessages();
+      });
     }
   }, [socket.current, view]);
 
@@ -118,7 +119,7 @@ const Chatbox = ({ view, setView }: propsType) => {
             if (chatStoreRef.current.message === "anyone" || chatStoreRef.current.message === "friend") {
               dispatch(
                 setChatHistory({
-                  messages: addChatHistory([...chatHistoryStoreRef.current.messages], [...result.data]),
+                  messages: addChatHistory([...chatHistoryStoreRef.current.messages], [...result.data], 20),
                 })
               );
             }

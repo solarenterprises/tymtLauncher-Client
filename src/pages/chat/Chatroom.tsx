@@ -156,7 +156,7 @@ const Chatroom = () => {
             if (chatStoreRef.current.message === "anyone" || chatStoreRef.current.message === "friend") {
               dispatch(
                 setChatHistory({
-                  messages: addChatHistory([...chatHistoryStoreRef.current.messages], [...result.data]),
+                  messages: addChatHistory([...chatHistoryStoreRef.current.messages], [...result.data], 20),
                 })
               );
             }
