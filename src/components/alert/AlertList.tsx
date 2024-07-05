@@ -1,21 +1,28 @@
-import { Stack, Box, Divider, Button } from "@mui/material";
 import { useCallback, useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { propsAlertListType } from "../../types/alertTypes";
-import { IContactList, encryptionkeyStoreType } from "../../types/chatTypes";
-import { accountType } from "../../types/accountTypes";
-import { getAccount } from "../../features/account/AccountSlice";
 import { ThreeDots } from "react-loader-spinner";
-import { updateAlertReadStatusAsync } from "../../features/alert/AlertListSlice";
+
+import { Stack, Box, Divider, Button } from "@mui/material";
+
+import Avatar from "../home/Avatar";
+import { useSocket } from "../../providers/SocketProvider";
+
 import { AppDispatch } from "../../store";
+import { getAccount } from "../../features/account/AccountSlice";
+import { updateAlertReadStatusAsync } from "../../features/alert/AlertListSlice";
 import { getContactList } from "../../features/chat/ContactListSlice";
 import { setCurrentPartner } from "../../features/chat/CurrentPartnerSlice";
-import { selectEncryptionKeyStore } from "../../features/chat/Chat-encryptionkeySlice";
+import { IActiveUserList, getActiveUserList } from "../../features/chat/ActiveUserListSlice";
+import { ISKeyList, getSKeyList } from "../../features/chat/SKeyListSlice";
+
 import { Chatdecrypt } from "../../lib/api/ChatEncrypt";
-import { useSocket } from "../../providers/SocketProvider";
-import Avatar from "../home/Avatar";
+
+import { propsAlertListType } from "../../types/alertTypes";
+import { IContactList } from "../../types/chatTypes";
+import { accountType } from "../../types/accountTypes";
+
 import failedIcon from "../../assets/alert/failed-icon.svg";
 import successIcon from "../../assets/alert/success-icon.svg";
 import warnnigIcon from "../../assets/alert/warnning-icon.svg";
@@ -33,17 +40,22 @@ const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
   const accountStore: accountType = useSelector(getAccount);
   const contactListStore: IContactList = useSelector(getContactList);
   const senderUser = contactListStore.contacts.find((user) => user._id === detail.note?.sender);
-  const encryptionKeyStore: encryptionkeyStoreType = useSelector(selectEncryptionKeyStore);
+  const activeUserListStore: IActiveUserList = useSelector(getActiveUserList);
+  const sKeyListStore: ISKeyList = useSelector(getSKeyList);
 
   const [logo, setLogo] = useState<any>();
   const [decryptedMessage, setDecryptedMessage] = useState<string>("Unable to decode message #tymt114#");
 
   useEffect(() => {
-    const key = encryptionKeyStore.encryption_Keys[detail.note?.sender];
-    if (key && decryptedMessage === "Unable to decode message #tymt114#") {
-      setDecryptedMessage(Chatdecrypt(detail.note?.message, key));
+    if (title === "chat") {
+      try {
+        const sKey = sKeyListStore.sKeys.find((element) => element.roomId === detail?.note?.room_id)?.sKey;
+        setDecryptedMessage(Chatdecrypt(detail?.note?.message, sKey));
+      } catch (err) {
+        console.error("Failed to useEffect AlertList.tsx: ", err);
+      }
     }
-  }, [encryptionKeyStore]);
+  }, [sKeyListStore, title]);
 
   useEffect(() => {
     if (status == "failed") {
@@ -74,7 +86,8 @@ const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
             avatar: senderUser?.avatar,
             lang: senderUser?.lang,
             sxpAddress: senderUser?.sxpAddress,
-            onlineStatus: senderUser?.onlineStatus,
+            // onlineStatus: senderUser?.onlineStatus,
+            onlineStatus: activeUserListStore.users.some((user) => user === senderUser?._id),
             notificationStatus: senderUser?.notificationStatus,
           })
         );
@@ -114,7 +127,9 @@ const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
           <Stack direction={"row"} justifyContent={"space-between"} alignItems={"center"}>
             <Stack direction={"row"} gap={"8px"} alignItems={"center"}>
               <img src={logo} />
-              <Box className={"fs-h4 white"}>{title === "chat" ? senderUser?.nickName : title === "Friend Request" ? t("not-9_friend-request") : title}</Box>
+              <Box className={"fs-h4 white"}>
+                {title === "chat" ? senderUser?.nickName ?? "Deleted Contact" : title === "Friend Request" ? t("not-9_friend-request") : title}
+              </Box>
             </Stack>
             {read === "unread" && <img src={unreaddot} width={"12px"} height={"12px"} />}
             {read === "read" && <img src={readdot} width={"12px"} height={"12px"} />}
@@ -137,7 +152,12 @@ const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
             <>
               <Stack display={"flex"} direction={"row"} justifyContent={"space-between"} marginTop={"12px"}>
                 <Stack direction={"row"} alignItems={"center"} gap={"7px"}>
-                  <Avatar onlineStatus={senderUser?.onlineStatus} userid={senderUser?._id} size={40} status={senderUser?.notificationStatus} />
+                  <Avatar
+                    onlineStatus={activeUserListStore.users.some((user) => user === senderUser?._id)}
+                    userid={senderUser?._id}
+                    size={40}
+                    status={senderUser?.notificationStatus}
+                  />
                   <Box className={"fs-18-regular white"}>
                     {senderUser?.nickName.length > 14 ? `${senderUser?.nickName.substring(0, 13)}...` : senderUser?.nickName}
                   </Box>

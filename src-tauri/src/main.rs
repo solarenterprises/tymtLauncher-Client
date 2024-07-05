@@ -4,6 +4,7 @@
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 
 use actix_web::{ web, App, HttpRequest, HttpResponse, HttpServer };
+use actix_cors::Cors;
 use machineid_rs::{ Encryption, HWIDComponent, IdBuilder };
 use reqwest::{ header, Client };
 use serde::{ Deserialize, Serialize };
@@ -267,6 +268,11 @@ async fn main() -> std::io::Result<()> {
                 result: GetOrderResResultType,
             }
 
+            #[derive(Deserialize, Serialize)]
+            struct ValidateTokenReqType {
+                token: String,
+            }
+
             async fn validate_token(token: String) -> bool {
                 APPHANDLE.get()
                     .expect("APPHANDLE is available")
@@ -323,6 +329,23 @@ async fn main() -> std::io::Result<()> {
                     return false;
                 }
                 return true;
+            }
+
+            async fn validate_token_http(request: HttpRequest) -> HttpResponse {
+                println!("-------> POST /validate-token");
+
+                let token = request.headers().get("x-token");
+                if let Some(token) = token {
+                    let is_valid_token = validate_token(token.to_str().unwrap().to_string()).await;
+
+                    if !is_valid_token {
+                        return HttpResponse::Ok().body("false");
+                    } else {
+                        return HttpResponse::Ok().body("true");
+                    }
+                } else {
+                    return HttpResponse::BadRequest().body("Token header is required");
+                }
             }
 
             async fn get_account(
@@ -616,6 +639,129 @@ async fn main() -> std::io::Result<()> {
                 }
             }
 
+            #[derive(Deserialize, Serialize)]
+            struct SignMessageReqType {
+                message: String,
+            }
+            async fn sign_message(
+                request: HttpRequest,
+                request_param: web::Json<SignMessageReqType>
+            ) -> HttpResponse {
+                println!("-------> POST /sign-message");
+
+                let is_valid_token = validate_token(
+                    request.headers().get("x-token").unwrap().to_str().unwrap().to_string()
+                ).await;
+                if !is_valid_token {
+                    return HttpResponse::InternalServerError().body("Invalid token");
+                }
+
+                let json_data = serde_json
+                    ::to_string(&request_param)
+                    .expect("Failed to serialize JSON data");
+                println!("{}", json_data);
+
+                APPHANDLE.get()
+                    .expect("APPHANDLE is available")
+                    .emit_all("POST-/sign-message", json_data)
+                    .expect("failed to emit event POST /sign-message");
+
+                let (tx, rx) = std::sync::mpsc::channel();
+
+                let response = APPHANDLE.get()
+                    .expect("APPHANDLE is available")
+                    .listen_global("res-POST-/sign-message", move |event| {
+                        let payload = event.payload().unwrap().to_string();
+                        println!("!!!----> res POST /sign-message");
+                        println!("{}", payload);
+                        match tx.send(payload) {
+                            Ok(()) => {
+                                // println!("Message sent successfully");
+                            }
+                            Err(err) => {
+                                println!("Error sending message: {:?}", err);
+                            }
+                        }
+                    });
+
+                match rx.recv() {
+                    Ok(received) => {
+                        // println!("Received: {}", received);
+                        APPHANDLE.get().expect("APPHANDLE is available").unlisten(response);
+                        if received == "" {
+                            return HttpResponse::InternalServerError().finish();
+                        } else {
+                            return HttpResponse::Ok().body(received);
+                        }
+                    }
+                    Err(err) => {
+                        println!("Error receiving message: {:?}", err);
+                        APPHANDLE.get().expect("APPHANDLE is available").unlisten(response);
+                        return HttpResponse::InternalServerError().finish();
+                    }
+                }
+            }
+
+            #[derive(Deserialize, Serialize)]
+            struct VerifyMessageReqType {
+                message: String,
+                signature: String,
+            }
+            async fn verify_message(
+                request: HttpRequest,
+                request_param: web::Json<VerifyMessageReqType>
+            ) -> HttpResponse {
+                println!("-------> POST /verify-message");
+
+                let is_valid_token = validate_token(
+                    request.headers().get("x-token").unwrap().to_str().unwrap().to_string()
+                ).await;
+                if !is_valid_token {
+                    return HttpResponse::InternalServerError().body("Invalid token");
+                }
+
+                let json_data = serde_json
+                    ::to_string(&request_param)
+                    .expect("Failed to serialize JSON data");
+                println!("{}", json_data);
+
+                APPHANDLE.get()
+                    .expect("APPHANDLE is available")
+                    .emit_all("POST-/verify-message", json_data)
+                    .expect("failed to emit event POST /verify-message");
+
+                let (tx, rx) = std::sync::mpsc::channel();
+
+                let response = APPHANDLE.get()
+                    .expect("APPHANDLE is available")
+                    .listen_global("res-POST-/verify-message", move |event| {
+                        let payload = event.payload().unwrap().to_string();
+                        println!("!!!----> res POST /verify-message");
+                        println!("{}", payload);
+                        match tx.send(payload) {
+                            Ok(()) => {
+                                // println!("Message sent successfully");
+                            }
+                            Err(err) => {
+                                println!("Error sending message: {:?}", err);
+                            }
+                        }
+                    });
+
+                match rx.recv() {
+                    Ok(received) => {
+                        // println!("Received: {}", received);
+                        APPHANDLE.get().expect("APPHANDLE is available").unlisten(response);
+                        return HttpResponse::Ok().body(received);
+                    }
+                    Err(err) => {
+                        println!("Error receiving message: {:?}", err);
+                        APPHANDLE.get().expect("APPHANDLE is available").unlisten(response);
+                        return HttpResponse::InternalServerError().finish();
+                    }
+                }
+            }
+
             // dotenv().ok();
             // let port_str = dotenv
             //     ::var("VITE_APP_LOCAL_SERVER_PORT")
@@ -628,11 +774,17 @@ async fn main() -> std::io::Result<()> {
             tauri::async_runtime::spawn(
                 HttpServer::new(move || {
                     App::new()
+                        .wrap(
+                            Cors::default().allow_any_origin().allow_any_method().allow_any_header()
+                        )
                         .route("/get-account", web::post().to(get_account))
                         .route("/get-balance", web::post().to(get_balance))
                         // .route("/send-transaction", web::post().to(send_transaction))
                         .route("/request-new-order", web::post().to(request_new_order))
                         .route("/execute-order", web::post().to(execute_order))
+                        .route("/validate-token", web::post().to(validate_token_http))
+                        .route("/sign-message", web::post().to(sign_message))
+                        .route("/verify-message", web::post().to(verify_message))
                 })
                     .bind(("127.0.0.1", 3331))
                     .expect("Failed to bind address")

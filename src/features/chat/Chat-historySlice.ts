@@ -30,7 +30,7 @@ const initialState = {
   msg: "",
 };
 
-export const setChatHistoryAsync = createAsyncThunk("chatHistory/setChatHistory", setChatHistoryFunc);
+export const setChatHistoryAsync = createAsyncThunk("chatHistory/setChatHistoryAsync", setChatHistoryFunc);
 
 const chatHistorySlice = createSlice({
   name: "chatHistory",

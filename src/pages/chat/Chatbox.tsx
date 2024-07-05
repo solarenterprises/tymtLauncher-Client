@@ -1,33 +1,42 @@
-import { useCallback, useEffect, useRef } from "react";
-import { useState } from "react";
+import React from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
+import { useTranslation } from "react-i18next";
+import { ThreeDots } from "react-loader-spinner";
+import InfiniteScroll from "react-infinite-scroll-component";
+import _ from "lodash";
+import "firebase/database";
+
 import { Box, Divider, Button, Stack } from "@mui/material";
-import { ChatHistoryType, IContact, encryptionkeyStoreType, propsType } from "../../types/chatTypes";
+
+import { Chatdecrypt } from "../../lib/api/ChatEncrypt";
+import { addChatHistory } from "../../lib/api/JSONHelper";
+
+import { AppDispatch } from "../../store";
+import { getAccount } from "../../features/account/AccountSlice";
+import { getChatHistory, setChatHistory, setChatHistoryAsync } from "../../features/chat/Chat-historySlice";
+import { selectChat } from "../../features/settings/ChatSlice";
+import { setMountedFalse, setMountedTrue } from "../../features/chat/Chat-intercomSupportSlice";
+import { getCurrentChatroom } from "../../features/chat/CurrentChatroomSlice";
+import { ICurrentChatroomMembers, getCurrentChatroomMembers } from "../../features/chat/CurrentChatroomMembersSlice";
+import { ISKeyList, getSKeyList } from "../../features/chat/SKeyListSlice";
+
+import { useSocket } from "../../providers/SocketProvider";
+import OrLinechat from "../../components/chat/Orlinechat";
+import Chatinputfield from "../../components/chat/Chatinputfield";
+import GroupAvatar from "../../components/chat/GroupAvatar";
+import Avatar from "../../components/home/Avatar";
+
+import { ChatHistoryType, propsType } from "../../types/chatTypes";
 import { accountType } from "../../types/accountTypes";
 import { chatType } from "../../types/settingTypes";
-import { getAccount } from "../../features/account/AccountSlice";
-import { getChatHistory, setChatHistory } from "../../features/chat/Chat-historySlice";
-import { selectChat } from "../../features/settings/ChatSlice";
-import { selectEncryptionKeyStore } from "../../features/chat/Chat-encryptionkeySlice";
+import { IChatroom } from "../../types/ChatroomAPITypes";
+
 import maximize from "../../assets/chat/maximize.svg";
 import backIcon from "../../assets/settings/back-icon.svg";
 import ChatStyle from "../../styles/ChatStyles";
-import Avatar from "../../components/home/Avatar";
-import OrLinechat from "../../components/chat/Orlinechat";
-import Chatinputfield from "../../components/chat/Chatinputfield";
-import "firebase/database";
-import React from "react";
-import { useSocket } from "../../providers/SocketProvider";
-import { AppDispatch } from "../../store";
-import _ from "lodash";
-import InfiniteScroll from "react-infinite-scroll-component";
-import { setMountedFalse, setMountedTrue } from "../../features/chat/Chat-intercomSupportSlice";
-import { ThreeDots } from "react-loader-spinner";
-import { Chatdecrypt } from "../../lib/api/ChatEncrypt";
-import { useTranslation } from "react-i18next";
-import { getCurrentPartner } from "../../features/chat/CurrentPartnerSlice";
-import { addChatHistory } from "../../lib/api/JSONHelper";
+import { IActiveUserList, getActiveUserList } from "../../features/chat/ActiveUserListSlice";
 
 const Chatbox = ({ view, setView }: propsType) => {
   const { t } = useTranslation();
@@ -37,79 +46,54 @@ const Chatbox = ({ view, setView }: propsType) => {
   const dispatch = useDispatch<AppDispatch>();
 
   const [value, setValue] = useState<string>("");
-  const [page, setPage] = useState<number>(1);
-  const [hasMore, setHasMore] = useState(true);
-  const [processedPages, setProcessedPages] = useState(new Set());
 
   const valueRef = useRef(value);
-  const hasMoreRef = useRef(hasMore);
-  const pageRef = useRef(page);
-  const processedPagesRef = useRef(processedPages);
 
   useEffect(() => {
     valueRef.current = value;
   }, [value]);
-  useEffect(() => {
-    hasMoreRef.current = hasMore;
-  }, [hasMore]);
-  useEffect(() => {
-    pageRef.current = page;
-  }, [page]);
-  useEffect(() => {
-    processedPagesRef.current = processedPages;
-  }, [processedPages]);
 
   const accountStore: accountType = useSelector(getAccount);
-  const currentPartnerStore: IContact = useSelector(getCurrentPartner);
+  const currentChatroomStore: IChatroom = useSelector(getCurrentChatroom);
   const chatHistoryStore: ChatHistoryType = useSelector(getChatHistory);
   const chatStore: chatType = useSelector(selectChat);
-  const encryptionKeyStore: encryptionkeyStoreType = useSelector(selectEncryptionKeyStore);
-  const currentKey = encryptionKeyStore.encryption_Keys[currentPartnerStore._id];
+  const currentChatroomMembersStore: ICurrentChatroomMembers = useSelector(getCurrentChatroomMembers);
+  const sKeyListStore: ISKeyList = useSelector(getSKeyList);
+  const activeUserListStore: IActiveUserList = useSelector(getActiveUserList);
+
+  const sKey = sKeyListStore.sKeys.find((element) => element.roomId === currentChatroomStore?._id)?.sKey;
+  const isDM = currentChatroomStore?.room_name ? false : true;
+  const currentPartner = isDM ? currentChatroomMembersStore.members.find((member) => member._id !== accountStore.uid) : null;
+  const displayChatroomName = currentChatroomStore?.room_name ? currentChatroomStore?.room_name : currentPartner?.nickName;
+  const displayChatroomSubName = currentChatroomStore?.room_name ? `${currentChatroomStore?.participants?.length ?? 0} Joined` : currentPartner?.sxpAddress;
 
   const accountStoreRef = useRef(accountStore);
-  const currentPartnerStoreRef = useRef(currentPartnerStore);
+  const currentChatroomStoreRef = useRef(currentChatroomStore);
   const chatHistoryStoreRef = useRef(chatHistoryStore);
   const chatStoreRef = useRef(chatStore);
-  const encryptionKeyStoreRef = useRef(encryptionKeyStore);
 
   useEffect(() => {
     accountStoreRef.current = accountStore;
   }, [accountStore]);
   useEffect(() => {
-    currentPartnerStoreRef.current = currentPartnerStore;
-  }, [currentPartnerStore]);
+    currentChatroomStoreRef.current = currentChatroomStore;
+  }, [currentChatroomStore]);
   useEffect(() => {
     chatHistoryStoreRef.current = chatHistoryStore;
   }, [chatHistoryStore]);
   useEffect(() => {
     chatStoreRef.current = chatStore;
   }, [chatStore]);
-  useEffect(() => {
-    encryptionKeyStoreRef.current = encryptionKeyStore;
-  }, [encryptionKeyStore]);
-
-  useEffect(() => {
-    if (currentPartnerStore._id && view === "chatbox") {
-      setPage(1);
-      setHasMore(true);
-      dispatch(setChatHistory({ messages: [] }));
-      setProcessedPages(new Set());
-    }
-  }, [currentPartnerStore, view]);
 
   const fetchMessages = async () => {
     try {
-      if (accountStoreRef.current.uid && currentPartnerStoreRef.current._id) {
-        if (!hasMoreRef.current) return;
+      if (accountStoreRef.current.uid && currentChatroomStoreRef?.current._id) {
         const query = {
-          room_user_ids: [accountStoreRef.current.uid, currentPartnerStoreRef.current._id],
+          room_id: currentChatroomStoreRef.current?._id,
           pagination: { page: Math.floor(chatHistoryStoreRef.current.messages.length / 20) + 1, pageSize: 20 },
         };
-        if (!processedPagesRef.current.has(pageRef.current)) {
-          setProcessedPages(new Set(processedPagesRef.current.add(pageRef.current)));
-          socket.current.emit("get-messages-by-room", JSON.stringify(query));
-          console.log("Chatbox > socket.current.emit > get-messages-by-room");
-        }
+        socket.current.emit("get-messages-by-room", JSON.stringify(query));
+        console.log("Chatbox > socket.current.emit > get-messages-by-room", query);
       }
       console.log("fetchMessages");
     } catch (err) {
@@ -119,10 +103,12 @@ const Chatbox = ({ view, setView }: propsType) => {
 
   // Fetch chat history of the first page
   useEffect(() => {
-    if (socket.current && page === 1 && view === "chatbox") {
-      fetchMessages();
+    if (socket.current && view === "chatbox") {
+      dispatch(setChatHistoryAsync({ messages: [] })).then(() => {
+        fetchMessages();
+      });
     }
-  }, [socket.current, page, view]);
+  }, [socket.current, view]);
 
   useEffect(() => {
     if (socket.current && view === "chatbox") {
@@ -131,27 +117,12 @@ const Chatbox = ({ view, setView }: propsType) => {
           console.log("Chatbox > socket.current.on > messages-by-room", result);
           if (result && result.data.length > 0) {
             if (chatStoreRef.current.message === "anyone" || chatStoreRef.current.message === "friend") {
-              if (pageRef.current === 1) {
-                dispatch(
-                  setChatHistory({
-                    messages: [...result.data],
-                  })
-                );
-              } else if (pageRef.current > 1) {
-                dispatch(
-                  setChatHistory({
-                    messages: addChatHistory([...chatHistoryStoreRef.current.messages], [...result.data]),
-                  })
-                );
-              }
-              setPage((prev) => {
-                return prev + 1;
-              });
-            } else {
-              setHasMore(false);
+              dispatch(
+                setChatHistory({
+                  messages: addChatHistory([...chatHistoryStoreRef.current.messages], [...result.data], 20),
+                })
+              );
             }
-          } else {
-            setHasMore(false);
           }
         });
       }
@@ -187,10 +158,12 @@ const Chatbox = ({ view, setView }: propsType) => {
 
   const decryptMessage = useCallback(
     (encryptedmessage: string) => {
-      console.log("decryptMessage", currentKey);
-      return Chatdecrypt(encryptedmessage, currentKey);
+      if (currentChatroomStore?.isPrivate ?? false) {
+        return Chatdecrypt(encryptedmessage, sKey);
+      }
+      return encryptedmessage;
     },
-    [currentKey]
+    [sKey, currentChatroomStore]
   );
 
   // Set mounted to true when chatbox is mounted
@@ -227,45 +200,52 @@ const Chatbox = ({ view, setView }: propsType) => {
               position: "relative",
             }}
           >
-            <Stack flexDirection={"row"} alignItems={"center"}>
-              <Button className={classes.common_btn}>
-                <Box className={"backIcon"} onClick={() => setView("chatmain")}>
-                  <img src={backIcon} />
-                </Box>
-              </Button>
-              <Stack alignItems={"center"} flexDirection={"row"}>
-                <Avatar
-                  onlineStatus={currentPartnerStore.onlineStatus}
-                  userid={currentPartnerStore._id}
-                  size={50}
-                  status={currentPartnerStore.notificationStatus}
-                />
-                <Stack marginLeft={"16px"} justifyContent={"flex-start"} direction={"column"} spacing={1}>
-                  <Box className={"fs-18-bold white"}>{currentPartnerStore.nickName}</Box>
-                  <Box className={"fs-12-regular gray"}>{currentPartnerStore.sxpAddress}</Box>
+            <Stack direction={"row"} alignItems={"center"} width={"100%"} justifyContent={"space-between"}>
+              <Stack direction={"row"} alignItems={"center"} gap={"16px"}>
+                <Button className={"setting-back-button"} onClick={() => setView("chatmain")}>
+                  <Box component={"img"} src={backIcon}></Box>
+                </Button>
+                <Stack
+                  alignItems={"center"}
+                  flexDirection={"row"}
+                  gap={"16px"}
+                  sx={{
+                    cursor: "pointer",
+                    width: "300px",
+                    borderRadius: "4px",
+                    "&:hover": {
+                      backgroundColor: "#ffffff33",
+                    },
+                  }}
+                  onClick={() => {
+                    if (!isDM) setView("chatGroupMemberList");
+                  }}
+                >
+                  {isDM && currentPartner && (
+                    <Avatar
+                      onlineStatus={activeUserListStore.users.some((user) => user === currentPartner._id)}
+                      userid={currentPartner._id}
+                      size={40}
+                      status={currentPartner.notificationStatus}
+                    />
+                  )}
+                  {!isDM && <GroupAvatar size={40} url={""} />}
+                  <Stack justifyContent={"flex-start"} direction={"column"} spacing={1}>
+                    <Box className={"fs-18-bold white"}>{displayChatroomName}</Box>
+                    <Box className={"fs-12-regular gray"}>{displayChatroomSubName}</Box>
+                  </Stack>
                 </Stack>
               </Stack>
+              <Button
+                className={"setting-back-button"}
+                onClick={() => {
+                  navigate("/chat");
+                  dispatch(setChatHistory({ messages: [] }));
+                }}
+              >
+                <Box component={"img"} src={maximize}></Box>
+              </Button>
             </Stack>
-            <Button
-              className={"common-btn"}
-              sx={{
-                position: "absolute",
-                top: 0,
-                right: 0,
-                cursor: "pointer",
-              }}
-              onClick={() => {
-                navigate("/chat");
-                setPage(1);
-                setHasMore(true);
-                dispatch(setChatHistory({ messages: [] }));
-                setProcessedPages(new Set());
-              }}
-            >
-              <Box className={"center-align"}>
-                <img src={maximize} />
-              </Box>
-            </Button>
             <Divider
               sx={{
                 backgroundColor: "#FFFFFF1A",
@@ -285,7 +265,7 @@ const Chatbox = ({ view, setView }: propsType) => {
               }}
               dataLength={chatHistoryStore.messages.length} //This is important field to render the next data
               next={fetchMessages}
-              hasMore={hasMore}
+              hasMore={true}
               loader={<Box className={"fs-14-regular white t-center"}>{t("cha-32_loading")}</Box>}
               // endMessage={
               //   <Box className={"fs-14-regular white t-center"}>
@@ -403,7 +383,7 @@ const Chatbox = ({ view, setView }: propsType) => {
           </Box>
 
           {/* Input field section */}
-          <Chatinputfield value={value} setValue={setValue} keyperuser={currentKey} />
+          <Chatinputfield value={value} setValue={setValue} />
         </Box>
       )}
     </>

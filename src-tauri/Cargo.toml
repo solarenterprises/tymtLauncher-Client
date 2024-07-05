@@ -25,6 +25,7 @@ tokio = { version = "1.2", features = ["full"] }
 tokio-tungstenite = "0.23"
 futures-util = "0.3"
 actix-web = "4.5"
+actix-cors = "0.7"
 dotenv = "0.15"
 winapi = "0.3"
 

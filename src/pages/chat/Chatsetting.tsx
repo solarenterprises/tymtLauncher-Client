@@ -42,10 +42,8 @@ const ChatSetting = ({ view, setView }: propsType) => {
       {view === "chatsetting" && (
         <Stack direction={"column"}>
           <Stack flexDirection={"row"} justifyContent={"flex-start"} gap={"10px"} alignItems={"center"} textAlign={"center"} sx={{ padding: "20px" }}>
-            <Button className={"common-btn"}>
-              <Box className={"center-align"} onClick={() => setView("chatmain")}>
-                <img src={backIcon} />
-              </Box>
+            <Button className={"setting-back-button"} onClick={() => setView("chatmain")}>
+              <Box component={"img"} src={backIcon}></Box>
             </Button>
             <Box className={"fs-h3 white"}>{t("set-18_chat-settings")}</Box>
           </Stack>

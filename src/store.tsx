@@ -37,6 +37,7 @@ import chathistoryperUserReducer from "./features/chat/Chat-historyperUserSlice"
 import friendListReducer from "./features/chat/FriendListSlice";
 import contactListReducer from "./features/chat/ContactListSlice";
 import blockListReducer from "./features/chat/BlockListSlice";
+import chatroomListReducer from "./features/chat/ChatroomListSlice";
 import encryptionReducer from "./features/chat/Chat-encryptionkeySlice";
 import currentPartnerReducer from "./features/chat/CurrentPartnerSlice";
 import chatHistoryReducer from "./features/chat/Chat-historySlice";
@@ -45,6 +46,11 @@ import chatnotificationReducer from "./features/chat/Chat-notificationSlice";
 import alertReducer from "./features/chat/Chat-alertSlice";
 import chatReducer from "./features/settings/ChatSlice";
 import alertListReducer from "./features/alert/AlertListSlice";
+import rsaReducer from "./features/chat/RsaSlice";
+import currentChatroomReducer from "./features/chat/CurrentChatroomSlice";
+import currentChatroomMembersReducer from "./features/chat/CurrentChatroomMembersSlice";
+import sKeyListReducer from "./features/chat/SKeyListSlice";
+import activeUserListReducer from "./features/chat/ActiveUserListSlice";
 
 const blacklistActionTypes = ["intercomsupport/setChatMounted", "intercomsupport/setMountedTrue", "intercomsupport/setMountedFalse"];
 
@@ -90,6 +96,7 @@ const store = configureStore({
     scrolldown: scrolldownReducer,
     friendList: friendListReducer,
     blockList: blockListReducer,
+    chatroomList: chatroomListReducer,
     encryption: encryptionReducer,
     machineId: machineIdReducer,
     socketHash: socketHashReducer,
@@ -98,6 +105,11 @@ const store = configureStore({
     mnemonic: mnemonicReducer,
     saltToken: saltTokenReducer,
     alertList: alertListReducer,
+    rsa: rsaReducer,
+    currentChatroom: currentChatroomReducer,
+    currentChatroomMembers: currentChatroomMembersReducer,
+    sKeyList: sKeyListReducer,
+    activeUserList: activeUserListReducer,
   },
   middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(stateSyncMiddleware),
 });

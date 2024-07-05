@@ -36,8 +36,8 @@ const D53Modal = ({ open, setOpen }: props) => {
     justifyContent: "center",
   };
 
-  const handlePlayClick = async () => {
-    if (serverIp === "") {
+  const handlePlayClick = async (autoMode: boolean) => {
+    if (!serverIp) {
       setNotificationStatus("failed");
       setNotificationTitle(t("alt-36_server-required"));
       setNotificationDetail(t("alt-37_please-fill-server"));
@@ -46,7 +46,7 @@ const D53Modal = ({ open, setOpen }: props) => {
     } else {
       const selectedServer = serverList.find((server) => server.ip === serverIp);
       if (!selectedServer) {
-        await runGame("district53", serverIp);
+        await runGame("district53", serverIp, autoMode);
       } else {
         if (selectedServer?.clients >= selectedServer?.clients_max) {
           setNotificationStatus("failed");
@@ -55,7 +55,7 @@ const D53Modal = ({ open, setOpen }: props) => {
           setNotificationOpen(true);
           setNotificationLink(null);
         } else {
-          const res = await runGame("district53", serverIp);
+          const res = await runGame("district53", serverIp, autoMode);
           if (!res) {
             setNotificationStatus("failed");
             setNotificationTitle(t("alt-9_run-failed"));
@@ -157,13 +157,23 @@ const D53Modal = ({ open, setOpen }: props) => {
             )}
             <Button
               fullWidth
-              onClick={handlePlayClick}
-              className="red-button"
+              onClick={() => handlePlayClick(true)}
+              className="red-border-button"
               sx={{
                 mt: "16px",
               }}
             >
-              <Box className={"fs-16-regular white"}>{t("hom-7_play-game")}</Box>
+              <Box className={"fs-16-regular"}>{t("hom-27_play-now")}</Box>
+            </Button>
+            <Button
+              fullWidth
+              onClick={() => handlePlayClick(false)}
+              className="red-button"
+              sx={{
+                mt: "8px",
+              }}
+            >
+              <Box className={"fs-16-regular white"}>{t("hom-28_advanced-settings")}</Box>
             </Button>
           </Stack>
         </Box>

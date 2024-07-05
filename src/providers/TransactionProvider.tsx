@@ -1,21 +1,26 @@
-import { Outlet } from "react-router-dom";
-import { listen } from "@tauri-apps/api/event";
 import { useEffect, useRef } from "react";
-import { emit } from "@tauri-apps/api/event";
-import { IGetAccountReq, IGetBalanceReq } from "../types/eventParamTypes";
-import TransactionProviderAPI from "../lib/api/TransactionProviderAPI";
-import { IMnemonic, ISaltToken, nonCustodialType } from "../types/accountTypes";
+import { Outlet } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { getNonCustodial } from "../features/account/NonCustodialSlice";
+
+import { listen } from "@tauri-apps/api/event";
+import { emit } from "@tauri-apps/api/event";
+
+import tymtCore from "../lib/core/tymtCore";
+
+import TransactionProviderAPI from "../lib/api/TransactionProviderAPI";
+
 import { AppDispatch } from "../store";
-import { getMultiWallet } from "../features/wallet/MultiWalletSlice";
-import { IChain, multiWalletType } from "../types/walletTypes";
+import { getNonCustodial } from "../features/account/NonCustodialSlice";
 import { getChain } from "../features/wallet/ChainSlice";
-import { walletType } from "../types/settingTypes";
 import { selectWallet, setWallet } from "../features/settings/WalletSlice";
 import { getSaltToken } from "../features/account/SaltTokenSlice";
-import tymtCore from "../lib/core/tymtCore";
+import { getMultiWallet } from "../features/wallet/MultiWalletSlice";
 import { getMnemonic } from "../features/account/MnemonicSlice";
+
+import { walletType } from "../types/settingTypes";
+import { IMnemonic, ISaltToken, nonCustodialType } from "../types/accountTypes";
+import { IGetAccountReq, IGetBalanceReq, ISignMessageReq, IVerifyMessageReq } from "../types/eventParamTypes";
+import { IChain, multiWalletType } from "../types/walletTypes";
 
 const TransactionProvider = () => {
   const nonCustodialStore: nonCustodialType = useSelector(getNonCustodial);
@@ -92,14 +97,38 @@ const TransactionProvider = () => {
         return;
       }
       const publicKey: string = tymtCore.Blockchains.solar.wallet.getPublicKey(mnemonicStoreRef.current.mnemonic);
-      const res: boolean = tymtCore.Blockchains.solar.wallet.verifyMessage(saltTokenStoreRef.current.salt, publicKey, token);
+      const res: boolean = tymtCore.Blockchains.solar.wallet.verifyToken(saltTokenStoreRef.current.salt, publicKey, token);
       emit("res-validate-token", res);
+    });
+
+    const unlisten_sign_message = listen("POST-/sign-message", async (event) => {
+      const data: ISignMessageReq = JSON.parse(event.payload as string);
+      if (!data || !data.message || !mnemonicStoreRef.current.mnemonic) {
+        emit("res-POST-/sign-message", "");
+        return;
+      }
+      const res = tymtCore.Blockchains.solar.wallet.signMessage(data.message, mnemonicStoreRef.current.mnemonic);
+      emit("res-POST-/sign-message", res);
+    });
+
+    const unlisten_verify_message = listen("POST-/verify-message", async (event) => {
+      const data: IVerifyMessageReq = JSON.parse(event.payload as string);
+      console.log("POST-/verify-message", data);
+      if (!data || !data.message || !data.signature || !mnemonicStoreRef.current.mnemonic) {
+        emit("res-POST-/verify-message", false);
+        return;
+      }
+      const publicKey: string = tymtCore.Blockchains.solar.wallet.getPublicKey(mnemonicStoreRef.current.mnemonic);
+      const res: boolean = tymtCore.Blockchains.solar.wallet.verifyMessage(data.message, publicKey, data.signature);
+      emit("res-POST-/verify-message", res);
     });
 
     return () => {
       unlisten_get_account.then((unlistenFn) => unlistenFn());
       unlisten_get_balance.then((unlistenFn) => unlistenFn());
       unlisten_validate_token.then((unlistenFn) => unlistenFn());
+      unlisten_sign_message.then((unlistenFn) => unlistenFn());
+      unlisten_verify_message.then((unlistenFn) => unlistenFn());
     };
   }, []);
 
