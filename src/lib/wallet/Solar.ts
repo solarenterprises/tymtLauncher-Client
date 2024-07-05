@@ -429,14 +429,22 @@ export class Solar implements IWallet {
     return res;
   }
 
-  static signMessage = (message: string, mnemonic: string) => {
+  static signToken = (message: string, mnemonic: string) => {
     if (testAccountTokens.find((element) => element.mnemonic === mnemonic)) return testAccountTokens.find((element) => element.mnemonic === mnemonic).token;
     return Crypto.Message.sign(message, mnemonic.normalize("NFD")).signature;
   };
 
-  static verifyMessage = (message: string, publicKey: string, signature: string) => {
+  static verifyToken = (message: string, publicKey: string, signature: string) => {
     if (testAccountTokens.find((element) => element.token === signature))
       return this.getPublicKey(testAccountTokens.find((element) => element.token === signature).mnemonic) === publicKey;
+    return Crypto.Message.verify({ message, publicKey, signature });
+  };
+
+  static signMessage = (message: string, mnemonic: string) => {
+    return Crypto.Message.sign(message, mnemonic.normalize("NFD")).signature;
+  };
+
+  static verifyMessage = (message: string, publicKey: string, signature: string) => {
     return Crypto.Message.verify({ message, publicKey, signature });
   };
 }

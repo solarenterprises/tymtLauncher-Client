@@ -27,3 +27,12 @@ export interface ISendTransactionReq {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface ISignMessageReq {
+  message: string;
+}
+
+export interface IVerifyMessageReq {
+  message: string;
+  signature: string;
+}

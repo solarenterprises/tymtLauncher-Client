@@ -108,7 +108,7 @@ const ConfirmInformation = () => {
           let token: string;
           if (salt != saltTokenRef.current.salt) {
             console.log(salt, "SALT", saltTokenRef.current.salt);
-            token = tymtCore.Blockchains.solar.wallet.signMessage(salt, mnemonicStore.mnemonic);
+            token = tymtCore.Blockchains.solar.wallet.signToken(salt, mnemonicStore.mnemonic);
             dispatch(
               setSaltToken({
                 salt: salt,
