@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import { Box, Grid, Stack } from "@mui/material";
@@ -9,7 +9,7 @@ import { AppDispatch } from "../../store";
 import { setCurrentChatroom } from "../../features/chat/CurrentChatroomSlice";
 import { fetchCurrentChatroomMembersAsync } from "../../features/chat/CurrentChatroomMembersSlice";
 import { getAccount } from "../../features/account/AccountSlice";
-import { getContactList } from "../../features/chat/ContactListSlice";
+import { createContactAsync, getContactList } from "../../features/chat/ContactListSlice";
 import { IActiveUserList, getActiveUserList } from "../../features/chat/ActiveUserListSlice";
 
 import { IChatroom } from "../../types/ChatroomAPITypes";
@@ -37,6 +37,12 @@ const DMListItem = ({ DM, index, numberOfUnreadMessages, setView }: IPropsDMList
     x: 0,
     y: 0,
   });
+
+  useEffect(() => {
+    if (!user) {
+      dispatch(createContactAsync(partnerId));
+    }
+  }, [user]);
 
   const handleDMListItemClick = () => {
     try {
