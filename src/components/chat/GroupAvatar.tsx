@@ -5,10 +5,9 @@ import accountIcon from "../../assets/wallet/account.svg";
 export interface IPropsGroupAvatar {
   size: number;
   url: string;
-  onClick?: () => void;
 }
 
-const GroupAvatar = ({ size, url, onClick }: IPropsGroupAvatar) => {
+const GroupAvatar = ({ size, url }: IPropsGroupAvatar) => {
   return (
     <>
       <div
@@ -18,7 +17,6 @@ const GroupAvatar = ({ size, url, onClick }: IPropsGroupAvatar) => {
           position: "relative",
           display: "inline-block",
           border: "transparent",
-          cursor: onClick ? "pointer" : "default",
         }}
       >
         <Box
@@ -43,9 +41,6 @@ const GroupAvatar = ({ size, url, onClick }: IPropsGroupAvatar) => {
           onError={(e) => {
             const target = e.target as HTMLImageElement;
             target.src = accountIcon;
-          }}
-          onClick={() => {
-            if (onClick) onClick();
           }}
         />
       </div>

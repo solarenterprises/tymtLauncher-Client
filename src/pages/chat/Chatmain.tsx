@@ -199,15 +199,13 @@ const Chatmain = ({ view, setView }: propsType) => {
                     }}
                   />
                 </ThemeProvider>
-                <Button className={"common-btn"}>
-                  <Box
-                    className={"center-align"}
-                    onClick={() => {
-                      setView("chatsetting");
-                    }}
-                  >
-                    <img src={settingicon} style={{ cursor: "pointer" }} />
-                  </Box>
+                <Button
+                  className={"setting-back-button"}
+                  onClick={() => {
+                    setView("chatsetting");
+                  }}
+                >
+                  <Box component={"img"} src={settingicon}></Box>
                 </Button>
               </Stack>
             </Box>
@@ -264,7 +262,7 @@ const Chatmain = ({ view, setView }: propsType) => {
             <SwipeableViews axis={otheme.direction === "rtl" ? "x-reverse" : "x"} index={tab} onChangeIndex={handleChangeIndex} width={"100%"}>
               <TabPanel value={tab} index={0} dir={otheme.direction}>
                 <Box className={classes.scroll_bar}>
-                  <NewGroupButton />
+                  <NewGroupButton roomMode={false} />
                   {groupList?.length === 0 && !value ? (
                     <>
                       <Grid container sx={{ justifyContent: "center" }}>

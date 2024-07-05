@@ -71,7 +71,7 @@ const ChatGroupMemberList = ({ view, setView }: IPropsChatGroupMemberList) => {
               }}
             >
               <Stack flexDirection={"row"} justifyContent={"flex-start"} gap={"10px"} alignItems={"center"} textAlign={"center"}>
-                <Button className={"setting-back-button"} onClick={() => setView("chatmain")}>
+                <Button className={"setting-back-button"} onClick={() => setView("chatbox")}>
                   <Box component={"img"} src={backIcon}></Box>
                 </Button>
                 <Box className="fs-h3 white">{currentChatroomStore?.room_name}</Box>
@@ -116,15 +116,13 @@ const ChatGroupMemberList = ({ view, setView }: IPropsChatGroupMemberList) => {
                     }}
                   />
                 </ThemeProvider>
-                <Button className={"common-btn"}>
-                  <Box
-                    className={"center-align"}
-                    onClick={() => {
-                      setView("chatsetting");
-                    }}
-                  >
-                    <img src={settingicon} style={{ cursor: "pointer" }} />
-                  </Box>
+                <Button
+                  className={"setting-back-button"}
+                  onClick={() => {
+                    setView("chatsetting");
+                  }}
+                >
+                  <Box component={"img"} src={settingicon}></Box>
                 </Button>
               </Stack>
             </Box>

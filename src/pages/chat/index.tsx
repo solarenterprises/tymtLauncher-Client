@@ -3,7 +3,7 @@ import { useSelector } from "react-redux";
 
 import { Box, SwipeableDrawer } from "@mui/material";
 
-import Chatmain from "./Chatmain";
+import Chatmain from "./ChatMain.tsx";
 import ChatSetting from "./Chatsetting";
 import ChatMsg from "./Chatsetting-Msg.tsx";
 import Chatfriend from "./Chatsetting-friend.tsx";

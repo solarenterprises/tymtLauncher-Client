@@ -279,7 +279,22 @@ const Chatroom = () => {
                 }}
               >
                 <Stack flexDirection={"row"} alignItems={"center"} justifyContent={"space-between"}>
-                  <Stack alignItems={"center"} flexDirection={"row"}>
+                  <Stack
+                    alignItems={"center"}
+                    flexDirection={"row"}
+                    gap={"16px"}
+                    sx={{
+                      cursor: "pointer",
+                      width: "500px",
+                      borderRadius: "4px",
+                      "&:hover": {
+                        backgroundColor: "#ffffff33",
+                      },
+                    }}
+                    onClick={() => {
+                      if (!isDM) setPanel("chatGroupMemberListRoom");
+                    }}
+                  >
                     {isDM && currentPartner && (
                       <Avatar
                         onlineStatus={activeUserListStore.users.some((user) => user === currentPartner._id)}
@@ -288,19 +303,15 @@ const Chatroom = () => {
                         status={currentPartner.notificationStatus}
                       />
                     )}
-                    {!isDM && <GroupAvatar size={40} url={""} onClick={() => setPanel("chatGroupMemberListRoom")} />}
+                    {!isDM && <GroupAvatar size={40} url={""} />}
                     <Stack marginLeft={"16px"} justifyContent={"flex-start"} direction={"column"} spacing={1}>
                       <Box className={"fs-18-bold white"}>{displayChatroomName}</Box>
                       <Box className={"fs-12-regular gray"}>{displayChatroomSubName}</Box>
                     </Stack>
                   </Stack>
-                  <Stack alignItems={"center"} flexDirection={"row"}>
-                    <Button className={"common-btn"} sx={{ cursor: "pointer", marginLeft: "10px" }} onClick={() => navigate(-1)}>
-                      <Box className={"center-align"}>
-                        <img src={x} />
-                      </Box>
-                    </Button>
-                  </Stack>
+                  <Button className={"setting-back-button"} onClick={() => navigate("/home")}>
+                    <Box component={"img"} src={x}></Box>
+                  </Button>
                 </Stack>
 
                 <Divider

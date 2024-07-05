@@ -120,37 +120,38 @@ const UserListItem = ({ user, index, numberOfUnreadMessages, setView, page }: IP
         }
         // Else if he is not in my contact list
         else {
-          dispatch(createDMAsync(user._id)).then((action) => {
-            if (action.type.endsWith("/fulfilled")) {
-              const newCurrentChatroom = action.payload as IChatroom;
-              dispatch(setCurrentChatroom(newCurrentChatroom));
-              dispatch(fetchCurrentChatroomMembersAsync(newCurrentChatroom._id));
+          dispatch(createContactAsync(user._id)).then(() => {
+            dispatch(createDMAsync(user._id)).then((action) => {
+              if (action.type.endsWith("/fulfilled")) {
+                const newCurrentChatroom = action.payload as IChatroom;
+                dispatch(setCurrentChatroom(newCurrentChatroom));
+                dispatch(fetchCurrentChatroomMembersAsync(newCurrentChatroom._id));
 
-              const data_1: ISocketParamsJoinMessageGroup = {
-                room_id: newCurrentChatroom._id,
-                joined_user_id: user._id,
-              };
-              const data_2: ISocketParamsJoinMessageGroup = {
-                room_id: newCurrentChatroom._id,
-                joined_user_id: accountStore.uid,
-              };
-              socket.current.emit("join-message-group", JSON.stringify(data_1));
-              socket.current.emit("join-message-group", JSON.stringify(data_2));
-              console.log("socket.current.emit > join-message-group", data_1);
-              console.log("socket.current.emit > join-message-group", data_2);
+                const data_1: ISocketParamsJoinMessageGroup = {
+                  room_id: newCurrentChatroom._id,
+                  joined_user_id: user._id,
+                };
+                const data_2: ISocketParamsJoinMessageGroup = {
+                  room_id: newCurrentChatroom._id,
+                  joined_user_id: accountStore.uid,
+                };
+                socket.current.emit("join-message-group", JSON.stringify(data_1));
+                socket.current.emit("join-message-group", JSON.stringify(data_2));
+                console.log("socket.current.emit > join-message-group", data_1);
+                console.log("socket.current.emit > join-message-group", data_2);
 
-              const myUserKey = newCurrentChatroom.participants.find((participant) => participant.userId === accountStore.uid)?.userKey;
-              dispatch(
-                addOneSKeyList({
-                  roomId: newCurrentChatroom._id,
-                  sKey: rsaDecrypt(myUserKey, rsaStore.privateKey),
-                })
-              );
+                const myUserKey = newCurrentChatroom.participants.find((participant) => participant.userId === accountStore.uid)?.userKey;
+                dispatch(
+                  addOneSKeyList({
+                    roomId: newCurrentChatroom._id,
+                    sKey: rsaDecrypt(myUserKey, rsaStore.privateKey),
+                  })
+                );
 
-              if (setView) setView("chatbox");
-            }
+                if (setView) setView("chatbox");
+              }
+            });
           });
-          dispatch(createContactAsync(user._id));
         }
         console.log("handleUserListItemClick");
       } catch (err) {

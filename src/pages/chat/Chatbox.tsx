@@ -200,45 +200,52 @@ const Chatbox = ({ view, setView }: propsType) => {
               position: "relative",
             }}
           >
-            <Stack flexDirection={"row"} alignItems={"center"}>
-              <Button className={classes.common_btn}>
-                <Box className={"backIcon"} onClick={() => setView("chatmain")}>
-                  <img src={backIcon} />
-                </Box>
-              </Button>
-              <Stack alignItems={"center"} flexDirection={"row"}>
-                {isDM && currentPartner && (
-                  <Avatar
-                    onlineStatus={activeUserListStore.users.some((user) => user === currentPartner._id)}
-                    userid={currentPartner._id}
-                    size={40}
-                    status={currentPartner.notificationStatus}
-                  />
-                )}
-                {!isDM && <GroupAvatar size={40} url={""} onClick={() => setView("chatGroupMemberList")} />}
-                <Stack marginLeft={"16px"} justifyContent={"flex-start"} direction={"column"} spacing={1}>
-                  <Box className={"fs-18-bold white"}>{displayChatroomName}</Box>
-                  <Box className={"fs-12-regular gray"}>{displayChatroomSubName}</Box>
+            <Stack direction={"row"} alignItems={"center"} width={"100%"} justifyContent={"space-between"}>
+              <Stack direction={"row"} alignItems={"center"} gap={"16px"}>
+                <Button className={"setting-back-button"} onClick={() => setView("chatmain")}>
+                  <Box component={"img"} src={backIcon}></Box>
+                </Button>
+                <Stack
+                  alignItems={"center"}
+                  flexDirection={"row"}
+                  gap={"16px"}
+                  sx={{
+                    cursor: "pointer",
+                    width: "300px",
+                    borderRadius: "4px",
+                    "&:hover": {
+                      backgroundColor: "#ffffff33",
+                    },
+                  }}
+                  onClick={() => {
+                    if (!isDM) setView("chatGroupMemberList");
+                  }}
+                >
+                  {isDM && currentPartner && (
+                    <Avatar
+                      onlineStatus={activeUserListStore.users.some((user) => user === currentPartner._id)}
+                      userid={currentPartner._id}
+                      size={40}
+                      status={currentPartner.notificationStatus}
+                    />
+                  )}
+                  {!isDM && <GroupAvatar size={40} url={""} />}
+                  <Stack justifyContent={"flex-start"} direction={"column"} spacing={1}>
+                    <Box className={"fs-18-bold white"}>{displayChatroomName}</Box>
+                    <Box className={"fs-12-regular gray"}>{displayChatroomSubName}</Box>
+                  </Stack>
                 </Stack>
               </Stack>
+              <Button
+                className={"setting-back-button"}
+                onClick={() => {
+                  navigate("/chat");
+                  dispatch(setChatHistory({ messages: [] }));
+                }}
+              >
+                <Box component={"img"} src={maximize}></Box>
+              </Button>
             </Stack>
-            <Button
-              className={"common-btn"}
-              sx={{
-                position: "absolute",
-                top: 0,
-                right: 0,
-                cursor: "pointer",
-              }}
-              onClick={() => {
-                navigate("/chat");
-                dispatch(setChatHistory({ messages: [] }));
-              }}
-            >
-              <Box className={"center-align"}>
-                <img src={maximize} />
-              </Box>
-            </Button>
             <Divider
               sx={{
                 backgroundColor: "#FFFFFF1A",

@@ -4,7 +4,11 @@ import AddIcon from "@mui/icons-material/Add";
 import NewGroupModal from "./NewGroupModal";
 import { useTranslation } from "react-i18next";
 
-const NewGroupButton = () => {
+export interface IPropsNewGroupButton {
+  roomMode: boolean;
+}
+
+const NewGroupButton = ({ roomMode }: IPropsNewGroupButton) => {
   const { t } = useTranslation();
   const [openNewGroupModal, setOpenNewGroupModal] = useState<boolean>(false);
 
@@ -62,7 +66,7 @@ const NewGroupButton = () => {
           <Box className={"fs-16-regular white t-center"}>{t("cha-45_create-new-group")}</Box>
         </Stack>
       </Grid>
-      <NewGroupModal open={openNewGroupModal} setOpen={setOpenNewGroupModal} roomMode={false} />
+      <NewGroupModal open={openNewGroupModal} setOpen={setOpenNewGroupModal} roomMode={roomMode} />
     </>
   );
 };
