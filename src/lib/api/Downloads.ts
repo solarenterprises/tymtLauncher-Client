@@ -205,7 +205,7 @@ export async function isInstalled(game_key: string) {
   }
 }
 
-export async function runGame(game_key: string, serverIp?: string) {
+export async function runGame(game_key: string, serverIp?: string, autoMode?: boolean) {
   try {
     const dataDir = await appDataDir();
     let exePath = "";
@@ -259,19 +259,20 @@ export async function runGame(game_key: string, serverIp?: string) {
         case "Linux":
           switch (production_version === "prod" ? Games[game_key].executables.linux?.prod?.type ?? "" : Games[game_key].executables.linux?.dev?.type ?? "") {
             case "appimage":
-              args = [`--appimage-extract-and-run`, `--address`, d53_server, `--port`, d53_port, `--launcher_url`, launcherUrl, `--token`, token, `--go`];
+              args = [`--appimage-extract-and-run`, `--address`, d53_server, `--port`, d53_port, `--launcher_url`, launcherUrl, `--token`, token];
               break;
             case "zip":
               break;
           }
           break;
         case "Windows_NT":
-          args = [`--address`, d53_server, `--port`, d53_port, `--launcher_url`, launcherUrl, `--token`, token, `--go`];
+          args = [`--address`, d53_server, `--port`, d53_port, `--launcher_url`, launcherUrl, `--token`, token];
           break;
         case "Darwin":
-          args = [`--address`, d53_server, `--port`, d53_port, `--launcher_url`, launcherUrl, `--token`, token, `--go`];
+          args = [`--address`, d53_server, `--port`, d53_port, `--launcher_url`, launcherUrl, `--token`, token];
           break;
       }
+      if (autoMode) args.push(`--go`);
     }
     console.log("runGame: ", url, args);
     switch (platform) {
