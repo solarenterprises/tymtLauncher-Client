@@ -134,7 +134,7 @@ const Games: { [key: string]: Game } = {
         dev: {
           url: "https://dev.district53.io:2000/District53_5.9.0.2_mac_x64_86.zip",
           type: "zip",
-          exePath: "/District53",
+          exePath: "/District53.app",
           size: 10,
         },
       },
@@ -147,7 +147,7 @@ const Games: { [key: string]: Game } = {
         dev: {
           url: "https://dev.district53.io:2000/District53_5.9.0.2_mac_arm.zip",
           type: "zip",
-          exePath: "/District53",
+          exePath: "/District53.app",
           size: 10,
         },
       },
