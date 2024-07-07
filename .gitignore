@@ -19,8 +19,8 @@ dist-ssr
 *.local
 configs/*
 
-# Intercom config
-/public/intercom.json
+# tawk config
+/public/tawk.json
 
 # Editor directories and files
 .vscode/*
