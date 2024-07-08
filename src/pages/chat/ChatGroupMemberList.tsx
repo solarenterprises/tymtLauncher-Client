@@ -2,12 +2,18 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import { debounce } from "lodash";
+
 import { Box, Stack, TextField, ThemeProvider, InputAdornment, Button, Divider, createTheme } from "@mui/material";
-import { ICurrentChatroomMember, ICurrentChatroomMembers, getCurrentChatroomMembers } from "../../features/chat/CurrentChatroomMembersSlice";
-import { searchUsers } from "../../features/chat/ContactListApi";
-import { getCurrentChatroom } from "../../features/chat/CurrentChatroomSlice";
+import EditIcon from "@mui/icons-material/Edit";
+
 import GroupMemberListItem from "../../components/chat/GroupMemberListItem";
+
+import { ICurrentChatroomMember, ICurrentChatroomMembers, getCurrentChatroomMembers } from "../../features/chat/CurrentChatroomMembersSlice";
+import { getCurrentChatroom } from "../../features/chat/CurrentChatroomSlice";
+import { searchUsers } from "../../features/chat/ContactListApi";
+
 import { IChatroom } from "../../types/ChatroomAPITypes";
+
 import ChatStyle from "../../styles/ChatStyles";
 import searchlg from "../../assets/searchlg.svg";
 import settingicon from "../../assets/chat/settings.svg";
@@ -70,11 +76,16 @@ const ChatGroupMemberList = ({ view, setView }: IPropsChatGroupMemberList) => {
                 position: "relative",
               }}
             >
-              <Stack flexDirection={"row"} justifyContent={"flex-start"} gap={"10px"} alignItems={"center"} textAlign={"center"}>
-                <Button className={"setting-back-button"} onClick={() => setView("chatbox")}>
-                  <Box component={"img"} src={backIcon}></Box>
+              <Stack direction={"row"} justifyContent={"space-between"} alignItems={"center"}>
+                <Stack direction={"row"} gap={"10px"} alignItems={"center"} textAlign={"center"}>
+                  <Button className={"setting-back-button"} onClick={() => setView("chatbox")}>
+                    <Box component={"img"} src={backIcon}></Box>
+                  </Button>
+                  <Box className="fs-h3 white">{currentChatroomStore?.room_name}</Box>
+                </Stack>
+                <Button className={"setting-back-button"} onClick={() => setView("chatGroupEdit")}>
+                  <EditIcon className="icon-button" />
                 </Button>
-                <Box className="fs-h3 white">{currentChatroomStore?.room_name}</Box>
               </Stack>
               <Stack flexDirection={"row"} justifyContent={"space-between"} alignItems={"center"} marginTop={"30px"}>
                 <ThemeProvider theme={theme}>

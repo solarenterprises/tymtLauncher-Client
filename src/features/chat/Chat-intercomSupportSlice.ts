@@ -30,17 +30,17 @@ const intercomSupportSlice = createSlice({
       state.data = { mounted: true };
       tymtStorage.set(`intercomsupport`, JSON.stringify({ mounted: true }));
 
-      (window as any).Intercom("update", {
-        hide_default_launcher: true,
-      });
+      // (window as any).Intercom("update", {
+      //   hide_default_launcher: true,
+      // });
     },
     setMountedFalse(state) {
       state.data = { mounted: false };
       tymtStorage.set(`intercomsupport`, JSON.stringify({ mounted: false }));
 
-      (window as any).Intercom("update", {
-        hide_default_launcher: false,
-      });
+      // (window as any).Intercom("update", {
+      //   hide_default_launcher: false,
+      // });
     },
   },
 });

@@ -34,6 +34,8 @@ import ChatSettinginRoom from "./ChatsettinginRoom";
 import ChatMainRoom from "./ChatMainRoom";
 import ChatMsginRoom from "./Chatsetting-MsginRoom";
 import Chatinputfield from "../../components/chat/Chatinputfield";
+import ChatGroupEditRoom from "./ChatGroupEditRoom";
+import EditIcon from "@mui/icons-material/Edit";
 
 import { Chatdecrypt } from "../../lib/api/ChatEncrypt";
 import { addChatHistory } from "../../lib/api/JSONHelper";
@@ -260,6 +262,7 @@ const Chatroom = () => {
             <ChatMainRoom view={panel} setView={setPanel} />
             <ChatMsginRoom view={panel} setView={setPanel} />
             <ChatGroupMemberListRoom view={panel} setView={setPanel} />
+            <ChatGroupEditRoom view={panel} setView={setPanel} />
           </Box>
           {/* Right section */}
           <Box
@@ -309,9 +312,14 @@ const Chatroom = () => {
                       <Box className={"fs-12-regular gray"}>{displayChatroomSubName}</Box>
                     </Stack>
                   </Stack>
-                  <Button className={"setting-back-button"} onClick={() => navigate("/home")}>
-                    <Box component={"img"} src={x}></Box>
-                  </Button>
+                  <Stack direction={"row"} gap={"10px"} alignItems={"center"}>
+                    <Button className={"setting-back-button"} onClick={() => setPanel("chatGroupEditRoom")}>
+                      <EditIcon className="icon-button" />
+                    </Button>
+                    <Button className={"setting-back-button"} onClick={() => navigate("/home")}>
+                      <Box component={"img"} src={x}></Box>
+                    </Button>
+                  </Stack>
                 </Stack>
 
                 <Divider
@@ -326,7 +334,7 @@ const Chatroom = () => {
                 <Box sx={{ width: "100%", flex: "1 1 auto" }} />
                 <InfiniteScroll
                   style={{
-                    minHeight: "100%",
+                    minHeight: "50px",
                   }}
                   dataLength={chatHistoryStore.messages.length} //This is important field to render the next data
                   next={fetchMessages}

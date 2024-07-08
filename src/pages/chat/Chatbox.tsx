@@ -261,7 +261,7 @@ const Chatbox = ({ view, setView }: propsType) => {
 
             <InfiniteScroll
               style={{
-                minHeight: "100%",
+                minHeight: "50px",
               }}
               dataLength={chatHistoryStore.messages.length} //This is important field to render the next data
               next={fetchMessages}

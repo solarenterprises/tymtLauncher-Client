@@ -3,12 +3,13 @@ import { useSelector } from "react-redux";
 
 import { Box, SwipeableDrawer } from "@mui/material";
 
-import Chatmain from "./ChatMain.tsx";
+import Chatmain from "./Chatmain.tsx";
 import ChatSetting from "./Chatsetting";
 import ChatMsg from "./Chatsetting-Msg.tsx";
 import Chatfriend from "./Chatsetting-friend.tsx";
 import Chatbox from "./Chatbox.tsx";
 import ChatGroupMemberList from "./ChatGroupMemberList.tsx";
+import ChatGroupEdit from "./ChatGroupEdit.tsx";
 
 import { getCurrentChatroom } from "../../features/chat/CurrentChatroomSlice.ts";
 
@@ -63,6 +64,7 @@ const Chatindex = ({ viewChat, setViewChat }: propsChatType) => {
         <Chatfriend view={panel} setView={setPanel} />
         <Chatbox view={panel} setView={setPanel} />
         <ChatGroupMemberList view={panel} setView={setPanel} />
+        <ChatGroupEdit view={panel} setView={setPanel} />
       </Box>
     </SwipeableDrawer>
   );
