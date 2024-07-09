@@ -107,7 +107,7 @@ const Profile = ({ view, setView }: propsType) => {
             <Box className="fs-h3 white">{t("set-10_profile")}</Box>
           </Stack>
           <Divider variant="middle" sx={{ backgroundColor: "#FFFFFF1A" }} />
-          <Stack direction={"column"} justifyContent={""}>
+          <Stack direction={"column"}>
             <Stack direction={"row"} justifyContent={"space-between"} textAlign={"center"} padding={"30px"}>
               <Stack direction={"row"} justifyContent={"center"} textAlign={"right"} alignItems={"center"} gap={"10px"}>
                 <Box className="center-align">

@@ -104,6 +104,26 @@ class ChatroomAPI {
       },
     });
   }
+
+  static async uploadChatroomAvatar(formData: FormData): Promise<AxiosResponse<any, any>> {
+    const saltTokenStore: ISaltToken = JSON.parse(tymtStorage.get(`saltToken`));
+    return await axios.post(`${tymt_backend_url}/chatroom/update-room-image`, formData, {
+      headers: {
+        "x-token": saltTokenStore.token,
+        "Content-Type": "multipart/form-data",
+      },
+    });
+  }
+
+  static async fetchChatroomAvatar(room_id: string): Promise<AxiosResponse<any, any>> {
+    const saltTokenStore: ISaltToken = JSON.parse(tymtStorage.get(`saltToken`));
+    return await axios.get(`${tymt_backend_url}/chatroom/get-room-image/${room_id}`, {
+      headers: {
+        "x-token": saltTokenStore.token,
+        "Content-Type": "application/json",
+      },
+    });
+  }
 }
 
 export default ChatroomAPI;

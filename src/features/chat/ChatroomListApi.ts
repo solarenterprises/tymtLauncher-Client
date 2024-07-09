@@ -218,3 +218,19 @@ export const searchGroups = async (name: string) => {
     return [];
   }
 };
+
+export const updateGroupAvatar = async (formData: FormData) => {
+  try {
+    const res = await ChatroomAPI.uploadChatroomAvatar(formData);
+    if (res?.status !== 200 || !res?.data || !res?.data?.result) {
+      console.error("Failed to updateGroupAvatar: ", res);
+      return null;
+    }
+
+    console.log("updateGroupAvatar");
+    return res?.data?.result;
+  } catch (err) {
+    console.error("Failed to updateGroupAvatar: ", err);
+    return null;
+  }
+};
