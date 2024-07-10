@@ -1,6 +1,7 @@
 import { Box } from "@mui/material";
 import mask from "../../assets/account/mask.png";
 import accountIcon from "../../assets/wallet/account.svg";
+import { tymt_backend_url } from "../../configs";
 
 export interface IPropsGroupAvatar {
   size: number;
@@ -22,7 +23,7 @@ const GroupAvatar = ({ size, url }: IPropsGroupAvatar) => {
         <Box
           component={"img"}
           key={`${new Date().getTime()}`}
-          src={`${url}?${Date.now()}`}
+          src={`${tymt_backend_url}/chatroom/get-room-image/${url}?${Date.now()}`}
           sx={{
             position: "absolute",
             top: "50%",

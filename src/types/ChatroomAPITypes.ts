@@ -33,6 +33,7 @@ export interface IChatroom {
   room_name: string;
   createdAt: string;
   updatedAt: string;
+  room_image?: string;
   __v: number;
 }
 

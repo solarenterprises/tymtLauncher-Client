@@ -306,7 +306,7 @@ const Chatroom = () => {
                         status={currentPartner.notificationStatus}
                       />
                     )}
-                    {!isDM && <GroupAvatar size={40} url={""} />}
+                    {!isDM && <GroupAvatar size={40} url={currentChatroomStore._id} />}
                     <Stack marginLeft={"16px"} justifyContent={"flex-start"} direction={"column"} spacing={1}>
                       <Box className={"fs-18-bold white"}>{displayChatroomName}</Box>
                       <Box className={"fs-12-regular gray"}>{displayChatroomSubName}</Box>

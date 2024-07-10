@@ -116,7 +116,7 @@ const ChatGroupEditRoom = ({ view, setView }: propsType) => {
             <Stack direction={"row"} justifyContent={"space-between"} textAlign={"center"} padding={"30px"}>
               <Stack direction={"row"} justifyContent={"center"} textAlign={"right"} alignItems={"center"} gap={"10px"}>
                 <Box className="center-align">
-                  <GroupAvatar size={92} url={""} />
+                  <GroupAvatar size={92} url={currentChatroomStore._id} />
                 </Box>
                 <Box className="fs-h5 white">{t("set-68_change-avatar")}</Box>
               </Stack>

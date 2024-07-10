@@ -112,7 +112,7 @@ const GroupListItem = ({ group, index, setView }: IPropsGroupListItem) => {
             },
           }}
         >
-          <GroupAvatar size={40} url={""} />
+          <GroupAvatar size={40} url={group._id} />
           <Stack flexDirection={"row"} alignItems={"center"} justifyContent={"space-between"} display={"flex"} sx={{ marginLeft: "25px", width: "320px" }}>
             <Box>
               <Stack direction={"column"} justifyContent={"flex-start"} spacing={1}>
