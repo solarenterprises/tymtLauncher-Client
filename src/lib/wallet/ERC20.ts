@@ -5,6 +5,9 @@ import { IRecipient } from "../../features/wallet/CryptoApi";
 import { INotification } from "../../features/wallet/CryptoSlice";
 import * as multichainWallet from "multichain-crypto-wallet";
 import { translateString } from "../api/Translate";
+import { ISendContractReq } from "../../types/eventParamTypes";
+import { ISmartContractCallPayload } from "multichain-crypto-wallet/dist/common/utils/types";
+import { getRPCUrlFromChainName } from "../helper";
 
 class ERC20 {
   static async getPrivateKeyFromMnemonic(mnemonic: string): Promise<string> {
@@ -221,6 +224,26 @@ class ERC20 {
         message: err.toString(),
       };
       return noti;
+    }
+  }
+
+  static async sendContract(jsonData: ISendContractReq) {
+    try {
+      const rpcUrl = getRPCUrlFromChainName(jsonData.chain);
+      const payload: ISmartContractCallPayload = {
+        rpcUrl: rpcUrl,
+        network: "ethereum",
+        contractAddress: jsonData.contract_address,
+        method: jsonData.function_name,
+        methodType: jsonData.method_type,
+        params: jsonData.params,
+        contractAbi: jsonData.abi,
+      };
+      const res = await multichainWallet.smartContractCall(payload);
+      console.log("sendContract", res);
+      return res;
+    } catch (err) {
+      console.error("Failed to sendTransaction: ", err);
     }
   }
 

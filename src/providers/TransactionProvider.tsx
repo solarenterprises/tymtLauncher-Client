@@ -19,7 +19,7 @@ import { getMnemonic } from "../features/account/MnemonicSlice";
 
 import { walletType } from "../types/settingTypes";
 import { IMnemonic, ISaltToken, nonCustodialType } from "../types/accountTypes";
-import { IGetAccountReq, IGetBalanceReq, ISignMessageReq, IVerifyMessageReq } from "../types/eventParamTypes";
+import { IGetAccountReq, IGetBalanceReq, ISendContractReq, ISignMessageReq, IVerifyMessageReq } from "../types/eventParamTypes";
 import { IChain, multiWalletType } from "../types/walletTypes";
 
 const TransactionProvider = () => {
@@ -123,12 +123,19 @@ const TransactionProvider = () => {
       emit("res-POST-/verify-message", res);
     });
 
+    const unlisten_send_contract = listen("POST-/send-contract", async (event) => {
+      const data: ISendContractReq = JSON.parse(event.payload as string);
+      const res = await TransactionProviderAPI.sendContract(data);
+      emit("res-POST-/send-contract", res);
+    });
+
     return () => {
       unlisten_get_account.then((unlistenFn) => unlistenFn());
       unlisten_get_balance.then((unlistenFn) => unlistenFn());
       unlisten_validate_token.then((unlistenFn) => unlistenFn());
       unlisten_sign_message.then((unlistenFn) => unlistenFn());
       unlisten_verify_message.then((unlistenFn) => unlistenFn());
+      unlisten_send_contract.then((unlistenFn) => unlistenFn());
     };
   }, []);
 

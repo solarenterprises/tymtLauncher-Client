@@ -36,3 +36,36 @@ export interface IVerifyMessageReq {
   message: string;
   signature: string;
 }
+
+// Define the IAbiInput interface
+export interface IAbiInput {
+  internalType: string;
+  name: string;
+  type: string;
+}
+
+// Define the IAbiOutput interface
+export interface IAbiOutput {
+  internalType: string;
+  name: string;
+  type: string;
+}
+
+// Define the IAbiFunction interface
+export interface IAbiFunction {
+  inputs: IAbiInput[];
+  name: string;
+  outputs: IAbiOutput[];
+  stateMutability: string;
+  type: string;
+}
+
+// Define the ISendContractReq interface
+export interface ISendContractReq {
+  contract_address: string;
+  function_name: string;
+  method_type: "read" | "write";
+  params: string[];
+  abi: IAbiFunction[];
+  chain: string;
+}
