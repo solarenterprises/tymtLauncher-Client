@@ -35,12 +35,15 @@ export const compareJSONStructure = (json1, json2) => {
 
 export const addChatHistory = (array1: ChatMessageType[], array2: ChatMessageType[], pageSize: number) => {
   if (array1.length < pageSize) {
-    return array2;
+    return [...array2];
   }
 
-  array1.splice(-(array1.length % pageSize));
+  if (array1.length % pageSize !== 0) {
+    array1.splice(-(array1.length % pageSize));
+  }
 
   const resultArray = [...array1, ...array2];
+  console.log("addChatHistory", array1, array2, pageSize, resultArray);
   return resultArray;
 
   // const resultArray: ChatMessageType[] = [...array1];

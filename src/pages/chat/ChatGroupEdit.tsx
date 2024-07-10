@@ -11,14 +11,14 @@ import GroupAvatar from "../../components/chat/GroupAvatar";
 
 import { AppDispatch } from "../../store";
 import { getCurrentChatroom, setCurrentChatroom } from "../../features/chat/CurrentChatroomSlice";
-import { updateGroupAvatarAsync } from "../../features/chat/ChatroomListSlice";
+import { updateGroupAvatarAsync, updateGroupNameAsync } from "../../features/chat/ChatroomListSlice";
 
 import SettingStyle from "../../styles/SettingStyle";
 import backIcon from "../../assets/settings/back-icon.svg";
 import editIcon from "../../assets/settings/edit-icon.svg";
 
 import { propsType } from "../../types/settingTypes";
-import { IChatroom } from "../../types/ChatroomAPITypes";
+import { IChatroom, IReqChatroomUpdateGroupName } from "../../types/ChatroomAPITypes";
 
 const ChatGroupEdit = ({ view, setView }: propsType) => {
   const classname = SettingStyle();
@@ -70,6 +70,30 @@ const ChatGroupEdit = ({ view, setView }: propsType) => {
     }
   }, [currentChatroomStore]);
 
+  const handleSaveClick = useCallback(() => {
+    try {
+      const body: IReqChatroomUpdateGroupName = {
+        room_id: currentChatroomStore._id,
+        room_name: groupName,
+      };
+      dispatch(updateGroupNameAsync(body)).then((action) => {
+        if (action.type.endsWith("/fulfilled")) {
+          const newCurrentChatroom: IChatroom = action.payload as IChatroom;
+          dispatch(setCurrentChatroom(newCurrentChatroom));
+          setNotificationStatus("success");
+          setNotificationTitle(t("cha-56_group-image-saved"));
+          setNotificationDetail(t("cha-57_group-image-success"));
+          setNotificationOpen(true);
+          setNotificationLink(null);
+        }
+      });
+
+      console.log("handleSaveClick", groupName, currentChatroomStore._id);
+    } catch (err) {
+      console.error("Failed to handleSaveClick:", err);
+    }
+  }, [groupName, currentChatroomStore]);
+
   useEffect(() => {
     if (view === "chatGroupEdit") {
       setGroupName(currentChatroomStore.room_name);
@@ -111,7 +135,7 @@ const ChatGroupEdit = ({ view, setView }: propsType) => {
               </Box>
             </Stack>
             <Box padding={"20px"} width={"90%"} sx={{ position: "absolute", bottom: "30px" }}>
-              <Button fullWidth className={classname.action_button} onClick={() => {}}>
+              <Button fullWidth className={classname.action_button} onClick={handleSaveClick}>
                 {t("set-57_save")}
               </Button>
             </Box>

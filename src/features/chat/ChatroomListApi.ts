@@ -6,6 +6,7 @@ import {
   IReqChatroomAddParticipant,
   IReqChatroomCreateChatroom,
   IReqChatroomLeaveChatroom,
+  IReqChatroomUpdateGroupName,
 } from "../../types/ChatroomAPITypes";
 import { rsaDecrypt, rsaEncrypt } from "./RsaApi";
 import ChatroomAPI from "../../lib/api/ChatroomAPI";
@@ -232,5 +233,20 @@ export const updateGroupAvatar = async (formData: FormData) => {
   } catch (err) {
     console.error("Failed to updateGroupAvatar: ", err);
     return null;
+  }
+};
+
+export const updateGroupName = async (body: IReqChatroomUpdateGroupName) => {
+  try {
+    const res = await ChatroomAPI.updateChatroomName(body);
+    if (res?.status !== 200 || !res?.data || !res?.data?.result) {
+      console.error("Failed to updateGroupName: ", res);
+      return null;
+    }
+
+    console.log("updateGroupName");
+    return res?.data?.result;
+  } catch (err) {
+    console.log("Failed to updateGroupName: ", err);
   }
 };

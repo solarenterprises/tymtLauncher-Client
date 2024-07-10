@@ -14,6 +14,11 @@ export interface IReqChatroomLeaveChatroom {
   id: string;
 }
 
+export interface IReqChatroomUpdateGroupName {
+  room_id: string;
+  room_name: string;
+}
+
 export interface IParticipant {
   userId: string;
   userKey: string;

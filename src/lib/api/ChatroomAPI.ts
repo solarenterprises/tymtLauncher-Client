@@ -1,6 +1,6 @@
 import axios, { AxiosResponse } from "axios";
 import { tymt_backend_url } from "../../configs/index";
-import { IReqChatroomAddParticipant, IReqChatroomCreateChatroom, IReqChatroomLeaveChatroom } from "../../types/ChatroomAPITypes";
+import { IReqChatroomAddParticipant, IReqChatroomCreateChatroom, IReqChatroomLeaveChatroom, IReqChatroomUpdateGroupName } from "../../types/ChatroomAPITypes";
 import { ISaltToken } from "../../types/accountTypes";
 import tymtStorage from "../Storage";
 
@@ -118,6 +118,16 @@ class ChatroomAPI {
   static async fetchChatroomAvatar(room_id: string): Promise<AxiosResponse<any, any>> {
     const saltTokenStore: ISaltToken = JSON.parse(tymtStorage.get(`saltToken`));
     return await axios.get(`${tymt_backend_url}/chatroom/get-room-image/${room_id}`, {
+      headers: {
+        "x-token": saltTokenStore.token,
+        "Content-Type": "application/json",
+      },
+    });
+  }
+
+  static async updateChatroomName(body: IReqChatroomUpdateGroupName): Promise<AxiosResponse<any, any>> {
+    const saltTokenStore: ISaltToken = JSON.parse(tymtStorage.get(`saltToken`));
+    return await axios.put(`${tymt_backend_url}/chatroom/update-room-name`, body, {
       headers: {
         "x-token": saltTokenStore.token,
         "Content-Type": "application/json",
