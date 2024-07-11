@@ -273,7 +273,7 @@ const Chatmain = ({ view, setView }: propsType) => {
                         //   !value ? alertListStore.unread?.filter((alert) => alert.note.sender === group._id && alert.alertType === "chat").length : 0;
                         // const numberofunreadmessages = count;
 
-                        return <GroupListItem group={group} index={index} setView={setView} />;
+                        return <GroupListItem group={group} index={index} setView={setView} key={`${index}-${Date.now()}`} />;
                       })}
                     </>
                   )}
@@ -294,11 +294,13 @@ const Chatmain = ({ view, setView }: propsType) => {
                     <>
                       {!value &&
                         DMList.map((DM, index) => {
-                          return <DMListItem DM={DM} index={index} numberOfUnreadMessages={0} setView={setView} />;
+                          return <DMListItem DM={DM} index={index} numberOfUnreadMessages={0} setView={setView} key={`${index}-${Date.now()}`} />;
                         })}
                       {value &&
                         searchedUserList.map((user, index) => {
-                          return <UserListItem user={user} index={index} numberOfUnreadMessages={0} setView={setView} page={"DM"} />;
+                          return (
+                            <UserListItem user={user} index={index} numberOfUnreadMessages={0} setView={setView} page={"DM"} key={`${index}-${Date.now()}`} />
+                          );
                         })}
                     </>
                   )}
@@ -322,7 +324,16 @@ const Chatmain = ({ view, setView }: propsType) => {
                         //   ? alertListStore.unread?.filter((alert) => alert.note.sender === user._id && alert.alertType === "chat").length
                         //   : 0;
                         // const numberofunreadmessages = count;
-                        return <UserListItem user={user} index={index} numberOfUnreadMessages={0} setView={setView} page={value ? "DM" : "friend"} />;
+                        return (
+                          <UserListItem
+                            user={user}
+                            index={index}
+                            numberOfUnreadMessages={0}
+                            setView={setView}
+                            page={value ? "DM" : "friend"}
+                            key={`${index}-${Date.now()}`}
+                          />
+                        );
                       })}
                     </>
                   )}
@@ -347,7 +358,16 @@ const Chatmain = ({ view, setView }: propsType) => {
                         //   : 0;
                         // const numberofunreadmessages = count;
 
-                        return <UserListItem user={user} index={index} numberOfUnreadMessages={0} setView={setView} page={value ? "DM" : "block"} />;
+                        return (
+                          <UserListItem
+                            user={user}
+                            index={index}
+                            numberOfUnreadMessages={0}
+                            setView={setView}
+                            page={value ? "DM" : "block"}
+                            key={`${index}-${Date.now()}`}
+                          />
+                        );
                       })}
                     </>
                   )}

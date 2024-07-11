@@ -33,6 +33,7 @@ import { accountType } from "../types/accountTypes";
 import { chatType, notificationType } from "../types/settingTypes";
 import { ChatHistoryType, ISocketHash, IAlert, IContact, IContactList, IRsa } from "../types/chatTypes";
 import { Chatdecrypt } from "../lib/api/ChatEncrypt";
+import { getMutedList } from "../features/chat/MutedListSlice";
 
 interface SocketContextType {
   socket: MutableRefObject<Socket>;
@@ -65,6 +66,7 @@ export const SocketProvider = () => {
   const chatroomListStore: IChatroomList = useSelector(getChatroomList);
   const rsaStore: IRsa = useSelector(getRsa);
   const sKeyListStore: ISKeyList = useSelector(getSKeyList);
+  const mutedListStore: IChatroomList = useSelector(getMutedList);
 
   const accountStoreRef = useRef(accountStore);
   const socketHashStoreRef = useRef(socketHashStore);
@@ -79,6 +81,7 @@ export const SocketProvider = () => {
   const chatroomListStoreRef = useRef(chatroomListStore);
   const rsaStoreRef = useRef(rsaStore);
   const sKeyListStoreRef = useRef(sKeyListStore);
+  const mutedListStoreRef = useRef(mutedListStore);
 
   useEffect(() => {
     accountStoreRef.current = accountStore;
@@ -119,6 +122,9 @@ export const SocketProvider = () => {
   useEffect(() => {
     sKeyListStoreRef.current = sKeyListStore;
   }, [sKeyListStore]);
+  useEffect(() => {
+    mutedListStoreRef.current = mutedListStore;
+  }, [mutedListStore]);
 
   const socket = useRef<Socket>(null);
 
@@ -151,6 +157,7 @@ export const SocketProvider = () => {
                 const senderInContactList = contactListStoreRef.current.contacts.find((user) => user._id === senderId);
                 const senderInFriendlist = friendListStoreRef.current.contacts.find((user) => user._id === senderId);
                 const roomInChatroomList = chatroomListStoreRef.current.chatrooms.find((room) => room._id === data.room_id);
+                const roomInMutedList = mutedListStoreRef.current.chatrooms.some((room) => room._id === data.room_id);
 
                 // Block if the message is from someone in the block list
                 if (senderInBlockList) {
@@ -176,11 +183,13 @@ export const SocketProvider = () => {
                     const senderName = senderInContactList.nickName;
                     const sKey = sKeyListStoreRef.current.sKeys.find((element) => element.roomId === data.room_id)?.sKey;
                     const decryptedMessage = sKey ? Chatdecrypt(data.message, sKey) : data.message;
-                    setNotificationOpen(true);
-                    setNotificationStatus("message");
-                    setNotificationTitle(senderName);
-                    setNotificationDetail(decryptedMessage);
-                    setNotificationLink(`/chat?senderId=${data.sender_id}`);
+                    if (!roomInMutedList) {
+                      setNotificationOpen(true);
+                      setNotificationStatus("message");
+                      setNotificationTitle(senderName);
+                      setNotificationDetail(decryptedMessage);
+                      setNotificationLink(`/chat?senderId=${data.sender_id}`);
+                    }
                   }
                 }
               });

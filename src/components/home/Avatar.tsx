@@ -1,14 +1,19 @@
 import { useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
+
+import { tymt_backend_url } from "../../configs";
+
 import { Tooltip, Stack, Box } from "@mui/material";
+
+import { getChain } from "../../features/wallet/ChainSlice";
+
+import { IChain } from "../../types/walletTypes";
+
 import onlineframe from "../../assets/chat/onlineframe.svg";
 import offlineframe from "../../assets/chat/offlineframe.svg";
 import donotdisturbframe from "../../assets/chat/donotdisturbframe.svg";
 import mask from "../../assets/account/mask.png";
-import { IChain } from "../../types/walletTypes";
-import { getChain } from "../../features/wallet/ChainSlice";
 import accountIcon from "../../assets/wallet/account.svg";
-import { tymt_backend_url } from "../../configs";
 
 const Avatar = ({ size, userid, onlineStatus, ischain, status }: any) => {
   const { t } = useTranslation();

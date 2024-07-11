@@ -104,7 +104,7 @@ const ChatGroupEditRoom = ({ view, setView }: propsType) => {
     <>
       {view === "chatGroupEditRoom" && (
         <Stack direction={"column"}>
-          <input type="file" id="file-input" onChange={uploadGroupAvatar} style={{ display: "none" }} />
+          <input type="file" id="file-input-group-avatar" onChange={uploadGroupAvatar} style={{ display: "none" }} />
           <Stack flexDirection={"row"} justifyContent={"flex-start"} gap={"10px"} alignItems={"center"} textAlign={"center"} sx={{ padding: "20px" }}>
             <Button className={"setting-back-button"} onClick={() => setView("chatGroupMemberListRoom")}>
               <Box component={"img"} src={backIcon} />
@@ -116,7 +116,7 @@ const ChatGroupEditRoom = ({ view, setView }: propsType) => {
             <Stack direction={"row"} justifyContent={"space-between"} textAlign={"center"} padding={"30px"}>
               <Stack direction={"row"} justifyContent={"center"} textAlign={"right"} alignItems={"center"} gap={"10px"}>
                 <Box className="center-align">
-                  <GroupAvatar size={92} url={currentChatroomStore._id} />
+                  <GroupAvatar size={92} url={currentChatroomStore.room_image} />
                 </Box>
                 <Box className="fs-h5 white">{t("set-68_change-avatar")}</Box>
               </Stack>
