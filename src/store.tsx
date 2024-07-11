@@ -23,7 +23,6 @@ import tymtReducer from "./features/account/TymtSlice";
 import d53PasswordReducer from "./features/wallet/D53PasswordSlice";
 import tempD53PasswordReducer from "./features/wallet/TempD53PasswordSlice";
 import currencyReducer from "./features/wallet/CurrencySlice";
-import scrolldownReducer from "./features/chat/Chat-scrollDownSlice";
 import machineIdReducer from "./features/account/MachineIdSlice";
 import mnemonicReducer from "./features/account/MnemonicSlice";
 import saltTokenReducer from "./features/account/SaltTokenSlice";
@@ -32,18 +31,13 @@ import installStatusReducer from "./features/home/InstallStatusSlice";
 
 // chat
 import socketHashReducer from "./features/chat/SocketHashSlice";
-import chatmountedReducer from "./features/chat/Chat-intercomSupportSlice";
-import chathistoryperUserReducer from "./features/chat/Chat-historyperUserSlice";
+import chatmountedReducer from "./features/chat/IntercomSupportSlice";
 import friendListReducer from "./features/chat/FriendListSlice";
 import contactListReducer from "./features/chat/ContactListSlice";
 import blockListReducer from "./features/chat/BlockListSlice";
 import chatroomListReducer from "./features/chat/ChatroomListSlice";
-import encryptionReducer from "./features/chat/Chat-encryptionkeySlice";
 import currentPartnerReducer from "./features/chat/CurrentPartnerSlice";
-import chatHistoryReducer from "./features/chat/Chat-historySlice";
-import selecteduserReducer from "./features/chat/Chat-selecteduserSlice";
-import chatnotificationReducer from "./features/chat/Chat-notificationSlice";
-import alertReducer from "./features/chat/Chat-alertSlice";
+import chatHistoryReducer from "./features/chat/ChatHistorySlice";
 import chatReducer from "./features/settings/ChatSlice";
 import alertListReducer from "./features/alert/AlertListSlice";
 import rsaReducer from "./features/chat/RsaSlice";
@@ -51,6 +45,7 @@ import currentChatroomReducer from "./features/chat/CurrentChatroomSlice";
 import currentChatroomMembersReducer from "./features/chat/CurrentChatroomMembersSlice";
 import sKeyListReducer from "./features/chat/SKeyListSlice";
 import activeUserListReducer from "./features/chat/ActiveUserListSlice";
+import mutedListReducer from "./features/chat/MutedListSlice";
 
 const blacklistActionTypes = ["intercomsupport/setChatMounted", "intercomsupport/setMountedTrue", "intercomsupport/setMountedFalse"];
 
@@ -82,26 +77,20 @@ const store = configureStore({
     navigation: navigationReducer,
     tymtlogo: tymtlogoReducer,
     librarymode: librarymodeReducer,
-    chatnotification: chatnotificationReducer,
     crypto: cryptoReducer,
     downloadStatus: downloadStatusReducer,
     installStatus: installStatusReducer,
     gameoverview: gameoverviewReducer,
-    selecteduser: selecteduserReducer,
     tymt: tymtReducer,
-    alert: alertReducer,
     d53Password: d53PasswordReducer,
     tempD53Password: tempD53PasswordReducer,
     currency: currencyReducer,
-    scrolldown: scrolldownReducer,
     friendList: friendListReducer,
     blockList: blockListReducer,
     chatroomList: chatroomListReducer,
-    encryption: encryptionReducer,
     machineId: machineIdReducer,
     socketHash: socketHashReducer,
     chatmounted: chatmountedReducer,
-    chathistoryperUser: chathistoryperUserReducer,
     mnemonic: mnemonicReducer,
     saltToken: saltTokenReducer,
     alertList: alertListReducer,
@@ -110,6 +99,7 @@ const store = configureStore({
     currentChatroomMembers: currentChatroomMembersReducer,
     sKeyList: sKeyListReducer,
     activeUserList: activeUserListReducer,
+    mutedList: mutedListReducer,
   },
   middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(stateSyncMiddleware),
 });

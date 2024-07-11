@@ -265,31 +265,33 @@ const WalletVote = () => {
               <Box
                 sx={{
                   borderRight: "1px solid #FFFFFF1A",
-                  height: "40px",
+                  height: "68px",
                 }}
               />
             </Stack>
             <Stack padding={"24px 40px"}>
               <Box className="fs-16-regular light t-center">{t("wal-18_total-voted")}</Box>
-              <Box className="fs-34-bold white t-center">{`${symbol} ${numeral(totalVoted * Number(sxpPrice) * Number(reserve)).format("0,0")}`}</Box>
+              <Box className="fs-34-bold white t-center">{`${numeral(totalVoted).format("0,0")} SXP`}</Box>
+              <Box className="fs-18-regular light t-center">{`${symbol} ${numeral(totalVoted * Number(sxpPrice) * Number(reserve)).format("0,0")}`}</Box>
             </Stack>
             <Stack padding={"32px 24px"}>
               <Box
                 sx={{
                   borderRight: "1px solid #FFFFFF1A",
-                  height: "40px",
+                  height: "68px",
                 }}
               />
             </Stack>
             <Stack padding={"24px 40px"}>
               <Box className="fs-16-regular light t-center">{t("wal-19_total-rewards")}</Box>
-              <Box className="fs-34-bold beach t-center">{`+${symbol} ${numeral(totalRewards * Number(sxpPrice) * Number(reserve)).format("0,0")}`}</Box>
+              <Box className="fs-34-bold beach t-center">{`+${numeral(totalRewards).format("0,0")} SXP`}</Box>
+              <Box className="fs-18-regular light t-center">{`+${symbol} ${numeral(totalRewards * Number(sxpPrice) * Number(reserve)).format("0,0")}`}</Box>
             </Stack>
             <Stack padding={"32px 24px"}>
               <Box
                 sx={{
                   borderRight: "1px solid #FFFFFF1A",
-                  height: "40px",
+                  height: "68px",
                 }}
               />
             </Stack>

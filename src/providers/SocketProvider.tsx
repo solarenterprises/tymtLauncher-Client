@@ -19,7 +19,7 @@ import { addOneToChatroomListAsync, delOneFromChatroomList, getChatroomList } fr
 import { selectNotification } from "../features/settings/NotificationSlice";
 import { createFriendAsync, getFriendList } from "../features/chat/FriendListSlice";
 import { selectChat } from "../features/settings/ChatSlice";
-import { setChatHistory, getChatHistory } from "../features/chat/Chat-historySlice";
+import { setChatHistory, getChatHistory } from "../features/chat/ChatHistorySlice";
 import { getSocketHash } from "../features/chat/SocketHashSlice";
 import { fetchCurrentChatroomMembersAsync, setCurrentChatroomMembers } from "../features/chat/CurrentChatroomMembersSlice";
 import { ISKey, ISKeyList, addOneSKeyList, delOneSkeyList, getSKeyList } from "../features/chat/SKeyListSlice";

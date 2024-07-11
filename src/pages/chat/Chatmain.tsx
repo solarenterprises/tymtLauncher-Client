@@ -25,9 +25,8 @@ import searchlg from "../../assets/searchlg.svg";
 import settingicon from "../../assets/chat/settings.svg";
 import nocontact from "../../assets/chat/nocontact.png";
 
-import { IContactList, propsType, selecteduserType, userType } from "../../types/chatTypes";
+import { IContactList, propsType, userType } from "../../types/chatTypes";
 import { accountType } from "../../types/accountTypes";
-import { getSelectedUser } from "../../features/chat/Chat-selecteduserSlice";
 import { getAccount } from "../../features/account/AccountSlice";
 // import { IAlertList } from "../../types/alertTypes";
 import { IChatroom, IChatroomList } from "../../types/ChatroomAPITypes";
@@ -66,18 +65,13 @@ const Chatmain = ({ view, setView }: propsType) => {
   const blockListStore: IContactList = useSelector(getBlockList);
   const DMList: IChatroom[] = chatroomListStore.chatrooms.filter((element) => !element.room_name);
   const groupList: IChatroom[] = chatroomListStore.chatrooms.filter((element) => element.room_name);
-  const selectedUserToDeleteStore: selecteduserType = useSelector(getSelectedUser);
   const accountStore: accountType = useSelector(getAccount);
   // const alertListStore: IAlertList = useSelector(getAlertList);
 
-  const selectedUserToDeleteStoreRef = useRef(selectedUserToDeleteStore);
   const accountStoreRef = useRef(accountStore);
   const friendListStoreRef = useRef(friendListStore);
   const blockListStoreRef = useRef(blockListStore);
 
-  useEffect(() => {
-    selectedUserToDeleteStoreRef.current = selectedUserToDeleteStore;
-  }, [selectedUserToDeleteStore]);
   useEffect(() => {
     accountStoreRef.current = accountStore;
   }, [accountStore]);

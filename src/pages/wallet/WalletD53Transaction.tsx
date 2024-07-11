@@ -5,7 +5,7 @@ import d53 from "../../lib/game/district 53/logo.png";
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch } from "../../store";
-import { setMountedFalse, setMountedTrue } from "../../features/chat/Chat-intercomSupportSlice";
+import { setMountedFalse, setMountedTrue } from "../../features/chat/IntercomSupportSlice";
 import { languageType, walletType } from "../../types/settingTypes";
 import { IChain, ICurrency, INative, IToken, chainEnum, chainIconMap, multiWalletType } from "../../types/walletTypes";
 import { getMultiWallet, refreshBalancesAsync } from "../../features/wallet/MultiWalletSlice";

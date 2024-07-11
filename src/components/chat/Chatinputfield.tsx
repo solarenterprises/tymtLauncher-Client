@@ -12,7 +12,7 @@ import { useSocket } from "../../providers/SocketProvider";
 import { ChatHistoryType, propsChatinputfieldType } from "../../types/chatTypes";
 import { accountType } from "../../types/accountTypes";
 import { getAccount } from "../../features/account/AccountSlice";
-import { getChatHistory, setChatHistory } from "../../features/chat/Chat-historySlice";
+import { getChatHistory, setChatHistory } from "../../features/chat/ChatHistorySlice";
 import { encrypt } from "../../lib/api/Encrypt";
 import { AppDispatch } from "../../store";
 import { IChatroom } from "../../types/ChatroomAPITypes";

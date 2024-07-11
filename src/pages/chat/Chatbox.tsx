@@ -15,9 +15,9 @@ import { addChatHistory } from "../../lib/api/JSONHelper";
 
 import { AppDispatch } from "../../store";
 import { getAccount } from "../../features/account/AccountSlice";
-import { getChatHistory, setChatHistory, setChatHistoryAsync } from "../../features/chat/Chat-historySlice";
+import { getChatHistory, setChatHistory, setChatHistoryAsync } from "../../features/chat/ChatHistorySlice";
 import { selectChat } from "../../features/settings/ChatSlice";
-import { setMountedFalse, setMountedTrue } from "../../features/chat/Chat-intercomSupportSlice";
+import { setMountedFalse, setMountedTrue } from "../../features/chat/IntercomSupportSlice";
 import { getCurrentChatroom } from "../../features/chat/CurrentChatroomSlice";
 import { ICurrentChatroomMembers, getCurrentChatroomMembers } from "../../features/chat/CurrentChatroomMembersSlice";
 import { ISKeyList, getSKeyList } from "../../features/chat/SKeyListSlice";
