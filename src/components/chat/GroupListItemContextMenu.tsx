@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 
@@ -10,11 +10,13 @@ import { AppDispatch } from "../../store";
 import { leaveGroupAsync } from "../../features/chat/ChatroomListSlice";
 import { getAccount } from "../../features/account/AccountSlice";
 import { delOneSkeyList } from "../../features/chat/SKeyListSlice";
+import { createMutedListAsync, deleteMutedListAsync, getMutedList } from "../../features/chat/MutedListSlice";
 
 import { ISocketParamsLeaveMessageGroup } from "../../types/SocketTypes";
-import { IChatroom, IParamsLeaveGroup } from "../../types/ChatroomAPITypes";
+import { IChatroom, IChatroomList, IParamsLeaveGroup } from "../../types/ChatroomAPITypes";
 import { IPoint } from "../../types/homeTypes";
 import { accountType } from "../../types/accountTypes";
+import { IReqCreateMutedList, IReqDeleteMutedList } from "../../types/UserAPITypes";
 
 export interface IPropsGroupListItemContextMenu {
   view: boolean;
@@ -29,6 +31,36 @@ const GroupListItemContextMenu = ({ view, setView, group, contextMenuPosition }:
   const { t } = useTranslation();
   const dispatch = useDispatch<AppDispatch>();
   const accountStore: accountType = useSelector(getAccount);
+  const mutedListStore: IChatroomList = useSelector(getMutedList);
+  const isMuted = useMemo(() => mutedListStore.chatrooms.some((chatroom) => chatroom._id === group._id), [mutedListStore]);
+
+  const handleMuteClick = () => {
+    try {
+      const body: IReqCreateMutedList = {
+        muted: group._id,
+      };
+      dispatch(createMutedListAsync(body)).then(() => {
+        setView(false);
+      });
+      console.log("handleMuteClick", group);
+    } catch (err) {
+      console.error("Failed to handleMuteClick: ", err);
+    }
+  };
+
+  const handleUnmuteClick = () => {
+    try {
+      const body: IReqDeleteMutedList = {
+        muted: group._id,
+      };
+      dispatch(deleteMutedListAsync(body)).then(() => {
+        setView(false);
+      });
+      console.log("handleUnmuteClick", group);
+    } catch (err) {
+      console.error("Failed to handleUnmuteClick: ", err);
+    }
+  };
 
   const handleLeaveGroupClick = useCallback(async () => {
     try {
@@ -75,7 +107,16 @@ const GroupListItemContextMenu = ({ view, setView, group, contextMenuPosition }:
             zIndex: 1000,
           }}
         >
-          <Box className={"fs-16 white context_menu_single"} textAlign={"left"} sx={{ backdropFilter: "blur(10px)" }} onClick={handleLeaveGroupClick}>
+          {isMuted ? (
+            <Box className={"fs-16 white context_menu_up"} textAlign={"left"} sx={{ backdropFilter: "blur(10px)" }} onClick={handleUnmuteClick}>
+              {t("cha-59_unmute")}
+            </Box>
+          ) : (
+            <Box className={"fs-16 white context_menu_up"} textAlign={"left"} sx={{ backdropFilter: "blur(10px)" }} onClick={handleMuteClick}>
+              {t("cha-58_mute")}
+            </Box>
+          )}
+          <Box className={"fs-16 white context_menu_bottom"} textAlign={"left"} sx={{ backdropFilter: "blur(10px)" }} onClick={handleLeaveGroupClick}>
             {t("cha-51_leave-group")}
           </Box>
         </Box>
