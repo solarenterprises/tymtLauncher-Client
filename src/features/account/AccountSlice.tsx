@@ -1,6 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import tymtStorage from "../../lib/Storage";
-import randomavatar1 from "../../assets/account/randomavatar1.png";
 import { loginEnum, walletEnum, accountType } from "../../types/accountTypes";
 import { updateUser } from "./AccountApi";
 import { compareJSONStructure } from "../../lib/api/JSONHelper";
@@ -12,7 +11,7 @@ const init: accountType = {
   wallet: walletEnum.noncustodial,
   agreedTerms: false,
   uid: "",
-  avatar: randomavatar1,
+  avatar: "",
   isLoggedIn: false,
 };
 

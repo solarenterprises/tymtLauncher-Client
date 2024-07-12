@@ -66,7 +66,7 @@ const Main = ({ view, setView }: propsType) => {
           <Box className={classname.user_pad} sx={{}}>
             <Box sx={{ display: "flex", gap: "10px" }}>
               <Box className="center-align">
-                <Avatar onlineStatus={true} userid={account.uid} size={60} status={!notificationStore.alert ? "donotdisturb" : "online"} />
+                <Avatar onlineStatus={true} url={account.avatar} size={60} status={!notificationStore.alert ? "donotdisturb" : "online"} />
               </Box>
               <Box className="center-align" sx={{ flexDirection: "column", alignItems: "flex-start" }}>
                 <Box className="fs-14-light white">{t("set-1_welcome")}</Box>

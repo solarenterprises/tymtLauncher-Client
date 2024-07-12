@@ -1,22 +1,27 @@
-import { Box, Button, Divider, Stack, Tooltip } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import { useCallback, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import SettingStyle from "../../styles/SettingStyle";
-import backIcon from "../../assets/settings/back-icon.svg";
-import editIcon from "../../assets/settings/edit-icon.svg";
+
+import { Box, Button, Divider, Stack, Tooltip } from "@mui/material";
+
+import { useNotification } from "../../providers/NotificationProvider";
+import Avatar from "../../components/home/Avatar";
 import InputText from "../../components/account/InputText";
-import { getAccount, setAccount } from "../../features/account/AccountSlice";
-import { notificationType, propsType } from "../../types/settingTypes";
-import { accountType, custodialType, nonCustodialType, walletEnum } from "../../types/accountTypes";
+
+import { AppDispatch } from "../../store";
 import { getNonCustodial, setNonCustodial } from "../../features/account/NonCustodialSlice";
 import { getCustodial, setCustodial } from "../../features/account/CustodialSlice";
-import { fileUpload, updateUserNickname } from "../../features/account/AccountApi";
-import { AppDispatch } from "../../store";
-import Avatar from "../../components/home/Avatar";
-import { useNotification } from "../../providers/NotificationProvider";
 import { selectNotification } from "../../features/settings/NotificationSlice";
-import { tymt_avatar_url } from "../../configs";
+import { setAccount, getAccount } from "../../features/account/AccountSlice";
+import { fileUpload, updateUserNickname } from "../../features/account/AccountApi";
+
+import { notificationType, propsType } from "../../types/settingTypes";
+import { accountType, custodialType, nonCustodialType, walletEnum } from "../../types/accountTypes";
+
+import SettingStyle from "../../styles/SettingStyle";
+
+import backIcon from "../../assets/settings/back-icon.svg";
+import editIcon from "../../assets/settings/edit-icon.svg";
 
 const Profile = ({ view, setView }: propsType) => {
   const classname = SettingStyle();
@@ -70,13 +75,13 @@ const Profile = ({ view, setView }: propsType) => {
         dispatch(
           setAccount({
             ...account,
-            avatar: `${tymt_avatar_url}/${res.data.data}`,
+            avatar: res.data.avatar,
           })
         );
         dispatch(
           setNonCustodial({
             ...nonCustodial,
-            avatar: `${tymt_avatar_url}/${res.data.data}`,
+            avatar: res.data.avatar,
           })
         );
         setNotificationStatus("success");
@@ -112,7 +117,7 @@ const Profile = ({ view, setView }: propsType) => {
               <Stack direction={"row"} justifyContent={"center"} textAlign={"right"} alignItems={"center"} gap={"10px"}>
                 <Box className="center-align">
                   {/* <img src={avatar} /> */}
-                  <Avatar onlineStatus={true} userid={account.uid} size={92} status={!notificationStore.alert ? "donotdisturb" : "online"} />
+                  <Avatar onlineStatus={true} url={account.avatar} size={92} status={!notificationStore.alert ? "donotdisturb" : "online"} />
                 </Box>
                 <Box className="fs-h5 white">{t("set-68_change-avatar")}</Box>
               </Stack>

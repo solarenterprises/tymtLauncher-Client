@@ -209,7 +209,7 @@ const ChatMainRoom = ({ view, setView }: propsType) => {
           <SwipeableViews axis={otheme.direction === "rtl" ? "x-reverse" : "x"} index={tab} onChangeIndex={handleChangeIndex} width={"100%"}>
             <TabPanel value={tab} index={0} dir={otheme.direction}>
               <Box className={classes.scroll_bar}>
-                <NewGroupButton roomMode={false} />
+                <NewGroupButton roomMode={true} />
                 {groupList?.length === 0 && !value ? (
                   <>
                     <Grid container sx={{ justifyContent: "center" }}>

@@ -93,7 +93,7 @@ const DMListItem = ({ DM, index, numberOfUnreadMessages, setView }: IPropsDMList
           >
             <Avatar
               onlineStatus={activeUserListStore.users.some((active) => active === user._id)}
-              userid={user._id}
+              url={user.avatar}
               size={40}
               status={user.notificationStatus}
             />

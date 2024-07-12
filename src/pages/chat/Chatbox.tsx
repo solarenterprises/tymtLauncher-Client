@@ -224,7 +224,7 @@ const Chatbox = ({ view, setView }: propsType) => {
                   {isDM && currentPartner && (
                     <Avatar
                       onlineStatus={activeUserListStore.users.some((user) => user === currentPartner._id)}
-                      userid={currentPartner._id}
+                      url={currentPartner.avatar}
                       size={40}
                       status={currentPartner.notificationStatus}
                     />

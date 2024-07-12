@@ -188,7 +188,7 @@ const UserListItem = ({ user, index, numberOfUnreadMessages, setView, page }: IP
             },
           }}
         >
-          <Avatar onlineStatus={activeUserListStore.users.some((active) => active === user._id)} userid={user._id} size={40} status={user.notificationStatus} />
+          <Avatar onlineStatus={activeUserListStore.users.some((active) => active === user._id)} url={user.avatar} size={40} status={user.notificationStatus} />
           <Stack flexDirection={"row"} alignItems={"center"} justifyContent={"space-between"} display={"flex"} sx={{ marginLeft: "25px", width: "320px" }}>
             <Box>
               <Stack direction={"column"} justifyContent={"flex-start"} spacing={1}>

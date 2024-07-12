@@ -154,7 +154,7 @@ const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
                 <Stack direction={"row"} alignItems={"center"} gap={"7px"}>
                   <Avatar
                     onlineStatus={activeUserListStore.users.some((user) => user === senderUser?._id)}
-                    userid={senderUser?._id}
+                    url={senderUser?.avatar}
                     size={40}
                     status={senderUser?.notificationStatus}
                   />

@@ -301,7 +301,7 @@ const Chatroom = () => {
                     {isDM && currentPartner && (
                       <Avatar
                         onlineStatus={activeUserListStore.users.some((user) => user === currentPartner._id)}
-                        userid={currentPartner._id}
+                        url={currentPartner.avatar}
                         size={40}
                         status={currentPartner.notificationStatus}
                       />
@@ -398,7 +398,7 @@ const Chatroom = () => {
                                 {screenexpanded && isLastMessageofStack && (
                                   <Avatar
                                     onlineStatus={true}
-                                    userid={accountStore.uid}
+                                    url={accountStore.avatar}
                                     size={40}
                                     status={!notificationStore.alert ? "donotdisturb" : "online"}
                                   />
