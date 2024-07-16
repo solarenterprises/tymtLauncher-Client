@@ -85,6 +85,8 @@ const DMListItemContextMenu = ({ view, setView, DM, contextMenuPosition }: IProp
     }
   }, []);
 
+  const handleExportClick = () => {};
+
   const handleLeaveDMClick = useCallback(async () => {
     try {
       const data: IParamsLeaveGroup = {
@@ -133,6 +135,11 @@ const DMListItemContextMenu = ({ view, setView, DM, contextMenuPosition }: IProp
           <Box className={"fs-16 white context_menu_middle"} textAlign={"left"} sx={{ backdropFilter: "blur(10px)" }} onClick={handleBlockClick}>
             {t("cha-4_block")}
           </Box>
+          {false && (
+            <Box className={"fs-16 white context_menu_middle"} textAlign={"left"} sx={{ backdropFilter: "blur(10px)" }} onClick={handleExportClick}>
+              {t("cha-60_export")}
+            </Box>
+          )}
           <Box className={"fs-16 white context_menu_bottom"} textAlign={"left"} sx={{ backdropFilter: "blur(10px)" }} onClick={handleLeaveDMClick}>
             {t("cha-52_leave-DM")}
           </Box>

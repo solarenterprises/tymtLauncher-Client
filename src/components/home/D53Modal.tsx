@@ -78,7 +78,7 @@ const D53Modal = ({ open, setOpen }: props) => {
     let intervalId: NodeJS.Timeout;
     if (open) {
       const init = async () => {
-        const apiURL = production_version === "prod" ? `https://serverlist.district53.io/` : `http://dev.district53.io:5000/`;
+        const apiURL = production_version === "prod" ? `https://serverlist.district53.io/` : `http://dev.game.district53.io:5000/`;
         const res: any = await tauriFetch(apiURL, {
           method: "GET",
           timeout: 30,

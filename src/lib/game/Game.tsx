@@ -120,7 +120,7 @@ const Games: { [key: string]: Game } = {
           size: 87,
         },
         dev: {
-          url: "https://dev.district53.io:2000/District53-5.9.0.2-x86_64.AppImage",
+          url: "https://dev.game.district53.io:2000/District53-5.9.0.2-x86_64.AppImage",
           type: "appimage",
           exePath: "/tmp.AppImage",
           size: 88,
@@ -134,7 +134,7 @@ const Games: { [key: string]: Game } = {
           size: 40,
         },
         dev: {
-          url: "https://dev.district53.io:2000/District53_5.9.0.2_mac_x64_86.zip",
+          url: "https://dev.game.district53.io:2000/District53_5.9.0.2_mac_x64_86.zip",
           type: "zip",
           exePath: "/District53.app",
           size: 10,
@@ -148,7 +148,7 @@ const Games: { [key: string]: Game } = {
           size: 35,
         },
         dev: {
-          url: "https://dev.district53.io:2000/District53_5.9.0.2_mac_arm.zip",
+          url: "https://dev.game.district53.io:2000/District53_5.9.0.2_mac_arm.zip",
           type: "zip",
           exePath: "/District53.app",
           size: 10,
@@ -163,7 +163,7 @@ const Games: { [key: string]: Game } = {
           size: 22,
         },
         dev: {
-          url: "https://dev.district53.io:2000/District53_5.9.0.2_win_x64.zip",
+          url: "https://dev.game.district53.io:2000/District53_5.9.0.2_win_x64.zip",
           type: "zip",
           file: "minetest",
           exePath: "/bin/District53.exe",

@@ -8,6 +8,13 @@ export interface INonCustodyBeforeSignInRes {
   salt: string;
 }
 
+export interface INonCustodySignInReq {
+  sxpAddress: string;
+  token: string;
+  deviceID: string;
+  rsa_pub_key: string;
+}
+
 export interface INonCustodySignUpReqWallet {
   chainId: Number;
   chainName: string;

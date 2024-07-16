@@ -88,6 +88,8 @@ const GroupListItemContextMenu = ({ view, setView, group, contextMenuPosition }:
     }
   }, [accountStore, socket.current]);
 
+  const handleExportClick = () => {};
+
   const handleOnClose = () => {
     setView(false);
   };
@@ -114,6 +116,11 @@ const GroupListItemContextMenu = ({ view, setView, group, contextMenuPosition }:
           ) : (
             <Box className={"fs-16 white context_menu_up"} textAlign={"left"} sx={{ backdropFilter: "blur(10px)" }} onClick={handleMuteClick}>
               {t("cha-58_mute")}
+            </Box>
+          )}
+          {false && (
+            <Box className={"fs-16 white context_menu_middle"} textAlign={"left"} sx={{ backdropFilter: "blur(10px)" }} onClick={handleExportClick}>
+              {t("cha-60_export")}
             </Box>
           )}
           <Box className={"fs-16 white context_menu_bottom"} textAlign={"left"} sx={{ backdropFilter: "blur(10px)" }} onClick={handleLeaveGroupClick}>

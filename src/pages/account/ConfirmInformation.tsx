@@ -16,7 +16,7 @@ import { getNonCustodial, setNonCustodial } from "../../features/account/NonCust
 import { setCustodial } from "../../features/account/CustodialSlice";
 import { getTempNonCustodial, setTempNonCustodial } from "../../features/account/TempNonCustodialSlice";
 import { getTempCustodial } from "../../features/account/TempCustodialSlice";
-import { loginEnum, accountType, walletEnum, nonCustodialType, custodialType, IMnemonic, ISaltToken } from "../../types/accountTypes";
+import { loginEnum, accountType, walletEnum, nonCustodialType, custodialType, IMnemonic, ISaltToken, IMachineId } from "../../types/accountTypes";
 import { getMultiWallet, refreshBalancesAsync, setMultiWallet } from "../../features/wallet/MultiWalletSlice";
 import { setChainAsync } from "../../features/wallet/ChainSlice";
 import { ID53Password, multiWalletType } from "../../types/walletTypes";
@@ -35,12 +35,13 @@ import { getSocketHash, setSocketHash } from "../../features/chat/SocketHashSlic
 import { IRsa, ISocketHash } from "../../types/chatTypes";
 import tymtCore from "../../lib/core/tymtCore";
 import { getSaltToken, setSaltToken } from "../../features/account/SaltTokenSlice";
-import { INonCustodyBeforeSignInReq } from "../../types/AuthAPITypes";
+import { INonCustodyBeforeSignInReq, INonCustodySignInReq } from "../../types/AuthAPITypes";
 import { getMnemonic } from "../../features/account/MnemonicSlice";
 import { refreshCurrencyAsync } from "../../features/wallet/CurrencySlice";
 import { motion } from "framer-motion";
 import { setRsa } from "../../features/chat/RsaSlice";
 import { getRsaKeyPair } from "../../features/chat/RsaApi";
+import { getMachineId } from "../../features/account/MachineIdSlice";
 
 const ConfirmInformation = () => {
   const navigate = useNavigate();
@@ -56,14 +57,19 @@ const ConfirmInformation = () => {
   const tempD53PasswordStore: ID53Password = JSON.parse(tymtStorage.get(`tempD53Password`));
   const d53PasswordStore: ID53Password = useSelector(getD53Password);
   const socketHashStore: ISocketHash = useSelector(getSocketHash);
-  const [loading, setLoading] = useState<boolean>(false);
   const mnemonicStore: IMnemonic = useSelector(getMnemonic);
   const saltTokenStore: ISaltToken = useSelector(getSaltToken);
   const saltTokenRef = useRef(saltTokenStore);
+  const machineIdStore: IMachineId = useSelector(getMachineId);
+  const machineIdStoreRef = useRef(machineIdStore);
+  const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
     saltTokenRef.current = saltTokenStore;
   }, [saltTokenStore]);
+  useEffect(() => {
+    machineIdStoreRef.current = machineIdStore;
+  }, [machineIdStore]);
 
   const { setNotificationStatus, setNotificationTitle, setNotificationDetail, setNotificationOpen, setNotificationLink } = useNotification();
 
@@ -118,11 +124,13 @@ const ConfirmInformation = () => {
           } else {
             token = saltTokenRef.current.token;
           }
-          await AuthAPI.nonCustodySignin({
+          const body1: INonCustodySignInReq = {
             sxpAddress: multiWalletStore.Solar.chain.wallet,
             token: token,
             rsa_pub_key: rsaKeyPair.publicKey,
-          });
+            deviceID: machineIdStoreRef.current.machineId,
+          };
+          await AuthAPI.nonCustodySignin(body1);
           dispatch(
             setAccount({
               ...accountStore,
