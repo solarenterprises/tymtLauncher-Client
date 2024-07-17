@@ -168,14 +168,8 @@ export const SocketProvider = () => {
                 const roomInMutedList = mutedListStoreRef.current.chatrooms.some((room) => room._id === data.room_id);
 
                 // Block if the message is from someone in the block list
-                if (senderInBlockList) {
-                  console.log("Blocked the message from someone in the block list!", data);
-                  return;
-                }
-
-                // Ignore if the message is from someone not in the contact list or not in the chat room list
-                if (!senderInContactList || !roomInChatroomList) {
-                  console.log("Ignored the message from a stranger not in the contact list or not in the chat room list!", data);
+                if (senderInBlockList || !roomInChatroomList) {
+                  console.log("Blocked the message from someone in the block list or from an unknown chat room!", data);
                   return;
                 }
 
@@ -188,13 +182,14 @@ export const SocketProvider = () => {
                       })
                     );
                   } else {
-                    const senderName = senderInContactList.nickName;
+                    const senderName = senderInContactList?.nickName;
+                    const roomName = roomInChatroomList?.room_name;
                     const sKey = sKeyListStoreRef.current.sKeys.find((element) => element.roomId === data.room_id)?.sKey;
                     const decryptedMessage = sKey ? Chatdecrypt(data.message, sKey) : data.message;
                     if (!roomInMutedList) {
                       setNotificationOpen(true);
                       setNotificationStatus("message");
-                      setNotificationTitle(senderName);
+                      setNotificationTitle(senderName ? senderName : roomName);
                       setNotificationDetail(decryptedMessage);
                       setNotificationLink(`/chat?senderId=${data.sender_id}`);
                     }
@@ -214,18 +209,11 @@ export const SocketProvider = () => {
 
                 const senderId = alert.note?.sender ?? "";
                 const senderInBlockList = blockListStoreRef.current.contacts.find((element) => element._id === senderId);
-                const senderInContactList = contactListStoreRef.current.contacts.find((element) => element._id === senderId);
                 const senderInFriendList = friendListStoreRef.current.contacts.find((element) => element._id === senderId);
 
                 // Block if the alert is from someone in the block list
                 if (senderInBlockList) {
                   console.log("Blocked the alert from someone in the block list!", alert);
-                  return;
-                }
-
-                // Ignore if the alert is from someone not in the contact list or not in the chat room list
-                if (!senderInContactList) {
-                  console.log("Ignored the alert from a stranger not in the contact list or not in the chat room list!", alert);
                   return;
                 }
 
