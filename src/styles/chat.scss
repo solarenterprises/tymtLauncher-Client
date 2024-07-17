@@ -43,6 +43,21 @@ $Main-Red: #ef4444;
   z-index: 1;
 }
 
+.modal_content_center {
+  // width: 250px;
+  // height: 158px;
+  border-radius: var(--Angle-Small, #{$Angle-Small});
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--bg-stroke-white-20-modal-stroke, #{$bg-stroke-white-20-modal-stroke});
+  background: rgba(11, 11, 11, 0.4);
+  padding: 20px;
+  justify-content: center;
+  align-items: center;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+}
+
 .modal_btn_left {
   &.MuiButtonBase-root {
     border: 1px solid var(--Main-Red-Red, #{$Main-Red-Red});
@@ -377,4 +392,34 @@ $Main-Red: #ef4444;
 
 .infinitescroll {
   scrollbar-width: thin;
+}
+
+.date_field {
+  .MuiInputBase-root {
+    font-family: "Cobe";
+    color: white;
+  }
+
+  .MuiInputBase-root::before {
+    border-bottom: 1px solid #7c7c7c;
+  }
+
+  .MuiInputBase-root::after {
+    border-bottom: 2px solid #afafaf;
+  }
+
+  label.Mui-focused {
+    font-family: "Cobe";
+    color: #afafaf !important;
+  }
+
+  .MuiInputLabel-root {
+    font-family: "Cobe";
+    font-size: 20px;
+    font-weight: 400;
+    line-height: 24px;
+    color: #afafaf;
+    padding: 5px;
+    top: -10px;
+  }
 }

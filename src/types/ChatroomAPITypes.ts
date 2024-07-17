@@ -24,6 +24,13 @@ export interface IParticipant {
   userKey: string;
 }
 
+export interface IReqChatroomExportMessageHistory {
+  userId: string;
+  chatroomId: string;
+  fromDate: string;
+  toDate: string;
+}
+
 export interface IChatroom {
   _id: string;
   created_by: string;

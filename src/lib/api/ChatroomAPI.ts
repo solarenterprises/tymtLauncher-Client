@@ -1,6 +1,12 @@
 import axios, { AxiosResponse } from "axios";
 import { tymt_backend_url } from "../../configs/index";
-import { IReqChatroomAddParticipant, IReqChatroomCreateChatroom, IReqChatroomLeaveChatroom, IReqChatroomUpdateGroupName } from "../../types/ChatroomAPITypes";
+import {
+  IReqChatroomAddParticipant,
+  IReqChatroomCreateChatroom,
+  IReqChatroomExportMessageHistory,
+  IReqChatroomLeaveChatroom,
+  IReqChatroomUpdateGroupName,
+} from "../../types/ChatroomAPITypes";
 import { ISaltToken } from "../../types/accountTypes";
 import tymtStorage from "../Storage";
 
@@ -128,6 +134,16 @@ class ChatroomAPI {
   static async updateChatroomName(body: IReqChatroomUpdateGroupName): Promise<AxiosResponse<any, any>> {
     const saltTokenStore: ISaltToken = JSON.parse(tymtStorage.get(`saltToken`));
     return await axios.put(`${tymt_backend_url}/chatroom/update-room-name`, body, {
+      headers: {
+        "x-token": saltTokenStore.token,
+        "Content-Type": "application/json",
+      },
+    });
+  }
+
+  static async exportMessageHistory(body: IReqChatroomExportMessageHistory): Promise<AxiosResponse<any, any>> {
+    const saltTokenStore: ISaltToken = JSON.parse(tymtStorage.get(`saltToken`));
+    return await axios.post(`${tymt_backend_url}/messages/export-message-history`, body, {
       headers: {
         "x-token": saltTokenStore.token,
         "Content-Type": "application/json",
