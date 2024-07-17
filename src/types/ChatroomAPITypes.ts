@@ -29,6 +29,7 @@ export interface IReqChatroomExportMessageHistory {
   chatroomId: string;
   fromDate: string;
   toDate: string;
+  chunkIndex: number;
 }
 
 export interface IChatroom {

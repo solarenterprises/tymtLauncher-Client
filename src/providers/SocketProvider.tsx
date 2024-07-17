@@ -25,15 +25,17 @@ import { fetchCurrentChatroomMembersAsync, setCurrentChatroomMembers } from "../
 import { ISKey, ISKeyList, addOneSKeyList, delOneSkeyList, getSKeyList } from "../features/chat/SKeyListSlice";
 import { getRsa } from "../features/chat/RsaSlice";
 import { addOneActiveUserList, delOneActiveUserList, setActiveUserList } from "../features/chat/ActiveUserListSlice";
+import { getMutedList } from "../features/chat/MutedListSlice";
+import { getMachineId } from "../features/account/MachineIdSlice";
 import { rsaDecrypt } from "../features/chat/RsaApi";
 
 import { IChatroom, IChatroomList } from "../types/ChatroomAPITypes";
 import { ISocketParamsActiveUsers, ISocketParamsJoinedMessageGroup, ISocketParamsLeftMessageGroup, ISocketParamsPostMessage } from "../types/SocketTypes";
-import { accountType } from "../types/accountTypes";
+import { accountType, IMachineId } from "../types/accountTypes";
 import { chatType, notificationType } from "../types/settingTypes";
 import { ChatHistoryType, ISocketHash, IAlert, IContact, IContactList, IRsa } from "../types/chatTypes";
+
 import { Chatdecrypt } from "../lib/api/ChatEncrypt";
-import { getMutedList } from "../features/chat/MutedListSlice";
 
 interface SocketContextType {
   socket: MutableRefObject<Socket>;
@@ -67,6 +69,7 @@ export const SocketProvider = () => {
   const rsaStore: IRsa = useSelector(getRsa);
   const sKeyListStore: ISKeyList = useSelector(getSKeyList);
   const mutedListStore: IChatroomList = useSelector(getMutedList);
+  const machineIdStore: IMachineId = useSelector(getMachineId);
 
   const accountStoreRef = useRef(accountStore);
   const socketHashStoreRef = useRef(socketHashStore);
@@ -82,6 +85,7 @@ export const SocketProvider = () => {
   const rsaStoreRef = useRef(rsaStore);
   const sKeyListStoreRef = useRef(sKeyListStore);
   const mutedListStoreRef = useRef(mutedListStore);
+  const machineIdStoreRef = useRef(machineIdStore);
 
   useEffect(() => {
     accountStoreRef.current = accountStore;
@@ -125,6 +129,9 @@ export const SocketProvider = () => {
   useEffect(() => {
     mutedListStoreRef.current = mutedListStore;
   }, [mutedListStore]);
+  useEffect(() => {
+    machineIdStoreRef.current = machineIdStore;
+  }, [machineIdStore]);
 
   const socket = useRef<Socket>(null);
 
@@ -135,7 +142,8 @@ export const SocketProvider = () => {
           socket.current = io(socket_backend_url as string, {
             auth: {
               userId: accountStoreRef.current.uid,
-              socket_hash: socketHashStoreRef.current.socketHash,
+              socketHash: socketHashStoreRef.current.socketHash,
+              deviceId: machineIdStoreRef.current.machineId,
             },
           });
 

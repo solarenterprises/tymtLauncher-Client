@@ -2,6 +2,8 @@ import { useCallback, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 
+import ExportChatModal from "./ExportChatModal";
+
 import { Modal, Box, Fade } from "@mui/material";
 
 import { useSocket } from "../../providers/SocketProvider";
@@ -17,7 +19,6 @@ import { IChatroom, IChatroomList, IParamsLeaveGroup } from "../../types/Chatroo
 import { IPoint } from "../../types/homeTypes";
 import { accountType } from "../../types/accountTypes";
 import { IReqCreateMutedList, IReqDeleteMutedList } from "../../types/UserAPITypes";
-import ExportChatModal from "./ExportChatModal";
 
 export interface IPropsGroupListItemContextMenu {
   view: boolean;
@@ -135,7 +136,7 @@ const GroupListItemContextMenu = ({ view, setView, group, contextMenuPosition }:
           </Box>
         </Fade>
       </Modal>
-      <ExportChatModal view={openExportModal} setView={setOpenExportModal} />
+      <ExportChatModal view={openExportModal} setView={setOpenExportModal} group={group} />
     </>
   );
 };
