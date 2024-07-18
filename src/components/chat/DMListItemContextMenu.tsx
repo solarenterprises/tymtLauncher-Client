@@ -53,6 +53,7 @@ const DMListItemContextMenu = ({ view, setView, DM, contextMenuPosition }: IProp
                 alertType: "friend-request",
                 note: {
                   sender: accountStore.uid,
+                  to: partner.userId,
                   status: "pending",
                 },
                 receivers: [partner.userId],

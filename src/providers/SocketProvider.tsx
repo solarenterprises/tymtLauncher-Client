@@ -13,7 +13,7 @@ import { getAccount } from "../features/account/AccountSlice";
 import { getCurrentChatroom, setCurrentChatroom } from "../features/chat/CurrentChatroomSlice";
 import { getCurrentPartner } from "../features/chat/CurrentPartnerSlice";
 import { createContactAsync, getContactList, updateOneInContactList } from "../features/chat/ContactListSlice";
-import { addOneToUnreadList, updateFriendRequestAsync } from "../features/alert/AlertListSlice";
+import { addOneToUnreadList, updateFriendRequestInAlertList } from "../features/alert/AlertListSlice";
 import { getBlockList } from "../features/chat/BlockListSlice";
 import { addOneToChatroomListAsync, delOneFromChatroomList, getChatroomList } from "../features/chat/ChatroomListSlice";
 import { selectNotification } from "../features/settings/NotificationSlice";
@@ -246,6 +246,12 @@ export const SocketProvider = () => {
               });
             }
 
+            if (!socket.current.hasListeners("alert-updated")) {
+              socket.current.on("alert-udpated", async (alert: IAlert) => {
+                console.log("socket.current.on > alert-udpated", alert);
+              });
+            }
+
             if (!socket.current.hasListeners("joined-message-group")) {
               socket.current.on("joined-message-group", async (data: ISocketParamsJoinedMessageGroup) => {
                 console.log("socket.current.on > joined-message-group", data);
@@ -382,19 +388,28 @@ export const SocketProvider = () => {
         console.log("approveFriendRequest");
         if (socket.current && socket.current.connected) {
           const data = {
-            alertType: "friend-request",
-            note: { sender: accountStore.uid, status: "accepted" },
-            receivers: [alert.note.sender],
+            id: alert._id,
+            note: {
+              sender: alert.note.sender,
+              to: alert.note.to,
+              status: "accepted",
+            },
           };
-          socket.current.emit("post-alert", JSON.stringify(data));
-          console.log("socket.current.emit > post-alert", data);
+          socket.current.emit("update-alert", JSON.stringify(data));
+          console.log("socket.current.emit > update-alert", data);
+
+          dispatch(updateFriendRequestInAlertList(data));
+
+          dispatch(createContactAsync(alert.note.sender)).then(() => {
+            dispatch(createFriendAsync(alert.note.sender));
+          });
 
           // To avoid spam
-          dispatch(updateFriendRequestAsync({ alertId: alert._id, status: "accepted" })).then(() => {
-            dispatch(createContactAsync(alert.note.sender)).then(() => {
-              dispatch(createFriendAsync(alert.note.sender));
-            });
-          });
+          // dispatch(updateFriendRequestAsync({ alertId: alert._id, status: "accepted" })).then(() => {
+          //   dispatch(createContactAsync(alert.note.sender)).then(() => {
+          //     dispatch(createFriendAsync(alert.note.sender));
+          //   });
+          // });
         }
       } catch (err) {
         console.error("Failed to approveFriendRequest: ", err);
@@ -409,12 +424,20 @@ export const SocketProvider = () => {
         console.log("declineFriendRequest");
         if (socket.current && socket.current.connected) {
           const data = {
-            alertType: "friend-request",
-            note: { sender: accountStore.uid, status: "rejected" },
-            receivers: [alert.note.sender],
+            id: alert._id,
+            note: {
+              sender: alert.note.sender,
+              to: alert.note.to,
+              status: "rejected",
+            },
           };
-          socket.current.emit("post-alert", JSON.stringify(data));
-          dispatch(updateFriendRequestAsync({ alertId: alert._id, status: "rejected" }));
+          socket.current.emit("update-alert", JSON.stringify(data));
+          console.log("socket.current.emit > update-alert", data);
+
+          dispatch(updateFriendRequestInAlertList(data));
+
+          // socket.current.emit("post-alert", JSON.stringify(data));
+          // dispatch(updateFriendRequestAsync({ alertId: alert._id, status: "rejected" }));
         }
       } catch (err) {
         console.error("Failed to declineFriendRequest: ", err);

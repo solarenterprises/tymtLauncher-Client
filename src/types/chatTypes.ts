@@ -132,10 +132,12 @@ export interface scrollDownType {
 
 export interface INote {
   message?: string;
-  sender: string;
+  sender?: string;
   room_id?: string;
   status?: string;
   detail?: string;
+  from?: string;
+  to?: string;
 }
 
 export interface IAlert {
