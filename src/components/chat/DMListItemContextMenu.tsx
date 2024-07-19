@@ -9,7 +9,7 @@ import { Modal, Box, Fade } from "@mui/material";
 import { useSocket } from "../../providers/SocketProvider";
 
 import { AppDispatch } from "../../store";
-import { createFriendAsync, deleteFriendAsync } from "../../features/chat/FriendListSlice";
+import { deleteFriendAsync } from "../../features/chat/FriendListSlice";
 import { leaveGroupAsync } from "../../features/chat/ChatroomListSlice";
 import { getAccount } from "../../features/account/AccountSlice";
 import { delOneSkeyList } from "../../features/chat/SKeyListSlice";
@@ -47,23 +47,21 @@ const DMListItemContextMenu = ({ view, setView, DM, contextMenuPosition }: IProp
       }
       dispatch(deleteBlockAsync(partner.userId)).then(() => {
         dispatch(createContactAsync(partner.userId)).then(() => {
-          dispatch(createFriendAsync(partner.userId)).then(() => {
-            if (socket.current && socket.current.connected) {
-              const data: IAlert = {
-                alertType: "friend-request",
-                note: {
-                  sender: accountStore.uid,
-                  to: partner.userId,
-                  status: "pending",
-                },
-                receivers: [partner.userId],
-              };
-              socket.current.emit("post-alert", JSON.stringify(data));
-              console.log("socket.current.emit > post-alert", data);
+          if (socket.current && socket.current.connected) {
+            const data: IAlert = {
+              alertType: "friend-request",
+              note: {
+                sender: accountStore.uid,
+                to: partner.userId,
+                status: "pending",
+              },
+              receivers: [partner.userId],
+            };
+            socket.current.emit("post-alert", JSON.stringify(data));
+            console.log("socket.current.emit > post-alert", data);
 
-              console.log("handleFriendRequestClick", partner.userId);
-            }
-          });
+            console.log("handleFriendRequestClick", partner.userId);
+          }
         });
       });
     } catch (err) {

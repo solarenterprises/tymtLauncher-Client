@@ -13,11 +13,11 @@ import { getAccount } from "../features/account/AccountSlice";
 import { getCurrentChatroom, setCurrentChatroom } from "../features/chat/CurrentChatroomSlice";
 import { getCurrentPartner } from "../features/chat/CurrentPartnerSlice";
 import { createContactAsync, getContactList, updateOneInContactList } from "../features/chat/ContactListSlice";
-import { addOneToUnreadList, updateFriendRequestInAlertList } from "../features/alert/AlertListSlice";
+import { addOneToUnreadList, fetchAlertListAsync, updateFriendRequestInAlertList } from "../features/alert/AlertListSlice";
 import { getBlockList } from "../features/chat/BlockListSlice";
 import { addOneToChatroomListAsync, delOneFromChatroomList, getChatroomList } from "../features/chat/ChatroomListSlice";
 import { selectNotification } from "../features/settings/NotificationSlice";
-import { createFriendAsync, getFriendList } from "../features/chat/FriendListSlice";
+import { createFriendAsync, fetchFriendListAsync, getFriendList } from "../features/chat/FriendListSlice";
 import { selectChat } from "../features/settings/ChatSlice";
 import { setChatHistory, getChatHistory } from "../features/chat/ChatHistorySlice";
 import { getSocketHash } from "../features/chat/SocketHashSlice";
@@ -36,6 +36,7 @@ import { chatType, notificationType } from "../types/settingTypes";
 import { ChatHistoryType, ISocketHash, IAlert, IContact, IContactList, IRsa } from "../types/chatTypes";
 
 import { Chatdecrypt } from "../lib/api/ChatEncrypt";
+import { useTranslation } from "react-i18next";
 
 interface SocketContextType {
   socket: MutableRefObject<Socket>;
@@ -52,6 +53,8 @@ const SocketContext = createContext<SocketContextType>({
 export const useSocket = () => useContext(SocketContext);
 
 export const SocketProvider = () => {
+  const { t } = useTranslation();
+
   const { setNotificationStatus, setNotificationTitle, setNotificationDetail, setNotificationOpen, setNotificationLink } = useNotification();
 
   const dispatch = useDispatch<AppDispatch>();
@@ -226,8 +229,8 @@ export const SocketProvider = () => {
                   dispatch(addOneToUnreadList(alert));
                   setNotificationOpen(true);
                   setNotificationStatus("alert");
-                  setNotificationTitle("Friend Request");
-                  setNotificationDetail(alert.note?.detail ?? "");
+                  setNotificationTitle(t("not-9_friend-request"));
+                  setNotificationDetail(t("not-10_fr-intro"));
                   setNotificationLink(null);
                 }
                 // General alert
@@ -249,6 +252,20 @@ export const SocketProvider = () => {
             if (!socket.current.hasListeners("alert-updated")) {
               socket.current.on("alert-udpated", async (alert: IAlert) => {
                 console.log("socket.current.on > alert-udpated", alert);
+                if (alert.alertType === "friend-request") {
+                  // Update the friend lists of both him and me
+                  dispatch(fetchFriendListAsync());
+                  if (alert.note.to === accountStoreRef.current.uid) {
+                    // If I accepted the friend request, synchronize the alert lists of all my other login sessions
+                    dispatch(fetchAlertListAsync(accountStoreRef.current.uid));
+                    return;
+                  }
+                  setNotificationOpen(true);
+                  setNotificationStatus("alert");
+                  setNotificationTitle(t("not-9_friend-request"));
+                  setNotificationDetail(alert.note.status === "accepted" ? t("not-11_fr-accept") : t("not-12_fr-reject"));
+                  setNotificationLink(null);
+                }
               });
             }
 
@@ -403,13 +420,6 @@ export const SocketProvider = () => {
           dispatch(createContactAsync(alert.note.sender)).then(() => {
             dispatch(createFriendAsync(alert.note.sender));
           });
-
-          // To avoid spam
-          // dispatch(updateFriendRequestAsync({ alertId: alert._id, status: "accepted" })).then(() => {
-          //   dispatch(createContactAsync(alert.note.sender)).then(() => {
-          //     dispatch(createFriendAsync(alert.note.sender));
-          //   });
-          // });
         }
       } catch (err) {
         console.error("Failed to approveFriendRequest: ", err);

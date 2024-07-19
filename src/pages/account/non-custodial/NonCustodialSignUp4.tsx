@@ -28,7 +28,11 @@ const NonCustodialSignUp4 = () => {
       nickname: "",
     },
     validationSchema: Yup.object({
-      nickname: Yup.string().required(t("cca-63_required")),
+      nickname: Yup.string()
+        .required(t("cca-63_required"))
+        .min(3, t("ncca-59_too-short"))
+        .max(50, t("ncca-60_too-long"))
+        .matches(/^[a-zA-Z0-9_ !@#$%^&*()\-+=,.?]+$/, t("ncca-61_invalid-characters")),
     }),
     onSubmit: async () => {
       dispatch(

@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { useCallback, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import * as Yup from "yup";
 
 import { Box, Button, Divider, Stack, Tooltip } from "@mui/material";
 
@@ -33,23 +34,39 @@ const Profile = ({ view, setView }: propsType) => {
   const notificationStore: notificationType = useSelector(selectNotification);
   const userStore = account.wallet === walletEnum.noncustodial ? nonCustodial : custodial;
   const [nickname, setNickname] = useState(userStore.nickname);
+  const [error, setError] = useState<string>("");
 
   const { setNotificationStatus, setNotificationTitle, setNotificationDetail, setNotificationOpen, setNotificationLink } = useNotification();
 
+  const validationSchema = Yup.string()
+    .required(t("cca-63_required"))
+    .min(3, t("ncca-59_too-short"))
+    .max(50, t("ncca-60_too-long"))
+    .matches(/^[a-zA-Z0-9_ !@#$%^&*()\-+=,.?]+$/, t("ncca-61_invalid-characters"));
+
   const updateAccount = useCallback(async () => {
     try {
+      await validationSchema.validate(nickname);
+      setError("");
+
       account.wallet === walletEnum.noncustodial
         ? dispatch(setNonCustodial({ ...nonCustodial, nickname: nickname }))
         : dispatch(setCustodial({ ...custodial, nickname: nickname }));
+
       const res = await updateUserNickname(account.uid, nickname);
       console.log(res.data, "updateUserNickName");
+
       setNotificationStatus("success");
       setNotificationTitle(t("alt-1_nickname-saved"));
       setNotificationDetail(t("alt-2_nickname-saved-intro"));
       setNotificationOpen(true);
       setNotificationLink(null);
     } catch (err) {
+      if (err instanceof Yup.ValidationError) {
+        setError(err.message);
+      }
       console.log(err);
+
       setNotificationStatus("failed");
       setNotificationTitle(t("alt-3_nickname-notsaved"));
       setNotificationDetail(t("alt-4_nickname-notsaved-intro"));
@@ -134,6 +151,11 @@ const Profile = ({ view, setView }: propsType) => {
               <Box className="fs-h4 white">
                 <InputText id="change-nickname" label={t("set-69_change-nickname")} type="text" value={nickname} setValue={setNickname} />
               </Box>
+              {error && (
+                <Stack mt={"8px"} padding={"0px 6px"} width={"100%"}>
+                  <Box className={"fs-16-regular red"}>{error}</Box>
+                </Stack>
+              )}
               <Box textAlign={"left"} className="fs-14-light gray p-t-10">
                 {t("set-70_nickname-detail")}
               </Box>
