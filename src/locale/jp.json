@@ -88,7 +88,7 @@
     "ncca-58_or": "または",
     "ncca-59_too-short": "少なくとも 3 文字の長さにする必要があります。",
     "ncca-60_too-long": "50 文字を超えないようにしてください。",
-    "ncca-61_invalid-characters": "英数字とアンダースコアのみを含めることができます。",
+    "ncca-61_invalid-characters": "英数字、アンダースコア、および次の特殊文字のみを含めることができます: !@#$%^&*()-+=,.?",
     "ncl-1_password": "パスワード",
     "ncl-2_welcome-back": "お帰りなさい",
     "ncl-3_decentralised-non-custodial": "分散型の非管理ログイン",
