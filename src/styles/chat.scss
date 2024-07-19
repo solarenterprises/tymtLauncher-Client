@@ -253,6 +253,21 @@ $Main-Red: #ef4444;
   gap: 5px;
 }
 
+.bubble-image {
+  border-radius: 20px;
+  overflow: hidden;
+  white-space: normal;
+  word-wrap: break-word;
+  -webkit-box-orient: vertical;
+  display: -webkit-box;
+  z-index: 50;
+  position: relative;
+  display: flex;
+  // justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
 .bubble-partner {
   padding: 10px 14px 6px 14px;
   border-radius: 20px;
@@ -270,7 +285,22 @@ $Main-Red: #ef4444;
   gap: 5px;
 }
 
-.bubble-partner-lastmessage {
+.bubble-image-partner {
+  border-radius: 20px;
+  overflow: hidden;
+  white-space: normal;
+  word-wrap: break-word;
+  -webkit-box-orient: vertical;
+  display: -webkit-box;
+  z-index: 50;
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.bubble-last-partner {
   padding: 10px 14px 6px 14px;
   border-radius: 20px 20px 20px 0;
   background-color: #72916a;
@@ -287,7 +317,22 @@ $Main-Red: #ef4444;
   gap: 5px;
 }
 
-.bubble-lastmessage-unexpanded {
+.bubble-image-last-partner {
+  border-radius: 20px 20px 20px 0;
+  overflow: hidden;
+  white-space: normal;
+  word-wrap: break-word;
+  -webkit-box-orient: vertical;
+  display: -webkit-box;
+  z-index: 50;
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.bubble-last {
   padding: 10px 14px 6px 14px;
   border-radius: 20px 20px 0 20px;
   background-color: #58914e;
@@ -304,10 +349,8 @@ $Main-Red: #ef4444;
   gap: 5px;
 }
 
-.bubble-lastmessage-expanded {
-  padding: 10px 14px 6px 14px;
-  border-radius: 20px 20px 20px 0;
-  background-color: #58914e;
+.bubble-image-last {
+  border-radius: 20px 20px 0 20px;
   overflow: hidden;
   white-space: normal;
   word-wrap: break-word;
@@ -316,38 +359,9 @@ $Main-Red: #ef4444;
   z-index: 50;
   position: relative;
   display: flex;
-  // justify-content: space-between;
   flex-wrap: wrap;
   gap: 5px;
 }
-
-// .sb13::before {
-//   content: "";
-//   width: 0px;
-//   height: 0px;
-//   position: absolute;
-//   background-color: #58914e;
-//   border-left: 15px solid #58914e;
-//   border-right: 15px solid transparent;
-//   border-top: 15px solid #58914e;
-//   border-bottom: 15px solid transparent;
-//   right: -16px;
-//   top: 0px;
-// }
-
-// .sb14::before {
-//   content: "";
-//   width: 0px;
-//   height: 0px;
-//   position: absolute;
-//   background-color: #72916a;
-//   border-left: 15px solid transparent;
-//   border-right: 15px solid #72916a;
-//   border-top: 15px solid #72916a;
-//   border-bottom: 15px solid transparent;
-//   left: -16px;
-//   top: 0px;
-// }
 
 .timestamp-inbubble {
   display: block;

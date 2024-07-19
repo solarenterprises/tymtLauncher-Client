@@ -6,6 +6,7 @@ import { Box, Stack } from "@mui/material";
 import BubbleAudio from "./BubbleAudio";
 import BubbleFile from "./BubbleFile";
 import BubbleImage from "./BubbleImage";
+import BubbleVideo from "./BubbleVideo";
 import BubbleText from "./BubbleText";
 import OrLinechat from "./Orlinechat";
 
@@ -92,18 +93,17 @@ const Bubble = ({ message, index }: IParamsBubble) => {
         gap={"15px"}
         justifyContent={message.sender_id === accountStore.uid ? "flex-end" : "flex-start"}
       >
-        <Box
-          className={
-            isLastMessageOfStack
-              ? `fs-14-regular white ${isSender ? "bubble-lastmessage-unexpanded" : "bubble-partner-lastmessage"}`
-              : `fs-14-regular white ${isSender ? "bubble" : "bubble-partner"}`
-          }
-        >
-          {(!message.type || message.type === "text") && <BubbleAudio message={message} decryptedMessage={decryptedMessage} />}
-          {message.type === "audio" && <BubbleText message={message} decryptedMessage={decryptedMessage} />}
-          {message.type === "image" && <BubbleImage message={message} decryptedMessage={decryptedMessage} />}
-          {message.type === "file" && <BubbleFile message={message} decryptedMessage={decryptedMessage} />}
-        </Box>
+        {(!message.type || message.type === "text") && (
+          <BubbleImage message={message} decryptedMessage={decryptedMessage} isLastMessage={isLastMessageOfStack} isSender={isSender} />
+        )}
+        {message.type === "audio" && (
+          <BubbleAudio message={message} decryptedMessage={decryptedMessage} isLastMessage={isLastMessageOfStack} isSender={isSender} />
+        )}
+        {message.type === "image" && (
+          <BubbleText message={message} decryptedMessage={decryptedMessage} isLastMessage={isLastMessageOfStack} isSender={isSender} />
+        )}
+        {message.type === "video" && <BubbleVideo message={message} decryptedMessage={decryptedMessage} />}
+        {message.type === "file" && <BubbleFile message={message} decryptedMessage={decryptedMessage} />}
       </Stack>
     </Box>
   );

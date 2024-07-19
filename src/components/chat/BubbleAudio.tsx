@@ -9,14 +9,16 @@ import AudioToggleButton from "./AudioToggleButton";
 
 import { ChatMessageType } from "../../types/chatTypes";
 
-const fileLink = "https://dev.tymt.com/public/upload/BEN-48-Cryptocurrency.mp3";
+const AUDIO_URL = "https://dev.tymt.com/public/upload/BEN-48-Cryptocurrency.mp3";
 
 export interface IParamsBubbleAudio {
   message: ChatMessageType;
   decryptedMessage: string;
+  isLastMessage: boolean;
+  isSender: boolean;
 }
 
-const BubbleAudio = ({ message, decryptedMessage }: IParamsBubbleAudio) => {
+const BubbleAudio = ({ message, decryptedMessage, isLastMessage, isSender }: IParamsBubbleAudio) => {
   const { t } = useTranslation();
 
   const [blob, setBlob] = useState(null);
@@ -37,7 +39,7 @@ const BubbleAudio = ({ message, decryptedMessage }: IParamsBubbleAudio) => {
   useEffect(() => {
     const fetchAudioFile = async () => {
       try {
-        const response = await fetch(fileLink);
+        const response = await fetch(AUDIO_URL);
         if (!response.ok) {
           throw new Error("Network response was not ok");
         }
@@ -53,41 +55,49 @@ const BubbleAudio = ({ message, decryptedMessage }: IParamsBubbleAudio) => {
 
   return (
     <>
-      <Stack>
-        <Stack direction="row" alignItems="center" gap="8px">
-          <AudioToggleButton loaded={loadedDisplay} playing={playing} setPlaying={setPlaying} />
-          <Stack gap={"2px"}>
-            <AudioVisualizer
-              ref={visualizerRef}
-              blob={blob}
-              width={200}
-              height={50}
-              barWidth={3}
-              gap={1}
-              barColor={"#ffffff55"}
-              barPlayedColor={"#ffffff"}
-              currentTime={positionDisplay / 1e3}
-              style={{
-                width: "200px",
-                height: "20px",
-              }}
-            />
-            <Stack direction="row" alignItems="center" justifyContent="space-between">
-              <Box className="fs-16-regular white">{t("cha-63_audio")}</Box>
-              <Box className="fs-16-regular white">{playing ? formatTime(positionDisplay) : formatTime(durationDisplay)}</Box>
+      <Box
+        className={
+          isLastMessage
+            ? `fs-14-regular white ${isSender ? "bubble-last" : "bubble-last-partner"}`
+            : `fs-14-regular white ${isSender ? "bubble" : "bubble-partner"}`
+        }
+      >
+        <Stack>
+          <Stack direction="row" alignItems="center" gap="8px">
+            <AudioToggleButton loaded={loadedDisplay} playing={playing} setPlaying={setPlaying} />
+            <Stack gap={"2px"}>
+              <AudioVisualizer
+                ref={visualizerRef}
+                blob={blob}
+                width={200}
+                height={50}
+                barWidth={3}
+                gap={1}
+                barColor={"#ffffff55"}
+                barPlayedColor={"#ffffff"}
+                currentTime={positionDisplay / 1e3}
+                style={{
+                  width: "200px",
+                  height: "20px",
+                }}
+              />
+              <Stack direction="row" alignItems="center" justifyContent="space-between">
+                <Box className="fs-16-regular white">{t("cha-63_audio")}</Box>
+                <Box className="fs-16-regular white">{playing ? formatTime(positionDisplay) : formatTime(durationDisplay)}</Box>
+              </Stack>
             </Stack>
           </Stack>
+          <Box className="fs-14-light timestamp-inbubble" sx={{ alignSelf: "flex-end" }} color={"rgba(11, 11, 11, 0.7)"}>
+            {new Date(message.createdAt).toLocaleString("en-US", {
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
+          </Box>
         </Stack>
-        <Box className="fs-14-light timestamp-inbubble" sx={{ alignSelf: "flex-end" }} color={"rgba(11, 11, 11, 0.7)"}>
-          {new Date(message.createdAt).toLocaleString("en-US", {
-            hour: "2-digit",
-            minute: "2-digit",
-          })}
-        </Box>
-      </Stack>
+      </Box>
 
       <Sound
-        url={fileLink}
+        url={AUDIO_URL}
         playStatus={playing ? Sound.status.PLAYING : Sound.status.STOPPED}
         autoLoad={true}
         onLoading={({ duration }) => {
