@@ -96,6 +96,7 @@ export interface IContactList {
 
 export interface ChatMessageType {
   _id: string;
+  type: "text" | "image" | "audio" | "file";
   sender_id: string;
   room_id: string;
   message: string;

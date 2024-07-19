@@ -44,7 +44,7 @@ const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
   const sKeyListStore: ISKeyList = useSelector(getSKeyList);
 
   const [logo, setLogo] = useState<any>();
-  const [decryptedMessage, setDecryptedMessage] = useState<string>("Unable to decode message #tymt114#");
+  const [decryptedMessage, setDecryptedMessage] = useState<string>(undefined);
 
   useEffect(() => {
     if (title === "chat") {
@@ -136,14 +136,9 @@ const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
           </Stack>
           <Box className={"fs-16-regular white"} marginTop={"12px"} sx={{ textWrap: "wrap" }}>
             {title === "update" && (detail.note?.message.length > 100 ? detail.note?.message.substring(0, 100) + "..." : detail.note?.message)}
-            {title === "chat" &&
-              decryptedMessage !== "Unable to decode message #tymt114#" &&
-              decryptedMessage.length > 100 &&
-              decryptedMessage.substring(0, 100) + "..."}
-            {title === "chat" && decryptedMessage !== "Unable to decode message #tymt114#" && decryptedMessage.length <= 100 && decryptedMessage}
-            {title === "chat" && decryptedMessage === "Unable to decode message #tymt114#" && (
-              <ThreeDots height="25px" width={"40px"} radius={5} color={`white`} />
-            )}
+            {title === "chat" && decryptedMessage !== undefined && decryptedMessage.length > 100 && decryptedMessage.substring(0, 100) + "..."}
+            {title === "chat" && decryptedMessage !== undefined && decryptedMessage.length <= 100 && decryptedMessage}
+            {title === "chat" && decryptedMessage === undefined && <ThreeDots height="25px" width={"40px"} radius={5} color={`white`} />}
             {title === "Friend Request" && detail.note.status === "pending" && t("not-10_fr-intro")}
             {title === "Friend Request" && detail.note.status === "accepted" && t("not-11_fr-accept")}
             {title === "Friend Request" && detail.note.status === "rejected" && t("not-12_fr-reject")}

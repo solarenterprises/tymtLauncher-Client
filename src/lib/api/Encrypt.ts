@@ -18,7 +18,7 @@ export const decrypt = async (_encryptedMnemonic: string, _password: string) => 
     return decipher.update(buff.toString("utf8"), "hex", "utf8") + decipher.final("utf8");
   } catch (e) {
     // console.log(e);
-    return "Unable to decode message #tymt114#";
+    return undefined;
     // return <ThreeDots height="100%" width={100} radius={3} color={`#EF4444`} />;
   }
 };

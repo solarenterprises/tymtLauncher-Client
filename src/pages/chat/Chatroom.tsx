@@ -385,7 +385,7 @@ const Chatroom = () => {
                     return (
                       <>
                         <Box className={"bubblecontainer"} key={`${message.sender_id}-${index}-${new Date().toISOString()}`}>
-                          {timeline && decryptedmessage !== "Unable to decode message #tymt114#" && <OrLinechat timeline={timeline} />}
+                          {timeline && decryptedmessage !== undefined && <OrLinechat timeline={timeline} />}
                           <Stack
                             flexDirection={"row"}
                             alignItems={"flex-end"}
@@ -413,7 +413,7 @@ const Chatroom = () => {
                                       : "fs-14-regular white bubble"
                                   }
                                 >
-                                  {decryptedmessage !== "Unable to decode message #tymt114#" ? (
+                                  {decryptedmessage !== undefined ? (
                                     <>
                                       {decryptedmessage.split("\n").map((line) => (
                                         <React.Fragment>
@@ -448,7 +448,7 @@ const Chatroom = () => {
                                 )}
                                 {screenexpanded && !isLastMessageofStack && <div style={{ width: "40px", height: "40px" }} />}
                                 <Box className={isLastMessageofStack ? "fs-14-regular white bubble-partner-lastmessage" : "fs-14-regular white bubble-partner"}>
-                                  {decryptedmessage !== "Unable to decode message #tymt114#" ? (
+                                  {decryptedmessage !== undefined ? (
                                     <>
                                       {decryptedmessage.split("\n").map((line) => (
                                         <React.Fragment>
