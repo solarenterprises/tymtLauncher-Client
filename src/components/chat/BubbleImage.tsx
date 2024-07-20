@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Box } from "@mui/material";
 
 import { ChatMessageType } from "../../types/chatTypes";
+import BubbleImageModal from "./BubbleImageModal";
 
 const IMAGE_URL = "https://dev.tymt.com/public/upload/room-image/66855e3d70fe2851827b7ccb.jpg";
 
@@ -15,7 +16,7 @@ export interface IParamsBubbleImage {
 
 const BubbleImage = ({ message, isLastMessage, isSender }: IParamsBubbleImage) => {
   const [_showTime, setShowTime] = useState<boolean>(false);
-  const [_showImageModal, setShowImageModal] = useState<boolean>(false);
+  const [showImageModal, setShowImageModal] = useState<boolean>(false);
 
   const handleMouseEnter = () => {
     setShowTime(true);
@@ -66,6 +67,8 @@ const BubbleImage = ({ message, isLastMessage, isSender }: IParamsBubbleImage) =
           })}
         </Box>
       </Box>
+
+      <BubbleImageModal open={showImageModal} setOpen={setShowImageModal} url={IMAGE_URL} />
     </>
   );
 };
