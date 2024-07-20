@@ -19,7 +19,7 @@ const AudioToggleButton = ({ loaded, playing, setPlaying }: IParamsAudioToggleBu
           setPlaying(!playing);
         }}
         sx={{
-          transition: "all 0.3s ease", // Transition property
+          transition: "all 0.3s ease",
           minWidth: "40px",
           minHeight: "40px",
           width: "40px",
@@ -35,7 +35,7 @@ const AudioToggleButton = ({ loaded, playing, setPlaying }: IParamsAudioToggleBu
         {loaded && !playing && (
           <PlayArrowIcon
             sx={{
-              transition: "all 0.3s ease", // Transition property
+              transition: "all 0.3s ease",
               width: "20px",
               height: "20px",
               padding: "10px",
@@ -50,7 +50,7 @@ const AudioToggleButton = ({ loaded, playing, setPlaying }: IParamsAudioToggleBu
         {loaded && playing && (
           <StopIcon
             sx={{
-              transition: "all 0.3s ease", // Transition property
+              transition: "all 0.3s ease",
               width: "20px",
               height: "20px",
               padding: "10px",

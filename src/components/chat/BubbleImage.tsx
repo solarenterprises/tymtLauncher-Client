@@ -37,6 +37,7 @@ const BubbleImage = ({ message, isLastMessage, isSender }: IParamsBubbleImage) =
             ? `fs-14-regular white ${isSender ? "bubble-image-last" : "bubble-image-last-partner"}`
             : `fs-14-regular white ${isSender ? "bubble-image" : "bubble-image-partner"}`
         }
+        sx={{ position: "relative" }}
       >
         <Box
           component={"img"}
@@ -50,9 +51,9 @@ const BubbleImage = ({ message, isLastMessage, isSender }: IParamsBubbleImage) =
         <Box
           className="fs-16-regular white"
           sx={{
-            position: "relative",
-            right: "85px",
-            top: "120px",
+            position: "absolute",
+            bottom: "10px",
+            right: "10px",
             padding: "4px",
             borderRadius: "10px",
             height: "20px",
@@ -70,4 +71,3 @@ const BubbleImage = ({ message, isLastMessage, isSender }: IParamsBubbleImage) =
 };
 
 export default BubbleImage;
-d
