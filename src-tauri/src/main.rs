@@ -712,6 +712,7 @@ async fn main() -> std::io::Result<()> {
             struct VerifyMessageReqType {
                 message: String,
                 signature: String,
+                chain: String,
             }
             async fn verify_message(
                 request: HttpRequest,

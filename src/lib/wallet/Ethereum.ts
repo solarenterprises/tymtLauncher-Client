@@ -132,6 +132,7 @@ class Ethereum implements IWallet {
   static async verifyMessage(message: string, signature: string, address: string): Promise<boolean> {
     try {
       const recoveredAddress = ethers.verifyMessage(message, signature);
+      console.log(recoveredAddress);
       return recoveredAddress === address;
     } catch (error) {
       console.error("Error verifying message:", error);

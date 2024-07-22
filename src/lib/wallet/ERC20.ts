@@ -263,15 +263,6 @@ class ERC20 {
       return 0;
     }
   }
-
-  static async signMessage(message) {
-    try {
-      multichainWallet.
-    } catch (err) {
-      console.error("Failed to signMessage: ", err);
-      return null;
-    }
-  }
 }
 
 export default ERC20;

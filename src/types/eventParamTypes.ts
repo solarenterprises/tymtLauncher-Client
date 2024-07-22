@@ -36,6 +36,7 @@ export interface ISignMessageReq {
 export interface IVerifyMessageReq {
   message: string;
   signature: string;
+  chain: string;
 }
 
 // Define the IAbiInput interface

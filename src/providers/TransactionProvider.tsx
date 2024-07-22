@@ -109,13 +109,7 @@ const TransactionProvider = () => {
 
     const unlisten_verify_message = listen("POST-/verify-message", async (event) => {
       const data: IVerifyMessageReq = JSON.parse(event.payload as string);
-      console.log("POST-/verify-message", data);
-      if (!data || !data.message || !data.signature || !mnemonicStoreRef.current.mnemonic) {
-        emit("res-POST-/verify-message", false);
-        return;
-      }
-      const publicKey: string = tymtCore.Blockchains.solar.wallet.getPublicKey(mnemonicStoreRef.current.mnemonic);
-      const res: boolean = tymtCore.Blockchains.solar.wallet.verifyMessage(data.message, publicKey, data.signature);
+      const res = await TransactionProviderAPI.verifyMessage(data);
       emit("res-POST-/verify-message", res);
     });
 

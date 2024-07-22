@@ -12,7 +12,7 @@ import { IRecipient } from "../../features/wallet/CryptoApi";
 import { decrypt } from "./Encrypt";
 
 import { IMnemonic, ISaltToken, accountType, nonCustodialType } from "../../types/accountTypes";
-import { IGetAccountReq, IGetBalanceReq, ISendContractReq, ISendTransactionReq, ISignMessageReq } from "../../types/eventParamTypes";
+import { IGetAccountReq, IGetBalanceReq, ISendContractReq, ISendTransactionReq, ISignMessageReq, IVerifyMessageReq } from "../../types/eventParamTypes";
 import { walletType } from "../../types/settingTypes";
 import { INative, IToken, chainEnum, chainIconMap, multiWalletType } from "../../types/walletTypes";
 
@@ -453,7 +453,7 @@ export default class TransactionProviderAPI {
   static signMessage = async (jsonData: ISignMessageReq) => {
     try {
       const mnemonicStore: IMnemonic = JSON.parse(sessionStorage.getItem("mnemonic"));
-      if (!jsonData || !jsonData.message || !mnemonicStore.mnemonic) {
+      if (!jsonData || !jsonData.message || !jsonData.chain || !mnemonicStore.mnemonic) {
         return "";
       }
       let res: string;
@@ -474,8 +474,45 @@ export default class TransactionProviderAPI {
         case "solana":
           break;
       }
+      return res;
     } catch (err) {
       console.error("Failed to signMessage: ", err);
+      return "";
+    }
+  };
+
+  static verifyMessage = async (jsonData: IVerifyMessageReq) => {
+    try {
+      const mnemonicStore: IMnemonic = JSON.parse(sessionStorage.getItem("mnemonic"));
+      const multiWalletStore: multiWalletType = JSON.parse(tymtStorage.get("multiWallet"));
+
+      if (!jsonData || !jsonData.message || !jsonData.signature || !jsonData.chain) {
+        return false;
+      }
+      let res: boolean;
+      let publicKey: string;
+      switch (jsonData.chain) {
+        case "solar":
+          publicKey = tymtCore.Blockchains.solar.wallet.getPublicKey(mnemonicStore.mnemonic);
+          res = tymtCore.Blockchains.solar.wallet.verifyMessage(jsonData.message, publicKey, jsonData.signature);
+          break;
+        case "ethereum":
+        case "polygon":
+        case "binance":
+        case "avalanche":
+        case "arbitrum":
+        case "optimism":
+          res = await tymtCore.Blockchains.eth.wallet.verifyMessage(jsonData.message, jsonData.signature, multiWalletStore.Ethereum.chain.wallet);
+          break;
+        case "bitcoin":
+          break;
+        case "solana":
+          break;
+      }
+      return res;
+    } catch (err) {
+      console.error("Failed to verifyMessage: ", err);
+      return false;
     }
   };
 
