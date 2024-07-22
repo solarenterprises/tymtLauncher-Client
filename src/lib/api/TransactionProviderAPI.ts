@@ -11,8 +11,8 @@ import { IRecipient } from "../../features/wallet/CryptoApi";
 
 import { decrypt } from "./Encrypt";
 
-import { ISaltToken, accountType, nonCustodialType } from "../../types/accountTypes";
-import { IGetAccountReq, IGetBalanceReq, ISendContractReq, ISendTransactionReq } from "../../types/eventParamTypes";
+import { IMnemonic, ISaltToken, accountType, nonCustodialType } from "../../types/accountTypes";
+import { IGetAccountReq, IGetBalanceReq, ISendContractReq, ISendTransactionReq, ISignMessageReq } from "../../types/eventParamTypes";
 import { walletType } from "../../types/settingTypes";
 import { INative, IToken, chainEnum, chainIconMap, multiWalletType } from "../../types/walletTypes";
 
@@ -447,6 +447,35 @@ export default class TransactionProviderAPI {
       return res;
     } catch (err) {
       console.error("Failed to sendContract: ", err);
+    }
+  };
+
+  static signMessage = async (jsonData: ISignMessageReq) => {
+    try {
+      const mnemonicStore: IMnemonic = JSON.parse(sessionStorage.getItem("mnemonic"));
+      if (!jsonData || !jsonData.message || !mnemonicStore.mnemonic) {
+        return "";
+      }
+      let res: string;
+      switch (jsonData.chain) {
+        case "solar":
+          res = tymtCore.Blockchains.solar.wallet.signMessage(jsonData.message, mnemonicStore.mnemonic);
+          break;
+        case "ethereum":
+        case "polygon":
+        case "binance":
+        case "avalanche":
+        case "arbitrum":
+        case "optimism":
+          res = await tymtCore.Blockchains.eth.wallet.signMessage(jsonData.message, mnemonicStore.mnemonic);
+          break;
+        case "bitcoin":
+          break;
+        case "solana":
+          break;
+      }
+    } catch (err) {
+      console.error("Failed to signMessage: ", err);
     }
   };
 

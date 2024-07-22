@@ -103,11 +103,7 @@ const TransactionProvider = () => {
 
     const unlisten_sign_message = listen("POST-/sign-message", async (event) => {
       const data: ISignMessageReq = JSON.parse(event.payload as string);
-      if (!data || !data.message || !mnemonicStoreRef.current.mnemonic) {
-        emit("res-POST-/sign-message", "");
-        return;
-      }
-      const res = tymtCore.Blockchains.solar.wallet.signMessage(data.message, mnemonicStoreRef.current.mnemonic);
+      const res = await TransactionProviderAPI.signMessage(data);
       emit("res-POST-/sign-message", res);
     });
 

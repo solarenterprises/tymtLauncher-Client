@@ -642,6 +642,7 @@ async fn main() -> std::io::Result<()> {
             #[derive(Deserialize, Serialize)]
             struct SignMessageReqType {
                 message: String,
+                chain: String,
             }
             async fn sign_message(
                 request: HttpRequest,
@@ -654,6 +655,11 @@ async fn main() -> std::io::Result<()> {
                 ).await;
                 if !is_valid_token {
                     return HttpResponse::InternalServerError().body("Invalid token");
+                }
+
+                let is_valid_chain = validate_chain(request_param.chain.clone()).await;
+                if !is_valid_chain {
+                    return HttpResponse::InternalServerError().body("Invalid chain");
                 }
 
                 let json_data = serde_json

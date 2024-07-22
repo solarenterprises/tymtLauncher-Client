@@ -30,6 +30,7 @@ export interface ISendTransactionReq {
 
 export interface ISignMessageReq {
   message: string;
+  chain: string;
 }
 
 export interface IVerifyMessageReq {
