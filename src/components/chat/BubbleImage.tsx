@@ -12,9 +12,10 @@ export interface IParamsBubbleImage {
   decryptedMessage: string;
   isLastMessage: boolean;
   isSender: boolean;
+  roomMode: boolean;
 }
 
-const BubbleImage = ({ message, isLastMessage, isSender }: IParamsBubbleImage) => {
+const BubbleImage = ({ roomMode, message, isLastMessage, isSender }: IParamsBubbleImage) => {
   const [_showTime, setShowTime] = useState<boolean>(false);
   const [showImageModal, setShowImageModal] = useState<boolean>(false);
 
@@ -33,11 +34,7 @@ const BubbleImage = ({ message, isLastMessage, isSender }: IParamsBubbleImage) =
   return (
     <>
       <Box
-        className={
-          isLastMessage
-            ? `fs-14-regular white ${isSender ? "bubble-image-last" : "bubble-image-last-partner"}`
-            : `fs-14-regular white ${isSender ? "bubble-image" : "bubble-image-partner"}`
-        }
+        className={`fs-14-regular white bubble-image ${isLastMessage ? (roomMode ? "br-20-20-20-0" : isSender ? "br-20-20-0-20" : "br-20-20-20-0") : "br-20"}`}
         sx={{ position: "relative" }}
       >
         <Box

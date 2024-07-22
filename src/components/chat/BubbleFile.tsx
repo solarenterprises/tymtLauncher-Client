@@ -11,9 +11,10 @@ export interface IParamsBubbleFile {
   decryptedMessage: string;
   isLastMessage: boolean;
   isSender: boolean;
+  roomMode: boolean;
 }
 
-const BubbleFile = ({ isLastMessage, isSender }: IParamsBubbleFile) => {
+const BubbleFile = ({ roomMode, isLastMessage, isSender }: IParamsBubbleFile) => {
   const getFileDetails = (url: string) => {
     try {
       const parsedUrl = new URL(url);
@@ -44,11 +45,9 @@ const BubbleFile = ({ isLastMessage, isSender }: IParamsBubbleFile) => {
   return (
     <>
       <Box
-        className={
-          isLastMessage
-            ? `fs-14-regular white ${isSender ? "bubble-last" : "bubble-last-partner"}`
-            : `fs-14-regular white ${isSender ? "bubble" : "bubble-partner"}`
-        }
+        className={`fs-14-regular white ${isSender ? "bubble" : "bubble-partner"} ${
+          isLastMessage ? (roomMode ? "br-20-20-20-0" : isSender ? "br-20-20-0-20" : "br-20-20-20-0") : "br-20"
+        }`}
       >
         <Stack direction={"row"} gap={"8px"} alignItems={"center"} height={"48px"} width={"240px"}>
           <Box

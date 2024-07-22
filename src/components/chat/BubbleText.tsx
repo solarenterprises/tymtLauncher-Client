@@ -7,24 +7,21 @@ import Linkify from "./Linkify";
 
 import { ChatMessageType } from "../../types/chatTypes";
 
-const decryptedMessage = "Here is the link https://www.npmjs.com/package/react-player please\nhttps://www.npmjs.com/package/react-player";
-
 export interface IParamsBubbleText {
   message: ChatMessageType;
   decryptedMessage: string;
   isLastMessage: boolean;
   isSender: boolean;
+  roomMode: boolean;
 }
 
-const BubbleText = ({ message, isLastMessage, isSender }: IParamsBubbleText) => {
+const BubbleText = ({ roomMode, message, decryptedMessage, isLastMessage, isSender }: IParamsBubbleText) => {
   return (
     <>
       <Box
-        className={
-          isLastMessage
-            ? `fs-14-regular white ${isSender ? "bubble-last" : "bubble-last-partner"}`
-            : `fs-14-regular white ${isSender ? "bubble" : "bubble-partner"}`
-        }
+        className={`fs-14-regular white ${isSender ? "bubble" : "bubble-partner"} ${
+          isLastMessage ? (roomMode ? "br-20-20-20-0" : isSender ? "br-20-20-0-20" : "br-20-20-20-0") : "br-20"
+        }`}
       >
         {decryptedMessage !== undefined ? (
           <>

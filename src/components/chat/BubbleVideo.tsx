@@ -11,17 +11,14 @@ export interface IParamsBubbleVideo {
   decryptedMessage: string;
   isLastMessage: boolean;
   isSender: boolean;
+  roomMode: boolean;
 }
 
-const BubbleVideo = ({ message, isLastMessage, isSender }: IParamsBubbleVideo) => {
+const BubbleVideo = ({ roomMode, message, isLastMessage, isSender }: IParamsBubbleVideo) => {
   return (
     <>
       <Box
-        className={
-          isLastMessage
-            ? `fs-14-regular white ${isSender ? "bubble-image-last" : "bubble-image-last-partner"}`
-            : `fs-14-regular white ${isSender ? "bubble-image" : "bubble-image-partner"}`
-        }
+        className={`fs-14-regular white bubble-image ${isLastMessage ? (roomMode ? "br-20-20-20-0" : isSender ? "br-20-20-0-20" : "br-20-20-20-0") : "br-20"}`}
         sx={{ position: "relative" }}
       >
         {/* <Box

@@ -16,9 +16,10 @@ export interface IParamsBubbleAudio {
   decryptedMessage: string;
   isLastMessage: boolean;
   isSender: boolean;
+  roomMode: boolean;
 }
 
-const BubbleAudio = ({ message, decryptedMessage, isLastMessage, isSender }: IParamsBubbleAudio) => {
+const BubbleAudio = ({ roomMode, message, decryptedMessage, isLastMessage, isSender }: IParamsBubbleAudio) => {
   const { t } = useTranslation();
 
   const [blob, setBlob] = useState(null);
@@ -56,11 +57,9 @@ const BubbleAudio = ({ message, decryptedMessage, isLastMessage, isSender }: IPa
   return (
     <>
       <Box
-        className={
-          isLastMessage
-            ? `fs-14-regular white ${isSender ? "bubble-last" : "bubble-last-partner"}`
-            : `fs-14-regular white ${isSender ? "bubble" : "bubble-partner"}`
-        }
+        className={`fs-14-regular white ${isSender ? "bubble" : "bubble-partner"} ${
+          isLastMessage ? (roomMode ? "br-20-20-20-0" : isSender ? "br-20-20-0-20" : "br-20-20-20-0") : "br-20"
+        }`}
       >
         <Stack>
           <Stack direction="row" alignItems="center" gap="8px">

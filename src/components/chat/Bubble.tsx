@@ -9,6 +9,7 @@ import BubbleImage from "./BubbleImage";
 import BubbleVideo from "./BubbleVideo";
 import BubbleText from "./BubbleText";
 import OrLinechat from "./Orlinechat";
+import Avatar from "../home/Avatar";
 
 import { Chatdecrypt } from "../../lib/api/ChatEncrypt";
 
@@ -16,21 +17,30 @@ import { getChatHistory } from "../../features/chat/ChatHistorySlice";
 import { getCurrentChatroom } from "../../features/chat/CurrentChatroomSlice";
 import { getSKeyList, ISKeyList } from "../../features/chat/SKeyListSlice";
 import { getAccount } from "../../features/account/AccountSlice";
+import { getActiveUserList, IActiveUserList } from "../../features/chat/ActiveUserListSlice";
+import { getCurrentChatroomMembers, ICurrentChatroomMembers } from "../../features/chat/CurrentChatroomMembersSlice";
+import { selectNotification } from "../../features/settings/NotificationSlice";
 
 import { ChatHistoryType, ChatMessageType } from "../../types/chatTypes";
 import { IChatroom } from "../../types/ChatroomAPITypes";
 import { accountType } from "../../types/accountTypes";
+import { notificationType } from "../../types/settingTypes";
 
 export interface IParamsBubble {
   message: ChatMessageType;
   index: number;
+  screenExpanded: boolean;
+  roomMode: boolean;
 }
 
-const Bubble = ({ message, index }: IParamsBubble) => {
+const Bubble = ({ roomMode, screenExpanded, message, index }: IParamsBubble) => {
   const accountStore: accountType = useSelector(getAccount);
   const chatHistoryStore: ChatHistoryType = useSelector(getChatHistory);
   const currentChatroomStore: IChatroom = useSelector(getCurrentChatroom);
   const sKeyListStore: ISKeyList = useSelector(getSKeyList);
+  const activeUserListStore: IActiveUserList = useSelector(getActiveUserList);
+  const currentChatroomMembersStore: ICurrentChatroomMembers = useSelector(getCurrentChatroomMembers);
+  const notificationStore: notificationType = useSelector(selectNotification);
 
   const sKey = sKeyListStore.sKeys.find((element) => element.roomId === currentChatroomStore?._id)?.sKey;
 
@@ -91,22 +101,34 @@ const Bubble = ({ message, index }: IParamsBubble) => {
         alignItems={"flex-end"}
         marginTop={"10px"}
         gap={"15px"}
-        justifyContent={message.sender_id === accountStore.uid ? "flex-end" : "flex-start"}
+        justifyContent={!screenExpanded ? (message.sender_id === accountStore.uid ? "flex-end" : "flex-start") : "flex-start"}
       >
+        {roomMode && screenExpanded && isLastMessageOfStack && isSender && (
+          <Avatar onlineStatus={true} url={accountStore.avatar} size={40} status={!notificationStore.alert ? "donotdisturb" : "online"} />
+        )}
+        {roomMode && screenExpanded && isLastMessageOfStack && !isSender && (
+          <Avatar
+            onlineStatus={activeUserListStore.users.some((user) => user === message.sender_id)}
+            userid={message.sender_id}
+            size={40}
+            status={currentChatroomMembersStore.members.find((member) => member._id === message._id)?.notificationStatus}
+          />
+        )}
+        {roomMode && screenExpanded && !isLastMessageOfStack && <div style={{ width: "40px", height: "40px" }} />}
         {(!message.type || message.type === "text") && (
-          <BubbleText message={message} decryptedMessage={decryptedMessage} isLastMessage={isLastMessageOfStack} isSender={isSender} />
+          <BubbleText roomMode={roomMode} message={message} decryptedMessage={decryptedMessage} isLastMessage={isLastMessageOfStack} isSender={isSender} />
         )}
         {message.type === "audio" && (
-          <BubbleAudio message={message} decryptedMessage={decryptedMessage} isLastMessage={isLastMessageOfStack} isSender={isSender} />
+          <BubbleAudio roomMode={roomMode} message={message} decryptedMessage={decryptedMessage} isLastMessage={isLastMessageOfStack} isSender={isSender} />
         )}
         {message.type === "image" && (
-          <BubbleImage message={message} decryptedMessage={decryptedMessage} isLastMessage={isLastMessageOfStack} isSender={isSender} />
+          <BubbleImage roomMode={roomMode} message={message} decryptedMessage={decryptedMessage} isLastMessage={isLastMessageOfStack} isSender={isSender} />
         )}
         {message.type === "video" && (
-          <BubbleVideo message={message} decryptedMessage={decryptedMessage} isLastMessage={isLastMessageOfStack} isSender={isSender} />
+          <BubbleVideo roomMode={roomMode} message={message} decryptedMessage={decryptedMessage} isLastMessage={isLastMessageOfStack} isSender={isSender} />
         )}
         {message.type === "file" && (
-          <BubbleFile message={message} decryptedMessage={decryptedMessage} isLastMessage={isLastMessageOfStack} isSender={isSender} />
+          <BubbleFile roomMode={roomMode} message={message} decryptedMessage={decryptedMessage} isLastMessage={isLastMessageOfStack} isSender={isSender} />
         )}
       </Stack>
     </Box>
