@@ -3,7 +3,11 @@ import { ThreeDots } from "react-loader-spinner";
 
 import { Box } from "@mui/material";
 
+import Linkify from "./Linkify";
+
 import { ChatMessageType } from "../../types/chatTypes";
+
+const decryptedMessage = "Here is the link https://www.npmjs.com/package/react-player please\nhttps://www.npmjs.com/package/react-player";
 
 export interface IParamsBubbleText {
   message: ChatMessageType;
@@ -12,7 +16,7 @@ export interface IParamsBubbleText {
   isSender: boolean;
 }
 
-const BubbleText = ({ message, decryptedMessage, isLastMessage, isSender }: IParamsBubbleText) => {
+const BubbleText = ({ message, isLastMessage, isSender }: IParamsBubbleText) => {
   return (
     <>
       <Box
@@ -26,7 +30,7 @@ const BubbleText = ({ message, decryptedMessage, isLastMessage, isSender }: IPar
           <>
             {decryptedMessage.split("\n").map((line, index) => (
               <React.Fragment key={index}>
-                {line}
+                <Linkify>{line}</Linkify>
                 <br />
               </React.Fragment>
             ))}

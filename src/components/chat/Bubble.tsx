@@ -94,7 +94,7 @@ const Bubble = ({ message, index }: IParamsBubble) => {
         justifyContent={message.sender_id === accountStore.uid ? "flex-end" : "flex-start"}
       >
         {(!message.type || message.type === "text") && (
-          <BubbleVideo message={message} decryptedMessage={decryptedMessage} isLastMessage={isLastMessageOfStack} isSender={isSender} />
+          <BubbleText message={message} decryptedMessage={decryptedMessage} isLastMessage={isLastMessageOfStack} isSender={isSender} />
         )}
         {message.type === "audio" && (
           <BubbleAudio message={message} decryptedMessage={decryptedMessage} isLastMessage={isLastMessageOfStack} isSender={isSender} />
@@ -103,9 +103,11 @@ const Bubble = ({ message, index }: IParamsBubble) => {
           <BubbleImage message={message} decryptedMessage={decryptedMessage} isLastMessage={isLastMessageOfStack} isSender={isSender} />
         )}
         {message.type === "video" && (
-          <BubbleText message={message} decryptedMessage={decryptedMessage} isLastMessage={isLastMessageOfStack} isSender={isSender} />
+          <BubbleVideo message={message} decryptedMessage={decryptedMessage} isLastMessage={isLastMessageOfStack} isSender={isSender} />
         )}
-        {message.type === "file" && <BubbleFile message={message} decryptedMessage={decryptedMessage} />}
+        {message.type === "file" && (
+          <BubbleFile message={message} decryptedMessage={decryptedMessage} isLastMessage={isLastMessageOfStack} isSender={isSender} />
+        )}
       </Stack>
     </Box>
   );
