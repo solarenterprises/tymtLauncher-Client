@@ -3,11 +3,13 @@ import { useTranslation } from "react-i18next";
 import { AudioVisualizer } from "react-audio-visualize";
 import Sound from "react-sound";
 
-import { Stack, Box } from "@mui/material";
+import { Stack, Box, IconButton } from "@mui/material";
+import DownloadIcon from "@mui/icons-material/Download";
 
 import AudioToggleButton from "./AudioToggleButton";
 
 import { ChatMessageType } from "../../types/chatTypes";
+import { getFileNameFromURL } from "../../lib/api/URLHelper";
 
 const AUDIO_URL = "https://dev.tymt.com/public/upload/BEN-48-Cryptocurrency.mp3";
 
@@ -37,6 +39,13 @@ const BubbleAudio = ({ roomMode, message, decryptedMessage, isLastMessage, isSen
     return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
   };
 
+  const handleDownloadClick = () => {
+    const link = document.createElement("a");
+    link.href = AUDIO_URL;
+    link.download = getFileNameFromURL(AUDIO_URL);
+    link.click();
+  };
+
   useEffect(() => {
     const fetchAudioFile = async () => {
       try {
@@ -60,7 +69,24 @@ const BubbleAudio = ({ roomMode, message, decryptedMessage, isLastMessage, isSen
         className={`fs-14-regular white ${isSender ? "bubble" : "bubble-partner"} ${
           isLastMessage ? (roomMode ? "br-20-20-20-0" : isSender ? "br-20-20-0-20" : "br-20-20-20-0") : "br-20"
         }`}
+        sx={{ position: "relative" }}
       >
+        <IconButton
+          className="icon-button"
+          sx={{
+            position: "absolute",
+            top: "8px",
+            right: "8px",
+            zIndex: 1,
+            width: "20px",
+            height: "20px",
+            padding: "16px",
+            backgroundColor: "#00000077",
+          }}
+          onClick={handleDownloadClick}
+        >
+          <DownloadIcon className="icon-button" />
+        </IconButton>
         <Stack>
           <Stack direction="row" alignItems="center" gap="8px">
             <AudioToggleButton loaded={loadedDisplay} playing={playing} setPlaying={setPlaying} />
