@@ -271,9 +271,19 @@ const Chatroom = () => {
                       />
                     )}
                     {!isDM && <GroupAvatar size={40} url={currentChatroomStore.room_image} />}
-                    <Stack marginLeft={"16px"} justifyContent={"flex-start"} direction={"column"} spacing={1}>
-                      <Box className={"fs-18-bold white"}>{displayChatroomName}</Box>
-                      <Box className={"fs-12-regular gray"}>{displayChatroomSubName}</Box>
+                    <Stack marginLeft={"16px"} justifyContent={"flex-start"} direction={"column"} spacing={1} width={"444px"}>
+                      <Box
+                        className={"fs-18-bold white"}
+                        sx={{ WebkitBoxOrient: "vertical", WebkitLineClamp: 1, overflow: "hidden", textOverflow: "ellipsis" }}
+                      >
+                        {displayChatroomName}
+                      </Box>
+                      <Box
+                        className={"fs-12-regular gray"}
+                        sx={{ WebkitBoxOrient: "vertical", WebkitLineClamp: 1, overflow: "hidden", textOverflow: "ellipsis" }}
+                      >
+                        {displayChatroomSubName}
+                      </Box>
                     </Stack>
                   </Stack>
                   <Stack direction={"row"} gap={"10px"} alignItems={"center"}>

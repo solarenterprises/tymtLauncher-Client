@@ -193,9 +193,16 @@ const Chatbox = ({ view, setView }: propsType) => {
                     />
                   )}
                   {!isDM && <GroupAvatar size={40} url={currentChatroomStore.room_image} />}
-                  <Stack justifyContent={"flex-start"} direction={"column"} spacing={1}>
-                    <Box className={"fs-18-bold white"}>{displayChatroomName}</Box>
-                    <Box className={"fs-12-regular gray"}>{displayChatroomSubName}</Box>
+                  <Stack justifyContent={"flex-start"} direction={"column"} spacing={1} width={"244px"}>
+                    <Box className={"fs-18-bold white"} sx={{ WebkitBoxOrient: "vertical", WebkitLineClamp: 1, overflow: "hidden", textOverflow: "ellipsis" }}>
+                      {displayChatroomName}
+                    </Box>
+                    <Box
+                      className={"fs-12-regular gray"}
+                      sx={{ WebkitBoxOrient: "vertical", WebkitLineClamp: 1, overflow: "hidden", textOverflow: "ellipsis" }}
+                    >
+                      {displayChatroomSubName}
+                    </Box>
                   </Stack>
                 </Stack>
               </Stack>
