@@ -269,6 +269,18 @@ export const SocketProvider = () => {
               });
             }
 
+            if (!socket.current.hasListeners("friend-request-accepted")) {
+              socket.current.on("friend-request-accepted", async (alert: IAlert) => {
+                console.log("socket.current.on > friend-request-accepted", alert);
+              });
+            }
+
+            if (!socket.current.hasListeners("friend-request-rejected")) {
+              socket.current.on("friend-request-rejected", async (alert: IAlert) => {
+                console.log("socket.current.on > friend-request-rejected", alert);
+              });
+            }
+
             if (!socket.current.hasListeners("joined-message-group")) {
               socket.current.on("joined-message-group", async (data: ISocketParamsJoinedMessageGroup) => {
                 console.log("socket.current.on > joined-message-group", data);
@@ -406,6 +418,7 @@ export const SocketProvider = () => {
         if (socket.current && socket.current.connected) {
           const data = {
             id: alert._id,
+            alertType: "",
             note: {
               sender: alert.note.sender,
               to: alert.note.to,
