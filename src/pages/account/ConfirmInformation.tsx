@@ -261,6 +261,7 @@ const ConfirmInformation = () => {
               setAccount({
                 ...accountStore,
                 uid: res.data._id,
+                avatar: "",
               })
             );
           } else {
@@ -268,6 +269,7 @@ const ConfirmInformation = () => {
               setAccount({
                 ...accountStore,
                 uid: userExist.data.users[0]._id,
+                avatar: userExist.data.users[0].avatar ?? "",
               })
             );
           }
@@ -385,6 +387,7 @@ const ConfirmInformation = () => {
               setAccount({
                 ...accountStore,
                 uid: res.data._id,
+                avatar: "",
               })
             );
           } else {
@@ -392,6 +395,7 @@ const ConfirmInformation = () => {
               setAccount({
                 ...accountStore,
                 uid: userExist.data.users[0]._id,
+                avatar: userExist.data.users[0].avatar ?? "",
               })
             );
           }
@@ -507,6 +511,7 @@ const ConfirmInformation = () => {
             setAccount({
               ...accountStore,
               uid: res.data._id,
+              avatar: "",
             })
           );
           navigate("/non-custodial/login/1");
