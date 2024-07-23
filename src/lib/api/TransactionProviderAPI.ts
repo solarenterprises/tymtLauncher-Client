@@ -1,14 +1,20 @@
 import { emit } from "@tauri-apps/api/event";
 import { Body, fetch as tauriFetch, ResponseType } from "@tauri-apps/api/http";
-import { IRecipient } from "../../features/wallet/CryptoApi";
-import { ISaltToken, accountType, nonCustodialType } from "../../types/accountTypes";
-import { IGetAccountReq, IGetBalanceReq, ISendTransactionReq } from "../../types/eventParamTypes";
-import { walletType } from "../../types/settingTypes";
-import { INative, IToken, chainEnum, chainIconMap, multiWalletType } from "../../types/walletTypes";
+
+import { tymt_backend_url } from "../../configs";
+
 import tymtCore from "../core/tymtCore";
 import tymtStorage from "../Storage";
+import ERC20 from "../wallet/ERC20";
+
+import { IRecipient } from "../../features/wallet/CryptoApi";
+
 import { decrypt } from "./Encrypt";
-import { tymt_backend_url } from "../../configs";
+
+import { IMnemonic, ISaltToken, accountType, nonCustodialType } from "../../types/accountTypes";
+import { IGetAccountReq, IGetBalanceReq, ISendContractReq, ISendTransactionReq, ISignMessageReq, IVerifyMessageReq } from "../../types/eventParamTypes";
+import { walletType } from "../../types/settingTypes";
+import { INative, IToken, chainEnum, chainIconMap, multiWalletType } from "../../types/walletTypes";
 
 export default class TransactionProviderAPI {
   static getAccount = async (params: IGetAccountReq) => {
@@ -432,6 +438,81 @@ export default class TransactionProviderAPI {
       });
     } catch (err) {
       console.error("Failed to update tx status: ", err);
+    }
+  };
+
+  static sendContract = async (jsonData: ISendContractReq) => {
+    try {
+      const res = await ERC20.sendContract(jsonData);
+      return res;
+    } catch (err) {
+      console.error("Failed to sendContract: ", err);
+    }
+  };
+
+  static signMessage = async (jsonData: ISignMessageReq) => {
+    try {
+      const mnemonicStore: IMnemonic = JSON.parse(sessionStorage.getItem("mnemonic"));
+      if (!jsonData || !jsonData.message || !jsonData.chain || !mnemonicStore.mnemonic) {
+        return "";
+      }
+      let res: string;
+      switch (jsonData.chain) {
+        case "solar":
+          res = tymtCore.Blockchains.solar.wallet.signMessage(jsonData.message, mnemonicStore.mnemonic);
+          break;
+        case "ethereum":
+        case "polygon":
+        case "binance":
+        case "avalanche":
+        case "arbitrum":
+        case "optimism":
+          res = await tymtCore.Blockchains.eth.wallet.signMessage(jsonData.message, mnemonicStore.mnemonic);
+          break;
+        case "bitcoin":
+          break;
+        case "solana":
+          break;
+      }
+      return res;
+    } catch (err) {
+      console.error("Failed to signMessage: ", err);
+      return "";
+    }
+  };
+
+  static verifyMessage = async (jsonData: IVerifyMessageReq) => {
+    try {
+      const mnemonicStore: IMnemonic = JSON.parse(sessionStorage.getItem("mnemonic"));
+      const multiWalletStore: multiWalletType = JSON.parse(tymtStorage.get("multiWallet"));
+
+      if (!jsonData || !jsonData.message || !jsonData.signature || !jsonData.chain) {
+        return false;
+      }
+      let res: boolean;
+      let publicKey: string;
+      switch (jsonData.chain) {
+        case "solar":
+          publicKey = tymtCore.Blockchains.solar.wallet.getPublicKey(mnemonicStore.mnemonic);
+          res = tymtCore.Blockchains.solar.wallet.verifyMessage(jsonData.message, publicKey, jsonData.signature);
+          break;
+        case "ethereum":
+        case "polygon":
+        case "binance":
+        case "avalanche":
+        case "arbitrum":
+        case "optimism":
+          res = await tymtCore.Blockchains.eth.wallet.verifyMessage(jsonData.message, jsonData.signature, multiWalletStore.Ethereum.chain.wallet);
+          break;
+        case "bitcoin":
+          break;
+        case "solana":
+          break;
+      }
+      return res;
+    } catch (err) {
+      console.error("Failed to verifyMessage: ", err);
+      return false;
     }
   };
 

@@ -13,6 +13,7 @@ import { fetchBlockListAsync } from "../features/chat/BlockListSlice";
 import { fetchChatroomListAsync } from "../features/chat/ChatroomListSlice";
 import { refreshCurrencyAsync } from "../features/wallet/CurrencySlice";
 import { ISKey, setSKeyList } from "../features/chat/SKeyListSlice";
+import { fetchMutedListAsync } from "../features/chat/MutedListSlice";
 import { getRsa } from "../features/chat/RsaSlice";
 import { rsaDecrypt } from "../features/chat/RsaApi";
 
@@ -45,6 +46,7 @@ const AlertProvider = () => {
       dispatch(fetchContactListAsync());
       dispatch(fetchFriendListAsync());
       dispatch(fetchBlockListAsync());
+      dispatch(fetchMutedListAsync());
       dispatch(fetchChatroomListAsync(accountStore.uid)).then((action) => {
         try {
           if (action.type.endsWith("/fulfilled")) {

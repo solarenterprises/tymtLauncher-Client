@@ -388,7 +388,7 @@ const Navbar = () => {
           </Tooltip>
           <Button className="button_navbar_profile" onClick={() => setShowSetting(!showSetting)}>
             <Stack direction={"row"} alignItems={"center"} marginLeft={"0px"} justifyContent={"left"} spacing={"8px"} height={"32px"}>
-              <Avatar userid={account.uid} size={32} ischain={true} onlineStatus={true} status={!notification.alert ? "donotdisturb" : "online"} />
+              <Avatar url={account.avatar} size={32} ischain={true} onlineStatus={true} status={!notification.alert ? "donotdisturb" : "online"} />
               <Stack direction={"column"} width={"110px"} alignItems={"flex-start"}>
                 <Box className={"fs-16-regular white"}>{userStore.nickname.length > 11 ? `${userStore.nickname.substring(0, 10)}...` : userStore.nickname}</Box>
                 <Box className={"fs-14-regular light"}>

@@ -1,6 +1,7 @@
 import { Box } from "@mui/material";
 import mask from "../../assets/account/mask.png";
 import accountIcon from "../../assets/wallet/account.svg";
+import { tymt_avatar_url } from "../../configs";
 
 export interface IPropsGroupAvatar {
   size: number;
@@ -21,8 +22,8 @@ const GroupAvatar = ({ size, url }: IPropsGroupAvatar) => {
       >
         <Box
           component={"img"}
-          key={`${new Date().getTime()}`}
-          src={`${url}?${Date.now()}`}
+          key={`${url}-${new Date().getTime()}`}
+          src={`${tymt_avatar_url}/public/upload/room-image/${url}?${Date.now()}`}
           sx={{
             position: "absolute",
             top: "50%",
@@ -37,7 +38,6 @@ const GroupAvatar = ({ size, url }: IPropsGroupAvatar) => {
             zIndex: 1,
             opacity: 0.9,
           }}
-          loading="lazy"
           onError={(e) => {
             const target = e.target as HTMLImageElement;
             target.src = accountIcon;

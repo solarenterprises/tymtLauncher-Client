@@ -1,12 +1,12 @@
-import React from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { useCallback, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import InfiniteScroll from "react-infinite-scroll-component";
-import { ThreeDots } from "react-loader-spinner";
 import _ from "lodash";
+
+import Bubble from "../../components/chat/Bubble";
 
 import { Box, Grid, Divider, Button, Stack } from "@mui/material";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
@@ -14,17 +14,15 @@ import { ThemeProvider, createTheme } from "@mui/material/styles";
 import ChatStyle from "../../styles/ChatStyles";
 import x from "../../assets/chat/x.svg";
 import Avatar from "../../components/home/Avatar";
-import OrLinechat from "../../components/chat/Orlinechat";
 
 import { AppDispatch } from "../../store";
 import { selectNotification } from "../../features/settings/NotificationSlice";
 import { selectChat } from "../../features/settings/ChatSlice";
-import { setMountedFalse, setMountedTrue } from "../../features/chat/Chat-intercomSupportSlice";
+import { setMountedFalse, setMountedTrue } from "../../features/chat/IntercomSupportSlice";
 import { getAccount } from "../../features/account/AccountSlice";
-import { getChatHistory, setChatHistory } from "../../features/chat/Chat-historySlice";
+import { getChatHistory, setChatHistory } from "../../features/chat/ChatHistorySlice";
 import { getContactList } from "../../features/chat/ContactListSlice";
 import { getCurrentChatroom } from "../../features/chat/CurrentChatroomSlice";
-import { ISKeyList, getSKeyList } from "../../features/chat/SKeyListSlice";
 import { ICurrentChatroomMembers, getCurrentChatroomMembers } from "../../features/chat/CurrentChatroomMembersSlice";
 
 import { useSocket } from "../../providers/SocketProvider";
@@ -33,9 +31,10 @@ import ChatGroupMemberListRoom from "./ChatGroupMemberListRoom";
 import ChatSettinginRoom from "./ChatsettinginRoom";
 import ChatMainRoom from "./ChatMainRoom";
 import ChatMsginRoom from "./Chatsetting-MsginRoom";
-import Chatinputfield from "../../components/chat/Chatinputfield";
+import ChatInputField from "../../components/chat/Chatinputfield";
+import ChatGroupEditRoom from "./ChatGroupEditRoom";
+import EditIcon from "@mui/icons-material/Edit";
 
-import { Chatdecrypt } from "../../lib/api/ChatEncrypt";
 import { addChatHistory } from "../../lib/api/JSONHelper";
 
 import { ChatHistoryType, IContactList } from "../../types/chatTypes";
@@ -81,10 +80,8 @@ const Chatroom = () => {
   const contactListStore: IContactList = useSelector(getContactList);
   const notificationStore: notificationType = useSelector(selectNotification);
   const currentChatroomStore: IChatroom = useSelector(getCurrentChatroom);
-  const sKeyListStore: ISKeyList = useSelector(getSKeyList);
   const currentChatroomMembersStore: ICurrentChatroomMembers = useSelector(getCurrentChatroomMembers);
 
-  const sKey = sKeyListStore.sKeys.find((element) => element.roomId === currentChatroomStore?._id)?.sKey;
   const isDM = currentChatroomStore?.room_name ? false : true;
   const currentPartner = isDM ? currentChatroomMembersStore.members.find((member) => member._id !== accountStore.uid) : null;
   const displayChatroomName = currentChatroomStore?.room_name ? currentChatroomStore?.room_name : currentPartner?.nickName;
@@ -172,37 +169,6 @@ const Chatroom = () => {
     };
   }, [socket.current]);
 
-  const formatDateDifference = (date) => {
-    const today: any = new Date(Date.now());
-    const yesterday: any = new Date(Date.now());
-    yesterday.setDate(yesterday.getDate() - 1);
-
-    const weekAgo = new Date(today);
-    weekAgo.setDate(weekAgo.getDate() - 7);
-
-    const options = { month: "long", day: "numeric" };
-
-    const messageDate: any = new Date(date);
-
-    if (messageDate.setHours(0, 0, 0, 0) === today.setHours(0, 0, 0, 0)) {
-      return "Today";
-    } else if (messageDate.setHours(0, 0, 0, 0) === yesterday.setHours(0, 0, 0, 0)) {
-      return "Yesterday";
-    } else {
-      return messageDate.toLocaleDateString("en-US", options);
-    }
-  };
-
-  const decryptMessage = useCallback(
-    (encryptedmessage: string) => {
-      if (currentChatroomStore?.isPrivate ?? false) {
-        return Chatdecrypt(encryptedmessage, sKey);
-      }
-      return encryptedmessage;
-    },
-    [sKey, currentChatroomStore]
-  );
-
   useEffect(() => {
     dispatch(setMountedTrue());
 
@@ -260,6 +226,7 @@ const Chatroom = () => {
             <ChatMainRoom view={panel} setView={setPanel} />
             <ChatMsginRoom view={panel} setView={setPanel} />
             <ChatGroupMemberListRoom view={panel} setView={setPanel} />
+            <ChatGroupEditRoom view={panel} setView={setPanel} />
           </Box>
           {/* Right section */}
           <Box
@@ -298,20 +265,35 @@ const Chatroom = () => {
                     {isDM && currentPartner && (
                       <Avatar
                         onlineStatus={activeUserListStore.users.some((user) => user === currentPartner._id)}
-                        userid={currentPartner._id}
+                        url={currentPartner.avatar}
                         size={40}
                         status={currentPartner.notificationStatus}
                       />
                     )}
-                    {!isDM && <GroupAvatar size={40} url={""} />}
-                    <Stack marginLeft={"16px"} justifyContent={"flex-start"} direction={"column"} spacing={1}>
-                      <Box className={"fs-18-bold white"}>{displayChatroomName}</Box>
-                      <Box className={"fs-12-regular gray"}>{displayChatroomSubName}</Box>
+                    {!isDM && <GroupAvatar size={40} url={currentChatroomStore.room_image} />}
+                    <Stack marginLeft={"16px"} justifyContent={"flex-start"} direction={"column"} spacing={1} width={"444px"}>
+                      <Box
+                        className={"fs-18-bold white"}
+                        sx={{ WebkitBoxOrient: "vertical", WebkitLineClamp: 1, overflow: "hidden", textOverflow: "ellipsis" }}
+                      >
+                        {displayChatroomName}
+                      </Box>
+                      <Box
+                        className={"fs-12-regular gray"}
+                        sx={{ WebkitBoxOrient: "vertical", WebkitLineClamp: 1, overflow: "hidden", textOverflow: "ellipsis" }}
+                      >
+                        {displayChatroomSubName}
+                      </Box>
                     </Stack>
                   </Stack>
-                  <Button className={"setting-back-button"} onClick={() => navigate("/home")}>
-                    <Box component={"img"} src={x}></Box>
-                  </Button>
+                  <Stack direction={"row"} gap={"10px"} alignItems={"center"}>
+                    <Button className={"setting-back-button"} onClick={() => setPanel("chatGroupEditRoom")}>
+                      <EditIcon className="icon-button" />
+                    </Button>
+                    <Button className={"setting-back-button"} onClick={() => navigate("/home")}>
+                      <Box component={"img"} src={x}></Box>
+                    </Button>
+                  </Stack>
                 </Stack>
 
                 <Divider
@@ -326,7 +308,7 @@ const Chatroom = () => {
                 <Box sx={{ width: "100%", flex: "1 1 auto" }} />
                 <InfiniteScroll
                   style={{
-                    minHeight: "100%",
+                    minHeight: "50px",
                   }}
                   dataLength={chatHistoryStore.messages.length} //This is important field to render the next data
                   next={fetchMessages}
@@ -344,133 +326,12 @@ const Chatroom = () => {
                   pullDownToRefreshContent={<Box className={"fs-14-regular white t-center"}>&#8595; {t("cha-34_pull-down")}</Box>}
                   releaseToRefreshContent={<Box className={"fs-14-regular white t-center"}>&#8593; {t("cha-35_release-to-refresh")}</Box>}
                 >
-                  {[...chatHistoryStore.messages].reverse()?.map((message, index) => {
-                    const isSameDay = (date1, date2) => {
-                      return date1.getFullYear() === date2.getFullYear() && date1.getMonth() === date2.getMonth() && date1.getDate() === date2.getDate();
-                    };
-
-                    const isFirstMessageOfDay = () => {
-                      if (index === 0) return true;
-
-                      const previousMessageDate = new Date([...chatHistoryStore.messages].reverse()[index - 1]?.createdAt);
-                      const currentMessageDate = new Date(message.createdAt);
-
-                      return !isSameDay(previousMessageDate, currentMessageDate);
-                    };
-
-                    const timeline = isFirstMessageOfDay() ? formatDateDifference(message.createdAt) : null;
-
-                    const isSameSender = (id1, id2) => {
-                      return id1 === id2;
-                    };
-
-                    const detectLastMessageofStack = () => {
-                      const nextMessageSender = [...chatHistoryStore.messages].reverse()[index + 1]?.sender_id;
-                      const currentMessageSender = [...chatHistoryStore.messages].reverse()[index]?.sender_id;
-
-                      return !isSameSender(nextMessageSender, currentMessageSender);
-                    };
-
-                    const isLastMessageofStack = detectLastMessageofStack();
-                    const decryptedmessage = decryptMessage(message.message);
-
-                    return (
-                      <>
-                        <Box className={"bubblecontainer"} key={`${message.sender_id}-${index}-${new Date().toISOString()}`}>
-                          {timeline && decryptedmessage !== "Unable to decode message #tymt114#" && <OrLinechat timeline={timeline} />}
-                          <Stack
-                            flexDirection={"row"}
-                            alignItems={"flex-end"}
-                            marginTop={"10px"}
-                            gap={"15px"}
-                            justifyContent={!screenexpanded ? (message.sender_id === accountStore.uid ? "flex-end" : "flex-start") : "flex-start"}
-                          >
-                            {message.sender_id === accountStore.uid && (
-                              <>
-                                {screenexpanded && isLastMessageofStack && (
-                                  <Avatar
-                                    onlineStatus={true}
-                                    userid={accountStore.uid}
-                                    size={40}
-                                    status={!notificationStore.alert ? "donotdisturb" : "online"}
-                                  />
-                                )}
-                                {screenexpanded && !isLastMessageofStack && <div style={{ width: "40px", height: "40px" }} />}
-                                <Box
-                                  className={
-                                    isLastMessageofStack && screenexpanded
-                                      ? "fs-14-regular white bubble-lastmessage-expanded"
-                                      : isLastMessageofStack && !screenexpanded
-                                      ? "fs-14-regular white bubble-lastmessage-unexpanded"
-                                      : "fs-14-regular white bubble"
-                                  }
-                                >
-                                  {decryptedmessage !== "Unable to decode message #tymt114#" ? (
-                                    <>
-                                      {decryptedmessage.split("\n").map((line) => (
-                                        <React.Fragment>
-                                          {line}
-                                          <br />
-                                        </React.Fragment>
-                                      ))}
-                                      <Box className={"fs-14-light timestamp-inbubble"} sx={{ alignSelf: "flex-end" }} color={"rgba(11, 11, 11, 0.7)"}>
-                                        {new Date(message.createdAt).toLocaleString("en-US", {
-                                          hour: "2-digit",
-                                          minute: "2-digit",
-                                        })}
-                                      </Box>
-                                    </>
-                                  ) : (
-                                    <>
-                                      <ThreeDots height="23px" width={"40px"} radius={4} color={`white`} />
-                                    </>
-                                  )}
-                                </Box>
-                              </>
-                            )}
-                            {message.sender_id !== accountStore.uid && (
-                              <>
-                                {screenexpanded && isLastMessageofStack && (
-                                  <Avatar
-                                    onlineStatus={activeUserListStore.users.some((user) => user === message.sender_id)}
-                                    userid={message.sender_id}
-                                    size={40}
-                                    status={currentChatroomMembersStore.members.find((member) => member._id === message._id)?.notificationStatus}
-                                  />
-                                )}
-                                {screenexpanded && !isLastMessageofStack && <div style={{ width: "40px", height: "40px" }} />}
-                                <Box className={isLastMessageofStack ? "fs-14-regular white bubble-partner-lastmessage" : "fs-14-regular white bubble-partner"}>
-                                  {decryptedmessage !== "Unable to decode message #tymt114#" ? (
-                                    <>
-                                      {decryptedmessage.split("\n").map((line) => (
-                                        <React.Fragment>
-                                          {line}
-                                          <br />
-                                        </React.Fragment>
-                                      ))}
-                                      <Box className={"fs-14-light timestamp-inbubble"} sx={{ alignSelf: "flex-end" }} color={"rgba(11, 11, 11, 0.7)"}>
-                                        {new Date(message.createdAt).toLocaleString("en-US", {
-                                          hour: "2-digit",
-                                          minute: "2-digit",
-                                        })}
-                                      </Box>
-                                    </>
-                                  ) : (
-                                    <>
-                                      <ThreeDots height="23px" width={"40px"} radius={4} color={`white`} />
-                                    </>
-                                  )}
-                                </Box>
-                              </>
-                            )}
-                          </Stack>
-                        </Box>
-                      </>
-                    );
-                  })}
+                  {[...chatHistoryStore.messages].reverse()?.map((message, index) => (
+                    <Bubble roomMode={true} screenExpanded={screenexpanded} message={message} index={index} />
+                  ))}
                 </InfiniteScroll>
               </Box>
-              <Chatinputfield value={value} setValue={setValue} />
+              <ChatInputField value={value} setValue={setValue} />
             </Box>
           </Box>
         </Grid>

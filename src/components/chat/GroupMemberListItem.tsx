@@ -47,7 +47,7 @@ const GroupMemberListItem = ({ member, index, invited }: IPropsGroupMemberListIt
           },
         }}
       >
-        <Avatar onlineStatus={activeUserListStore.users.some((user) => user === member._id)} userid={member._id} size={40} status={member.notificationStatus} />
+        <Avatar onlineStatus={activeUserListStore.users.some((user) => user === member._id)} url={member.avatar} size={40} status={member.notificationStatus} />
         <Stack flexDirection={"row"} alignItems={"center"} justifyContent={"space-between"} display={"flex"} sx={{ marginLeft: "25px", width: "320px" }}>
           <Box>
             <Stack direction={"column"} justifyContent={"flex-start"} spacing={1}>

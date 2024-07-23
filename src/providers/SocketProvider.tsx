@@ -13,26 +13,30 @@ import { getAccount } from "../features/account/AccountSlice";
 import { getCurrentChatroom, setCurrentChatroom } from "../features/chat/CurrentChatroomSlice";
 import { getCurrentPartner } from "../features/chat/CurrentPartnerSlice";
 import { createContactAsync, getContactList, updateOneInContactList } from "../features/chat/ContactListSlice";
-import { addOneToUnreadList, updateFriendRequestAsync } from "../features/alert/AlertListSlice";
+import { addOneToUnreadList, fetchAlertListAsync, updateFriendRequestInAlertList } from "../features/alert/AlertListSlice";
 import { getBlockList } from "../features/chat/BlockListSlice";
 import { addOneToChatroomListAsync, delOneFromChatroomList, getChatroomList } from "../features/chat/ChatroomListSlice";
 import { selectNotification } from "../features/settings/NotificationSlice";
-import { createFriendAsync, getFriendList } from "../features/chat/FriendListSlice";
+import { createFriendAsync, fetchFriendListAsync, getFriendList } from "../features/chat/FriendListSlice";
 import { selectChat } from "../features/settings/ChatSlice";
-import { setChatHistory, getChatHistory } from "../features/chat/Chat-historySlice";
+import { setChatHistory, getChatHistory } from "../features/chat/ChatHistorySlice";
 import { getSocketHash } from "../features/chat/SocketHashSlice";
 import { fetchCurrentChatroomMembersAsync, setCurrentChatroomMembers } from "../features/chat/CurrentChatroomMembersSlice";
 import { ISKey, ISKeyList, addOneSKeyList, delOneSkeyList, getSKeyList } from "../features/chat/SKeyListSlice";
 import { getRsa } from "../features/chat/RsaSlice";
 import { addOneActiveUserList, delOneActiveUserList, setActiveUserList } from "../features/chat/ActiveUserListSlice";
+import { getMutedList } from "../features/chat/MutedListSlice";
+import { getMachineId } from "../features/account/MachineIdSlice";
 import { rsaDecrypt } from "../features/chat/RsaApi";
 
 import { IChatroom, IChatroomList } from "../types/ChatroomAPITypes";
 import { ISocketParamsActiveUsers, ISocketParamsJoinedMessageGroup, ISocketParamsLeftMessageGroup, ISocketParamsPostMessage } from "../types/SocketTypes";
-import { accountType } from "../types/accountTypes";
+import { accountType, IMachineId } from "../types/accountTypes";
 import { chatType, notificationType } from "../types/settingTypes";
 import { ChatHistoryType, ISocketHash, IAlert, IContact, IContactList, IRsa } from "../types/chatTypes";
+
 import { Chatdecrypt } from "../lib/api/ChatEncrypt";
+import { useTranslation } from "react-i18next";
 
 interface SocketContextType {
   socket: MutableRefObject<Socket>;
@@ -49,6 +53,8 @@ const SocketContext = createContext<SocketContextType>({
 export const useSocket = () => useContext(SocketContext);
 
 export const SocketProvider = () => {
+  const { t } = useTranslation();
+
   const { setNotificationStatus, setNotificationTitle, setNotificationDetail, setNotificationOpen, setNotificationLink } = useNotification();
 
   const dispatch = useDispatch<AppDispatch>();
@@ -65,6 +71,8 @@ export const SocketProvider = () => {
   const chatroomListStore: IChatroomList = useSelector(getChatroomList);
   const rsaStore: IRsa = useSelector(getRsa);
   const sKeyListStore: ISKeyList = useSelector(getSKeyList);
+  const mutedListStore: IChatroomList = useSelector(getMutedList);
+  const machineIdStore: IMachineId = useSelector(getMachineId);
 
   const accountStoreRef = useRef(accountStore);
   const socketHashStoreRef = useRef(socketHashStore);
@@ -79,6 +87,8 @@ export const SocketProvider = () => {
   const chatroomListStoreRef = useRef(chatroomListStore);
   const rsaStoreRef = useRef(rsaStore);
   const sKeyListStoreRef = useRef(sKeyListStore);
+  const mutedListStoreRef = useRef(mutedListStore);
+  const machineIdStoreRef = useRef(machineIdStore);
 
   useEffect(() => {
     accountStoreRef.current = accountStore;
@@ -119,6 +129,12 @@ export const SocketProvider = () => {
   useEffect(() => {
     sKeyListStoreRef.current = sKeyListStore;
   }, [sKeyListStore]);
+  useEffect(() => {
+    mutedListStoreRef.current = mutedListStore;
+  }, [mutedListStore]);
+  useEffect(() => {
+    machineIdStoreRef.current = machineIdStore;
+  }, [machineIdStore]);
 
   const socket = useRef<Socket>(null);
 
@@ -129,7 +145,8 @@ export const SocketProvider = () => {
           socket.current = io(socket_backend_url as string, {
             auth: {
               userId: accountStoreRef.current.uid,
-              socket_hash: socketHashStoreRef.current.socketHash,
+              socketHash: socketHashStoreRef.current.socketHash,
+              deviceId: machineIdStoreRef.current.machineId,
             },
           });
 
@@ -151,16 +168,11 @@ export const SocketProvider = () => {
                 const senderInContactList = contactListStoreRef.current.contacts.find((user) => user._id === senderId);
                 const senderInFriendlist = friendListStoreRef.current.contacts.find((user) => user._id === senderId);
                 const roomInChatroomList = chatroomListStoreRef.current.chatrooms.find((room) => room._id === data.room_id);
+                const roomInMutedList = mutedListStoreRef.current.chatrooms.some((room) => room._id === data.room_id);
 
                 // Block if the message is from someone in the block list
-                if (senderInBlockList) {
-                  console.log("Blocked the message from someone in the block list!", data);
-                  return;
-                }
-
-                // Ignore if the message is from someone not in the contact list or not in the chat room list
-                if (!senderInContactList || !roomInChatroomList) {
-                  console.log("Ignored the message from a stranger not in the contact list or not in the chat room list!", data);
+                if (senderInBlockList || !roomInChatroomList) {
+                  console.log("Blocked the message from someone in the block list or from an unknown chat room!", data);
                   return;
                 }
 
@@ -173,14 +185,17 @@ export const SocketProvider = () => {
                       })
                     );
                   } else {
-                    const senderName = senderInContactList.nickName;
+                    const senderName = senderInContactList?.nickName;
+                    const roomName = roomInChatroomList?.room_name;
                     const sKey = sKeyListStoreRef.current.sKeys.find((element) => element.roomId === data.room_id)?.sKey;
                     const decryptedMessage = sKey ? Chatdecrypt(data.message, sKey) : data.message;
-                    setNotificationOpen(true);
-                    setNotificationStatus("message");
-                    setNotificationTitle(senderName);
-                    setNotificationDetail(decryptedMessage);
-                    setNotificationLink(`/chat?senderId=${data.sender_id}`);
+                    if (!roomInMutedList) {
+                      setNotificationOpen(true);
+                      setNotificationStatus("message");
+                      setNotificationTitle(senderName ? senderName : roomName);
+                      setNotificationDetail(decryptedMessage);
+                      setNotificationLink(`/chat?senderId=${data.sender_id}`);
+                    }
                   }
                 }
               });
@@ -197,18 +212,11 @@ export const SocketProvider = () => {
 
                 const senderId = alert.note?.sender ?? "";
                 const senderInBlockList = blockListStoreRef.current.contacts.find((element) => element._id === senderId);
-                const senderInContactList = contactListStoreRef.current.contacts.find((element) => element._id === senderId);
                 const senderInFriendList = friendListStoreRef.current.contacts.find((element) => element._id === senderId);
 
                 // Block if the alert is from someone in the block list
                 if (senderInBlockList) {
                   console.log("Blocked the alert from someone in the block list!", alert);
-                  return;
-                }
-
-                // Ignore if the alert is from someone not in the contact list or not in the chat room list
-                if (!senderInContactList) {
-                  console.log("Ignored the alert from a stranger not in the contact list or not in the chat room list!", alert);
                   return;
                 }
 
@@ -221,8 +229,8 @@ export const SocketProvider = () => {
                   dispatch(addOneToUnreadList(alert));
                   setNotificationOpen(true);
                   setNotificationStatus("alert");
-                  setNotificationTitle("Friend Request");
-                  setNotificationDetail(alert.note?.detail ?? "");
+                  setNotificationTitle(t("not-9_friend-request"));
+                  setNotificationDetail(t("not-10_fr-intro"));
                   setNotificationLink(null);
                 }
                 // General alert
@@ -238,6 +246,38 @@ export const SocketProvider = () => {
                 else if (alert.alertType === "chat") {
                   dispatch(addOneToUnreadList(alert));
                 }
+              });
+            }
+
+            if (!socket.current.hasListeners("alert-updated")) {
+              socket.current.on("alert-udpated", async (alert: IAlert) => {
+                console.log("socket.current.on > alert-udpated", alert);
+                if (alert.alertType === "friend-request") {
+                  // Update the friend lists of both him and me
+                  dispatch(fetchFriendListAsync());
+                  if (alert.note.to === accountStoreRef.current.uid) {
+                    // If I accepted the friend request, synchronize the alert lists of all my other login sessions
+                    dispatch(fetchAlertListAsync(accountStoreRef.current.uid));
+                    return;
+                  }
+                  setNotificationOpen(true);
+                  setNotificationStatus("alert");
+                  setNotificationTitle(t("not-9_friend-request"));
+                  setNotificationDetail(alert.note.status === "accepted" ? t("not-11_fr-accept") : t("not-12_fr-reject"));
+                  setNotificationLink(null);
+                }
+              });
+            }
+
+            if (!socket.current.hasListeners("friend-request-accepted")) {
+              socket.current.on("friend-request-accepted", async (alert: IAlert) => {
+                console.log("socket.current.on > friend-request-accepted", alert);
+              });
+            }
+
+            if (!socket.current.hasListeners("friend-request-rejected")) {
+              socket.current.on("friend-request-rejected", async (alert: IAlert) => {
+                console.log("socket.current.on > friend-request-rejected", alert);
               });
             }
 
@@ -377,18 +417,21 @@ export const SocketProvider = () => {
         console.log("approveFriendRequest");
         if (socket.current && socket.current.connected) {
           const data = {
-            alertType: "friend-request",
-            note: { sender: accountStore.uid, status: "accepted" },
-            receivers: [alert.note.sender],
+            id: alert._id,
+            alertType: "",
+            note: {
+              sender: alert.note.sender,
+              to: alert.note.to,
+              status: "accepted",
+            },
           };
-          socket.current.emit("post-alert", JSON.stringify(data));
-          console.log("socket.current.emit > post-alert", data);
+          socket.current.emit("update-alert", JSON.stringify(data));
+          console.log("socket.current.emit > update-alert", data);
 
-          // To avoid spam
-          dispatch(updateFriendRequestAsync({ alertId: alert._id, status: "accepted" })).then(() => {
-            dispatch(createContactAsync(alert.note.sender)).then(() => {
-              dispatch(createFriendAsync(alert.note.sender));
-            });
+          dispatch(updateFriendRequestInAlertList(data));
+
+          dispatch(createContactAsync(alert.note.sender)).then(() => {
+            dispatch(createFriendAsync(alert.note.sender));
           });
         }
       } catch (err) {
@@ -404,12 +447,20 @@ export const SocketProvider = () => {
         console.log("declineFriendRequest");
         if (socket.current && socket.current.connected) {
           const data = {
-            alertType: "friend-request",
-            note: { sender: accountStore.uid, status: "rejected" },
-            receivers: [alert.note.sender],
+            id: alert._id,
+            note: {
+              sender: alert.note.sender,
+              to: alert.note.to,
+              status: "rejected",
+            },
           };
-          socket.current.emit("post-alert", JSON.stringify(data));
-          dispatch(updateFriendRequestAsync({ alertId: alert._id, status: "rejected" }));
+          socket.current.emit("update-alert", JSON.stringify(data));
+          console.log("socket.current.emit > update-alert", data);
+
+          dispatch(updateFriendRequestInAlertList(data));
+
+          // socket.current.emit("post-alert", JSON.stringify(data));
+          // dispatch(updateFriendRequestAsync({ alertId: alert._id, status: "rejected" }));
         }
       } catch (err) {
         console.error("Failed to declineFriendRequest: ", err);

@@ -59,7 +59,7 @@ export interface contextmenupositionType {
   y: number;
 }
 
-export interface propsChatinputfieldType {
+export interface propsChatInputFieldType {
   value: string;
   setValue: (value: string) => void;
 }
@@ -96,6 +96,7 @@ export interface IContactList {
 
 export interface ChatMessageType {
   _id: string;
+  type: "text" | "image" | "audio" | "video" | "file";
   sender_id: string;
   room_id: string;
   message: string;
@@ -132,10 +133,12 @@ export interface scrollDownType {
 
 export interface INote {
   message?: string;
-  sender: string;
+  sender?: string;
   room_id?: string;
   status?: string;
   detail?: string;
+  from?: string;
+  to?: string;
 }
 
 export interface IAlert {

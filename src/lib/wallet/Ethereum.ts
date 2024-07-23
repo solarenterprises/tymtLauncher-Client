@@ -117,6 +117,28 @@ class Ethereum implements IWallet {
       }
     }
   }
+
+  static async signMessage(message: string, passphrase: string): Promise<string> {
+    try {
+      const wallet = await Ethereum.getWalletFromMnemonic(passphrase);
+      const signature = await wallet.signMessage(message);
+      return signature;
+    } catch (error) {
+      console.error("Error signing message:", error);
+      throw error;
+    }
+  }
+
+  static async verifyMessage(message: string, signature: string, address: string): Promise<boolean> {
+    try {
+      const recoveredAddress = ethers.verifyMessage(message, signature);
+      console.log(recoveredAddress);
+      return recoveredAddress === address;
+    } catch (error) {
+      console.error("Error verifying message:", error);
+      return false;
+    }
+  }
 }
 
 export default Ethereum;

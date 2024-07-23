@@ -40,7 +40,13 @@ const NonCustodialImport1 = () => {
             if (!value) {
               return false;
             }
-            const checks = [/[a-z]/.test(value), /[A-Z]/.test(value), /\d/.test(value), /[\W_]/.test(value), value.length >= 8];
+            const checks = [
+              /[a-z]/.test(value), // Check for lowercase letter
+              /[A-Z]/.test(value), // Check for uppercase letter
+              /\d/.test(value), // Check for digit
+              /^[^\s'";\\]+$/.test(value), // Exclude spaces, single quotes, double quotes, semicolons, and backslashes
+              value.length >= 8, // Check for minimum length
+            ];
             const passedConditions = checks.filter(Boolean).length;
             return passedConditions >= 4;
           }

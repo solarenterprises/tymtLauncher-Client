@@ -42,6 +42,7 @@ const WalletVote = () => {
   const currencyStore: ICurrency = useSelector(getCurrency);
   const reserve = currencyStore.data[currencyStore.current];
   const symbol: string = currencySymbols[currencyStore.current];
+  const sxpPrice = multiWalletStore.Solar.chain.price;
   const dispatch = useDispatch<AppDispatch>();
 
   const { setNotificationStatus, setNotificationTitle, setNotificationDetail, setNotificationOpen, setNotificationLink } = useNotification();
@@ -264,39 +265,39 @@ const WalletVote = () => {
               <Box
                 sx={{
                   borderRight: "1px solid #FFFFFF1A",
-                  height: "40px",
+                  height: "68px",
                 }}
               />
             </Stack>
             <Stack padding={"24px 40px"}>
               <Box className="fs-16-regular light t-center">{t("wal-18_total-voted")}</Box>
-              <Box className="fs-34-bold white t-center">{`${symbol} ${numeral(totalVoted * Number(reserve)).format("0,0")}`}</Box>
+              <Box className="fs-34-bold white t-center">{`${numeral(totalVoted).format("0,0")} SXP`}</Box>
+              <Box className="fs-18-regular light t-center">{`${symbol} ${numeral(totalVoted * Number(sxpPrice) * Number(reserve)).format("0,0")}`}</Box>
             </Stack>
             <Stack padding={"32px 24px"}>
               <Box
                 sx={{
                   borderRight: "1px solid #FFFFFF1A",
-                  height: "40px",
+                  height: "68px",
                 }}
               />
             </Stack>
             <Stack padding={"24px 40px"}>
               <Box className="fs-16-regular light t-center">{t("wal-19_total-rewards")}</Box>
-              <Box className="fs-34-bold beach t-center">{`+${symbol} ${numeral(totalRewards * Number(reserve)).format("0,0")}`}</Box>
+              <Box className="fs-34-bold beach t-center">{`+${numeral(totalRewards).format("0,0")} SXP`}</Box>
+              <Box className="fs-18-regular light t-center">{`+${symbol} ${numeral(totalRewards * Number(sxpPrice) * Number(reserve)).format("0,0")}`}</Box>
             </Stack>
             <Stack padding={"32px 24px"}>
               <Box
                 sx={{
                   borderRight: "1px solid #FFFFFF1A",
-                  height: "40px",
+                  height: "68px",
                 }}
               />
             </Stack>
             <Stack padding={"24px 40px"}>
               <Box className="fs-16-regular light t-center">{t("wal-51_sxp-price")}</Box>
-              <Box className="fs-34-bold white t-center">{`${symbol} ${numeral(Number(multiWalletStore.Solar.chain.price) * Number(reserve)).format(
-                "0,0.00"
-              )}`}</Box>
+              <Box className="fs-34-bold white t-center">{`${symbol} ${numeral(Number(sxpPrice) * Number(reserve)).format("0,0.00")}`}</Box>
             </Stack>
           </Grid>
           <Grid item xs={12}>
@@ -471,7 +472,7 @@ const WalletVote = () => {
                             <Stack>
                               <Box className="fs-18-regular white t-left">{`${numeral(formatDecimal(item.forged.total ?? 0)).format("0,0")} SXP`}</Box>
                               <Box className="fs-12-regular light t-left">
-                                {`${numeral((item.forged.total * Number(reserve)) / 1e8).format("0,0.00")} ${symbol}`}
+                                {`${numeral((item.forged.total * Number(sxpPrice) * Number(reserve)) / 1e8).format("0,0.00")} ${symbol}`}
                               </Box>
                             </Stack>
                           </Stack>

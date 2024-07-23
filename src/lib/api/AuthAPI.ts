@@ -1,7 +1,7 @@
 import axios, { AxiosResponse } from "axios";
 
 import { tymt_backend_url } from "../../configs/index";
-import { INonCustodyBeforeSignInReq, INonCustodySignUpReq } from "../../types/AuthAPITypes";
+import { INonCustodyBeforeSignInReq, INonCustodySignInReq, INonCustodySignUpReq } from "../../types/AuthAPITypes";
 
 class AuthAPI {
   static async nonCustodySignup(body: INonCustodySignUpReq): Promise<AxiosResponse<any, any>> {
@@ -16,7 +16,7 @@ class AuthAPI {
     });
   }
 
-  static async nonCustodySignin(body: any): Promise<AxiosResponse<any, any>> {
+  static async nonCustodySignin(body: INonCustodySignInReq): Promise<AxiosResponse<any, any>> {
     return await axios.post(`${tymt_backend_url}/auth/non-custody/signin`, body);
   }
 

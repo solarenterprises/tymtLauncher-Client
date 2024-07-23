@@ -338,6 +338,28 @@ export const getRPCUrl = (chain: IChain): string => {
   }
 };
 
+export const getRPCUrlFromChainName = (chain: string): string => {
+  if (chain === "ethereum") {
+    return eth_rpc_url;
+  }
+  if (chain === "arbitrum") {
+    return arb_rpc_url;
+  }
+  if (chain === "avalanche") {
+    return avax_rpc_url;
+  }
+
+  if (chain === "binance") {
+    return bsc_rpc_url;
+  }
+  if (chain === "optimism") {
+    return op_rpc_url;
+  }
+  if (chain === "polygon") {
+    return matic_rpc_url;
+  }
+};
+
 export const getAPIAndKey = (chain: IChain) => {
   let api_url,
     api_key = "";

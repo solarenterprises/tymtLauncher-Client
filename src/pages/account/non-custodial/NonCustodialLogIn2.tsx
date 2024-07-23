@@ -2,29 +2,36 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useSelector, useDispatch } from "react-redux";
 import { useState } from "react";
+import { readText } from "@tauri-apps/api/clipboard";
+
 import { AppDispatch } from "../../../store";
 import { getNonCustodial } from "../../../features/account/NonCustodialSlice";
-import { readText } from "@tauri-apps/api/clipboard";
+import { getTempNonCustodial, setTempNonCustodial } from "../../../features/account/TempNonCustodialSlice";
+import { getTempAddressesFromMnemonicAsync } from "../../../features/wallet/TempMultiWalletSlice";
+import { getAccount, setAccount } from "../../../features/account/AccountSlice";
+
+import AuthAPI from "../../../lib/api/AuthAPI";
+
 import { useFormik } from "formik";
 import * as Yup from "yup";
+import { motion } from "framer-motion";
+
 import { Grid, Box, Stack } from "@mui/material";
+
 import Back from "../../../components/account/Back";
 import AccountHeader from "../../../components/account/AccountHeader";
 import InputText from "../../../components/account/InputText";
 import AccountNextButton from "../../../components/account/AccountNextButton";
 import Stepper from "../../../components/account/Stepper";
 import DontHaveAccount from "../../../components/account/DontHaveAccount";
+
 import tymt2 from "../../../assets/account/tymt2.png";
 import "../../../global.css";
+
 import { accountType, loginEnum, nonCustodialType } from "../../../types/accountTypes";
-import { checkMnemonic } from "../../../consts/mnemonics";
-import { getTempNonCustodial, setTempNonCustodial } from "../../../features/account/TempNonCustodialSlice";
-import { getTempAddressesFromMnemonicAsync } from "../../../features/wallet/TempMultiWalletSlice";
-import AuthAPI from "../../../lib/api/AuthAPI";
-import { getAccount, setAccount } from "../../../features/account/AccountSlice";
+
 import tymtCore from "../../../lib/core/tymtCore";
-import { tymt_backend_url } from "../../../configs";
-import { motion } from "framer-motion";
+import { checkMnemonic } from "../../../consts/mnemonics";
 
 const NonCustodialLogIn2 = () => {
   const navigate = useNavigate();
@@ -79,7 +86,6 @@ const NonCustodialLogIn2 = () => {
               ...tempNonCustodialStore,
               mnemonic: formik.values.mnemonic,
               nickname: res.data.users[0].nickName,
-              avatar: `${tymt_backend_url}/users/get-avatar/${res.data.users[0]._id}?${new Date().toISOString()}`,
             })
           );
           if (nonCustodialStore.password === "") {

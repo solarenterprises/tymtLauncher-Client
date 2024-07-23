@@ -1,18 +1,41 @@
+import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
+
+import { tymt_avatar_url } from "../../configs";
+
 import { Tooltip, Stack, Box } from "@mui/material";
+
+import { getChain } from "../../features/wallet/ChainSlice";
+import { ICurrentChatroomMember } from "../../features/chat/CurrentChatroomMembersSlice";
+
+import UserAPI from "../../lib/api/UserAPI";
+
+import { IChain } from "../../types/walletTypes";
+
 import onlineframe from "../../assets/chat/onlineframe.svg";
 import offlineframe from "../../assets/chat/offlineframe.svg";
 import donotdisturbframe from "../../assets/chat/donotdisturbframe.svg";
 import mask from "../../assets/account/mask.png";
-import { IChain } from "../../types/walletTypes";
-import { getChain } from "../../features/wallet/ChainSlice";
 import accountIcon from "../../assets/wallet/account.svg";
-import { tymt_backend_url } from "../../configs";
 
-const Avatar = ({ size, userid, onlineStatus, ischain, status }: any) => {
+const Avatar = ({ size, url, userid, onlineStatus, ischain, status }: any) => {
   const { t } = useTranslation();
   const chain: IChain = useSelector(getChain);
+  const [user, setUser] = useState<ICurrentChatroomMember>();
+
+  useEffect(() => {
+    if (userid) {
+      const init = async () => {
+        const res = await UserAPI.getUserById(userid);
+        if (!res?.data?.result?.data) {
+          return;
+        }
+        setUser(res?.data?.result?.data);
+      };
+      init();
+    }
+  }, [userid]);
 
   return (
     <>
@@ -112,7 +135,11 @@ const Avatar = ({ size, userid, onlineStatus, ischain, status }: any) => {
           <Box
             component={"img"}
             key={`${new Date().getTime()}`}
-            src={`${tymt_backend_url}/users/get-avatar/${userid}?${Date.now()}`}
+            src={
+              userid
+                ? `${tymt_avatar_url}/public/upload/avatars/${user?.avatar ? user?.avatar : "default.png"}?${Date.now()}`
+                : `${tymt_avatar_url}/public/upload/avatars/${url ? url : "default.png"}?${Date.now()}`
+            }
             sx={{
               position: "absolute",
               top: "50%",

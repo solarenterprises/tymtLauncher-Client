@@ -39,13 +39,13 @@ const initialState = {
   msg: "",
 };
 
-export const fetchReadAlertListAsync = createAsyncThunk("alertList/fetchReadAlertList", fetchReadAlertList);
-export const fetchUnreadAlertListAsync = createAsyncThunk("alertList/fetchUnreadAlertList", fetchUnreadAlertList);
-export const fetchAlertListAsync = createAsyncThunk("alertList/fetchAlertList", fetchAlertList);
-export const fetchCountUnreadAlertListAsync = createAsyncThunk("alertList/fetchCountUnreadAlertList", fetchCountUnreadAlertList);
-export const updateAlertReadStatusAsync = createAsyncThunk("alertList/updateAlertReadStatus", updateAlertReadStatus);
-export const updateAllAlertReadStatusAsync = createAsyncThunk("alertList/updateAllAlertReadStatus", updateAllAlertReadStatus);
-export const updateFriendRequestAsync = createAsyncThunk("alertList/updateFriendRequest", updateFriendRequest);
+export const fetchReadAlertListAsync = createAsyncThunk("alertList/fetchReadAlertListAsync", fetchReadAlertList);
+export const fetchUnreadAlertListAsync = createAsyncThunk("alertList/fetchUnreadAlertListAsync", fetchUnreadAlertList);
+export const fetchAlertListAsync = createAsyncThunk("alertList/fetchAlertListAsync", fetchAlertList);
+export const fetchCountUnreadAlertListAsync = createAsyncThunk("alertList/fetchCountUnreadAlertListAsync", fetchCountUnreadAlertList);
+export const updateAlertReadStatusAsync = createAsyncThunk("alertList/updateAlertReadStatusAsync", updateAlertReadStatus);
+export const updateAllAlertReadStatusAsync = createAsyncThunk("alertList/updateAllAlertReadStatusAsync", updateAllAlertReadStatus);
+export const updateFriendRequestAsync = createAsyncThunk("alertList/updateFriendRequestAsync", updateFriendRequest);
 
 export const alertListSlice = createSlice({
   name: "alertList",
@@ -58,6 +58,16 @@ export const alertListSlice = createSlice({
     addOneToUnreadList: (state, action) => {
       state.data.unread = [...state.data.unread, action.payload];
       state.data.unreadCount = state.data.unreadCount + 1;
+      tymtStorage.set(`alertList`, JSON.stringify(state.data));
+    },
+    updateFriendRequestInAlertList: (state, action) => {
+      const origin = state.data.unread.find((element) => element._id === action.payload._id);
+      if (!origin) return;
+      const newAlert = { note: { status: action.payload.note.status, ...origin.note }, ...origin };
+      state.data.unread = state.data.unread.filter((element) => element._id !== action.payload._id);
+      state.data.unreadCount = state.data.unreadCount - 1;
+      state.data.read = [...state.data.read, newAlert];
+      state.data.readCount = state.data.readCount + 1;
       tymtStorage.set(`alertList`, JSON.stringify(state.data));
     },
   },
@@ -143,6 +153,6 @@ export const alertListSlice = createSlice({
 });
 
 export const getAlertList = (state: any) => state.alertList.data;
-export const { setAlertList, addOneToUnreadList } = alertListSlice.actions;
+export const { setAlertList, addOneToUnreadList, updateFriendRequestInAlertList } = alertListSlice.actions;
 
 export default alertListSlice.reducer;

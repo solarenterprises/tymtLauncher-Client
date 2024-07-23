@@ -642,6 +642,7 @@ async fn main() -> std::io::Result<()> {
             #[derive(Deserialize, Serialize)]
             struct SignMessageReqType {
                 message: String,
+                chain: String,
             }
             async fn sign_message(
                 request: HttpRequest,
@@ -654,6 +655,11 @@ async fn main() -> std::io::Result<()> {
                 ).await;
                 if !is_valid_token {
                     return HttpResponse::InternalServerError().body("Invalid token");
+                }
+
+                let is_valid_chain = validate_chain(request_param.chain.clone()).await;
+                if !is_valid_chain {
+                    return HttpResponse::InternalServerError().body("Invalid chain");
                 }
 
                 let json_data = serde_json
@@ -706,6 +712,7 @@ async fn main() -> std::io::Result<()> {
             struct VerifyMessageReqType {
                 message: String,
                 signature: String,
+                chain: String,
             }
             async fn verify_message(
                 request: HttpRequest,
@@ -762,6 +769,100 @@ async fn main() -> std::io::Result<()> {
                 }
             }
 
+            // Define the AbiInput struct
+            #[derive(Serialize, Deserialize, Debug)]
+            struct AbiInput {
+                internalType: String,
+                name: String,
+                #[serde(rename = "type")]
+                type_field: String,
+            }
+
+            // Define the AbiOutput struct
+            #[derive(Serialize, Deserialize, Debug)]
+            struct AbiOutput {
+                internalType: String,
+                name: String,
+                #[serde(rename = "type")]
+                type_field: String,
+            }
+
+            // Define the AbiFunction struct
+            #[derive(Serialize, Deserialize, Debug)]
+            struct AbiFunction {
+                inputs: Vec<AbiInput>,
+                name: String,
+                outputs: Vec<AbiOutput>,
+                stateMutability: String,
+                #[serde(rename = "type")]
+                type_field: String,
+            }
+
+            #[derive(Deserialize, Serialize)]
+            struct SendContractReqType {
+                contract_address: String,
+                function_name: String,
+                method_type: String,
+                params: Vec<String>,
+                abi: Vec<AbiFunction>,
+                chain: String,
+            }
+
+            async fn send_contract(
+                request: HttpRequest,
+                request_param: web::Json<SendContractReqType>
+            ) -> HttpResponse {
+                println!("-------> POST /send-contract");
+
+                let is_valid_token = validate_token(
+                    request.headers().get("x-token").unwrap().to_str().unwrap().to_string()
+                ).await;
+                if !is_valid_token {
+                    return HttpResponse::InternalServerError().body("Invalid token");
+                }
+
+                let json_data = serde_json
+                    ::to_string(&request_param)
+                    .expect("Failed to serialize JSON data");
+                println!("{}", json_data);
+
+                APPHANDLE.get()
+                    .expect("APPHANDLE is available")
+                    .emit_all("POST-/send-contract", json_data)
+                    .expect("failed to emit event POST /send-contract");
+
+                let (tx, rx) = std::sync::mpsc::channel();
+
+                let response = APPHANDLE.get()
+                    .expect("APPHANDLE is available")
+                    .listen_global("res-POST-/send-contract", move |event| {
+                        let payload = event.payload().unwrap().to_string();
+                        println!("!!!----> res POST /send-contract");
+                        println!("{}", payload);
+                        match tx.send(payload) {
+                            Ok(()) => {
+                                // println!("Message sent successfully");
+                            }
+                            Err(err) => {
+                                println!("Error sending message: {:?}", err);
+                            }
+                        }
+                    });
+
+                match rx.recv() {
+                    Ok(received) => {
+                        // println!("Received: {}", received);
+                        APPHANDLE.get().expect("APPHANDLE is available").unlisten(response);
+                        return HttpResponse::Ok().body(received);
+                    }
+                    Err(err) => {
+                        println!("Error receiving message: {:?}", err);
+                        APPHANDLE.get().expect("APPHANDLE is available").unlisten(response);
+                        return HttpResponse::InternalServerError().finish();
+                    }
+                }
+            }
+
             // dotenv().ok();
             // let port_str = dotenv
             //     ::var("VITE_APP_LOCAL_SERVER_PORT")
@@ -785,6 +886,7 @@ async fn main() -> std::io::Result<()> {
                         .route("/validate-token", web::post().to(validate_token_http))
                         .route("/sign-message", web::post().to(sign_message))
                         .route("/verify-message", web::post().to(verify_message))
+                        .route("/send-contract", web::post().to(send_contract))
                 })
                     .bind(("127.0.0.1", 3331))
                     .expect("Failed to bind address")

@@ -8,9 +8,10 @@ export interface ICurrentChatroomMemberWallet {
   address: string;
 }
 
-export interface  ICurrentChatroomMember {
+export interface ICurrentChatroomMember {
   _id: string;
   nickName: string;
+  avatar?: string;
   wallet?: ICurrentChatroomMemberWallet[];
   lang?: string;
   twoFactor?: boolean;

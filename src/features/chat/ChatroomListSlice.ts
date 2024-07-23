@@ -11,6 +11,8 @@ import {
   joinPublicGroup,
   leaveGroup,
   addOneToChatroomList,
+  updateGroupAvatar,
+  updateGroupName,
 } from "./ChatroomListApi";
 
 const init: IChatroomList = {
@@ -41,6 +43,8 @@ export const addParticipantAsync = createAsyncThunk("chatroomList/addParticipant
 export const removeParticipantAsync = createAsyncThunk("chatroomList/removeParticipantAsync", removeParticipant);
 export const joinPublicGroupAsync = createAsyncThunk("chatroomList/joinPublicGroupAsync", joinPublicGroup);
 export const leaveGroupAsync = createAsyncThunk("chatroomList/leaveGroupAsync", leaveGroup);
+export const updateGroupAvatarAsync = createAsyncThunk("chatroomList/updateGroupAvatarAsync", updateGroupAvatar);
+export const updateGroupNameAsync = createAsyncThunk("chatroomList/updateGrounNameAsync", updateGroupName);
 
 export const chatroomListSlice = createSlice({
   name: "chatroomList",
@@ -158,6 +162,32 @@ export const chatroomListSlice = createSlice({
         }
         const restOfChatrooms = state.data.chatrooms.filter((element) => element._id !== action.payload?._id);
         state.data.chatrooms = [...restOfChatrooms];
+        tymtStorage.set(`chatroomList`, JSON.stringify(state.data));
+        state.status = "chatroomList";
+      })
+      .addCase(updateGroupAvatarAsync.pending, (state) => {
+        state.status = "pending";
+      })
+      .addCase(updateGroupAvatarAsync.fulfilled, (state, action: PayloadAction<any>) => {
+        if (!action.payload) {
+          console.error("Failed to updateGroupAvatarAsync: ", action.payload);
+          return;
+        }
+        const restOfChatrooms = state.data.chatrooms.filter((element) => element._id !== action.payload?._id);
+        state.data.chatrooms = [...restOfChatrooms, action.payload];
+        tymtStorage.set(`chatroomList`, JSON.stringify(state.data));
+        state.status = "chatroomList";
+      })
+      .addCase(updateGroupNameAsync.pending, (state) => {
+        state.status = "pending";
+      })
+      .addCase(updateGroupNameAsync.fulfilled, (state, action: PayloadAction<any>) => {
+        if (!action.payload) {
+          console.error("Failed to updateGroupNameAsync: ", action.payload);
+          return;
+        }
+        const restOfChatrooms = state.data.chatrooms.filter((element) => element._id !== action.payload?._id);
+        state.data.chatrooms = [...restOfChatrooms, action.payload];
         tymtStorage.set(`chatroomList`, JSON.stringify(state.data));
         state.status = "chatroomList";
       });

@@ -14,9 +14,22 @@ export interface IReqChatroomLeaveChatroom {
   id: string;
 }
 
+export interface IReqChatroomUpdateGroupName {
+  room_id: string;
+  room_name: string;
+}
+
 export interface IParticipant {
   userId: string;
   userKey: string;
+}
+
+export interface IReqChatroomExportMessageHistory {
+  userId: string;
+  chatroomId: string;
+  fromDate: string;
+  toDate: string;
+  chunkIndex: number;
 }
 
 export interface IChatroom {
@@ -28,6 +41,7 @@ export interface IChatroom {
   room_name: string;
   createdAt: string;
   updatedAt: string;
+  room_image?: string;
   __v: number;
 }
 

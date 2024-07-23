@@ -11,8 +11,10 @@ import { fetchCurrentChatroomMembersAsync } from "../../features/chat/CurrentCha
 import { getAccount } from "../../features/account/AccountSlice";
 import { createContactAsync, getContactList } from "../../features/chat/ContactListSlice";
 import { IActiveUserList, getActiveUserList } from "../../features/chat/ActiveUserListSlice";
+import { leaveGroupAsync } from "../../features/chat/ChatroomListSlice";
+import { delOneSkeyList } from "../../features/chat/SKeyListSlice";
 
-import { IChatroom } from "../../types/ChatroomAPITypes";
+import { IChatroom, IParamsLeaveGroup } from "../../types/ChatroomAPITypes";
 import { accountType } from "../../types/accountTypes";
 import { IContactList } from "../../types/chatTypes";
 import { IPoint } from "../../types/homeTypes";
@@ -39,10 +41,18 @@ const DMListItem = ({ DM, index, numberOfUnreadMessages, setView }: IPropsDMList
   });
 
   useEffect(() => {
-    if (!user) {
+    if (!user && partnerId) {
       dispatch(createContactAsync(partnerId));
+    } else if (!partnerId) {
+      const data: IParamsLeaveGroup = {
+        _groupId: DM._id,
+        _userId: accountStore.uid,
+      };
+      dispatch(leaveGroupAsync(data)).then(() => {
+        dispatch(delOneSkeyList(DM._id));
+      });
     }
-  }, [user]);
+  }, [user, partnerId]);
 
   const handleDMListItemClick = () => {
     try {
@@ -93,7 +103,7 @@ const DMListItem = ({ DM, index, numberOfUnreadMessages, setView }: IPropsDMList
           >
             <Avatar
               onlineStatus={activeUserListStore.users.some((active) => active === user._id)}
-              userid={user._id}
+              url={user.avatar}
               size={40}
               status={user.notificationStatus}
             />

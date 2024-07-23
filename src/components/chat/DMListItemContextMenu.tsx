@@ -1,13 +1,15 @@
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
+
+import ExportChatModal from "./ExportChatModal";
 
 import { Modal, Box, Fade } from "@mui/material";
 
 import { useSocket } from "../../providers/SocketProvider";
 
 import { AppDispatch } from "../../store";
-import { createFriendAsync, deleteFriendAsync } from "../../features/chat/FriendListSlice";
+import { deleteFriendAsync } from "../../features/chat/FriendListSlice";
 import { leaveGroupAsync } from "../../features/chat/ChatroomListSlice";
 import { getAccount } from "../../features/account/AccountSlice";
 import { delOneSkeyList } from "../../features/chat/SKeyListSlice";
@@ -34,6 +36,8 @@ const DMListItemContextMenu = ({ view, setView, DM, contextMenuPosition }: IProp
   const dispatch = useDispatch<AppDispatch>();
   const accountStore: accountType = useSelector(getAccount);
 
+  const [openExportModal, setOpenExportModal] = useState<boolean>(false);
+
   const handleFriendRequestClick = useCallback(() => {
     try {
       const partner = DM.participants.find((participant) => participant.userId !== accountStore.uid);
@@ -43,22 +47,21 @@ const DMListItemContextMenu = ({ view, setView, DM, contextMenuPosition }: IProp
       }
       dispatch(deleteBlockAsync(partner.userId)).then(() => {
         dispatch(createContactAsync(partner.userId)).then(() => {
-          dispatch(createFriendAsync(partner.userId)).then(() => {
-            if (socket.current && socket.current.connected) {
-              const data: IAlert = {
-                alertType: "friend-request",
-                note: {
-                  sender: accountStore.uid,
-                  status: "pending",
-                },
-                receivers: [partner.userId],
-              };
-              socket.current.emit("post-alert", JSON.stringify(data));
-              console.log("socket.current.emit > post-alert", data);
+          if (socket.current && socket.current.connected) {
+            const data: IAlert = {
+              alertType: "friend-request",
+              note: {
+                sender: accountStore.uid,
+                to: partner.userId,
+                status: "pending",
+              },
+              receivers: [partner.userId],
+            };
+            socket.current.emit("post-alert", JSON.stringify(data));
+            console.log("socket.current.emit > post-alert", data);
 
-              console.log("handleFriendRequestClick", partner.userId);
-            }
-          });
+            console.log("handleFriendRequestClick", partner.userId);
+          }
         });
       });
     } catch (err) {
@@ -84,6 +87,11 @@ const DMListItemContextMenu = ({ view, setView, DM, contextMenuPosition }: IProp
       console.error("Failed to handleBlockClick: ", err);
     }
   }, []);
+
+  const handleExportClick = () => {
+    setView(false);
+    setOpenExportModal(true);
+  };
 
   const handleLeaveDMClick = useCallback(async () => {
     try {
@@ -113,32 +121,38 @@ const DMListItemContextMenu = ({ view, setView, DM, contextMenuPosition }: IProp
   };
 
   return (
-    <Modal open={view} onClose={handleOnClose}>
-      <Fade in={view}>
-        <Box
-          sx={{
-            position: "fixed",
-            top: contextMenuPosition.y,
-            left: contextMenuPosition.x,
-            display: "block",
-            flexDirection: "column",
-            alignItems: "flex-start",
-            cursor: "pointer",
-            zIndex: 1000,
-          }}
-        >
-          <Box className={"fs-16 white context_menu_up"} textAlign={"left"} sx={{ backdropFilter: "blur(10px)" }} onClick={handleFriendRequestClick}>
-            {t("not-9_friend-request")}
+    <>
+      <Modal open={view} onClose={handleOnClose}>
+        <Fade in={view}>
+          <Box
+            sx={{
+              position: "fixed",
+              top: contextMenuPosition.y,
+              left: contextMenuPosition.x,
+              display: "block",
+              flexDirection: "column",
+              alignItems: "flex-start",
+              cursor: "pointer",
+              zIndex: 1000,
+            }}
+          >
+            <Box className={"fs-16 white context_menu_up"} textAlign={"left"} sx={{ backdropFilter: "blur(10px)" }} onClick={handleFriendRequestClick}>
+              {t("not-9_friend-request")}
+            </Box>
+            <Box className={"fs-16 white context_menu_middle"} textAlign={"left"} sx={{ backdropFilter: "blur(10px)" }} onClick={handleBlockClick}>
+              {t("cha-4_block")}
+            </Box>
+            <Box className={"fs-16 white context_menu_middle"} textAlign={"left"} sx={{ backdropFilter: "blur(10px)" }} onClick={handleExportClick}>
+              {t("cha-60_export")}
+            </Box>
+            <Box className={"fs-16 white context_menu_bottom"} textAlign={"left"} sx={{ backdropFilter: "blur(10px)" }} onClick={handleLeaveDMClick}>
+              {t("cha-52_leave-DM")}
+            </Box>
           </Box>
-          <Box className={"fs-16 white context_menu_middle"} textAlign={"left"} sx={{ backdropFilter: "blur(10px)" }} onClick={handleBlockClick}>
-            {t("cha-4_block")}
-          </Box>
-          <Box className={"fs-16 white context_menu_bottom"} textAlign={"left"} sx={{ backdropFilter: "blur(10px)" }} onClick={handleLeaveDMClick}>
-            {t("cha-52_leave-DM")}
-          </Box>
-        </Box>
-      </Fade>
-    </Modal>
+        </Fade>
+      </Modal>
+      <ExportChatModal view={openExportModal} setView={setOpenExportModal} group={DM} />
+    </>
   );
 };
 

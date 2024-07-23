@@ -1,23 +1,31 @@
+import { useCallback, useState, useRef, ChangeEvent } from "react";
 import { useTranslation } from "react-i18next";
-import { useCallback, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { Box, Button, Divider, InputAdornment, Popover, TextField } from "@mui/material";
-import TextareaAutosize from "@mui/material/TextareaAutosize";
-import emotion from "../../assets/chat/emotion.svg";
-import send from "../../assets/chat/chatframe.svg";
-import { ThemeProvider, createTheme } from "@mui/material/styles";
-import ChatStyle from "../../styles/ChatStyles";
+
 import EmojiPicker, { SkinTones } from "emoji-picker-react";
+
+import { Box, Button, Divider, InputAdornment, Popover, TextField } from "@mui/material";
+import FileUploadIcon from "@mui/icons-material/FileUpload";
+import { ThemeProvider, createTheme } from "@mui/material/styles";
+import TextareaAutosize from "@mui/material/TextareaAutosize";
+
 import { useSocket } from "../../providers/SocketProvider";
-import { ChatHistoryType, propsChatinputfieldType } from "../../types/chatTypes";
-import { accountType } from "../../types/accountTypes";
-import { getAccount } from "../../features/account/AccountSlice";
-import { getChatHistory, setChatHistory } from "../../features/chat/Chat-historySlice";
-import { encrypt } from "../../lib/api/Encrypt";
+
 import { AppDispatch } from "../../store";
-import { IChatroom } from "../../types/ChatroomAPITypes";
+import { getAccount } from "../../features/account/AccountSlice";
 import { getCurrentChatroom } from "../../features/chat/CurrentChatroomSlice";
 import { ISKeyList, getSKeyList } from "../../features/chat/SKeyListSlice";
+import { getChatHistory, setChatHistory } from "../../features/chat/ChatHistorySlice";
+
+import { encrypt } from "../../lib/api/Encrypt";
+
+import ChatStyle from "../../styles/ChatStyles";
+import emotion from "../../assets/chat/emotion.svg";
+import send from "../../assets/chat/chatframe.svg";
+
+import { ChatHistoryType, propsChatInputFieldType } from "../../types/chatTypes";
+import { accountType } from "../../types/accountTypes";
+import { IChatroom } from "../../types/ChatroomAPITypes";
 
 const theme = createTheme({
   palette: {
@@ -32,7 +40,7 @@ const theme = createTheme({
   },
 });
 
-const Chatinputfield = ({ value, setValue }: propsChatinputfieldType) => {
+const ChatInputField = ({ value, setValue }: propsChatInputFieldType) => {
   const { socket } = useSocket();
   const { t } = useTranslation();
   const classes = ChatStyle();
@@ -45,6 +53,38 @@ const Chatinputfield = ({ value, setValue }: propsChatinputfieldType) => {
 
   const [anchorEl, setAnchorEl] = useState(null);
   const [EmojiLibraryOpen, setIsEmojiLibraryOpen] = useState(false);
+
+  const fileInputRef = useRef(null);
+
+  const handleUploadClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click(); // Trigger the file input dialog
+    }
+  };
+
+  const handleFileInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+    try {
+      const files = e.target.files;
+
+      if (files && files.length > 0) {
+        const file = files[0];
+        let fileType: string = "";
+        if (file.type.startsWith("image/")) {
+          fileType = "image";
+        } else if (file.type.startsWith("audio/")) {
+          fileType = "audio";
+        } else if (file.type.startsWith("video/")) {
+          fileType = "video";
+        } else {
+          fileType = "file";
+        }
+
+        console.log("handleFileInputChange", fileType, file);
+      }
+    } catch (err) {
+      console.error("Failed to handleFileInputChange: ", err);
+    }
+  };
 
   const handleEmojiClick = (event: any) => {
     setAnchorEl(event.currentTarget);
@@ -129,88 +169,109 @@ const Chatinputfield = ({ value, setValue }: propsChatinputfieldType) => {
   );
 
   return (
-    <Box sx={{ marginTop: "5px", marginBottom: "0px" }}>
-      <Divider
-        sx={{
-          backgroundColor: "#FFFFFF1A",
-          marginTop: "0px",
-          marginBottom: "15px",
-        }}
-      />
-      <ThemeProvider theme={theme}>
-        <TextField
-          className={classes.chat_input}
-          color="secondary"
-          value={value}
-          placeholder={t("cha-26_type-here")}
-          multiline
-          InputProps={{
-            inputComponent: TextareaAutosize,
-            startAdornment: (
-              <InputAdornment position="start">
-                <div style={{ width: 5 }} />{" "}
-              </InputAdornment>
-            ),
-            endAdornment: (
-              <InputAdornment position="start">
-                <Button className={classes.emoji_button} onClick={handleEmojiClick}>
-                  <img
-                    src={emotion}
-                    style={{
-                      cursor: "pointer",
-                      display: "block",
-                    }}
-                  />
-                </Button>
-
-                <Button
-                  className="send_button"
-                  sx={{
-                    display: value ? "block" : "none",
-                  }}
-                  onClick={sendMessage}
-                >
-                  <Box className={"center-align"}>
-                    <img src={send} />
-                  </Box>
-                </Button>
-              </InputAdornment>
-            ),
-            style: { color: "#FFFFFF" },
-          }}
-          onChange={(e) => {
-            if (setValue) setValue(e.target.value);
-          }}
-          onKeyDown={(e: any) => {
-            handleEnter(e);
+    <>
+      <Box sx={{ marginTop: "5px", marginBottom: "0px" }}>
+        <Divider
+          sx={{
+            backgroundColor: "#FFFFFF1A",
+            marginTop: "0px",
+            marginBottom: "15px",
           }}
         />
-      </ThemeProvider>
-      <Popover
-        open={EmojiLibraryOpen}
-        onClose={handleCloseEmojiLibrary}
-        anchorOrigin={{
-          vertical: "top",
-          horizontal: "center",
-        }}
-        anchorEl={anchorEl}
-        transformOrigin={{
-          vertical: "bottom",
-          horizontal: "left",
-        }}
-        slotProps={{
-          paper: {
-            style: {
-              backgroundColor: "transparent",
-              boxShadow: "none",
+        <ThemeProvider theme={theme}>
+          <TextField
+            className={classes.chat_input}
+            color="secondary"
+            value={value}
+            placeholder={t("cha-26_type-here")}
+            multiline
+            InputProps={{
+              inputComponent: TextareaAutosize,
+              startAdornment: (
+                <InputAdornment position="start">
+                  <div style={{ width: 5 }} />
+                </InputAdornment>
+              ),
+              endAdornment: (
+                <InputAdornment position="start">
+                  <Button className={classes.emoji_button} onClick={handleEmojiClick}>
+                    <img
+                      src={emotion}
+                      style={{
+                        cursor: "pointer",
+                        display: "block",
+                      }}
+                    />
+                  </Button>
+
+                  <Button
+                    className="send_button"
+                    sx={{
+                      display: value ? "block" : "none",
+                    }}
+                    onClick={sendMessage}
+                  >
+                    <Box className={"center-align"}>
+                      <img src={send} />
+                    </Box>
+                  </Button>
+                  {false && (
+                    <Button
+                      className="upload_button"
+                      sx={{
+                        display: value ? "none" : "block",
+                      }}
+                      onClick={handleUploadClick}
+                    >
+                      <Box className={"center-align"}>
+                        <FileUploadIcon sx={{ color: "#ffffff" }} />
+                      </Box>
+                    </Button>
+                  )}
+                </InputAdornment>
+              ),
+              style: { color: "#FFFFFF" },
+            }}
+            onChange={(e) => {
+              if (setValue) setValue(e.target.value);
+            }}
+            onKeyDown={(e: any) => {
+              handleEnter(e);
+            }}
+          />
+        </ThemeProvider>
+        <Popover
+          open={EmojiLibraryOpen}
+          onClose={handleCloseEmojiLibrary}
+          anchorOrigin={{
+            vertical: "top",
+            horizontal: "center",
+          }}
+          anchorEl={anchorEl}
+          transformOrigin={{
+            vertical: "bottom",
+            horizontal: "left",
+          }}
+          slotProps={{
+            paper: {
+              style: {
+                backgroundColor: "transparent",
+                boxShadow: "none",
+              },
             },
-          },
-        }}
-      >
-        <EmojiPicker className={classes.emojipicker} onEmojiClick={handleEmojiSelect} defaultSkinTone={SkinTones.LIGHT} autoFocusSearch={true} />
-      </Popover>
-    </Box>
+          }}
+        >
+          <EmojiPicker className={classes.emojipicker} onEmojiClick={handleEmojiSelect} defaultSkinTone={SkinTones.LIGHT} autoFocusSearch={true} />
+        </Popover>
+      </Box>
+      <input
+        type="file"
+        ref={fileInputRef}
+        style={{ display: "none" }} // Hide the input
+        onChange={handleFileInputChange}
+      />
+    </>
   );
 };
 
-export default Chatinputfield;
+export default ChatInputField;

@@ -140,7 +140,7 @@ const AlertComp = ({ open, status, title, detail, setOpen, link }: propsAlertTyp
                 <Box className={"fs-h4 white"}>{title}</Box>
                 <Box className={"fs-16-regular white"}>
                   {status === "message" && (detail.length > 100 ? detail.substring(0, 100) + "..." : detail)}
-                  {status === "alert" && title === "Friend Request" && t("not-10_fr-intro")}
+                  {status === "alert" && title === t("not-9_friend-request") && detail}
                   {!(status === "message" || (status === "alert" && title === "Friend Request")) &&
                     (detail.length > 100 ? detail.substring(0, 100) + "..." : detail)}
                 </Box>

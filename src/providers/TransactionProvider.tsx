@@ -19,7 +19,7 @@ import { getMnemonic } from "../features/account/MnemonicSlice";
 
 import { walletType } from "../types/settingTypes";
 import { IMnemonic, ISaltToken, nonCustodialType } from "../types/accountTypes";
-import { IGetAccountReq, IGetBalanceReq, ISignMessageReq, IVerifyMessageReq } from "../types/eventParamTypes";
+import { IGetAccountReq, IGetBalanceReq, ISendContractReq, ISignMessageReq, IVerifyMessageReq } from "../types/eventParamTypes";
 import { IChain, multiWalletType } from "../types/walletTypes";
 
 const TransactionProvider = () => {
@@ -103,24 +103,20 @@ const TransactionProvider = () => {
 
     const unlisten_sign_message = listen("POST-/sign-message", async (event) => {
       const data: ISignMessageReq = JSON.parse(event.payload as string);
-      if (!data || !data.message || !mnemonicStoreRef.current.mnemonic) {
-        emit("res-POST-/sign-message", "");
-        return;
-      }
-      const res = tymtCore.Blockchains.solar.wallet.signMessage(data.message, mnemonicStoreRef.current.mnemonic);
+      const res = await TransactionProviderAPI.signMessage(data);
       emit("res-POST-/sign-message", res);
     });
 
     const unlisten_verify_message = listen("POST-/verify-message", async (event) => {
       const data: IVerifyMessageReq = JSON.parse(event.payload as string);
-      console.log("POST-/verify-message", data);
-      if (!data || !data.message || !data.signature || !mnemonicStoreRef.current.mnemonic) {
-        emit("res-POST-/verify-message", false);
-        return;
-      }
-      const publicKey: string = tymtCore.Blockchains.solar.wallet.getPublicKey(mnemonicStoreRef.current.mnemonic);
-      const res: boolean = tymtCore.Blockchains.solar.wallet.verifyMessage(data.message, publicKey, data.signature);
+      const res = await TransactionProviderAPI.verifyMessage(data);
       emit("res-POST-/verify-message", res);
+    });
+
+    const unlisten_send_contract = listen("POST-/send-contract", async (event) => {
+      const data: ISendContractReq = JSON.parse(event.payload as string);
+      const res = await TransactionProviderAPI.sendContract(data);
+      emit("res-POST-/send-contract", res);
     });
 
     return () => {
@@ -129,6 +125,7 @@ const TransactionProvider = () => {
       unlisten_validate_token.then((unlistenFn) => unlistenFn());
       unlisten_sign_message.then((unlistenFn) => unlistenFn());
       unlisten_verify_message.then((unlistenFn) => unlistenFn());
+      unlisten_send_contract.then((unlistenFn) => unlistenFn());
     };
   }, []);
 
