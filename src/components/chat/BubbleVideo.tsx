@@ -1,10 +1,13 @@
+import { useState } from "react";
 import ReactPlayer from "react-player";
 
 import { Box } from "@mui/material";
 
+import BubbleDownloadButton from "./BubbleDownloadButton";
+
 import { ChatMessageType } from "../../types/chatTypes";
 
-const VIDEO_LINK = "https://veloren.net/videos/veloren.webm";
+const VIDEO_URL = "https://veloren.net/videos/veloren.webm";
 
 export interface IParamsBubbleVideo {
   message: ChatMessageType;
@@ -15,22 +18,22 @@ export interface IParamsBubbleVideo {
 }
 
 const BubbleVideo = ({ roomMode, message, isLastMessage, isSender }: IParamsBubbleVideo) => {
+  const [mouseOn, setMouseOn] = useState<boolean>(false);
+
   return (
     <>
       <Box
         className={`fs-14-regular white bubble-image ${isLastMessage ? (roomMode ? "br-20-20-20-0" : isSender ? "br-20-20-0-20" : "br-20-20-20-0") : "br-20"}`}
         sx={{ position: "relative" }}
+        onMouseEnter={() => {
+          setMouseOn(true);
+        }}
+        onMouseLeave={() => {
+          setMouseOn(false);
+        }}
       >
-        {/* <Box
-          component={"img"}
-          src={IMAGE_URL}
-          width={"200px"}
-          height={"150px"}
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}
-          onClick={handleClick}
-        /> */}
-        <ReactPlayer className="react-player" url={VIDEO_LINK} width="200px" height="150px" controls={true} />
+        {mouseOn && <BubbleDownloadButton url={VIDEO_URL} />}
+        <ReactPlayer className="react-player" url={VIDEO_URL} width="200px" height="150px" controls={true} />
         <Box
           className="fs-16-regular white"
           sx={{

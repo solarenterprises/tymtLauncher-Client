@@ -116,10 +116,10 @@ const Bubble = ({ roomMode, screenExpanded, message, index }: IParamsBubble) => 
         )}
         {roomMode && screenExpanded && !isLastMessageOfStack && <div style={{ width: "40px", height: "40px" }} />}
         {(!message.type || message.type === "text") && (
-          <BubbleAudio roomMode={roomMode} message={message} decryptedMessage={decryptedMessage} isLastMessage={isLastMessageOfStack} isSender={isSender} />
+          <BubbleText roomMode={roomMode} message={message} decryptedMessage={decryptedMessage} isLastMessage={isLastMessageOfStack} isSender={isSender} />
         )}
         {message.type === "audio" && (
-          <BubbleText roomMode={roomMode} message={message} decryptedMessage={decryptedMessage} isLastMessage={isLastMessageOfStack} isSender={isSender} />
+          <BubbleAudio roomMode={roomMode} message={message} decryptedMessage={decryptedMessage} isLastMessage={isLastMessageOfStack} isSender={isSender} />
         )}
         {message.type === "image" && (
           <BubbleImage roomMode={roomMode} message={message} decryptedMessage={decryptedMessage} isLastMessage={isLastMessageOfStack} isSender={isSender} />

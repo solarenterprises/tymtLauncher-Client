@@ -3,13 +3,12 @@ import { useTranslation } from "react-i18next";
 import { AudioVisualizer } from "react-audio-visualize";
 import Sound from "react-sound";
 
-import { Stack, Box, IconButton } from "@mui/material";
-import DownloadIcon from "@mui/icons-material/Download";
+import { Stack, Box } from "@mui/material";
 
+import BubbleDownloadButton from "./BubbleDownloadButton";
 import AudioToggleButton from "./AudioToggleButton";
 
 import { ChatMessageType } from "../../types/chatTypes";
-import { getFileNameFromURL } from "../../lib/api/URLHelper";
 
 const AUDIO_URL = "https://dev.tymt.com/public/upload/BEN-48-Cryptocurrency.mp3";
 
@@ -29,6 +28,7 @@ const BubbleAudio = ({ roomMode, message, decryptedMessage, isLastMessage, isSen
   const [durationDisplay, setDurationDisplay] = useState<number>(0);
   const [positionDisplay, setPositionDisplay] = useState<number>(0);
   const [loadedDisplay, setLoadedDisplay] = useState<boolean>(false);
+  const [mouseOn, setMouseOn] = useState<boolean>(false);
 
   const visualizerRef = useRef<HTMLCanvasElement>(null);
 
@@ -37,13 +37,6 @@ const BubbleAudio = ({ roomMode, message, decryptedMessage, isLastMessage, isSen
     const minutes = Math.floor(totalSeconds / 60);
     const seconds = totalSeconds % 60;
     return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
-  };
-
-  const handleDownloadClick = () => {
-    const link = document.createElement("a");
-    link.href = AUDIO_URL;
-    link.download = getFileNameFromURL(AUDIO_URL);
-    link.click();
   };
 
   useEffect(() => {
@@ -70,23 +63,14 @@ const BubbleAudio = ({ roomMode, message, decryptedMessage, isLastMessage, isSen
           isLastMessage ? (roomMode ? "br-20-20-20-0" : isSender ? "br-20-20-0-20" : "br-20-20-20-0") : "br-20"
         }`}
         sx={{ position: "relative" }}
+        onMouseEnter={() => {
+          setMouseOn(true);
+        }}
+        onMouseLeave={() => {
+          setMouseOn(false);
+        }}
       >
-        <IconButton
-          className="icon-button"
-          sx={{
-            position: "absolute",
-            top: "8px",
-            right: "8px",
-            zIndex: 1,
-            width: "20px",
-            height: "20px",
-            padding: "16px",
-            backgroundColor: "#00000077",
-          }}
-          onClick={handleDownloadClick}
-        >
-          <DownloadIcon className="icon-button" />
-        </IconButton>
+        {mouseOn && <BubbleDownloadButton url={AUDIO_URL} />}
         <Stack>
           <Stack direction="row" alignItems="center" gap="8px">
             <AudioToggleButton loaded={loadedDisplay} playing={playing} setPlaying={setPlaying} />

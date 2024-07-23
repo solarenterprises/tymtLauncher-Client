@@ -2,8 +2,10 @@ import { useState } from "react";
 
 import { Box } from "@mui/material";
 
-import { ChatMessageType } from "../../types/chatTypes";
 import BubbleImageModal from "./BubbleImageModal";
+import BubbleDownloadButton from "./BubbleDownloadButton";
+
+import { ChatMessageType } from "../../types/chatTypes";
 
 const IMAGE_URL = "https://dev.tymt.com/public/upload/room-image/66855e3d70fe2851827b7ccb.jpg";
 
@@ -18,6 +20,7 @@ export interface IParamsBubbleImage {
 const BubbleImage = ({ roomMode, message, isLastMessage, isSender }: IParamsBubbleImage) => {
   const [_showTime, setShowTime] = useState<boolean>(false);
   const [showImageModal, setShowImageModal] = useState<boolean>(false);
+  const [mouseOn, setMouseOn] = useState<boolean>(false);
 
   const handleMouseEnter = () => {
     setShowTime(true);
@@ -36,7 +39,14 @@ const BubbleImage = ({ roomMode, message, isLastMessage, isSender }: IParamsBubb
       <Box
         className={`fs-14-regular white bubble-image ${isLastMessage ? (roomMode ? "br-20-20-20-0" : isSender ? "br-20-20-0-20" : "br-20-20-20-0") : "br-20"}`}
         sx={{ position: "relative" }}
+        onMouseEnter={() => {
+          setMouseOn(true);
+        }}
+        onMouseLeave={() => {
+          setMouseOn(false);
+        }}
       >
+        {mouseOn && <BubbleDownloadButton url={IMAGE_URL} />}
         <Box
           component={"img"}
           src={IMAGE_URL}

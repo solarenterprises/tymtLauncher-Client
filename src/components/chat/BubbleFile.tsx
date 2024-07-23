@@ -1,6 +1,9 @@
+import { useState } from "react";
 import { FileIcon, defaultStyles } from "react-file-icon";
 
 import { Box, Stack } from "@mui/material";
+
+import BubbleDownloadButton from "./BubbleDownloadButton";
 
 import { ChatMessageType } from "../../types/chatTypes";
 
@@ -15,6 +18,8 @@ export interface IParamsBubbleFile {
 }
 
 const BubbleFile = ({ roomMode, isLastMessage, isSender }: IParamsBubbleFile) => {
+  const [mouseOn, setMouseOn] = useState<boolean>(false);
+
   const getFileDetails = (url: string) => {
     try {
       const parsedUrl = new URL(url);
@@ -48,7 +53,15 @@ const BubbleFile = ({ roomMode, isLastMessage, isSender }: IParamsBubbleFile) =>
         className={`fs-14-regular white ${isSender ? "bubble" : "bubble-partner"} ${
           isLastMessage ? (roomMode ? "br-20-20-20-0" : isSender ? "br-20-20-0-20" : "br-20-20-20-0") : "br-20"
         }`}
+        sx={{ position: "relative" }}
+        onMouseEnter={() => {
+          setMouseOn(true);
+        }}
+        onMouseLeave={() => {
+          setMouseOn(false);
+        }}
       >
+        {mouseOn && <BubbleDownloadButton url={FILE_URL} />}
         <Stack direction={"row"} gap={"8px"} alignItems={"center"} height={"48px"} width={"240px"}>
           <Box
             height={"48px"}
