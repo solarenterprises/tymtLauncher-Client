@@ -215,18 +215,19 @@ const ChatInputField = ({ value, setValue }: propsChatInputFieldType) => {
                       <img src={send} />
                     </Box>
                   </Button>
-
-                  <Button
-                    className="upload_button"
-                    sx={{
-                      display: value ? "none" : "block",
-                    }}
-                    onClick={handleUploadClick}
-                  >
-                    <Box className={"center-align"}>
-                      <FileUploadIcon sx={{ color: "#ffffff" }} />
-                    </Box>
-                  </Button>
+                  {false && (
+                    <Button
+                      className="upload_button"
+                      sx={{
+                        display: value ? "none" : "block",
+                      }}
+                      onClick={handleUploadClick}
+                    >
+                      <Box className={"center-align"}>
+                        <FileUploadIcon sx={{ color: "#ffffff" }} />
+                      </Box>
+                    </Button>
+                  )}
                 </InputAdornment>
               ),
               style: { color: "#FFFFFF" },
