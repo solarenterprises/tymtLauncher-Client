@@ -59,7 +59,7 @@ export interface contextmenupositionType {
   y: number;
 }
 
-export interface propsChatinputfieldType {
+export interface propsChatInputFieldType {
   value: string;
   setValue: (value: string) => void;
 }

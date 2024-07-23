@@ -31,7 +31,7 @@ import ChatGroupMemberListRoom from "./ChatGroupMemberListRoom";
 import ChatSettinginRoom from "./ChatsettinginRoom";
 import ChatMainRoom from "./ChatMainRoom";
 import ChatMsginRoom from "./Chatsetting-MsginRoom";
-import Chatinputfield from "../../components/chat/Chatinputfield";
+import ChatInputField from "../../components/chat/Chatinputfield";
 import ChatGroupEditRoom from "./ChatGroupEditRoom";
 import EditIcon from "@mui/icons-material/Edit";
 
@@ -321,7 +321,7 @@ const Chatroom = () => {
                   ))}
                 </InfiniteScroll>
               </Box>
-              <Chatinputfield value={value} setValue={setValue} />
+              <ChatInputField value={value} setValue={setValue} />
             </Box>
           </Box>
         </Grid>

@@ -180,6 +180,25 @@ $Main-Red: #ef4444;
   }
 }
 
+.upload_button {
+  &.MuiButtonBase-root {
+    margin-left: 10px;
+    min-width: 40px;
+    width: 40px;
+    height: 40px;
+    border-radius: 52px;
+    background: #52e1f2;
+    &:hover {
+      background: #0d99ff;
+    }
+    transition: opacity 0.5s ease, transform 0.1s ease;
+    transform: scale(1);
+    &:active {
+      transform: scale(0.9);
+    }
+  }
+}
+
 .context_menu {
   position: fixed;
   display: inline-flex;

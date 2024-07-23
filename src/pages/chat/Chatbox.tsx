@@ -19,7 +19,7 @@ import { getCurrentChatroom } from "../../features/chat/CurrentChatroomSlice";
 import { ICurrentChatroomMembers, getCurrentChatroomMembers } from "../../features/chat/CurrentChatroomMembersSlice";
 
 import { useSocket } from "../../providers/SocketProvider";
-import Chatinputfield from "../../components/chat/Chatinputfield";
+import ChatInputField from "../../components/chat/Chatinputfield";
 import GroupAvatar from "../../components/chat/GroupAvatar";
 import Avatar from "../../components/home/Avatar";
 
@@ -249,7 +249,7 @@ const Chatbox = ({ view, setView }: propsType) => {
           </Box>
 
           {/* Input field section */}
-          <Chatinputfield value={value} setValue={setValue} />
+          <ChatInputField value={value} setValue={setValue} />
         </Box>
       )}
     </>
