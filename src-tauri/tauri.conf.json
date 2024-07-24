@@ -8,7 +8,7 @@
   },
   "package": {
     "productName": "tymtLauncher",
-    "version": "2.1.2"
+    "version": "2.1.3"
   },
 
   "tauri": {
@@ -69,7 +69,7 @@
     "windows": [
       {
         "label": "tymtLauncher",
-        "title": "tymtLauncher 2.1.2",
+        "title": "tymtLauncher 2.1.3",
         "resizable": true,
         "width": 1440,
         "height": 1024,
