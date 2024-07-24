@@ -4,7 +4,7 @@ import { Outlet } from "react-router-dom";
 import { appWindow } from "@tauri-apps/api/window";
 import { io, Socket } from "socket.io-client";
 
-import { socket_backend_url } from "../configs";
+import { socket_backend_url, tymt_version } from "../configs";
 
 import { useNotification } from "./NotificationProvider";
 
@@ -141,7 +141,7 @@ export const SocketProvider = () => {
   useEffect(() => {
     if (accountStore.uid && socketHashStore.socketHash) {
       appWindow.title().then((res) => {
-        if (res === "tymtLauncherDebug 2.1.2") {
+        if (res === `tymtLauncherDebug v${tymt_version}`) {
           socket.current = io(socket_backend_url as string, {
             auth: {
               userId: accountStoreRef.current.uid,
