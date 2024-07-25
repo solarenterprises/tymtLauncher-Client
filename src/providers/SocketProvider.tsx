@@ -141,7 +141,7 @@ export const SocketProvider = () => {
   useEffect(() => {
     if (accountStore.uid && socketHashStore.socketHash) {
       appWindow.title().then((res) => {
-        if (res === `tymtLauncherDebug v${tymt_version}`) {
+        if (res === `tymtLauncherDebug ${tymt_version}`) {
           socket.current = io(socket_backend_url as string, {
             auth: {
               userId: accountStoreRef.current.uid,

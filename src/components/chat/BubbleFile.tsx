@@ -1,13 +1,15 @@
 import { useState } from "react";
 import { FileIcon, defaultStyles } from "react-file-icon";
 
+import { tymt_avatar_url } from "../../configs";
+
 import { Box, Stack } from "@mui/material";
 
 import BubbleDownloadButton from "./BubbleDownloadButton";
 
 import { ChatMessageType } from "../../types/chatTypes";
 
-const FILE_URL = "https://www.englishtco.com/wp-content/uploads/2018/06/Job-Interviews-In-English_Series-One-Pack.pdf";
+// const FILE_URL = "https://www.englishtco.com/wp-content/uploads/2018/06/Job-Interviews-In-English_Series-One-Pack.pdf";
 
 export interface IParamsBubbleFile {
   message: ChatMessageType;
@@ -17,8 +19,10 @@ export interface IParamsBubbleFile {
   roomMode: boolean;
 }
 
-const BubbleFile = ({ roomMode, isLastMessage, isSender }: IParamsBubbleFile) => {
+const BubbleFile = ({ roomMode, message, isLastMessage, isSender }: IParamsBubbleFile) => {
   const [mouseOn, setMouseOn] = useState<boolean>(false);
+
+  const url = `${tymt_avatar_url}/public/upload/message/${message.file}`;
 
   const getFileDetails = (url: string) => {
     try {
@@ -45,7 +49,7 @@ const BubbleFile = ({ roomMode, isLastMessage, isSender }: IParamsBubbleFile) =>
     }
   };
 
-  const fileDetail = getFileDetails(FILE_URL);
+  const fileDetail = getFileDetails(url);
 
   return (
     <>
@@ -61,7 +65,7 @@ const BubbleFile = ({ roomMode, isLastMessage, isSender }: IParamsBubbleFile) =>
           setMouseOn(false);
         }}
       >
-        {mouseOn && <BubbleDownloadButton url={FILE_URL} />}
+        {mouseOn && <BubbleDownloadButton url={url} />}
         <Stack direction={"row"} gap={"8px"} alignItems={"center"} height={"48px"} width={"240px"}>
           <Box
             height={"48px"}

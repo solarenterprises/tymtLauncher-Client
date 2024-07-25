@@ -10,7 +10,9 @@ import AudioToggleButton from "./AudioToggleButton";
 
 import { ChatMessageType } from "../../types/chatTypes";
 
-const AUDIO_URL = "https://dev.tymt.com/public/upload/BEN-48-Cryptocurrency.mp3";
+import { tymt_avatar_url } from "../../configs";
+
+// const AUDIO_URL = "https://dev.tymt.com/public/upload/BEN-48-Cryptocurrency.mp3";
 
 export interface IParamsBubbleAudio {
   message: ChatMessageType;
@@ -32,6 +34,8 @@ const BubbleAudio = ({ roomMode, message, decryptedMessage, isLastMessage, isSen
 
   const visualizerRef = useRef<HTMLCanvasElement>(null);
 
+  const url = `${tymt_avatar_url}/public/upload/message/${message.file}`;
+
   const formatTime = (milliseconds: number) => {
     const totalSeconds = Math.floor(milliseconds / 1000);
     const minutes = Math.floor(totalSeconds / 60);
@@ -42,7 +46,7 @@ const BubbleAudio = ({ roomMode, message, decryptedMessage, isLastMessage, isSen
   useEffect(() => {
     const fetchAudioFile = async () => {
       try {
-        const response = await fetch(AUDIO_URL);
+        const response = await fetch(url);
         if (!response.ok) {
           throw new Error("Network response was not ok");
         }
@@ -70,7 +74,7 @@ const BubbleAudio = ({ roomMode, message, decryptedMessage, isLastMessage, isSen
           setMouseOn(false);
         }}
       >
-        {mouseOn && <BubbleDownloadButton url={AUDIO_URL} />}
+        {mouseOn && <BubbleDownloadButton url={url} />}
         <Stack>
           <Stack direction="row" alignItems="center" gap="8px">
             <AudioToggleButton loaded={loadedDisplay} playing={playing} setPlaying={setPlaying} />
@@ -106,7 +110,7 @@ const BubbleAudio = ({ roomMode, message, decryptedMessage, isLastMessage, isSen
       </Box>
 
       <Sound
-        url={AUDIO_URL}
+        url={url}
         playStatus={playing ? Sound.status.PLAYING : Sound.status.STOPPED}
         autoLoad={true}
         onLoading={({ duration }) => {

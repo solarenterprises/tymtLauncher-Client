@@ -7,7 +7,9 @@ import BubbleDownloadButton from "./BubbleDownloadButton";
 
 import { ChatMessageType } from "../../types/chatTypes";
 
-const VIDEO_URL = "https://veloren.net/videos/veloren.webm";
+import { tymt_avatar_url } from "../../configs";
+
+// const VIDEO_URL = "https://veloren.net/videos/veloren.webm";
 
 export interface IParamsBubbleVideo {
   message: ChatMessageType;
@@ -19,6 +21,8 @@ export interface IParamsBubbleVideo {
 
 const BubbleVideo = ({ roomMode, message, isLastMessage, isSender }: IParamsBubbleVideo) => {
   const [mouseOn, setMouseOn] = useState<boolean>(false);
+
+  const url = `${tymt_avatar_url}/public/upload/message/${message.file}`;
 
   return (
     <>
@@ -32,8 +36,8 @@ const BubbleVideo = ({ roomMode, message, isLastMessage, isSender }: IParamsBubb
           setMouseOn(false);
         }}
       >
-        {mouseOn && <BubbleDownloadButton url={VIDEO_URL} />}
-        <ReactPlayer className="react-player" url={VIDEO_URL} width="200px" height="150px" controls={true} />
+        {mouseOn && <BubbleDownloadButton url={url} />}
+        <ReactPlayer className="react-player" url={url} width="200px" height="150px" controls={true} />
         <Box
           className="fs-16-regular white"
           sx={{

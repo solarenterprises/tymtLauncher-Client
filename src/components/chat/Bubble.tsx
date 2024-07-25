@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { useSelector } from "react-redux";
 
 import { Box, Stack } from "@mui/material";
@@ -85,12 +85,12 @@ const Bubble = ({ roomMode, screenExpanded, message, index }: IParamsBubble) => 
       }
       return encryptedmessage;
     },
-    [sKey, currentChatroomStore]
+    [sKey, currentChatroomStore, sKeyListStore, Chatdecrypt]
   );
 
   const timeline = isFirstMessageOfDay() ? formatDateDifference(message.createdAt) : null;
   const isLastMessageOfStack = detectLastMessageofStack();
-  const decryptedMessage = decryptMessage(message.message);
+  const decryptedMessage = useMemo(() => decryptMessage(message.message), [decryptMessage, sKey, sKeyListStore, currentChatroomStore, Chatdecrypt]);
   const isSender = message.sender_id === accountStore.uid;
 
   return (

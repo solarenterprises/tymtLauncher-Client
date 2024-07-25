@@ -17,7 +17,7 @@ import { getCurrentChatroom } from "../../features/chat/CurrentChatroomSlice";
 import { ISKeyList, getSKeyList } from "../../features/chat/SKeyListSlice";
 import { getChatHistory, setChatHistory } from "../../features/chat/ChatHistorySlice";
 
-import { encrypt } from "../../lib/api/Encrypt";
+import { encrypt, generateRandomString } from "../../lib/api/Encrypt";
 
 import ChatStyle from "../../styles/ChatStyles";
 import emotion from "../../assets/chat/emotion.svg";
@@ -26,6 +26,7 @@ import send from "../../assets/chat/chatframe.svg";
 import { ChatHistoryType, propsChatInputFieldType } from "../../types/chatTypes";
 import { accountType } from "../../types/accountTypes";
 import { IChatroom } from "../../types/ChatroomAPITypes";
+import MessageAPI from "../../lib/api/MessageAPI";
 
 const theme = createTheme({
   palette: {
@@ -51,6 +52,8 @@ const ChatInputField = ({ value, setValue }: propsChatInputFieldType) => {
   const currentChatroomStore: IChatroom = useSelector(getCurrentChatroom);
   const sKeyListStore: ISKeyList = useSelector(getSKeyList);
 
+  const currentSKey: string = sKeyListStore.sKeys.find((element) => element.roomId === currentChatroomStore._id)?.sKey;
+
   const [anchorEl, setAnchorEl] = useState(null);
   const [EmojiLibraryOpen, setIsEmojiLibraryOpen] = useState(false);
 
@@ -62,29 +65,81 @@ const ChatInputField = ({ value, setValue }: propsChatInputFieldType) => {
     }
   };
 
-  const handleFileInputChange = (e: ChangeEvent<HTMLInputElement>) => {
-    try {
-      const files = e.target.files;
+  const handleFileInputChange = useCallback(
+    async (e: ChangeEvent<HTMLInputElement>) => {
+      if (socket.current && socket.current.connected) {
+        try {
+          const files = e.target.files;
 
-      if (files && files.length > 0) {
-        const file = files[0];
-        let fileType: string = "";
-        if (file.type.startsWith("image/")) {
-          fileType = "image";
-        } else if (file.type.startsWith("audio/")) {
-          fileType = "audio";
-        } else if (file.type.startsWith("video/")) {
-          fileType = "video";
-        } else {
-          fileType = "file";
+          if (files && files.length > 0) {
+            const file = files[0];
+            const fileName = currentSKey ? await encrypt(`${file.name}${generateRandomString(32)}`, currentSKey) : `${file.name}${generateRandomString(32)}`;
+            let type: string = "";
+
+            if (file.type.startsWith("image/")) {
+              type = "image";
+            } else if (file.type.startsWith("audio/")) {
+              type = "audio";
+            } else if (file.type.startsWith("video/")) {
+              type = "video";
+            } else {
+              type = "file";
+            }
+
+            const formData = new FormData();
+            formData.append("type", type);
+            formData.append("sender_id", accountStore.uid);
+            formData.append("room_id", currentChatroomStore._id);
+            formData.append("message", fileName);
+            formData.append("file", file);
+
+            const res = await MessageAPI.fileUpload(formData);
+            if (!res || res.status !== 200) {
+              throw new Error("response undefined!");
+            }
+            console.log("1");
+
+            const message = {
+              sender_id: accountStore?.uid,
+              room_id: currentChatroomStore?._id,
+              message: fileName,
+              createdAt: Date.now(),
+            };
+            socket.current.emit("post-message", JSON.stringify(message));
+            console.log("socket.current.emit > post-message", message);
+
+            console.log("2");
+
+            const data = {
+              alertType: "chat",
+              note: {
+                sender: accountStore?.uid,
+                room_id: currentChatroomStore?._id,
+                message: fileName,
+              },
+              receivers: currentChatroomStore?.participants?.filter((element) => element.userId !== accountStore.uid)?.map((element_2) => element_2.userId),
+            };
+            socket.current.emit("post-alert", JSON.stringify(data));
+            console.log("socket.current.emit > post-alert");
+
+            console.log("3");
+
+            const updatedHistory = [message, ...chatHistoryStore.messages];
+            dispatch(
+              setChatHistory({
+                messages: updatedHistory,
+              })
+            );
+
+            console.log("handleFileInputChange", type, accountStore.uid, currentChatroomStore._id, message, file);
+          }
+        } catch (err) {
+          console.error("Failed to handleFileInputChange: ", err);
         }
-
-        console.log("handleFileInputChange", fileType, file);
       }
-    } catch (err) {
-      console.error("Failed to handleFileInputChange: ", err);
-    }
-  };
+    },
+    [accountStore, currentChatroomStore, chatHistoryStore, socket.current]
+  );
 
   const handleEmojiClick = (event: any) => {
     setAnchorEl(event.currentTarget);
@@ -104,7 +159,6 @@ const ChatInputField = ({ value, setValue }: propsChatInputFieldType) => {
       try {
         if (value.trim() !== "") {
           // Encrypt & send the message
-          const currentSKey = sKeyListStore?.sKeys?.find((element) => element?.roomId === currentChatroomStore?._id)?.sKey;
           const encryptedMessage = currentChatroomStore?.isPrivate ? await encrypt(value, currentSKey) : value;
           const message = {
             sender_id: accountStore?.uid,
@@ -215,19 +269,18 @@ const ChatInputField = ({ value, setValue }: propsChatInputFieldType) => {
                       <img src={send} />
                     </Box>
                   </Button>
-                  {false && (
-                    <Button
-                      className="upload_button"
-                      sx={{
-                        display: value ? "none" : "block",
-                      }}
-                      onClick={handleUploadClick}
-                    >
-                      <Box className={"center-align"}>
-                        <FileUploadIcon sx={{ color: "#ffffff" }} />
-                      </Box>
-                    </Button>
-                  )}
+
+                  <Button
+                    className="upload_button"
+                    sx={{
+                      display: value ? "none" : "block",
+                    }}
+                    onClick={handleUploadClick}
+                  >
+                    <Box className={"center-align"}>
+                      <FileUploadIcon sx={{ color: "#ffffff" }} />
+                    </Box>
+                  </Button>
                 </InputAdornment>
               ),
               style: { color: "#FFFFFF" },

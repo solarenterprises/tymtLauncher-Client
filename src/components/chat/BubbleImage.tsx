@@ -6,8 +6,9 @@ import BubbleImageModal from "./BubbleImageModal";
 import BubbleDownloadButton from "./BubbleDownloadButton";
 
 import { ChatMessageType } from "../../types/chatTypes";
+import { tymt_avatar_url } from "../../configs";
 
-const IMAGE_URL = "https://dev.tymt.com/public/upload/room-image/66855e3d70fe2851827b7ccb.jpg";
+// const IMAGE_URL = "https://dev.tymt.com/public/upload/room-image/66855e3d70fe2851827b7ccb.jpg";
 
 export interface IParamsBubbleImage {
   message: ChatMessageType;
@@ -21,6 +22,8 @@ const BubbleImage = ({ roomMode, message, isLastMessage, isSender }: IParamsBubb
   const [_showTime, setShowTime] = useState<boolean>(false);
   const [showImageModal, setShowImageModal] = useState<boolean>(false);
   const [mouseOn, setMouseOn] = useState<boolean>(false);
+
+  const url = `${tymt_avatar_url}/public/upload/message/${message.file}`;
 
   const handleMouseEnter = () => {
     setShowTime(true);
@@ -46,10 +49,10 @@ const BubbleImage = ({ roomMode, message, isLastMessage, isSender }: IParamsBubb
           setMouseOn(false);
         }}
       >
-        {mouseOn && <BubbleDownloadButton url={IMAGE_URL} />}
+        {mouseOn && <BubbleDownloadButton url={url} />}
         <Box
           component={"img"}
-          src={IMAGE_URL}
+          src={url}
           width={"200px"}
           height={"150px"}
           onMouseEnter={handleMouseEnter}
@@ -75,7 +78,7 @@ const BubbleImage = ({ roomMode, message, isLastMessage, isSender }: IParamsBubb
         </Box>
       </Box>
 
-      <BubbleImageModal open={showImageModal} setOpen={setShowImageModal} url={IMAGE_URL} />
+      <BubbleImageModal open={showImageModal} setOpen={setShowImageModal} url={url} />
     </>
   );
 };

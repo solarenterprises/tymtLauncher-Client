@@ -103,6 +103,7 @@ export interface ChatMessageType {
   timestamp: number;
   createdAt: number;
   updatedAt: number;
+  file?: string;
 }
 
 export interface ChatHistoryType {
