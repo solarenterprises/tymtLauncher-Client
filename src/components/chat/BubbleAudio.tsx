@@ -34,7 +34,7 @@ const BubbleAudio = ({ roomMode, message, decryptedMessage, isLastMessage, isSen
 
   const visualizerRef = useRef<HTMLCanvasElement>(null);
 
-  const url = `${tymt_avatar_url}/public/upload/message/${message.file}`;
+  const url = `${tymt_avatar_url}/public/upload/message/${message.message}`;
 
   const formatTime = (milliseconds: number) => {
     const totalSeconds = Math.floor(milliseconds / 1000);
@@ -74,7 +74,7 @@ const BubbleAudio = ({ roomMode, message, decryptedMessage, isLastMessage, isSen
           setMouseOn(false);
         }}
       >
-        {mouseOn && <BubbleDownloadButton url={url} />}
+        {mouseOn && <BubbleDownloadButton url={url} name={decryptedMessage} />}
         <Stack>
           <Stack direction="row" alignItems="center" gap="8px">
             <AudioToggleButton loaded={loadedDisplay} playing={playing} setPlaying={setPlaying} />

@@ -19,37 +19,30 @@ export interface IParamsBubbleFile {
   roomMode: boolean;
 }
 
-const BubbleFile = ({ roomMode, message, isLastMessage, isSender }: IParamsBubbleFile) => {
+const BubbleFile = ({ roomMode, message, decryptedMessage, isLastMessage, isSender }: IParamsBubbleFile) => {
   const [mouseOn, setMouseOn] = useState<boolean>(false);
 
-  const url = `${tymt_avatar_url}/public/upload/message/${message.file}`;
+  const url = `${tymt_avatar_url}/public/upload/message/${message.message}`;
 
-  const getFileDetails = (url: string) => {
+  const getFileDetailsFromFileName = (fullFileName: string) => {
     try {
-      const parsedUrl = new URL(url);
-      const pathname = parsedUrl.pathname;
-
-      // Get the filename
-      const segments = pathname.split("/");
-      const filenameWithExtension = segments.pop() || null;
-
-      // Get the file extension
-      const extension = filenameWithExtension ? filenameWithExtension.split(".").pop() : null;
-
-      // Check if the extension is valid
-      const isValidExtension = extension && extension !== filenameWithExtension;
-
+      const extension = fullFileName.includes(".") ? fullFileName.split(".").pop() : null;
+      const filenameWithoutExtension = extension ? fullFileName.slice(0, -(extension.length + 1)) : fullFileName;
+      const isValidExtension = extension && extension !== fullFileName;
       return {
-        filename: filenameWithExtension,
+        filename: filenameWithoutExtension,
         extension: isValidExtension ? extension : null,
       };
-    } catch (error) {
-      console.error("Invalid URL:", error);
-      return null;
+    } catch (err) {
+      console.error("Failed to getFileDetailsFromFileName: ", err);
+      return {
+        filename: null,
+        extension: null,
+      };
     }
   };
 
-  const fileDetail = getFileDetails(url);
+  const fileDetail = getFileDetailsFromFileName(decryptedMessage);
 
   return (
     <>
@@ -65,7 +58,7 @@ const BubbleFile = ({ roomMode, message, isLastMessage, isSender }: IParamsBubbl
           setMouseOn(false);
         }}
       >
-        {mouseOn && <BubbleDownloadButton url={url} />}
+        {mouseOn && <BubbleDownloadButton url={url} name={decryptedMessage} />}
         <Stack direction={"row"} gap={"8px"} alignItems={"center"} height={"48px"} width={"240px"}>
           <Box
             height={"48px"}
@@ -89,7 +82,7 @@ const BubbleFile = ({ roomMode, message, isLastMessage, isSender }: IParamsBubbl
               textOverflow: "ellipsis",
             }}
           >
-            {fileDetail.filename}
+            {decryptedMessage}
           </Box>
         </Stack>
       </Box>

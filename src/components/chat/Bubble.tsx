@@ -90,8 +90,19 @@ const Bubble = ({ roomMode, screenExpanded, message, index }: IParamsBubble) => 
 
   const timeline = isFirstMessageOfDay() ? formatDateDifference(message.createdAt) : null;
   const isLastMessageOfStack = detectLastMessageofStack();
-  const decryptedMessage = useMemo(() => decryptMessage(message.message), [decryptMessage, sKey, sKeyListStore, currentChatroomStore, Chatdecrypt]);
   const isSender = message.sender_id === accountStore.uid;
+  const decryptedMessage = useMemo(() => {
+    try {
+      const res = decryptMessage(message.message);
+      if (message.type && message.type !== "text") {
+        return res.slice(0, -32);
+      }
+      return res;
+    } catch (err) {
+      console.error("Failed with decryptedMessage: ", err);
+      return "";
+    }
+  }, [sKey, sKeyListStore, currentChatroomStore, Chatdecrypt, decryptMessage, message]);
 
   return (
     <Box className={"bubblecontainer"} key={`${index}-${message.createdAt}`}>

@@ -27,6 +27,7 @@ import { ChatHistoryType, propsChatInputFieldType } from "../../types/chatTypes"
 import { accountType } from "../../types/accountTypes";
 import { IChatroom } from "../../types/ChatroomAPITypes";
 import MessageAPI from "../../lib/api/MessageAPI";
+import { shortenFileName } from "../../lib/api/URLHelper";
 
 const theme = createTheme({
   palette: {
@@ -73,7 +74,8 @@ const ChatInputField = ({ value, setValue }: propsChatInputFieldType) => {
 
           if (files && files.length > 0) {
             const file = files[0];
-            const fileName = currentSKey ? await encrypt(`${file.name}${generateRandomString(32)}`, currentSKey) : `${file.name}${generateRandomString(32)}`;
+            const shortName = shortenFileName(file.name);
+            const fileName = currentSKey ? await encrypt(`${shortName}${generateRandomString(32)}`, currentSKey) : `${shortName}${generateRandomString(32)}`;
             let type: string = "";
 
             if (file.type.startsWith("image/")) {
@@ -95,20 +97,18 @@ const ChatInputField = ({ value, setValue }: propsChatInputFieldType) => {
 
             const res = await MessageAPI.fileUpload(formData);
             if (!res || res.status !== 200) {
-              throw new Error("response undefined!");
+              throw new Error("response error!");
             }
-            console.log("1");
 
             const message = {
               sender_id: accountStore?.uid,
               room_id: currentChatroomStore?._id,
               message: fileName,
               createdAt: Date.now(),
+              type: type,
             };
             socket.current.emit("post-message", JSON.stringify(message));
             console.log("socket.current.emit > post-message", message);
-
-            console.log("2");
 
             const data = {
               alertType: "chat",
@@ -121,8 +121,6 @@ const ChatInputField = ({ value, setValue }: propsChatInputFieldType) => {
             };
             socket.current.emit("post-alert", JSON.stringify(data));
             console.log("socket.current.emit > post-alert");
-
-            console.log("3");
 
             const updatedHistory = [message, ...chatHistoryStore.messages];
             dispatch(

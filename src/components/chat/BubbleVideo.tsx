@@ -19,10 +19,10 @@ export interface IParamsBubbleVideo {
   roomMode: boolean;
 }
 
-const BubbleVideo = ({ roomMode, message, isLastMessage, isSender }: IParamsBubbleVideo) => {
+const BubbleVideo = ({ roomMode, message, decryptedMessage, isLastMessage, isSender }: IParamsBubbleVideo) => {
   const [mouseOn, setMouseOn] = useState<boolean>(false);
 
-  const url = `${tymt_avatar_url}/public/upload/message/${message.file}`;
+  const url = `${tymt_avatar_url}/public/upload/message/${message.message}`;
 
   return (
     <>
@@ -36,7 +36,7 @@ const BubbleVideo = ({ roomMode, message, isLastMessage, isSender }: IParamsBubb
           setMouseOn(false);
         }}
       >
-        {mouseOn && <BubbleDownloadButton url={url} />}
+        {mouseOn && <BubbleDownloadButton url={url} name={decryptedMessage} />}
         <ReactPlayer className="react-player" url={url} width="200px" height="150px" controls={true} />
         <Box
           className="fs-16-regular white"

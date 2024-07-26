@@ -1,17 +1,22 @@
 import { IconButton } from "@mui/material";
 import DownloadIcon from "@mui/icons-material/Download";
-import { getFileNameFromURL } from "../../lib/api/URLHelper";
+import { saveAs } from "file-saver";
 
 export interface IPropsBubbleDownloadButton {
   url: string;
+  name: string;
 }
 
-const BubbleDownloadButton = ({ url }: IPropsBubbleDownloadButton) => {
+const BubbleDownloadButton = ({ url, name }: IPropsBubbleDownloadButton) => {
   const handleDownloadClick = () => {
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = getFileNameFromURL(url);
-    link.click();
+    fetch(url)
+      .then((response) => response.blob())
+      .then((blob) => {
+        saveAs(blob, name); // Use saveAs to trigger the download
+      })
+      .catch((error) => {
+        console.error("Failed to handleDownloadClick: ", error);
+      });
   };
 
   return (
