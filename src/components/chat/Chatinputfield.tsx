@@ -1,6 +1,7 @@
 import { useCallback, useState, useRef, ChangeEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector, useDispatch } from "react-redux";
+import { ThreeDots } from "react-loader-spinner";
 
 import EmojiPicker, { SkinTones } from "emoji-picker-react";
 
@@ -57,6 +58,7 @@ const ChatInputField = ({ value, setValue }: propsChatInputFieldType) => {
 
   const [anchorEl, setAnchorEl] = useState(null);
   const [EmojiLibraryOpen, setIsEmojiLibraryOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const fileInputRef = useRef(null);
 
@@ -70,6 +72,8 @@ const ChatInputField = ({ value, setValue }: propsChatInputFieldType) => {
     async (e: ChangeEvent<HTMLInputElement>) => {
       if (socket.current && socket.current.connected) {
         try {
+          setLoading(true);
+
           const files = e.target.files;
 
           if (files && files.length > 0) {
@@ -130,9 +134,12 @@ const ChatInputField = ({ value, setValue }: propsChatInputFieldType) => {
             );
 
             console.log("handleFileInputChange", type, accountStore.uid, currentChatroomStore._id, message, file);
+
+            setLoading(false);
           }
         } catch (err) {
           console.error("Failed to handleFileInputChange: ", err);
+          setLoading(false);
         }
       }
     },
@@ -230,90 +237,107 @@ const ChatInputField = ({ value, setValue }: propsChatInputFieldType) => {
             marginBottom: "15px",
           }}
         />
-        <ThemeProvider theme={theme}>
-          <TextField
-            className={classes.chat_input}
-            color="secondary"
-            value={value}
-            placeholder={t("cha-26_type-here")}
-            multiline
-            InputProps={{
-              inputComponent: TextareaAutosize,
-              startAdornment: (
-                <InputAdornment position="start">
-                  <div style={{ width: 5 }} />
-                </InputAdornment>
-              ),
-              endAdornment: (
-                <InputAdornment position="start">
-                  <Button className={classes.emoji_button} onClick={handleEmojiClick}>
-                    <img
-                      src={emotion}
-                      style={{
-                        cursor: "pointer",
-                        display: "block",
+        <Box sx={{ position: "relative" }}>
+          <ThemeProvider theme={theme}>
+            <TextField
+              className={classes.chat_input}
+              color="secondary"
+              value={value}
+              placeholder={t("cha-26_type-here")}
+              multiline
+              InputProps={{
+                inputComponent: TextareaAutosize,
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <div style={{ width: 5 }} />
+                  </InputAdornment>
+                ),
+                endAdornment: (
+                  <InputAdornment position="start">
+                    <Button className={classes.emoji_button} onClick={handleEmojiClick}>
+                      <img
+                        src={emotion}
+                        style={{
+                          cursor: "pointer",
+                          display: "block",
+                        }}
+                      />
+                    </Button>
+
+                    <Button
+                      className="send_button"
+                      sx={{
+                        display: value ? "block" : "none",
                       }}
-                    />
-                  </Button>
+                      onClick={sendMessage}
+                    >
+                      <Box className={"center-align"}>
+                        <img src={send} />
+                      </Box>
+                    </Button>
 
-                  <Button
-                    className="send_button"
-                    sx={{
-                      display: value ? "block" : "none",
-                    }}
-                    onClick={sendMessage}
-                  >
-                    <Box className={"center-align"}>
-                      <img src={send} />
-                    </Box>
-                  </Button>
-
-                  <Button
-                    className="upload_button"
-                    sx={{
-                      display: value ? "none" : "block",
-                    }}
-                    onClick={handleUploadClick}
-                  >
-                    <Box className={"center-align"}>
-                      <FileUploadIcon sx={{ color: "#ffffff" }} />
-                    </Box>
-                  </Button>
-                </InputAdornment>
-              ),
-              style: { color: "#FFFFFF" },
+                    <Button
+                      className="upload_button"
+                      sx={{
+                        display: value ? "none" : "block",
+                      }}
+                      onClick={handleUploadClick}
+                    >
+                      <Box className={"center-align"}>
+                        <FileUploadIcon sx={{ color: "#ffffff" }} />
+                      </Box>
+                    </Button>
+                  </InputAdornment>
+                ),
+                style: { color: "#FFFFFF" },
+              }}
+              onChange={(e) => {
+                if (setValue) setValue(e.target.value);
+              }}
+              onKeyDown={(e: any) => {
+                handleEnter(e);
+              }}
+            />
+          </ThemeProvider>
+          <Popover
+            open={EmojiLibraryOpen}
+            onClose={handleCloseEmojiLibrary}
+            anchorOrigin={{
+              vertical: "top",
+              horizontal: "center",
             }}
-            onChange={(e) => {
-              if (setValue) setValue(e.target.value);
+            anchorEl={anchorEl}
+            transformOrigin={{
+              vertical: "bottom",
+              horizontal: "left",
             }}
-            onKeyDown={(e: any) => {
-              handleEnter(e);
-            }}
-          />
-        </ThemeProvider>
-        <Popover
-          open={EmojiLibraryOpen}
-          onClose={handleCloseEmojiLibrary}
-          anchorOrigin={{
-            vertical: "top",
-            horizontal: "center",
-          }}
-          anchorEl={anchorEl}
-          transformOrigin={{
-            vertical: "bottom",
-            horizontal: "left",
-          }}
-          slotProps={{
-            paper: {
-              style: {
-                backgroundColor: "transparent",
-                boxShadow: "none",
+            slotProps={{
+              paper: {
+                style: {
+                  backgroundColor: "transparent",
+                  boxShadow: "none",
+                },
               },
-            },
-          }}
-        >
-          <EmojiPicker className={classes.emojipicker} onEmojiClick={handleEmojiSelect} defaultSkinTone={SkinTones.LIGHT} autoFocusSearch={true} />
-        </Popover>
+            }}
+          >
+            <EmojiPicker className={classes.emojipicker} onEmojiClick={handleEmojiSelect} defaultSkinTone={SkinTones.LIGHT} autoFocusSearch={true} />
+          </Popover>
+          {loading && (
+            <Box
+              position="absolute"
+              width="100%"
+              height="100%"
+              top={0}
+              left={0}
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
+              sx={{ zIndex: "100", backdropFilter: "blur(8px)" }}
+            >
+              <ThreeDots height="100%" width={100} radius={1} color={`#EF4444`} />
+            </Box>
+          )}
+        </Box>
       </Box>
       <input
         type="file"

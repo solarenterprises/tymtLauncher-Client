@@ -1,4 +1,5 @@
 import { MutableRefObject, createContext, useCallback, useContext, useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import { Outlet } from "react-router-dom";
 import { appWindow } from "@tauri-apps/api/window";
@@ -13,7 +14,7 @@ import { getAccount } from "../features/account/AccountSlice";
 import { getCurrentChatroom, setCurrentChatroom } from "../features/chat/CurrentChatroomSlice";
 import { getCurrentPartner } from "../features/chat/CurrentPartnerSlice";
 import { createContactAsync, getContactList, updateOneInContactList } from "../features/chat/ContactListSlice";
-import { addOneToUnreadList, fetchAlertListAsync } from "../features/alert/AlertListSlice";
+import { addOneToUnreadList, fetchAlertListAsync, updateFriendRequestInAlertList } from "../features/alert/AlertListSlice";
 import { getBlockList } from "../features/chat/BlockListSlice";
 import { addOneToChatroomListAsync, delOneFromChatroomList, getChatroomList } from "../features/chat/ChatroomListSlice";
 import { selectNotification } from "../features/settings/NotificationSlice";
@@ -36,7 +37,6 @@ import { chatType, notificationType } from "../types/settingTypes";
 import { ChatHistoryType, ISocketHash, IAlert, IContact, IContactList, IRsa } from "../types/chatTypes";
 
 import { Chatdecrypt } from "../lib/api/ChatEncrypt";
-import { useTranslation } from "react-i18next";
 
 interface SocketContextType {
   socket: MutableRefObject<Socket>;
@@ -432,9 +432,9 @@ export const SocketProvider = () => {
           socket.current.emit("update-alert", JSON.stringify(data));
           console.log("socket.current.emit > update-alert", data);
 
-          dispatch(createContactAsync(alert.note.sender)).then(() => {
-            dispatch(fetchFriendListAsync());
-          });
+          dispatch(updateFriendRequestInAlertList(data));
+          dispatch(createContactAsync(alert.note.sender));
+          dispatch(fetchFriendListAsync());
         }
       } catch (err) {
         console.error("Failed to approveFriendRequest: ", err);
@@ -460,15 +460,15 @@ export const SocketProvider = () => {
           socket.current.emit("update-alert", JSON.stringify(data));
           console.log("socket.current.emit > update-alert", data);
 
-          dispatch(createContactAsync(alert.note.sender)).then(() => {
-            dispatch(fetchFriendListAsync());
-          });
+          dispatch(updateFriendRequestInAlertList(data));
+          dispatch(createContactAsync(alert.note.sender));
+          dispatch(fetchFriendListAsync());
         }
       } catch (err) {
         console.error("Failed to declineFriendRequest: ", err);
       }
     },
-    [accountStore]
+    [accountStore, socket.current]
   );
 
   return (
