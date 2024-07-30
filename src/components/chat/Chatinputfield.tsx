@@ -79,7 +79,7 @@ const ChatInputField = ({ value, setValue }: propsChatInputFieldType) => {
           if (files && files.length > 0) {
             const file = files[0];
             const shortName = shortenFileName(file.name);
-            const fileName = currentSKey ? await encrypt(`${shortName}${generateRandomString(32)}`, currentSKey) : `${shortName}${generateRandomString(32)}`;
+            const storeName = currentSKey ? await encrypt(`${shortName}${generateRandomString(32)}`, currentSKey) : `${shortName}${generateRandomString(32)}`;
             let type: string = "";
 
             if (file.type.startsWith("image/")) {
@@ -96,7 +96,7 @@ const ChatInputField = ({ value, setValue }: propsChatInputFieldType) => {
             formData.append("type", type);
             formData.append("sender_id", accountStore.uid);
             formData.append("room_id", currentChatroomStore._id);
-            formData.append("message", fileName);
+            formData.append("message", storeName);
             formData.append("file", file);
 
             const res = await MessageAPI.fileUpload(formData);
@@ -107,19 +107,20 @@ const ChatInputField = ({ value, setValue }: propsChatInputFieldType) => {
             const message = {
               sender_id: accountStore?.uid,
               room_id: currentChatroomStore?._id,
-              message: fileName,
+              message: storeName,
               createdAt: Date.now(),
               type: type,
             };
             socket.current.emit("post-message", JSON.stringify(message));
             console.log("socket.current.emit > post-message", message);
 
+            const fullName = currentSKey ? await encrypt(`${file.name}`, currentSKey) : `${file.name}`;
             const data = {
               alertType: "chat",
               note: {
                 sender: accountStore?.uid,
                 room_id: currentChatroomStore?._id,
-                message: fileName,
+                message: fullName,
               },
               receivers: currentChatroomStore?.participants?.filter((element) => element.userId !== accountStore.uid)?.map((element_2) => element_2.userId),
             };

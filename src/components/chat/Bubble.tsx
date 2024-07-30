@@ -122,7 +122,7 @@ const Bubble = ({ roomMode, screenExpanded, message, index }: IParamsBubble) => 
             onlineStatus={activeUserListStore.users.some((user) => user === message.sender_id)}
             userid={message.sender_id}
             size={40}
-            status={currentChatroomMembersStore.members.find((member) => member._id === message._id)?.notificationStatus}
+            status={currentChatroomMembersStore?.members?.find((member) => member._id === message._id)?.notificationStatus}
           />
         )}
         {roomMode && screenExpanded && !isLastMessageOfStack && <div style={{ width: "40px", height: "40px" }} />}

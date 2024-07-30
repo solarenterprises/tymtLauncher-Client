@@ -140,6 +140,7 @@ export interface INote {
   detail?: string;
   from?: string;
   to?: string;
+  type?: string;
 }
 
 export interface IAlert {
