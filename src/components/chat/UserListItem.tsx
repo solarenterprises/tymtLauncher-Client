@@ -76,12 +76,14 @@ const UserListItem = ({ user, index, numberOfUnreadMessages, setView, page }: IP
             .filter((chatroom) => !chatroom.room_name)
             .some((dm) => dm.participants.some((participant) => participant.userId === user._id));
           // If we already had DM in the past
+          console.log("haveDMWithUser: ", haveDMWithUser);
           if (haveDMWithUser) {
             const newCurrentChatroom = chatroomListStore.chatrooms
               .filter((chatroom) => !chatroom.room_name)
               .find((dm) => dm.participants.some((participant) => participant.userId === user._id));
+            console.log("newCurrentChatroom: ", newCurrentChatroom);
             dispatch(setCurrentChatroom(newCurrentChatroom));
-            dispatch(fetchCurrentChatroomMembersAsync(newCurrentChatroom._id));
+            await dispatch(fetchCurrentChatroomMembersAsync(newCurrentChatroom._id));
             if (setView) setView("chatbox");
           }
           // Else if we didn't have any DM in the past

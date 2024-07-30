@@ -64,6 +64,7 @@ const DMListItemContextMenu = ({ view, setView, DM, contextMenuPosition }: IProp
           }
         });
       });
+      setView(false);
     } catch (err) {
       console.error("Failed to handleFriendRequestClick: ", err);
     }

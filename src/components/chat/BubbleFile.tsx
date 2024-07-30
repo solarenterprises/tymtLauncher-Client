@@ -1,13 +1,15 @@
 import { useState } from "react";
 import { FileIcon, defaultStyles } from "react-file-icon";
 
+import { tymt_avatar_url } from "../../configs";
+
 import { Box, Stack } from "@mui/material";
 
 import BubbleDownloadButton from "./BubbleDownloadButton";
 
 import { ChatMessageType } from "../../types/chatTypes";
 
-const FILE_URL = "https://www.englishtco.com/wp-content/uploads/2018/06/Job-Interviews-In-English_Series-One-Pack.pdf";
+// const FILE_URL = "https://www.englishtco.com/wp-content/uploads/2018/06/Job-Interviews-In-English_Series-One-Pack.pdf";
 
 export interface IParamsBubbleFile {
   message: ChatMessageType;
@@ -17,35 +19,30 @@ export interface IParamsBubbleFile {
   roomMode: boolean;
 }
 
-const BubbleFile = ({ roomMode, isLastMessage, isSender }: IParamsBubbleFile) => {
+const BubbleFile = ({ roomMode, message, decryptedMessage, isLastMessage, isSender }: IParamsBubbleFile) => {
   const [mouseOn, setMouseOn] = useState<boolean>(false);
 
-  const getFileDetails = (url: string) => {
+  const url = `${tymt_avatar_url}/public/upload/message/${message.message}`;
+
+  const getFileDetailsFromFileName = (fullFileName: string) => {
     try {
-      const parsedUrl = new URL(url);
-      const pathname = parsedUrl.pathname;
-
-      // Get the filename
-      const segments = pathname.split("/");
-      const filenameWithExtension = segments.pop() || null;
-
-      // Get the file extension
-      const extension = filenameWithExtension ? filenameWithExtension.split(".").pop() : null;
-
-      // Check if the extension is valid
-      const isValidExtension = extension && extension !== filenameWithExtension;
-
+      const extension = fullFileName.includes(".") ? fullFileName.split(".").pop() : null;
+      const filenameWithoutExtension = extension ? fullFileName.slice(0, -(extension.length + 1)) : fullFileName;
+      const isValidExtension = extension && extension !== fullFileName;
       return {
-        filename: filenameWithExtension,
+        filename: filenameWithoutExtension,
         extension: isValidExtension ? extension : null,
       };
-    } catch (error) {
-      console.error("Invalid URL:", error);
-      return null;
+    } catch (err) {
+      console.error("Failed to getFileDetailsFromFileName: ", err);
+      return {
+        filename: null,
+        extension: null,
+      };
     }
   };
 
-  const fileDetail = getFileDetails(FILE_URL);
+  const fileDetail = getFileDetailsFromFileName(decryptedMessage);
 
   return (
     <>
@@ -61,7 +58,7 @@ const BubbleFile = ({ roomMode, isLastMessage, isSender }: IParamsBubbleFile) =>
           setMouseOn(false);
         }}
       >
-        {mouseOn && <BubbleDownloadButton url={FILE_URL} />}
+        {mouseOn && <BubbleDownloadButton url={url} name={decryptedMessage} />}
         <Stack direction={"row"} gap={"8px"} alignItems={"center"} height={"48px"} width={"240px"}>
           <Box
             height={"48px"}
@@ -85,7 +82,7 @@ const BubbleFile = ({ roomMode, isLastMessage, isSender }: IParamsBubbleFile) =>
               textOverflow: "ellipsis",
             }}
           >
-            {fileDetail.filename}
+            {decryptedMessage}
           </Box>
         </Stack>
       </Box>

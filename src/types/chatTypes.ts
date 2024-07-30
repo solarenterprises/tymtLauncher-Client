@@ -103,6 +103,7 @@ export interface ChatMessageType {
   timestamp: number;
   createdAt: number;
   updatedAt: number;
+  file?: string;
 }
 
 export interface ChatHistoryType {
@@ -139,6 +140,7 @@ export interface INote {
   detail?: string;
   from?: string;
   to?: string;
+  type?: string;
 }
 
 export interface IAlert {

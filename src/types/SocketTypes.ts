@@ -12,6 +12,7 @@ export interface ISocketParamsPostMessage {
   room_id: string;
   sender_id: string;
   message: string;
+  type: string;
 }
 
 export interface ISocketParamsJoinedMessageGroup {

@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { useSelector } from "react-redux";
 
 import { Box, Stack } from "@mui/material";
@@ -85,13 +85,24 @@ const Bubble = ({ roomMode, screenExpanded, message, index }: IParamsBubble) => 
       }
       return encryptedmessage;
     },
-    [sKey, currentChatroomStore]
+    [sKey, currentChatroomStore, sKeyListStore, Chatdecrypt]
   );
 
   const timeline = isFirstMessageOfDay() ? formatDateDifference(message.createdAt) : null;
   const isLastMessageOfStack = detectLastMessageofStack();
-  const decryptedMessage = decryptMessage(message.message);
   const isSender = message.sender_id === accountStore.uid;
+  const decryptedMessage = useMemo(() => {
+    try {
+      const res = decryptMessage(message.message);
+      if (message.type && message.type !== "text") {
+        return res.slice(0, -32);
+      }
+      return res;
+    } catch (err) {
+      console.error("Failed with decryptedMessage: ", err);
+      return "";
+    }
+  }, [sKey, sKeyListStore, currentChatroomStore, Chatdecrypt, decryptMessage, message]);
 
   return (
     <Box className={"bubblecontainer"} key={`${index}-${message.createdAt}`}>
@@ -111,7 +122,7 @@ const Bubble = ({ roomMode, screenExpanded, message, index }: IParamsBubble) => 
             onlineStatus={activeUserListStore.users.some((user) => user === message.sender_id)}
             userid={message.sender_id}
             size={40}
-            status={currentChatroomMembersStore.members.find((member) => member._id === message._id)?.notificationStatus}
+            status={currentChatroomMembersStore?.members?.find((member) => member._id === message._id)?.notificationStatus}
           />
         )}
         {roomMode && screenExpanded && !isLastMessageOfStack && <div style={{ width: "40px", height: "40px" }} />}

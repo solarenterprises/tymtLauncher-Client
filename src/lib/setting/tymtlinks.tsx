@@ -14,7 +14,7 @@ const Tymtlinks: tymtlinks = {
     policy: "https://solarenterprises.com/policy",
     termsofservice: "https://solarenterprises.com/terms",
     twitter: "https://twitter.com/tymt_com",
-    discord: "https://discord.gg/JgABQGgu",
+    discord: "https://discord.gg/district53",
   },
 };
 
