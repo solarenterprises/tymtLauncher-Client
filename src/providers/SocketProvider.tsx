@@ -13,11 +13,11 @@ import { getAccount } from "../features/account/AccountSlice";
 import { getCurrentChatroom, setCurrentChatroom } from "../features/chat/CurrentChatroomSlice";
 import { getCurrentPartner } from "../features/chat/CurrentPartnerSlice";
 import { createContactAsync, getContactList, updateOneInContactList } from "../features/chat/ContactListSlice";
-import { addOneToUnreadList, fetchAlertListAsync, updateFriendRequestInAlertList } from "../features/alert/AlertListSlice";
+import { addOneToUnreadList, fetchAlertListAsync } from "../features/alert/AlertListSlice";
 import { getBlockList } from "../features/chat/BlockListSlice";
 import { addOneToChatroomListAsync, delOneFromChatroomList, getChatroomList } from "../features/chat/ChatroomListSlice";
 import { selectNotification } from "../features/settings/NotificationSlice";
-import { createFriendAsync, fetchFriendListAsync, getFriendList } from "../features/chat/FriendListSlice";
+import { fetchFriendListAsync, getFriendList } from "../features/chat/FriendListSlice";
 import { selectChat } from "../features/settings/ChatSlice";
 import { setChatHistory, getChatHistory } from "../features/chat/ChatHistorySlice";
 import { getSocketHash } from "../features/chat/SocketHashSlice";
@@ -252,32 +252,36 @@ export const SocketProvider = () => {
             if (!socket.current.hasListeners("alert-updated")) {
               socket.current.on("alert-udpated", async (alert: IAlert) => {
                 console.log("socket.current.on > alert-udpated", alert);
-                if (alert.alertType === "friend-request") {
-                  // Update the friend lists of both him and me
-                  dispatch(fetchFriendListAsync());
-                  if (alert.note.to === accountStoreRef.current.uid) {
-                    // If I accepted the friend request, synchronize the alert lists of all my other login sessions
-                    dispatch(fetchAlertListAsync(accountStoreRef.current.uid));
-                    return;
-                  }
-                  setNotificationOpen(true);
-                  setNotificationStatus("alert");
-                  setNotificationTitle(t("not-9_friend-request"));
-                  setNotificationDetail(alert.note.status === "accepted" ? t("not-11_fr-accept") : t("not-12_fr-reject"));
-                  setNotificationLink(null);
-                }
+                // if (alert.alertType === "friend-request") {
+                //   // Update the friend lists of both him and me
+                //   dispatch(fetchFriendListAsync());
+                //   if (alert.note.to === accountStoreRef.current.uid) {
+                //     // If I accepted the friend request, synchronize the alert lists of all my other login sessions
+                //     dispatch(fetchAlertListAsync(accountStoreRef.current.uid));
+                //     return;
+                //   }
+                //   setNotificationOpen(true);
+                //   setNotificationStatus("alert");
+                //   setNotificationTitle(t("not-9_friend-request"));
+                //   setNotificationDetail(alert.note.status === "accepted" ? t("not-11_fr-accept") : t("not-12_fr-reject"));
+                //   setNotificationLink(null);
+                // }
               });
             }
 
             if (!socket.current.hasListeners("friend-request-accepted")) {
               socket.current.on("friend-request-accepted", async (alert: IAlert) => {
                 console.log("socket.current.on > friend-request-accepted", alert);
+                dispatch(fetchAlertListAsync(accountStoreRef.current.uid));
+                dispatch(fetchFriendListAsync());
               });
             }
 
             if (!socket.current.hasListeners("friend-request-rejected")) {
               socket.current.on("friend-request-rejected", async (alert: IAlert) => {
                 console.log("socket.current.on > friend-request-rejected", alert);
+                dispatch(fetchAlertListAsync(accountStoreRef.current.uid));
+                dispatch(fetchFriendListAsync());
               });
             }
 
@@ -418,7 +422,7 @@ export const SocketProvider = () => {
         if (socket.current && socket.current.connected) {
           const data = {
             id: alert._id,
-            alertType: "",
+            alertType: "friend-request",
             note: {
               sender: alert.note.sender,
               to: alert.note.to,
@@ -428,10 +432,8 @@ export const SocketProvider = () => {
           socket.current.emit("update-alert", JSON.stringify(data));
           console.log("socket.current.emit > update-alert", data);
 
-          dispatch(updateFriendRequestInAlertList(data));
-
           dispatch(createContactAsync(alert.note.sender)).then(() => {
-            dispatch(createFriendAsync(alert.note.sender));
+            dispatch(fetchFriendListAsync());
           });
         }
       } catch (err) {
@@ -448,6 +450,7 @@ export const SocketProvider = () => {
         if (socket.current && socket.current.connected) {
           const data = {
             id: alert._id,
+            alertType: "friend-request",
             note: {
               sender: alert.note.sender,
               to: alert.note.to,
@@ -457,10 +460,9 @@ export const SocketProvider = () => {
           socket.current.emit("update-alert", JSON.stringify(data));
           console.log("socket.current.emit > update-alert", data);
 
-          dispatch(updateFriendRequestInAlertList(data));
-
-          // socket.current.emit("post-alert", JSON.stringify(data));
-          // dispatch(updateFriendRequestAsync({ alertId: alert._id, status: "rejected" }));
+          dispatch(createContactAsync(alert.note.sender)).then(() => {
+            dispatch(fetchFriendListAsync());
+          });
         }
       } catch (err) {
         console.error("Failed to declineFriendRequest: ", err);
