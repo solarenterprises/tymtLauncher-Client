@@ -1,6 +1,6 @@
 {
-  "name": "tymtLauncherDebug",
-  "description": "tymtLauncherDebug client",
+  "name": "tymtLauncher",
+  "description": "tymtLauncher client",
   "homepage": "https://github.com/solarenterprises/tymtLauncher-Client#readme",
   "author": "Solar Enterprises <hello@solarenterprises.com>",
   "bugs": {

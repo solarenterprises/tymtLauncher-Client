@@ -148,7 +148,7 @@ async fn main() -> std::io::Result<()> {
                 }
                 SystemTrayEvent::DoubleClick { position: _, size: _, .. } => {
                     println!("system tray received a double click");
-                    let window = app.get_window("tymtLauncherDebug").unwrap();
+                    let window = app.get_window("tymtLauncher").unwrap();
                     window.show().unwrap();
                     window.set_focus().unwrap();
                 }
@@ -158,17 +158,17 @@ async fn main() -> std::io::Result<()> {
                             std::process::exit(0);
                         }
                         "hide" => {
-                            let window = app.get_window("tymtLauncherDebug").unwrap();
+                            let window = app.get_window("tymtLauncher").unwrap();
                             window.hide().unwrap();
                         }
                         "showVisible" => {
                             println!("showVisible received a left click");
-                            let window = app.get_window("tymtLauncherDebug").unwrap();
+                            let window = app.get_window("tymtLauncher").unwrap();
                             window.show().unwrap();
                             window.set_focus().unwrap();
                         }
                         "fullscreen" => {
-                            let window = app.get_window("tymtLauncherDebug").unwrap();
+                            let window = app.get_window("tymtLauncher").unwrap();
                             window.show().unwrap();
                             window.set_focus().unwrap();
                             window
@@ -177,13 +177,13 @@ async fn main() -> std::io::Result<()> {
                         }
                         "wallet" => {
                             app.emit_all("wallet", "wallet").expect("failed to emit event wallet");
-                            let window = app.get_window("tymtLauncherDebug").unwrap();
+                            let window = app.get_window("tymtLauncher").unwrap();
                             window.show().unwrap();
                             window.set_focus().unwrap();
                         }
                         "games" => {
                             app.emit_all("games", "games").expect("failed to emit event games");
-                            let window = app.get_window("tymtLauncherDebug").unwrap();
+                            let window = app.get_window("tymtLauncher").unwrap();
                             window.show().unwrap();
                             window.set_focus().unwrap();
                         }
@@ -196,7 +196,7 @@ async fn main() -> std::io::Result<()> {
                             app.emit_all("signout", "signout").expect(
                                 "failed to emit event signout"
                             );
-                            let window = app.get_window("tymtLauncherDebug").unwrap();
+                            let window = app.get_window("tymtLauncher").unwrap();
                             window.show().unwrap();
                             window.set_focus().unwrap();
                         }
@@ -559,7 +559,7 @@ async fn main() -> std::io::Result<()> {
 
                 match
                     client
-                        .post("https://dev.tymt.com/api/orders/request-new-order")
+                        .post("https://tymt.com/api/orders/request-new-order")
                         .header(header::CONTENT_TYPE, "application/json")
                         .header(
                             "x-token",
@@ -610,7 +610,7 @@ async fn main() -> std::io::Result<()> {
 
                 match
                     client
-                        .get(format!("https://dev.tymt.com/api/orders/orders/{}", request_param.id))
+                        .get(format!("https://tymt.com/api/orders/orders/{}", request_param.id))
                         .send().await
                 {
                     Ok(response) =>
@@ -896,7 +896,7 @@ async fn main() -> std::io::Result<()> {
             Ok(())
         })
         .run(tauri::generate_context!())
-        .expect("error while running tymtLauncherDebug");
+        .expect("error while running tymtLauncher");
 
     Ok(())
 }
@@ -976,7 +976,7 @@ async fn download_appimage_linux(
         .expect("Failed to run chmod command");
 
     if !status.success() {
-        eprintln!("Failed to make tymtLauncherDebug.AppImage executable");
+        eprintln!("Failed to make tymtLauncher.AppImage executable");
         return false;
     }
 
@@ -1521,7 +1521,7 @@ fn open_directory(path: &str) {
 fn get_machine_id() -> Result<String, String> {
     let mut builder = IdBuilder::new(Encryption::SHA256);
     builder.add_component(HWIDComponent::SystemID);
-    let hwid = builder.build("tymtLauncherDebug").map_err(|err| err.to_string())?;
+    let hwid = builder.build("tymtLauncher").map_err(|err| err.to_string())?;
 
     Ok(hwid)
 }
@@ -1541,12 +1541,12 @@ async fn show_transaction_window(app_handle: tauri::AppHandle) {
         eprintln!("Window 'tymt_d53_transaction' not found");
     }
 
-    if let Some(window_to_hide) = app_handle.get_window("tymtLauncherDebug") {
+    if let Some(window_to_hide) = app_handle.get_window("tymtLauncher") {
         if let Err(e) = window_to_hide.hide() {
-            eprintln!("Failed to hide window 'tymtLauncherDebug': {}", e);
+            eprintln!("Failed to hide window 'tymtLauncher': {}", e);
         }
     } else {
-        eprintln!("Window 'tymtLauncherDebug' not found");
+        eprintln!("Window 'tymtLauncher' not found");
     }
 
     let item_ids = vec![
@@ -1573,12 +1573,12 @@ async fn hide_transaction_window(app_handle: tauri::AppHandle) {
         eprintln!("Window 'tymt_d53_transaction' not found");
     }
 
-    if let Some(window_to_hide) = app_handle.get_window("tymtLauncherDebug") {
+    if let Some(window_to_hide) = app_handle.get_window("tymtLauncher") {
         if let Err(e) = window_to_hide.show() {
-            eprintln!("Failed to show window 'tymtLauncherDebug': {}", e);
+            eprintln!("Failed to show window 'tymtLauncher': {}", e);
         }
     } else {
-        eprintln!("Window 'tymtLauncherDebug' not found");
+        eprintln!("Window 'tymtLauncher' not found");
     }
 
     let item_ids = vec![
