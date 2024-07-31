@@ -13,9 +13,9 @@ import { AppDispatch } from "../store";
 import { getAccount } from "../features/account/AccountSlice";
 import { getCurrentChatroom, setCurrentChatroom } from "../features/chat/CurrentChatroomSlice";
 import { getCurrentPartner } from "../features/chat/CurrentPartnerSlice";
-import { createContactAsync, getContactList, updateOneInContactList } from "../features/chat/ContactListSlice";
+import { createContactAsync, fetchContactListAsync, getContactList, updateOneInContactList } from "../features/chat/ContactListSlice";
 import { addOneToUnreadList, fetchAlertListAsync, updateFriendRequestInAlertList } from "../features/alert/AlertListSlice";
-import { getBlockList } from "../features/chat/BlockListSlice";
+import { fetchBlockListAsync, getBlockList } from "../features/chat/BlockListSlice";
 import { addOneToChatroomListAsync, delOneFromChatroomList, getChatroomList } from "../features/chat/ChatroomListSlice";
 import { selectNotification } from "../features/settings/NotificationSlice";
 import { fetchFriendListAsync, getFriendList } from "../features/chat/FriendListSlice";
@@ -31,12 +31,19 @@ import { getMachineId } from "../features/account/MachineIdSlice";
 import { rsaDecrypt } from "../features/chat/RsaApi";
 
 import { IChatroom, IChatroomList } from "../types/ChatroomAPITypes";
-import { ISocketParamsActiveUsers, ISocketParamsJoinedMessageGroup, ISocketParamsLeftMessageGroup, ISocketParamsPostMessage } from "../types/SocketTypes";
+import {
+  ISocketParamsActiveUsers,
+  ISocketParamsJoinedMessageGroup,
+  ISocketParamsLeftMessageGroup,
+  ISocketParamsPostMessage,
+  ISocketParamsSyncEvent,
+} from "../types/SocketTypes";
 import { accountType, IMachineId } from "../types/accountTypes";
 import { chatType, notificationType } from "../types/settingTypes";
 import { ChatHistoryType, ISocketHash, IAlert, IContact, IContactList, IRsa } from "../types/chatTypes";
 
 import { Chatdecrypt } from "../lib/api/ChatEncrypt";
+import { SyncEventNames } from "../consts/SyncEventNames";
 
 interface SocketContextType {
   socket: MutableRefObject<Socket>;
@@ -376,6 +383,26 @@ export const SocketProvider = () => {
               });
             }
 
+            if (!socket.current.hasListeners("sync-event")) {
+              socket.current.on("sync-event", async (data: ISocketParamsSyncEvent) => {
+                try {
+                  console.log("socket.current.on > sync-event", data);
+                  const { instructions } = data;
+                  instructions.map((instruction) => {
+                    if (instruction === SyncEventNames.UPDATE_CONTACT_LIST) {
+                      dispatch(fetchContactListAsync());
+                    } else if (instruction === SyncEventNames.UPDATE_FRIEND_LIST) {
+                      dispatch(fetchFriendListAsync());
+                    } else if (instruction === SyncEventNames.UPDATE_BLOCK_LIST) {
+                      dispatch(fetchBlockListAsync());
+                    }
+                  });
+                } catch (err) {
+                  console.error("Failed to socket.current.on > sync-event: ", err);
+                }
+              });
+            }
+
             if (!socket.current.hasListeners("user-online-status-updated")) {
               socket.current.on("user-online-status-updated", async (data) => {
                 console.log("socket.current.on > user-online-status-updated", data);
@@ -416,9 +443,10 @@ export const SocketProvider = () => {
   }, [accountStore.uid, socketHashStore.socketHash]);
 
   const approveFriendRequest = useCallback(
-    (alert: IAlert) => {
+    async (alert: IAlert) => {
       try {
         console.log("approveFriendRequest");
+
         if (socket.current && socket.current.connected) {
           const data = {
             id: alert._id,
@@ -434,7 +462,6 @@ export const SocketProvider = () => {
 
           dispatch(updateFriendRequestInAlertList(data));
           dispatch(createContactAsync(alert.note.sender));
-          dispatch(fetchFriendListAsync());
         }
       } catch (err) {
         console.error("Failed to approveFriendRequest: ", err);

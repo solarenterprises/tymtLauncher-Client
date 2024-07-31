@@ -1,15 +1,24 @@
-import { useDispatch } from "react-redux";
+import { useCallback } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 
 import { Modal, Box, Fade } from "@mui/material";
 
+import { useSocket } from "../../providers/SocketProvider";
+
 import { AppDispatch } from "../../store";
 
-import { IPoint } from "../../types/homeTypes";
-import { userType } from "../../types/chatTypes";
 import { deleteFriendAsync } from "../../features/chat/FriendListSlice";
 import { createContactAsync, deleteContactAsync } from "../../features/chat/ContactListSlice";
+import { getAccount } from "../../features/account/AccountSlice";
 import { createBlockAsync, deleteBlockAsync } from "../../features/chat/BlockListSlice";
+
+import { accountType } from "../../types/accountTypes";
+import { IPoint } from "../../types/homeTypes";
+import { userType } from "../../types/chatTypes";
+import { ISocketParamsSyncEvent } from "../../types/SocketTypes";
+
+import { SyncEventNames } from "../../consts/SyncEventNames";
 
 export interface IPropsUserListItemContextMenu {
   view: boolean;
@@ -21,31 +30,87 @@ export interface IPropsUserListItemContextMenu {
 
 const UserListItemContextMenu = ({ user, view, setView, contextMenuPosition, page }: IPropsUserListItemContextMenu) => {
   const { t } = useTranslation();
+  const { socket } = useSocket();
   const dispatch = useDispatch<AppDispatch>();
+
+  const accountStore: accountType = useSelector(getAccount);
 
   const handleOnClose = () => {
     setView(false);
   };
 
-  const handleRemoveFriendClick = () => {
-    dispatch(deleteFriendAsync(user._id)).then(() => {
-      dispatch(createContactAsync(user._id));
-    });
-  };
+  const handleRemoveFriendClick = useCallback(async () => {
+    try {
+      await dispatch(deleteFriendAsync(user._id));
+      await dispatch(createContactAsync(user._id));
 
-  const handleBlockClick = () => {
-    dispatch(deleteFriendAsync(user._id)).then(() => {
-      dispatch(deleteContactAsync(user._id)).then(() => {
-        dispatch(createBlockAsync(user._id));
-      });
-    });
-  };
+      if (socket.current && socket.current.connected) {
+        const data_1: ISocketParamsSyncEvent = {
+          sender_id: accountStore.uid,
+          recipient_id: user._id,
+          instructions: [SyncEventNames.UPDATE_CONTACT_LIST, SyncEventNames.UPDATE_FRIEND_LIST],
+          is_to_self: false,
+        };
+        const data_2: ISocketParamsSyncEvent = {
+          sender_id: accountStore.uid,
+          recipient_id: accountStore.uid,
+          instructions: [SyncEventNames.UPDATE_CONTACT_LIST, SyncEventNames.UPDATE_FRIEND_LIST],
+          is_to_self: true,
+        };
 
-  const handleUnblockClick = () => {
-    dispatch(deleteBlockAsync(user._id)).then(() => {
-      dispatch(createContactAsync(user._id));
-    });
-  };
+        socket.current.emit("sync-event", JSON.stringify(data_1));
+        socket.current.emit("sync-event", JSON.stringify(data_2));
+
+        console.log("socket.current.emit > sync-event", data_1);
+        console.log("socket.current.emit > sync-event", data_2);
+      }
+    } catch (err) {
+      console.error("Failed to handleRemoveFriendClick: ", err);
+    }
+  }, [socket.current, accountStore]);
+
+  const handleBlockClick = useCallback(async () => {
+    try {
+      await dispatch(deleteFriendAsync(user._id));
+      await dispatch(deleteContactAsync(user._id));
+      await dispatch(createBlockAsync(user._id));
+
+      if (socket.current && socket.current.connected) {
+        const data: ISocketParamsSyncEvent = {
+          sender_id: accountStore.uid,
+          recipient_id: accountStore.uid,
+          instructions: [SyncEventNames.UPDATE_CONTACT_LIST, SyncEventNames.UPDATE_FRIEND_LIST, SyncEventNames.UPDATE_BLOCK_LIST],
+          is_to_self: true,
+        };
+
+        socket.current.emit("sync-event", JSON.stringify(data));
+        console.log("socket.current.emit > sync-event", data);
+      }
+    } catch (err) {
+      console.error("Failed to handleBlockClick: ", err);
+    }
+  }, [socket.current, accountStore]);
+
+  const handleUnblockClick = useCallback(async () => {
+    try {
+      await dispatch(deleteBlockAsync(user._id));
+      await dispatch(createContactAsync(user._id));
+
+      if (socket.current && socket.current.connected) {
+        const data: ISocketParamsSyncEvent = {
+          sender_id: accountStore.uid,
+          recipient_id: accountStore.uid,
+          instructions: [SyncEventNames.UPDATE_CONTACT_LIST, SyncEventNames.UPDATE_BLOCK_LIST],
+          is_to_self: true,
+        };
+
+        socket.current.emit("sync-event", JSON.stringify(data));
+        console.log("socket.current.emit > sync-event", data);
+      }
+    } catch (err) {
+      console.error("Failed to handleUnblockClick: ", err);
+    }
+  }, [socket.current, accountStore]);
 
   return (
     <>

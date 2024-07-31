@@ -16,11 +16,12 @@ import { delOneSkeyList } from "../../features/chat/SKeyListSlice";
 import { createBlockAsync, deleteBlockAsync } from "../../features/chat/BlockListSlice";
 import { createContactAsync, deleteContactAsync } from "../../features/chat/ContactListSlice";
 
-import { ISocketParamsLeaveMessageGroup } from "../../types/SocketTypes";
+import { ISocketParamsLeaveMessageGroup, ISocketParamsSyncEvent } from "../../types/SocketTypes";
 import { IChatroom, IParamsLeaveGroup } from "../../types/ChatroomAPITypes";
 import { IPoint } from "../../types/homeTypes";
 import { accountType } from "../../types/accountTypes";
 import { IAlert } from "../../types/chatTypes";
+import { SyncEventNames } from "../../consts/SyncEventNames";
 
 export interface IPropsDMListItemContextMenu {
   view: boolean;
@@ -38,32 +39,43 @@ const DMListItemContextMenu = ({ view, setView, DM, contextMenuPosition }: IProp
 
   const [openExportModal, setOpenExportModal] = useState<boolean>(false);
 
-  const handleFriendRequestClick = useCallback(() => {
+  const handleFriendRequestClick = useCallback(async () => {
     try {
       const partner = DM.participants.find((participant) => participant.userId !== accountStore.uid);
+
+      console.log("handleFriendRequestClick", partner.userId);
+
       if (!partner) {
         console.error("Failed to handleSendFriendRequestClick: partner already left DM!");
         return;
       }
-      dispatch(deleteBlockAsync(partner.userId)).then(() => {
-        dispatch(createContactAsync(partner.userId)).then(() => {
-          if (socket.current && socket.current.connected) {
-            const data: IAlert = {
-              alertType: "friend-request",
-              note: {
-                sender: accountStore.uid,
-                to: partner.userId,
-                status: "pending",
-              },
-              receivers: [partner.userId],
-            };
-            socket.current.emit("post-alert", JSON.stringify(data));
-            console.log("socket.current.emit > post-alert", data);
 
-            console.log("handleFriendRequestClick", partner.userId);
-          }
-        });
-      });
+      await dispatch(deleteBlockAsync(partner.userId));
+      await dispatch(createContactAsync(partner.userId));
+
+      if (socket.current && socket.current.connected) {
+        const data: IAlert = {
+          alertType: "friend-request",
+          note: {
+            sender: accountStore.uid,
+            to: partner.userId,
+            status: "pending",
+          },
+          receivers: [partner.userId],
+        };
+        socket.current.emit("post-alert", JSON.stringify(data));
+        console.log("socket.current.emit > post-alert", data);
+
+        const data_2: ISocketParamsSyncEvent = {
+          sender_id: accountStore.uid,
+          recipient_id: accountStore.uid,
+          instructions: [SyncEventNames.UPDATE_BLOCK_LIST, SyncEventNames.UPDATE_CONTACT_LIST],
+          is_to_self: true,
+        };
+        socket.current.emit("sync-event", JSON.stringify(data_2));
+        console.log("socket.current.emit > sync-event", data_2);
+      }
+
       setView(false);
     } catch (err) {
       console.error("Failed to handleFriendRequestClick: ", err);
