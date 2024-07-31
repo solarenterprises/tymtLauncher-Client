@@ -12,7 +12,7 @@
     "Solar Enterprises Team <hello@solarenterprises.com>",
     "Dokdo UAB Team <hello@dokdo.sh>"
   ],
-  "version": "2.1.3",
+  "version": "2.2.2",
   "type": "commonjs",
   "scripts": {
     "dev": "vite",
