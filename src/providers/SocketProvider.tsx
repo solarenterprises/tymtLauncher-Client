@@ -384,10 +384,10 @@ export const SocketProvider = () => {
             }
 
             if (!socket.current.hasListeners("sync-event")) {
-              socket.current.on("sync-event", async (data: ISocketParamsSyncEvent) => {
+              socket.current.on("sync-event", async (data: string) => {
                 try {
                   console.log("socket.current.on > sync-event", data);
-                  const { instructions } = data;
+                  const { instructions } = JSON.parse(data) as ISocketParamsSyncEvent;
                   instructions.map((instruction) => {
                     if (instruction === SyncEventNames.UPDATE_CONTACT_LIST) {
                       dispatch(fetchContactListAsync());
