@@ -89,17 +89,26 @@ const DMListItemContextMenu = ({ view, setView, DM, contextMenuPosition }: IProp
         console.error("Failed to handleSendFriendRequestClick: partner already left DM!");
         return;
       }
-      dispatch(deleteFriendAsync(partner.userId)).then(() => {
-        dispatch(deleteContactAsync(partner.userId)).then(() => {
-          dispatch(createBlockAsync(partner.userId)).then(() => {
-            console.log("handleBlockClick", partner.userId);
-          });
-        });
-      });
+
+      await dispatch(deleteFriendAsync(partner.userId));
+      await dispatch(deleteContactAsync(partner.userId));
+      await dispatch(createBlockAsync(partner.userId));
+
+      if (socket.current && socket.current.connected) {
+        const data: ISocketParamsSyncEvent = {
+          sender_id: accountStore.uid,
+          recipient_id: accountStore.uid,
+          instructions: [SyncEventNames.UPDATE_CONTACT_LIST, SyncEventNames.UPDATE_FRIEND_LIST, SyncEventNames.UPDATE_BLOCK_LIST],
+          is_to_self: true,
+        };
+
+        socket.current.emit("sync-event", JSON.stringify(data));
+        console.log("socket.current.emit > sync-event", data);
+      }
     } catch (err) {
       console.error("Failed to handleBlockClick: ", err);
     }
-  }, []);
+  }, [socket.current, accountStore]);
 
   const handleExportClick = () => {
     setView(false);
