@@ -93,6 +93,13 @@ const GroupListItemContextMenu = ({ view, setView, group, contextMenuPosition }:
     }
   }, [accountStore, socket.current]);
 
+  const handleRemoveGroupClick = useCallback(async () => {
+    try {
+    } catch (err) {
+      console.error("Failed to handleRemoveGroupClick: ", err);
+    }
+  }, []);
+
   const handleExportClick = () => {
     setView(false);
     setOpenExportModal(true);
@@ -130,9 +137,15 @@ const GroupListItemContextMenu = ({ view, setView, group, contextMenuPosition }:
             <Box className={"fs-16 white context_menu_middle"} textAlign={"left"} sx={{ backdropFilter: "blur(10px)" }} onClick={handleExportClick}>
               {t("cha-60_export")}
             </Box>
-            <Box className={"fs-16 white context_menu_bottom"} textAlign={"left"} sx={{ backdropFilter: "blur(10px)" }} onClick={handleLeaveGroupClick}>
-              {t("cha-51_leave-group")}
-            </Box>
+            {group.created_by === accountStore.uid ? (
+              <Box className={"fs-16 white context_menu_bottom"} textAlign={"left"} sx={{ backdropFilter: "blur(10px)" }} onClick={handleRemoveGroupClick}>
+                {t("cha-64_remove-group")}
+              </Box>
+            ) : (
+              <Box className={"fs-16 white context_menu_bottom"} textAlign={"left"} sx={{ backdropFilter: "blur(10px)" }} onClick={handleLeaveGroupClick}>
+                {t("cha-51_leave-group")}
+              </Box>
+            )}
           </Box>
         </Fade>
       </Modal>
