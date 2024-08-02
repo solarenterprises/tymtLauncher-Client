@@ -5,6 +5,8 @@ import "../../global.css";
 import "./styles.css";
 import { motion } from "framer-motion";
 
+
+
 const Splash = () => {
   const navigate = useNavigate();
   const [progress, setProgress] = useState<number>(0);
@@ -24,6 +26,8 @@ const Splash = () => {
       clearInterval(timer);
     };
   }, []);
+
+ 
 
   return (
     <>
