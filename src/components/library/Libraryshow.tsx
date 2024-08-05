@@ -83,7 +83,7 @@ const Libraryshow = () => {
           <Grid item xs={12} container justifyContent={"center"} marginTop={"32px"}>
             <AnimatedComponent>
               <Stack flexDirection={"column"} justifyContent={"center"}>
-                <img src={nogames} />
+                <Box component={"img"} src={nogames} width={"300px"} height={"300px"} alignSelf={"center"} />
                 <Box className={"fs-18-regular white"} sx={{ alignSelf: "center", marginTop: "24px" }}>
                   {t("sto-36_no-games")}
                 </Box>
@@ -121,7 +121,7 @@ const Libraryshow = () => {
           <Grid item xs={12} container justifyContent={"center"} marginTop={"32px"}>
             <AnimatedComponent>
               <Stack flexDirection={"column"} justifyContent={"center"}>
-                <img src={nogames} />
+                <Box component={"img"} src={nogames} width={"300px"} height={"300px"} alignSelf={"center"} />
                 <Box className={"fs-18-regular white"} sx={{ alignSelf: "center", marginTop: "24px" }}>
                   {t("sto-36_no-games")}
                 </Box>
