@@ -247,6 +247,20 @@ export const updateGroupName = async (body: IReqChatroomUpdateGroupName) => {
     console.log("updateGroupName");
     return res?.data?.result;
   } catch (err) {
-    console.log("Failed to updateGroupName: ", err);
+    console.error("Failed to updateGroupName: ", err);
+  }
+};
+
+export const removeChatroom = async (chatroom_id: string) => {
+  try {
+    const res = await ChatroomAPI.removeChatroom(chatroom_id);
+    if (!res || res.status !== 200) {
+      throw new Error("response undefined!");
+    }
+
+    console.log("removeChatroom", res);
+  } catch (err) {
+    console.error("removeChatroom: ", err);
+    return null;
   }
 };

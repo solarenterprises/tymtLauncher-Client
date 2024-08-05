@@ -19,6 +19,8 @@ import { IChatroom, IChatroomList, IParamsLeaveGroup } from "../../types/Chatroo
 import { IPoint } from "../../types/homeTypes";
 import { accountType } from "../../types/accountTypes";
 import { IReqCreateMutedList, IReqDeleteMutedList } from "../../types/UserAPITypes";
+import { IMyInfo } from "../../types/chatTypes";
+import { getMyInfo } from "../../features/account/MyInfoSlice";
 
 export interface IPropsGroupListItemContextMenu {
   view: boolean;
@@ -34,6 +36,7 @@ const GroupListItemContextMenu = ({ view, setView, group, contextMenuPosition }:
   const dispatch = useDispatch<AppDispatch>();
   const accountStore: accountType = useSelector(getAccount);
   const mutedListStore: IChatroomList = useSelector(getMutedList);
+  const myInfoStore: IMyInfo = useSelector(getMyInfo);
 
   const [openExportModal, setOpenExportModal] = useState<boolean>(false);
 
@@ -95,6 +98,7 @@ const GroupListItemContextMenu = ({ view, setView, group, contextMenuPosition }:
 
   const handleRemoveGroupClick = useCallback(async () => {
     try {
+      console.log("handleRemoveGroupClick");
     } catch (err) {
       console.error("Failed to handleRemoveGroupClick: ", err);
     }
@@ -137,7 +141,7 @@ const GroupListItemContextMenu = ({ view, setView, group, contextMenuPosition }:
             <Box className={"fs-16 white context_menu_middle"} textAlign={"left"} sx={{ backdropFilter: "blur(10px)" }} onClick={handleExportClick}>
               {t("cha-60_export")}
             </Box>
-            {group.created_by === accountStore.uid ? (
+            {myInfoStore.isAdmin ? (
               <Box className={"fs-16 white context_menu_bottom"} textAlign={"left"} sx={{ backdropFilter: "blur(10px)" }} onClick={handleRemoveGroupClick}>
                 {t("cha-64_remove-group")}
               </Box>

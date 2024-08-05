@@ -46,6 +46,7 @@ import currentChatroomMembersReducer from "./features/chat/CurrentChatroomMember
 import sKeyListReducer from "./features/chat/SKeyListSlice";
 import activeUserListReducer from "./features/chat/ActiveUserListSlice";
 import mutedListReducer from "./features/chat/MutedListSlice";
+import myInfoReducer from "./features/account/MyInfoSlice";
 
 const blacklistActionTypes = ["intercomsupport/setChatMounted", "intercomsupport/setMountedTrue", "intercomsupport/setMountedFalse"];
 
@@ -100,6 +101,7 @@ const store = configureStore({
     sKeyList: sKeyListReducer,
     activeUserList: activeUserListReducer,
     mutedList: mutedListReducer,
+    myInfo: myInfoReducer,
   },
   middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(stateSyncMiddleware),
 });

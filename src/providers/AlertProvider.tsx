@@ -21,6 +21,7 @@ import { accountType } from "../types/accountTypes";
 import { IChain, multiWalletType } from "../types/walletTypes";
 import { IChatroom, IParticipant } from "../types/ChatroomAPITypes";
 import { IRsa } from "../types/chatTypes";
+import { fetchMyInfoAsync } from "../features/account/MyInfoSlice";
 
 const AlertProvider = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -43,6 +44,7 @@ const AlertProvider = () => {
   useEffect(() => {
     let id: NodeJS.Timeout;
     if (accountStore.isLoggedIn) {
+      dispatch(fetchMyInfoAsync(accountStore.uid));
       dispatch(fetchContactListAsync());
       dispatch(fetchFriendListAsync());
       dispatch(fetchBlockListAsync());

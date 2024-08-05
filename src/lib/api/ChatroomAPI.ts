@@ -163,6 +163,16 @@ class ChatroomAPI {
       }
     );
   }
+
+  static async removeChatroom(chatroom_id: string): Promise<AxiosResponse<any, any>> {
+    const saltTokenStore: ISaltToken = JSON.parse(tymtStorage.get(`saltToken`));
+    return await axios.put(`${tymt_backend_url}/chatroom/delete-chat-room/${chatroom_id}`, {
+      headers: {
+        "x-token": saltTokenStore.token,
+        "Content-Type": "application/json",
+      },
+    });
+  }
 }
 
 export default ChatroomAPI;
