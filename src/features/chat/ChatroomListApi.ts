@@ -259,6 +259,7 @@ export const removeChatroom = async (chatroom_id: string) => {
     }
 
     console.log("removeChatroom", res);
+    return null;
   } catch (err) {
     console.error("removeChatroom: ", err);
     return null;

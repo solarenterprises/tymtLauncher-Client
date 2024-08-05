@@ -16,21 +16,21 @@ import { getCurrentPartner } from "../features/chat/CurrentPartnerSlice";
 import { createContactAsync, fetchContactListAsync, getContactList, updateOneInContactList } from "../features/chat/ContactListSlice";
 import { addOneToUnreadList, fetchAlertListAsync, updateFriendRequestInAlertList } from "../features/alert/AlertListSlice";
 import { fetchBlockListAsync, getBlockList } from "../features/chat/BlockListSlice";
-import { addOneToChatroomListAsync, delOneFromChatroomList, getChatroomList } from "../features/chat/ChatroomListSlice";
+import { addOneToChatroomListAsync, delOneFromChatroomList, fetchChatroomListAsync, getChatroomList } from "../features/chat/ChatroomListSlice";
 import { selectNotification } from "../features/settings/NotificationSlice";
 import { fetchFriendListAsync, getFriendList } from "../features/chat/FriendListSlice";
 import { selectChat } from "../features/settings/ChatSlice";
-import { setChatHistory, getChatHistory } from "../features/chat/ChatHistorySlice";
+import { setChatHistory, getChatHistory, setChatHistoryAsync } from "../features/chat/ChatHistorySlice";
 import { getSocketHash } from "../features/chat/SocketHashSlice";
 import { fetchCurrentChatroomMembersAsync, setCurrentChatroomMembers } from "../features/chat/CurrentChatroomMembersSlice";
-import { ISKey, ISKeyList, addOneSKeyList, delOneSkeyList, getSKeyList } from "../features/chat/SKeyListSlice";
+import { ISKey, ISKeyList, addOneSKeyList, delOneSkeyList, getSKeyList, setSKeyList } from "../features/chat/SKeyListSlice";
 import { getRsa } from "../features/chat/RsaSlice";
 import { addOneActiveUserList, delOneActiveUserList, setActiveUserList } from "../features/chat/ActiveUserListSlice";
 import { getMutedList } from "../features/chat/MutedListSlice";
 import { getMachineId } from "../features/account/MachineIdSlice";
 import { rsaDecrypt } from "../features/chat/RsaApi";
 
-import { IChatroom, IChatroomList } from "../types/ChatroomAPITypes";
+import { IChatroom, IChatroomList, IParticipant } from "../types/ChatroomAPITypes";
 import {
   ISocketParamsActiveUsers,
   ISocketParamsJoinedMessageGroup,
@@ -388,13 +388,38 @@ export const SocketProvider = () => {
                 try {
                   console.log("socket.current.on > sync-event", data);
                   const { instructions } = JSON.parse(data) as ISocketParamsSyncEvent;
-                  instructions.map((instruction) => {
+                  instructions.map(async (instruction) => {
                     if (instruction === SyncEventNames.UPDATE_CONTACT_LIST) {
                       dispatch(fetchContactListAsync());
                     } else if (instruction === SyncEventNames.UPDATE_FRIEND_LIST) {
                       dispatch(fetchFriendListAsync());
                     } else if (instruction === SyncEventNames.UPDATE_BLOCK_LIST) {
                       dispatch(fetchBlockListAsync());
+                    } else if (instruction === SyncEventNames.UPDATE_CHATROOM_LIST) {
+                      dispatch(fetchChatroomListAsync(accountStoreRef.current.uid)).then((action) => {
+                        try {
+                          if (action.type.endsWith("/fulfilled")) {
+                            const newChatroomList = action.payload as IChatroom[];
+                            const newSKeyArray = newChatroomList.map((chatroom) => {
+                              const mySelf: IParticipant = chatroom.participants.find((participant) => participant.userId === accountStore.uid);
+                              const sKey: ISKey = {
+                                roomId: chatroom._id,
+                                sKey: rsaDecrypt(mySelf.userKey, rsaStore.privateKey),
+                              };
+                              return sKey;
+                            });
+                            dispatch(setSKeyList(newSKeyArray));
+
+                            if (!newChatroomList.some((element) => element._id === currentChatroomStoreRef.current._id)) {
+                              dispatch(setCurrentChatroom(null));
+                              dispatch(setCurrentChatroomMembers([]));
+                              dispatch(setChatHistoryAsync({ messages: [] }));
+                            }
+                          }
+                        } catch (err) {
+                          console.error("Failed to newSKeyArray: ", err);
+                        }
+                      });
                     }
                   });
                 } catch (err) {

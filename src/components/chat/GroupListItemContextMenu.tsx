@@ -9,18 +9,19 @@ import { Modal, Box, Fade } from "@mui/material";
 import { useSocket } from "../../providers/SocketProvider";
 
 import { AppDispatch } from "../../store";
-import { leaveGroupAsync } from "../../features/chat/ChatroomListSlice";
+import { leaveGroupAsync, removeChatroomAsync } from "../../features/chat/ChatroomListSlice";
 import { getAccount } from "../../features/account/AccountSlice";
 import { delOneSkeyList } from "../../features/chat/SKeyListSlice";
 import { createMutedListAsync, deleteMutedListAsync, getMutedList } from "../../features/chat/MutedListSlice";
 
-import { ISocketParamsLeaveMessageGroup } from "../../types/SocketTypes";
+import { ISocketParamsLeaveMessageGroup, ISocketParamsSyncEvent } from "../../types/SocketTypes";
 import { IChatroom, IChatroomList, IParamsLeaveGroup } from "../../types/ChatroomAPITypes";
 import { IPoint } from "../../types/homeTypes";
 import { accountType } from "../../types/accountTypes";
 import { IReqCreateMutedList, IReqDeleteMutedList } from "../../types/UserAPITypes";
 import { IMyInfo } from "../../types/chatTypes";
 import { getMyInfo } from "../../features/account/MyInfoSlice";
+import { SyncEventNames } from "../../consts/SyncEventNames";
 
 export interface IPropsGroupListItemContextMenu {
   view: boolean;
@@ -99,10 +100,23 @@ const GroupListItemContextMenu = ({ view, setView, group, contextMenuPosition }:
   const handleRemoveGroupClick = useCallback(async () => {
     try {
       console.log("handleRemoveGroupClick");
+
+      await dispatch(removeChatroomAsync(group._id));
+
+      if (socket.current && socket.current.connected) {
+        const data_1: ISocketParamsSyncEvent = {
+          sender_id: accountStore.uid,
+          recipient_id: accountStore.uid,
+          instructions: [SyncEventNames.UPDATE_CHATROOM_LIST],
+          is_to_self: true,
+        };
+        socket.current.emit("sync-event", JSON.stringify(data_1));
+        console.log("socket.current.emit > sync-event", data_1);
+      }
     } catch (err) {
       console.error("Failed to handleRemoveGroupClick: ", err);
     }
-  }, []);
+  }, [socket.current, accountStore]);
 
   const handleExportClick = () => {
     setView(false);
@@ -141,7 +155,7 @@ const GroupListItemContextMenu = ({ view, setView, group, contextMenuPosition }:
             <Box className={"fs-16 white context_menu_middle"} textAlign={"left"} sx={{ backdropFilter: "blur(10px)" }} onClick={handleExportClick}>
               {t("cha-60_export")}
             </Box>
-            {myInfoStore.isAdmin ? (
+            {myInfoStore.isAdmin && !group.isPrivate ? (
               <Box className={"fs-16 white context_menu_bottom"} textAlign={"left"} sx={{ backdropFilter: "blur(10px)" }} onClick={handleRemoveGroupClick}>
                 {t("cha-64_remove-group")}
               </Box>
