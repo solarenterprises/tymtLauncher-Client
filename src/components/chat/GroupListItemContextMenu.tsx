@@ -14,7 +14,7 @@ import { getAccount } from "../../features/account/AccountSlice";
 import { delOneSkeyList } from "../../features/chat/SKeyListSlice";
 import { createMutedListAsync, deleteMutedListAsync, getMutedList } from "../../features/chat/MutedListSlice";
 
-import { ISocketParamsLeaveMessageGroup, ISocketParamsSyncEvent } from "../../types/SocketTypes";
+import { ISocketParamsLeaveMessageGroup, ISocketParamsSyncEvents } from "../../types/SocketTypes";
 import { IChatroom, IChatroomList, IParamsLeaveGroup } from "../../types/ChatroomAPITypes";
 import { IPoint } from "../../types/homeTypes";
 import { accountType } from "../../types/accountTypes";
@@ -104,14 +104,15 @@ const GroupListItemContextMenu = ({ view, setView, group, contextMenuPosition }:
       await dispatch(removeChatroomAsync(group._id));
 
       if (socket.current && socket.current.connected) {
-        const data_1: ISocketParamsSyncEvent = {
+        const memberIds = group.participants.map((participant) => participant.userId);
+        const data_1: ISocketParamsSyncEvents = {
           sender_id: accountStore.uid,
-          recipient_id: accountStore.uid,
+          recipient_ids: memberIds,
           instructions: [SyncEventNames.UPDATE_CHATROOM_LIST],
           is_to_self: true,
         };
-        socket.current.emit("sync-event", JSON.stringify(data_1));
-        console.log("socket.current.emit > sync-event", data_1);
+        socket.current.emit("sync-events", JSON.stringify(data_1));
+        console.log("socket.current.emit > sync-events", data_1);
       }
     } catch (err) {
       console.error("Failed to handleRemoveGroupClick: ", err);

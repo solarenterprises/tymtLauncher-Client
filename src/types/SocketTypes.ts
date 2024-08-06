@@ -35,3 +35,10 @@ export interface ISocketParamsSyncEvent {
   instructions: string[];
   is_to_self: boolean;
 }
+
+export interface ISocketParamsSyncEvents {
+  sender_id: string;
+  recipient_ids: string[];
+  instructions: string[];
+  is_to_self: boolean;
+}
