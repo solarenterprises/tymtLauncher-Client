@@ -17,6 +17,7 @@ import { getAccount } from "../../features/account/AccountSlice";
 import { getCurrentChatroom } from "../../features/chat/CurrentChatroomSlice";
 import { ISKeyList, getSKeyList } from "../../features/chat/SKeyListSlice";
 import { getChatHistory, setChatHistory } from "../../features/chat/ChatHistorySlice";
+import { getMyInfo } from "../../features/account/MyInfoSlice";
 
 import { encrypt, generateRandomString } from "../../lib/api/Encrypt";
 
@@ -24,9 +25,10 @@ import ChatStyle from "../../styles/ChatStyles";
 import emotion from "../../assets/chat/emotion.svg";
 import send from "../../assets/chat/chatframe.svg";
 
-import { ChatHistoryType, propsChatInputFieldType } from "../../types/chatTypes";
+import { ChatHistoryType, IMyInfo, propsChatInputFieldType } from "../../types/chatTypes";
 import { accountType } from "../../types/accountTypes";
 import { IChatroom } from "../../types/ChatroomAPITypes";
+
 import MessageAPI from "../../lib/api/MessageAPI";
 import { shortenFileName } from "../../lib/api/URLHelper";
 
@@ -53,6 +55,7 @@ const ChatInputField = ({ value, setValue }: propsChatInputFieldType) => {
   const chatHistoryStore: ChatHistoryType = useSelector(getChatHistory);
   const currentChatroomStore: IChatroom = useSelector(getCurrentChatroom);
   const sKeyListStore: ISKeyList = useSelector(getSKeyList);
+  const myInfoStore: IMyInfo = useSelector(getMyInfo);
 
   const currentSKey: string = sKeyListStore.sKeys.find((element) => element.roomId === currentChatroomStore._id)?.sKey;
 
@@ -119,6 +122,7 @@ const ChatInputField = ({ value, setValue }: propsChatInputFieldType) => {
               alertType: "chat",
               note: {
                 sender: accountStore?.uid,
+                nickName: myInfoStore?.nickName,
                 room_id: currentChatroomStore?._id,
                 message: fullName,
               },
@@ -144,7 +148,7 @@ const ChatInputField = ({ value, setValue }: propsChatInputFieldType) => {
         }
       }
     },
-    [accountStore, currentChatroomStore, chatHistoryStore, socket.current]
+    [myInfoStore, accountStore, currentChatroomStore, chatHistoryStore, socket.current]
   );
 
   const handleEmojiClick = (event: any) => {
@@ -180,6 +184,7 @@ const ChatInputField = ({ value, setValue }: propsChatInputFieldType) => {
             alertType: "chat",
             note: {
               sender: accountStore?.uid,
+              nickName: myInfoStore?.nickName,
               room_id: currentChatroomStore?._id,
               message: encryptedMessage,
             },
@@ -203,7 +208,7 @@ const ChatInputField = ({ value, setValue }: propsChatInputFieldType) => {
         console.error("Failed to sendMessage: ", err);
       }
     }
-  }, [socket.current, accountStore, currentChatroomStore, sKeyListStore, value]);
+  }, [socket.current, accountStore, currentChatroomStore, sKeyListStore, myInfoStore, value]);
 
   const handleEnter = useCallback(
     async (e: any) => {

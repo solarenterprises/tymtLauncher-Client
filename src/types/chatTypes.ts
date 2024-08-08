@@ -162,6 +162,7 @@ export interface scrollDownType {
 export interface INote {
   message?: string;
   sender?: string;
+  nickName?: string;
   room_id?: string;
   status?: string;
   detail?: string;

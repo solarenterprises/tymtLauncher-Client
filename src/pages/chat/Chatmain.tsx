@@ -269,10 +269,6 @@ const Chatmain = ({ view, setView }: propsType) => {
                   ) : (
                     <>
                       {(!value ? groupList : searchedGroupList)?.map((group, index) => {
-                        // const count =
-                        //   !value ? alertListStore.unread?.filter((alert) => alert.note.sender === group._id && alert.alertType === "chat").length : 0;
-                        // const numberofunreadmessages = count;
-
                         return <GroupListItem group={group} index={index} setView={setView} key={`${index}-${Date.now()}`} />;
                       })}
                     </>
@@ -294,13 +290,11 @@ const Chatmain = ({ view, setView }: propsType) => {
                     <>
                       {!value &&
                         DMList.map((DM, index) => {
-                          return <DMListItem DM={DM} index={index} numberOfUnreadMessages={0} setView={setView} key={`${index}-${Date.now()}`} />;
+                          return <DMListItem DM={DM} index={index} setView={setView} key={`${index}-${Date.now()}`} />;
                         })}
                       {value &&
                         searchedUserList.map((user, index) => {
-                          return (
-                            <UserListItem user={user} index={index} numberOfUnreadMessages={0} setView={setView} page={"DM"} key={`${index}-${Date.now()}`} />
-                          );
+                          return <UserListItem user={user} index={index} setView={setView} page={"DM"} key={`${index}-${Date.now()}`} />;
                         })}
                     </>
                   )}
@@ -320,20 +314,7 @@ const Chatmain = ({ view, setView }: propsType) => {
                   ) : (
                     <>
                       {(!value ? friendListStore?.contacts : searchedUserList)?.map((user, index) => {
-                        // const count = !value
-                        //   ? alertListStore.unread?.filter((alert) => alert.note.sender === user._id && alert.alertType === "chat").length
-                        //   : 0;
-                        // const numberofunreadmessages = count;
-                        return (
-                          <UserListItem
-                            user={user}
-                            index={index}
-                            numberOfUnreadMessages={0}
-                            setView={setView}
-                            page={value ? "DM" : "friend"}
-                            key={`${index}-${Date.now()}`}
-                          />
-                        );
+                        return <UserListItem user={user} index={index} setView={setView} page={value ? "DM" : "friend"} key={`${index}-${Date.now()}`} />;
                       })}
                     </>
                   )}
@@ -353,28 +334,13 @@ const Chatmain = ({ view, setView }: propsType) => {
                   ) : (
                     <>
                       {(!value ? blockListStore?.contacts : searchedUserList)?.map((user, index) => {
-                        // const count = !value
-                        //   ? alertListStore.unread?.filter((alert) => alert.note.sender === user._id && alert.alertType === "chat").length
-                        //   : 0;
-                        // const numberofunreadmessages = count;
-
-                        return (
-                          <UserListItem
-                            user={user}
-                            index={index}
-                            numberOfUnreadMessages={0}
-                            setView={setView}
-                            page={value ? "DM" : "block"}
-                            key={`${index}-${Date.now()}`}
-                          />
-                        );
+                        return <UserListItem user={user} index={index} setView={setView} page={value ? "DM" : "block"} key={`${index}-${Date.now()}`} />;
                       })}
                     </>
                   )}
                 </Box>
               </TabPanel>
             </SwipeableViews>
-            {/* userlist section */}
           </Box>
         </>
       )}

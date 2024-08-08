@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import { Box, Grid, Stack } from "@mui/material";
@@ -13,24 +13,26 @@ import { createContactAsync, getContactList } from "../../features/chat/ContactL
 import { IActiveUserList, getActiveUserList } from "../../features/chat/ActiveUserListSlice";
 import { leaveGroupAsync } from "../../features/chat/ChatroomListSlice";
 import { delOneSkeyList } from "../../features/chat/SKeyListSlice";
+import { fetchAlertListAsync, getAlertList, readMultiplAlertsAsync } from "../../features/alert/AlertListSlice";
 
 import { IChatroom, IParamsLeaveGroup } from "../../types/ChatroomAPITypes";
 import { accountType } from "../../types/accountTypes";
-import { IContactList } from "../../types/chatTypes";
+import { IAlert, IContactList } from "../../types/chatTypes";
 import { IPoint } from "../../types/homeTypes";
+import { IAlertList } from "../../types/alertTypes";
 
 export interface IPropsDMListItem {
   DM: IChatroom;
   index: number;
-  numberOfUnreadMessages: number;
   setView?: (_: string) => void;
 }
 
-const DMListItem = ({ DM, index, numberOfUnreadMessages, setView }: IPropsDMListItem) => {
+const DMListItem = ({ DM, index, setView }: IPropsDMListItem) => {
   const dispatch = useDispatch<AppDispatch>();
   const accountStore: accountType = useSelector(getAccount);
   const contactListStore: IContactList = useSelector(getContactList);
   const activeUserListStore: IActiveUserList = useSelector(getActiveUserList);
+  const alertListStore: IAlertList = useSelector(getAlertList);
 
   const partnerId = DM.participants.find((element) => element.userId !== accountStore.uid)?.userId ?? "";
   const user = contactListStore.contacts.find((element) => element._id === partnerId);
@@ -39,6 +41,15 @@ const DMListItem = ({ DM, index, numberOfUnreadMessages, setView }: IPropsDMList
     x: 0,
     y: 0,
   });
+
+  const unreadAlertsForThisDM: IAlert[] = useMemo(() => {
+    try {
+      return alertListStore?.unread?.filter((alert) => alert?.alertType === "chat").filter((chatAlert) => chatAlert?.note?.room_id === DM?._id);
+    } catch (err) {
+      console.error("Failed with unreadAlertsForThisGroup: ", err);
+      return [];
+    }
+  }, [alertListStore]);
 
   useEffect(() => {
     if (!user && partnerId) {
@@ -54,16 +65,19 @@ const DMListItem = ({ DM, index, numberOfUnreadMessages, setView }: IPropsDMList
     }
   }, [user, partnerId]);
 
-  const handleDMListItemClick = () => {
+  const handleDMListItemClick = useCallback(async () => {
     try {
       dispatch(setCurrentChatroom(DM));
-      dispatch(fetchCurrentChatroomMembersAsync(DM._id));
       if (setView) setView("chatbox");
+      dispatch(fetchCurrentChatroomMembersAsync(DM._id));
+      await dispatch(readMultiplAlertsAsync({ ids: unreadAlertsForThisDM?.map((alert) => alert?._id) }));
+      await dispatch(fetchAlertListAsync(accountStore.uid));
+
       console.log("handleDMListItemClick");
     } catch (err) {
       console.error("Failed to handleDMListItemClick: ", err);
     }
-  };
+  }, [accountStore, unreadAlertsForThisDM]);
 
   const handleDMListItemRightClick = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     e.preventDefault();
@@ -118,10 +132,10 @@ const DMListItem = ({ DM, index, numberOfUnreadMessages, setView }: IPropsDMList
               <Box
                 className={"unread-dot fs-10-light"}
                 sx={{
-                  display: numberOfUnreadMessages > 0 ? "block" : "none",
+                  display: unreadAlertsForThisDM?.length > 0 ? "block" : "none",
                 }}
               >
-                {numberOfUnreadMessages}
+                {unreadAlertsForThisDM?.length}
               </Box>
             </Stack>
           </Grid>

@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import { Box, Grid, Stack } from "@mui/material";
@@ -12,11 +12,14 @@ import { getAccount } from "../../features/account/AccountSlice";
 import { setCurrentChatroom } from "../../features/chat/CurrentChatroomSlice";
 import { fetchCurrentChatroomMembersAsync } from "../../features/chat/CurrentChatroomMembersSlice";
 import { getChatroomList, joinPublicGroupAsync } from "../../features/chat/ChatroomListSlice";
+import { fetchAlertListAsync, getAlertList, readMultiplAlertsAsync } from "../../features/alert/AlertListSlice";
 
 import { accountType } from "../../types/accountTypes";
 import { IChatroom, IChatroomList } from "../../types/ChatroomAPITypes";
 import { IPoint } from "../../types/homeTypes";
 import { ISocketParamsJoinMessageGroup } from "../../types/SocketTypes";
+import { IAlertList } from "../../types/alertTypes";
+import { IAlert } from "../../types/chatTypes";
 
 export interface IPropsGroupListItem {
   group: IChatroom;
@@ -30,13 +33,30 @@ const GroupListItem = ({ group, index, setView }: IPropsGroupListItem) => {
   const dispatch = useDispatch<AppDispatch>();
   const accountStore: accountType = useSelector(getAccount);
   const chatroomListStore: IChatroomList = useSelector(getChatroomList);
+  const alertListStore: IAlertList = useSelector(getAlertList);
+
   const [showContextMenu, setShowContextMenu] = useState<boolean>(false);
   const [contextMenuPosition, setContextMenuPosition] = useState<IPoint>({
     x: 0,
     y: 0,
   });
 
-  const isGroupInvited = chatroomListStore.chatrooms.some((chatroom) => chatroom._id === group._id);
+  const isGroupInvited: boolean = useMemo(() => {
+    try {
+      return chatroomListStore.chatrooms.some((chatroom) => chatroom._id === group._id);
+    } catch (err) {
+      console.error("Failed with isGroupInvited: ", err);
+      return false;
+    }
+  }, [chatroomListStore]);
+  const unreadAlertsForThisGroup: IAlert[] = useMemo(() => {
+    try {
+      return alertListStore?.unread?.filter((alert) => alert?.alertType === "chat").filter((chatAlert) => chatAlert?.note?.room_id === group?._id);
+    } catch (err) {
+      console.error("Failed with unreadAlertsForThisGroup: ", err);
+      return [];
+    }
+  }, [alertListStore]);
 
   const handleGroupListItemClick = useCallback(async () => {
     try {
@@ -47,7 +67,7 @@ const GroupListItem = ({ group, index, setView }: IPropsGroupListItem) => {
             _userId: accountStore.uid,
             _groupId: group._id,
           })
-        ).then((action) => {
+        ).then(async (action) => {
           if (action.type.endsWith("/fulfilled")) {
             const newChatroom = action.payload as IChatroom;
             dispatch(setCurrentChatroom(newChatroom));
@@ -63,6 +83,9 @@ const GroupListItem = ({ group, index, setView }: IPropsGroupListItem) => {
             }
 
             if (setView) setView("chatbox");
+
+            await dispatch(readMultiplAlertsAsync({ ids: unreadAlertsForThisGroup?.map((alert) => alert?._id) }));
+            await dispatch(fetchAlertListAsync(accountStore.uid));
           }
         });
       } else {
@@ -75,7 +98,7 @@ const GroupListItem = ({ group, index, setView }: IPropsGroupListItem) => {
     } catch (err) {
       console.error("Failed to handleGroupListItemClick: ", err);
     }
-  }, [accountStore, socket.current]);
+  }, [accountStore, unreadAlertsForThisGroup, socket.current]);
 
   const handleGroupListItemRightClick = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     e.preventDefault();
@@ -121,14 +144,14 @@ const GroupListItem = ({ group, index, setView }: IPropsGroupListItem) => {
               </Stack>
             </Box>
 
-            {/* <Box
-          className={"unread-dot fs-10-light"}
-          sx={{
-            display: numberofunreadmessages > 0 ? "block" : "none",
-          }}
-        >
-          {numberofunreadmessages}
-        </Box> */}
+            <Box
+              className={"unread-dot fs-10-light"}
+              sx={{
+                display: unreadAlertsForThisGroup?.length > 0 ? "block" : "none",
+              }}
+            >
+              {unreadAlertsForThisGroup?.length}
+            </Box>
           </Stack>
         </Grid>
       </Box>

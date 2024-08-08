@@ -30,12 +30,11 @@ import { IPoint } from "../../types/homeTypes";
 export interface IPropsUserListItem {
   user: userType;
   index: number;
-  numberOfUnreadMessages: number;
   setView?: (_: string) => void;
   page: string;
 }
 
-const UserListItem = ({ user, index, numberOfUnreadMessages, setView, page }: IPropsUserListItem) => {
+const UserListItem = ({ user, index, setView, page }: IPropsUserListItem) => {
   const { socket } = useSocket();
 
   const dispatch = useDispatch<AppDispatch>();
@@ -197,14 +196,6 @@ const UserListItem = ({ user, index, numberOfUnreadMessages, setView, page }: IP
                 <Box className={"fs-16 white"}>{user?.nickName}</Box>
                 <Box className={"fs-12-light gray"}>{user?.sxpAddress}</Box>
               </Stack>
-            </Box>
-            <Box
-              className={"unread-dot fs-10-light"}
-              sx={{
-                display: numberOfUnreadMessages > 0 ? "block" : "none",
-              }}
-            >
-              {numberOfUnreadMessages}
             </Box>
           </Stack>
         </Grid>

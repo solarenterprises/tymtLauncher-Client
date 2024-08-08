@@ -62,8 +62,8 @@ const GroupMemberListItem = ({ member, index, invited }: IPropsGroupMemberListIt
             </Stack>
           </Box>
 
-          {invited && accountStore.uid !== member._id && !(!myInfoStore.isAdmin && !currentChatroomStore.isPrivate) && <MemberRemoveButton member={member} />}
-          {!invited && accountStore.uid !== member._id && !(!myInfoStore.isAdmin && !currentChatroomStore.isPrivate) && <MemberInviteButton member={member} />}
+          {invited && accountStore?.uid !== member._id && !(!myInfoStore?.isAdmin && !currentChatroomStore?.isPrivate) && <MemberRemoveButton member={member} />}
+          {!invited && accountStore?.uid !== member._id && !(!myInfoStore?.isAdmin && !currentChatroomStore?.isPrivate) && <MemberInviteButton member={member} />}
           {/* <Box
             className={"unread-dot fs-10-light"}
             sx={{
