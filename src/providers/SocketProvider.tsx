@@ -12,7 +12,6 @@ import { useNotification } from "./NotificationProvider";
 import { AppDispatch } from "../store";
 import { getAccount } from "../features/account/AccountSlice";
 import { getCurrentChatroom, setCurrentChatroom } from "../features/chat/CurrentChatroomSlice";
-import { getCurrentPartner } from "../features/chat/CurrentPartnerSlice";
 import { createContactAsync, fetchContactListAsync, getContactList, updateOneInContactList } from "../features/chat/ContactListSlice";
 import { addOneToUnreadList, fetchAlertListAsync, updateFriendRequestInAlertList } from "../features/alert/AlertListSlice";
 import { fetchBlockListAsync, getBlockList } from "../features/chat/BlockListSlice";
@@ -40,7 +39,7 @@ import {
 } from "../types/SocketTypes";
 import { accountType, IMachineId } from "../types/accountTypes";
 import { chatType, notificationType } from "../types/settingTypes";
-import { ChatHistoryType, ISocketHash, IAlert, IContact, IContactList, IRsa } from "../types/chatTypes";
+import { ChatHistoryType, ISocketHash, IAlert, IContactList, IRsa } from "../types/chatTypes";
 
 import { Chatdecrypt } from "../lib/api/ChatEncrypt";
 import { SyncEventNames } from "../consts/SyncEventNames";
@@ -71,7 +70,6 @@ export const SocketProvider = () => {
   const contactListStore: IContactList = useSelector(getContactList);
   const friendListStore: IContactList = useSelector(getFriendList);
   const blockListStore: IContactList = useSelector(getBlockList);
-  const currentPartnerStore: IContact = useSelector(getCurrentPartner);
   const currentChatroomStore: IChatroom = useSelector(getCurrentChatroom);
   const chatStore: chatType = useSelector(selectChat);
   const chatHistoryStore: ChatHistoryType = useSelector(getChatHistory);
@@ -87,7 +85,6 @@ export const SocketProvider = () => {
   const contactListStoreRef = useRef(contactListStore);
   const friendListStoreRef = useRef(friendListStore);
   const blockListStoreRef = useRef(blockListStore);
-  const currentPartnerStoreRef = useRef(currentPartnerStore);
   const currentChatroomStoreRef = useRef(currentChatroomStore);
   const chatStoreRef = useRef(chatStore);
   const chatHistoryStoreRef = useRef(chatHistoryStore);
@@ -113,9 +110,6 @@ export const SocketProvider = () => {
   useEffect(() => {
     blockListStoreRef.current = blockListStore;
   }, [blockListStore]);
-  useEffect(() => {
-    currentPartnerStoreRef.current = currentPartnerStore;
-  }, [currentPartnerStore]);
   useEffect(() => {
     currentChatroomStoreRef.current = currentChatroomStore;
   }, [currentChatroomStore]);
@@ -202,7 +196,7 @@ export const SocketProvider = () => {
                       setNotificationStatus("message");
                       setNotificationTitle(senderName ? senderName : roomName);
                       setNotificationDetail(decryptedMessage);
-                      setNotificationLink(`/chat?senderId=${data.sender_id}`);
+                      setNotificationLink(`/chat?chatroomId=${data.room_id}`);
                     }
                   }
                 }

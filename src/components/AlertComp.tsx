@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 
 import { notification_duration } from "../configs";
@@ -8,12 +7,7 @@ import { notification_duration } from "../configs";
 import { Snackbar, Stack, Box } from "@mui/material";
 import Slide from "@mui/material/Slide";
 
-import { setCurrentPartner } from "../features/chat/CurrentPartnerSlice";
-import { getContactList } from "../features/chat/ContactListSlice";
-import { IActiveUserList, getActiveUserList } from "../features/chat/ActiveUserListSlice";
-
 import { propsAlertTypes } from "../types/commonTypes";
-import { IContactList } from "../types/chatTypes";
 
 import CommonStyles from "../styles/commonStyles";
 import failedIcon from "../assets/alert/failed-icon.svg";
@@ -31,15 +25,6 @@ const AlertComp = ({ open, status, title, detail, setOpen, link }: propsAlertTyp
   const { t } = useTranslation();
   const navigate = useNavigate();
   const classname = CommonStyles();
-  const searchParams = new URLSearchParams(link?.split("?")[1]);
-
-  const contactListStore: IContactList = useSelector(getContactList);
-  const activeUserListStore: IActiveUserList = useSelector(getActiveUserList);
-
-  const senderId = title === "Friend Request" ? detail.note?.sender : searchParams.get("senderId");
-  const senderUser = contactListStore.contacts.find((user) => user._id === senderId);
-
-  const dispatch = useDispatch();
 
   const [border, setBorder] = useState("");
   const [bg, setBg] = useState("");
@@ -106,18 +91,6 @@ const AlertComp = ({ open, status, title, detail, setOpen, link }: propsAlertTyp
         onClick={() => {
           navigate(link);
           if (title !== "Friend Request") {
-            dispatch(
-              setCurrentPartner({
-                _id: senderUser?._id,
-                nickName: senderUser?.nickName,
-                avatar: senderUser?.avatar,
-                lang: senderUser?.lang,
-                sxpAddress: senderUser?.sxpAddress,
-                // onlineStatus: senderUser?.onlineStatus,
-                onlineStatus: activeUserListStore.users.some((user) => user === senderUser?._id),
-                notificationStatus: senderUser?.notificationStatus,
-              })
-            );
           }
         }}
       >

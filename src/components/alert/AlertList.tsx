@@ -11,11 +11,12 @@ import { useSocket } from "../../providers/SocketProvider";
 
 import { AppDispatch } from "../../store";
 import { getAccount } from "../../features/account/AccountSlice";
-import { updateAlertReadStatusAsync } from "../../features/alert/AlertListSlice";
+import { fetchAlertListAsync, updateAlertReadStatusAsync } from "../../features/alert/AlertListSlice";
 import { getContactList } from "../../features/chat/ContactListSlice";
-import { setCurrentPartner } from "../../features/chat/CurrentPartnerSlice";
 import { IActiveUserList, getActiveUserList } from "../../features/chat/ActiveUserListSlice";
 import { ISKeyList, getSKeyList } from "../../features/chat/SKeyListSlice";
+import { fetchCurrentChatroomAsync } from "../../features/chat/CurrentChatroomSlice";
+import { fetchCurrentChatroomMembersAsync } from "../../features/chat/CurrentChatroomMembersSlice";
 
 import { Chatdecrypt } from "../../lib/api/ChatEncrypt";
 
@@ -30,6 +31,9 @@ import alertIcon from "../../assets/alert/alert-icon.png";
 import messageIcon from "../../assets/alert/message-icon.svg";
 import unreaddot from "../../assets/alert/unreaddot.svg";
 import readdot from "../../assets/alert/readdot.svg";
+
+import AlertAPI from "../../lib/api/AlertAPI";
+import { fetchUnreadMessageListAsync } from "../../features/chat/UnreadMessageListSlice";
 
 const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
   const { t } = useTranslation();
@@ -75,28 +79,16 @@ const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
     }
   }, [status]);
 
-  const handleAlertClick = useCallback(() => {
+  const handleAlertClick = useCallback(async () => {
     try {
       if (title === "chat") {
-        navigate(`/chat?senderId=${detail.note?.sender}`);
-        dispatch(
-          setCurrentPartner({
-            _id: senderUser?._id,
-            nickName: senderUser?.nickName,
-            avatar: senderUser?.avatar,
-            lang: senderUser?.lang,
-            sxpAddress: senderUser?.sxpAddress,
-            // onlineStatus: senderUser?.onlineStatus,
-            onlineStatus: activeUserListStore.users.some((user) => user === senderUser?._id),
-            notificationStatus: senderUser?.notificationStatus,
-          })
-        );
-        dispatch(
-          updateAlertReadStatusAsync({
-            alertId: detail?._id,
-            userId: accountStore.uid,
-          })
-        );
+        navigate(`/chat?chatroomId=${detail.note?.room_id}`);
+        dispatch(fetchCurrentChatroomAsync(detail.note?.room_id));
+        dispatch(fetchCurrentChatroomMembersAsync(detail.note?.room_id));
+
+        await AlertAPI.readAllUnreadAlertsForChatroom({ userId: accountStore.uid, roomId: detail.note?.room_id });
+        dispatch(fetchAlertListAsync(accountStore.uid));
+        dispatch(fetchUnreadMessageListAsync(accountStore.uid));
       } else if (title === "Friend Request") {
         dispatch(
           updateAlertReadStatusAsync({

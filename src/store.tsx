@@ -36,7 +36,6 @@ import friendListReducer from "./features/chat/FriendListSlice";
 import contactListReducer from "./features/chat/ContactListSlice";
 import blockListReducer from "./features/chat/BlockListSlice";
 import chatroomListReducer from "./features/chat/ChatroomListSlice";
-import currentPartnerReducer from "./features/chat/CurrentPartnerSlice";
 import chatHistoryReducer from "./features/chat/ChatHistorySlice";
 import chatReducer from "./features/settings/ChatSlice";
 import alertListReducer from "./features/alert/AlertListSlice";
@@ -70,7 +69,6 @@ const store = configureStore({
     tempCustodial: tempCustodialReducer,
     threeConfirm: threeConfirmReducer,
     wallet: walletReducer,
-    currentPartner: currentPartnerReducer,
     chatHistory: chatHistoryReducer,
     contactList: contactListReducer,
     chain: chainReducer,
