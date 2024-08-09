@@ -22,6 +22,8 @@ import { IChain, multiWalletType } from "../types/walletTypes";
 import { IChatroom, IParticipant } from "../types/ChatroomAPITypes";
 import { IRsa } from "../types/chatTypes";
 import { fetchMyInfoAsync } from "../features/account/MyInfoSlice";
+import { fetchUnreadMessageListAsync } from "../features/chat/UnreadMessageListSlice";
+import { fetchAlertListAsync } from "../features/alert/AlertListSlice";
 
 const AlertProvider = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -45,14 +47,17 @@ const AlertProvider = () => {
     let id: NodeJS.Timeout;
     if (accountStore.isLoggedIn) {
       dispatch(fetchMyInfoAsync(accountStore.uid));
+      dispatch(fetchAlertListAsync(accountStore.uid));
       dispatch(fetchContactListAsync());
       dispatch(fetchFriendListAsync());
       dispatch(fetchBlockListAsync());
       dispatch(fetchMutedListAsync());
-      dispatch(fetchChatroomListAsync(accountStore.uid)).then((action) => {
+      dispatch(fetchUnreadMessageListAsync(accountStore?.uid));
+      dispatch(fetchChatroomListAsync(accountStore?.uid)).then((action) => {
         try {
           if (action.type.endsWith("/fulfilled")) {
             const newChatroomList = action.payload as IChatroom[];
+
             const newSKeyArray = newChatroomList.map((chatroom) => {
               const mySelf: IParticipant = chatroom.participants.find((participant) => participant.userId === accountStore.uid);
               const sKey: ISKey = {

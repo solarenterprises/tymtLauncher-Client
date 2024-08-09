@@ -13,13 +13,14 @@ import { createContactAsync, getContactList } from "../../features/chat/ContactL
 import { IActiveUserList, getActiveUserList } from "../../features/chat/ActiveUserListSlice";
 import { leaveGroupAsync } from "../../features/chat/ChatroomListSlice";
 import { delOneSkeyList } from "../../features/chat/SKeyListSlice";
-import { fetchAlertListAsync, getAlertList, readMultiplAlertsAsync } from "../../features/alert/AlertListSlice";
+import { fetchAlertListAsync, getAlertList } from "../../features/alert/AlertListSlice";
 
 import { IChatroom, IParamsLeaveGroup } from "../../types/ChatroomAPITypes";
 import { accountType } from "../../types/accountTypes";
 import { IAlert, IContactList } from "../../types/chatTypes";
 import { IPoint } from "../../types/homeTypes";
 import { IAlertList } from "../../types/alertTypes";
+import AlertAPI from "../../lib/api/AlertAPI";
 
 export interface IPropsDMListItem {
   DM: IChatroom;
@@ -68,9 +69,11 @@ const DMListItem = ({ DM, index, setView }: IPropsDMListItem) => {
   const handleDMListItemClick = useCallback(async () => {
     try {
       dispatch(setCurrentChatroom(DM));
-      if (setView) setView("chatbox");
       dispatch(fetchCurrentChatroomMembersAsync(DM._id));
-      await dispatch(readMultiplAlertsAsync({ ids: unreadAlertsForThisDM?.map((alert) => alert?._id) }));
+
+      if (setView) setView("chatbox");
+
+      await AlertAPI.readAllUnreadAlertsForChatroom({ userId: accountStore.uid, roomId: DM._id });
       await dispatch(fetchAlertListAsync(accountStore.uid));
 
       console.log("handleDMListItemClick");

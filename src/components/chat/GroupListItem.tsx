@@ -12,7 +12,7 @@ import { getAccount } from "../../features/account/AccountSlice";
 import { setCurrentChatroom } from "../../features/chat/CurrentChatroomSlice";
 import { fetchCurrentChatroomMembersAsync } from "../../features/chat/CurrentChatroomMembersSlice";
 import { getChatroomList, joinPublicGroupAsync } from "../../features/chat/ChatroomListSlice";
-import { fetchAlertListAsync, getAlertList, readMultiplAlertsAsync } from "../../features/alert/AlertListSlice";
+import { fetchAlertListAsync, getAlertList } from "../../features/alert/AlertListSlice";
 
 import { accountType } from "../../types/accountTypes";
 import { IChatroom, IChatroomList } from "../../types/ChatroomAPITypes";
@@ -20,6 +20,7 @@ import { IPoint } from "../../types/homeTypes";
 import { ISocketParamsJoinMessageGroup } from "../../types/SocketTypes";
 import { IAlertList } from "../../types/alertTypes";
 import { IAlert } from "../../types/chatTypes";
+import AlertAPI from "../../lib/api/AlertAPI";
 
 export interface IPropsGroupListItem {
   group: IChatroom;
@@ -84,7 +85,7 @@ const GroupListItem = ({ group, index, setView }: IPropsGroupListItem) => {
 
             if (setView) setView("chatbox");
 
-            await dispatch(readMultiplAlertsAsync({ ids: unreadAlertsForThisGroup?.map((alert) => alert?._id) }));
+            await AlertAPI.readAllUnreadAlertsForChatroom({ userId: accountStore.uid, roomId: group._id });
             await dispatch(fetchAlertListAsync(accountStore.uid));
           }
         });
