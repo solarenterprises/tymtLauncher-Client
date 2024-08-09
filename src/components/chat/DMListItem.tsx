@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { Box, Grid, Stack } from "@mui/material";
 import Avatar from "../home/Avatar";
 import DMListItemContextMenu from "./DMListItemContextMenu";
+import { useSocket } from "../../providers/SocketProvider";
 
 import { AppDispatch } from "../../store";
 import { setCurrentChatroom } from "../../features/chat/CurrentChatroomSlice";
@@ -13,14 +14,16 @@ import { createContactAsync, getContactList } from "../../features/chat/ContactL
 import { IActiveUserList, getActiveUserList } from "../../features/chat/ActiveUserListSlice";
 import { leaveGroupAsync } from "../../features/chat/ChatroomListSlice";
 import { delOneSkeyList } from "../../features/chat/SKeyListSlice";
-import { fetchAlertListAsync, getAlertList } from "../../features/alert/AlertListSlice";
+import { fetchAlertListAsync } from "../../features/alert/AlertListSlice";
 
 import { IChatroom, IParamsLeaveGroup } from "../../types/ChatroomAPITypes";
 import { accountType } from "../../types/accountTypes";
-import { IAlert, IContactList } from "../../types/chatTypes";
+import { IContactList } from "../../types/chatTypes";
 import { IPoint } from "../../types/homeTypes";
-import { IAlertList } from "../../types/alertTypes";
 import AlertAPI from "../../lib/api/AlertAPI";
+import { ISocketParamsSyncEvent } from "../../types/SocketTypes";
+import { SyncEventNames } from "../../consts/SyncEventNames";
+import { fetchUnreadMessageListAsync, getUnreadMessageList, IUnreadMessageList } from "../../features/chat/UnreadMessageListSlice";
 
 export interface IPropsDMListItem {
   DM: IChatroom;
@@ -29,11 +32,13 @@ export interface IPropsDMListItem {
 }
 
 const DMListItem = ({ DM, index, setView }: IPropsDMListItem) => {
+  const { socket } = useSocket();
+
   const dispatch = useDispatch<AppDispatch>();
   const accountStore: accountType = useSelector(getAccount);
   const contactListStore: IContactList = useSelector(getContactList);
   const activeUserListStore: IActiveUserList = useSelector(getActiveUserList);
-  const alertListStore: IAlertList = useSelector(getAlertList);
+  const unreadMessageListStore: IUnreadMessageList = useSelector(getUnreadMessageList);
 
   const partnerId = DM.participants.find((element) => element.userId !== accountStore.uid)?.userId ?? "";
   const user = contactListStore.contacts.find((element) => element._id === partnerId);
@@ -43,14 +48,14 @@ const DMListItem = ({ DM, index, setView }: IPropsDMListItem) => {
     y: 0,
   });
 
-  const unreadAlertsForThisDM: IAlert[] = useMemo(() => {
+  const unreadMessageCountForChatroom: number = useMemo(() => {
     try {
-      return alertListStore?.unread?.filter((alert) => alert?.alertType === "chat").filter((chatAlert) => chatAlert?.note?.room_id === DM?._id);
+      return unreadMessageListStore.data.find((element) => element.chatroomId === DM._id).unreadMessageCount;
     } catch (err) {
-      console.error("Failed with unreadAlertsForThisGroup: ", err);
-      return [];
+      console.error("Failed with unreadMessageCountForChatroom: ", err);
+      return 0;
     }
-  }, [alertListStore]);
+  }, [unreadMessageListStore]);
 
   useEffect(() => {
     if (!user && partnerId) {
@@ -74,13 +79,25 @@ const DMListItem = ({ DM, index, setView }: IPropsDMListItem) => {
       if (setView) setView("chatbox");
 
       await AlertAPI.readAllUnreadAlertsForChatroom({ userId: accountStore.uid, roomId: DM._id });
+      await dispatch(fetchUnreadMessageListAsync(accountStore.uid));
       await dispatch(fetchAlertListAsync(accountStore.uid));
+
+      if (socket.current && socket.current.connected) {
+        const data: ISocketParamsSyncEvent = {
+          sender_id: accountStore.uid,
+          recipient_id: accountStore.uid,
+          instructions: [SyncEventNames.UPDATE_ALERT_LIST, SyncEventNames.UPDATE_UNREAD_MESSAGE_LIST],
+          is_to_self: true,
+        };
+        socket.current.emit("sync-event", JSON.stringify(data));
+        console.log("socket.current.emit > sync-event", data);
+      }
 
       console.log("handleDMListItemClick");
     } catch (err) {
       console.error("Failed to handleDMListItemClick: ", err);
     }
-  }, [accountStore, unreadAlertsForThisDM]);
+  }, [socket.current, accountStore]);
 
   const handleDMListItemRightClick = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     e.preventDefault();
@@ -135,10 +152,10 @@ const DMListItem = ({ DM, index, setView }: IPropsDMListItem) => {
               <Box
                 className={"unread-dot fs-10-light"}
                 sx={{
-                  display: unreadAlertsForThisDM?.length > 0 ? "block" : "none",
+                  display: unreadMessageCountForChatroom > 0 ? "block" : "none",
                 }}
               >
-                {unreadAlertsForThisDM?.length}
+                {unreadMessageCountForChatroom}
               </Box>
             </Stack>
           </Grid>

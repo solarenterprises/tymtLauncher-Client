@@ -17,10 +17,12 @@ import { fetchAlertListAsync, getAlertList } from "../../features/alert/AlertLis
 import { accountType } from "../../types/accountTypes";
 import { IChatroom, IChatroomList } from "../../types/ChatroomAPITypes";
 import { IPoint } from "../../types/homeTypes";
-import { ISocketParamsJoinMessageGroup } from "../../types/SocketTypes";
+import { ISocketParamsJoinMessageGroup, ISocketParamsSyncEvent } from "../../types/SocketTypes";
 import { IAlertList } from "../../types/alertTypes";
 import { IAlert } from "../../types/chatTypes";
 import AlertAPI from "../../lib/api/AlertAPI";
+import { SyncEventNames } from "../../consts/SyncEventNames";
+import { fetchUnreadMessageListAsync } from "../../features/chat/UnreadMessageListSlice";
 
 export interface IPropsGroupListItem {
   group: IChatroom;
@@ -81,11 +83,21 @@ const GroupListItem = ({ group, index, setView }: IPropsGroupListItem) => {
               };
               socket.current.emit("join-message-group", JSON.stringify(data));
               console.log("socket.current.emit > join-message-group", data);
+
+              const data_2: ISocketParamsSyncEvent = {
+                sender_id: accountStore.uid,
+                recipient_id: accountStore.uid,
+                instructions: [SyncEventNames.UPDATE_ALERT_LIST, SyncEventNames.UPDATE_UNREAD_MESSAGE_LIST],
+                is_to_self: true,
+              };
+              socket.current.emit("sync-event", JSON.stringify(data_2));
+              console.log("socket.current.emit > sync-event", data_2);
             }
 
             if (setView) setView("chatbox");
 
             await AlertAPI.readAllUnreadAlertsForChatroom({ userId: accountStore.uid, roomId: group._id });
+            await dispatch(fetchUnreadMessageListAsync(accountStore.uid));
             await dispatch(fetchAlertListAsync(accountStore.uid));
           }
         });

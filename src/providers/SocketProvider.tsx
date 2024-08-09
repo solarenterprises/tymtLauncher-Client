@@ -44,6 +44,7 @@ import { ChatHistoryType, ISocketHash, IAlert, IContact, IContactList, IRsa } fr
 
 import { Chatdecrypt } from "../lib/api/ChatEncrypt";
 import { SyncEventNames } from "../consts/SyncEventNames";
+import { fetchUnreadMessageListAsync } from "../features/chat/UnreadMessageListSlice";
 
 interface SocketContextType {
   socket: MutableRefObject<Socket>;
@@ -395,6 +396,10 @@ export const SocketProvider = () => {
                       dispatch(fetchFriendListAsync());
                     } else if (instruction === SyncEventNames.UPDATE_BLOCK_LIST) {
                       dispatch(fetchBlockListAsync());
+                    } else if (instruction === SyncEventNames.UPDATE_ALERT_LIST) {
+                      dispatch(fetchAlertListAsync(accountStoreRef.current.uid));
+                    } else if (instruction === SyncEventNames.UPDATE_UNREAD_MESSAGE_LIST) {
+                      dispatch(fetchUnreadMessageListAsync(accountStoreRef.current.uid));
                     } else if (instruction === SyncEventNames.UPDATE_CHATROOM_LIST) {
                       dispatch(fetchChatroomListAsync(accountStoreRef.current.uid)).then((action) => {
                         try {
