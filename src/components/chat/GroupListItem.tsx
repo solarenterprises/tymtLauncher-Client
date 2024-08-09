@@ -9,7 +9,7 @@ import GroupListItemContextMenu from "./GroupListItemContextMenu";
 
 import { AppDispatch } from "../../store";
 import { getAccount } from "../../features/account/AccountSlice";
-import { setCurrentChatroom } from "../../features/chat/CurrentChatroomSlice";
+import { fetchCurrentChatroomAsync, setCurrentChatroom } from "../../features/chat/CurrentChatroomSlice";
 import { fetchCurrentChatroomMembersAsync } from "../../features/chat/CurrentChatroomMembersSlice";
 import { getChatroomList, joinPublicGroupAsync } from "../../features/chat/ChatroomListSlice";
 import { fetchAlertListAsync, getAlertList } from "../../features/alert/AlertListSlice";
@@ -83,28 +83,31 @@ const GroupListItem = ({ group, index, setView }: IPropsGroupListItem) => {
               };
               socket.current.emit("join-message-group", JSON.stringify(data));
               console.log("socket.current.emit > join-message-group", data);
-
-              const data_2: ISocketParamsSyncEvent = {
-                sender_id: accountStore.uid,
-                recipient_id: accountStore.uid,
-                instructions: [SyncEventNames.UPDATE_ALERT_LIST, SyncEventNames.UPDATE_UNREAD_MESSAGE_LIST],
-                is_to_self: true,
-              };
-              socket.current.emit("sync-event", JSON.stringify(data_2));
-              console.log("socket.current.emit > sync-event", data_2);
             }
 
             if (setView) setView("chatbox");
-
-            await AlertAPI.readAllUnreadAlertsForChatroom({ userId: accountStore.uid, roomId: group._id });
-            await dispatch(fetchUnreadMessageListAsync(accountStore.uid));
-            await dispatch(fetchAlertListAsync(accountStore.uid));
           }
         });
       } else {
-        dispatch(setCurrentChatroom(group));
+        await dispatch(fetchCurrentChatroomAsync(group._id));
         dispatch(fetchCurrentChatroomMembersAsync(group._id));
+
         if (setView) setView("chatbox");
+
+        if (socket.current && socket.current.connected) {
+          const data_2: ISocketParamsSyncEvent = {
+            sender_id: accountStore.uid,
+            recipient_id: accountStore.uid,
+            instructions: [SyncEventNames.UPDATE_ALERT_LIST, SyncEventNames.UPDATE_UNREAD_MESSAGE_LIST],
+            is_to_self: true,
+          };
+          socket.current.emit("sync-event", JSON.stringify(data_2));
+          console.log("socket.current.emit > sync-event", data_2);
+        }
+
+        await AlertAPI.readAllUnreadAlertsForChatroom({ userId: accountStore.uid, roomId: group._id });
+        await dispatch(fetchUnreadMessageListAsync(accountStore.uid));
+        await dispatch(fetchAlertListAsync(accountStore.uid));
       }
 
       console.log("handleGroupListItemClick");
