@@ -2,6 +2,7 @@ import { useCallback, useState, useRef, ChangeEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector, useDispatch } from "react-redux";
 import { ThreeDots } from "react-loader-spinner";
+import { useDropzone } from "react-dropzone";
 
 import EmojiPicker, { SkinTones } from "emoji-picker-react";
 
@@ -48,6 +49,19 @@ const theme = createTheme({
 const ChatInputField = ({ value, setValue }: propsChatInputFieldType) => {
   const { socket } = useSocket();
   const { t } = useTranslation();
+
+  const onDrop = useCallback(async (acceptedFiles) => {
+    try {
+      console.log("onDrop", acceptedFiles);
+    } catch (err) {
+      console.error("Failed to onDrop: ", err);
+    }
+  }, []);
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    noClick: true,
+  });
   const classes = ChatStyle();
 
   const dispatch = useDispatch<AppDispatch>();
@@ -305,6 +319,28 @@ const ChatInputField = ({ value, setValue }: propsChatInputFieldType) => {
               }}
             />
           </ThemeProvider>
+          <div
+            id="dropzone"
+            {...getRootProps()}
+            style={
+              isDragActive
+                ? {
+                    position: "absolute",
+                    border: "2px dashed #4caf50",
+                    backgroundColor: "rgba(76, 175, 80, 0.1)",
+                    width: "100%",
+                    height: "100%",
+                    top: 0,
+                    left: 0,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }
+                : { position: "absolute", width: "100%", height: "100%", top: 0, left: 0, display: "flex", alignItems: "center", justifyContent: "center" }
+            }
+          >
+            <input {...getInputProps()} />
+          </div>
           <Popover
             open={EmojiLibraryOpen}
             onClose={handleCloseEmojiLibrary}
