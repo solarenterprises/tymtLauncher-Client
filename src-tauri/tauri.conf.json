@@ -76,7 +76,8 @@
         "minWidth": 1200,
         "minHeight": 800,
         "center": true,
-        "additionalBrowserArgs": "--disable-web-security"
+        "additionalBrowserArgs": "--disable-web-security",
+        "fileDropEnabled": false
       },
       {
         "label": "tymt_d53_transaction",

@@ -50,18 +50,6 @@ const ChatInputField = ({ value, setValue }: propsChatInputFieldType) => {
   const { socket } = useSocket();
   const { t } = useTranslation();
 
-  const onDrop = useCallback(async (acceptedFiles) => {
-    try {
-      console.log("onDrop", acceptedFiles);
-    } catch (err) {
-      console.error("Failed to onDrop: ", err);
-    }
-  }, []);
-
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop,
-    noClick: true,
-  });
   const classes = ChatStyle();
 
   const dispatch = useDispatch<AppDispatch>();
@@ -78,6 +66,91 @@ const ChatInputField = ({ value, setValue }: propsChatInputFieldType) => {
   const [loading, setLoading] = useState(false);
 
   const fileInputRef = useRef(null);
+
+  const onDrop = useCallback(
+    async (acceptedFiles) => {
+      if (socket.current && socket.current.connected) {
+        try {
+          setLoading(true);
+
+          const files = acceptedFiles;
+
+          if (files && files.length > 0) {
+            const file = files[0];
+            const shortName = shortenFileName(file.name);
+            const storeName = currentSKey ? await encrypt(`${shortName}${generateRandomString(32)}`, currentSKey) : `${shortName}${generateRandomString(32)}`;
+            let type: string = "";
+
+            if (file.type.startsWith("image/")) {
+              type = "image";
+            } else if (file.type.startsWith("audio/")) {
+              type = "audio";
+            } else if (file.type.startsWith("video/")) {
+              type = "video";
+            } else {
+              type = "file";
+            }
+
+            const formData = new FormData();
+            formData.append("type", type);
+            formData.append("sender_id", accountStore.uid);
+            formData.append("room_id", currentChatroomStore._id);
+            formData.append("message", storeName);
+            formData.append("file", file);
+
+            const res = await MessageAPI.fileUpload(formData);
+            if (!res || res.status !== 200) {
+              throw new Error("response error!");
+            }
+
+            const message = {
+              sender_id: accountStore?.uid,
+              room_id: currentChatroomStore?._id,
+              message: storeName,
+              createdAt: Date.now(),
+              type: type,
+            };
+            socket.current.emit("post-message", JSON.stringify(message));
+            console.log("socket.current.emit > post-message", message);
+
+            const fullName = currentSKey ? await encrypt(`${file.name}`, currentSKey) : `${file.name}`;
+            const data = {
+              alertType: "chat",
+              note: {
+                sender: accountStore?.uid,
+                nickName: myInfoStore?.nickName,
+                room_id: currentChatroomStore?._id,
+                message: fullName,
+              },
+              receivers: currentChatroomStore?.participants?.filter((element) => element.userId !== accountStore.uid)?.map((element_2) => element_2.userId),
+            };
+            socket.current.emit("post-alert", JSON.stringify(data));
+            console.log("socket.current.emit > post-alert");
+
+            const updatedHistory = [message, ...chatHistoryStore.messages];
+            dispatch(
+              setChatHistory({
+                messages: updatedHistory,
+              })
+            );
+
+            console.log("handleFileInputChange", type, accountStore.uid, currentChatroomStore._id, message, file);
+
+            setLoading(false);
+          }
+        } catch (err) {
+          console.error("Failed to handleFileInputChange: ", err);
+          setLoading(false);
+        }
+      }
+    },
+    [myInfoStore, accountStore, currentChatroomStore, chatHistoryStore, socket.current]
+  );
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    noClick: true,
+  });
 
   const handleUploadClick = () => {
     if (fileInputRef.current) {
@@ -317,9 +390,14 @@ const ChatInputField = ({ value, setValue }: propsChatInputFieldType) => {
               onKeyDown={(e: any) => {
                 handleEnter(e);
               }}
+              onDrop={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                onDrop([...event.dataTransfer.files]);
+              }}
             />
           </ThemeProvider>
-          <div
+          <Box
             id="dropzone"
             {...getRootProps()}
             style={
@@ -336,11 +414,21 @@ const ChatInputField = ({ value, setValue }: propsChatInputFieldType) => {
                     alignItems: "center",
                     justifyContent: "center",
                   }
-                : { position: "absolute", width: "100%", height: "100%", top: 0, left: 0, display: "flex", alignItems: "center", justifyContent: "center" }
+                : {
+                    position: "absolute",
+                    width: "100%",
+                    height: "100%",
+                    top: 0,
+                    left: 0,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    pointerEvents: "none",
+                  }
             }
           >
             <input {...getInputProps()} />
-          </div>
+          </Box>
           <Popover
             open={EmojiLibraryOpen}
             onClose={handleCloseEmojiLibrary}
