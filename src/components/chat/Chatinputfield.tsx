@@ -2,7 +2,6 @@ import { useCallback, useState, useRef, ChangeEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector, useDispatch } from "react-redux";
 import { ThreeDots } from "react-loader-spinner";
-import { useDropzone } from "react-dropzone";
 
 import EmojiPicker, { SkinTones } from "emoji-picker-react";
 
@@ -64,6 +63,7 @@ const ChatInputField = ({ value, setValue }: propsChatInputFieldType) => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [EmojiLibraryOpen, setIsEmojiLibraryOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
 
   const fileInputRef = useRef(null);
 
@@ -137,26 +137,15 @@ const ChatInputField = ({ value, setValue }: propsChatInputFieldType) => {
             console.log("handleFileInputChange", type, accountStore.uid, currentChatroomStore._id, message, file);
 
             setLoading(false);
-            setIsDragging(false);
           }
         } catch (err) {
           console.error("Failed to handleFileInputChange: ", err);
           setLoading(false);
-          setIsDragging(false);
         }
       }
     },
     [myInfoStore, accountStore, currentChatroomStore, chatHistoryStore, socket.current]
   );
-
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop,
-    noClick: true,
-    onDragEnter: () => setIsDragging(true),
-    onDragLeave: () => setIsDragging(false),
-  });
-
-  const [isDragging, setIsDragging] = useState(false);
 
   const handleUploadClick = () => {
     if (fileInputRef.current) {
@@ -396,46 +385,27 @@ const ChatInputField = ({ value, setValue }: propsChatInputFieldType) => {
               onKeyDown={(e: any) => {
                 handleEnter(e);
               }}
+              style={{
+                backgroundColor: isDragging ? "rgba(76, 175, 80, 0.1)" : "transparent",
+                border: isDragging ? "1px dashed #4caf50" : "none",
+                borderRadius: "50ch",
+                zIndex: 999,
+              }}
+              onDragEnter={() => setIsDragging(true)}
+              onDragLeave={() => setIsDragging(false)}
+              onDragOver={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                setIsDragging(true);
+              }}
               onDrop={(event) => {
                 event.preventDefault();
                 event.stopPropagation();
+                setIsDragging(false);
                 onDrop([...event.dataTransfer.files]);
               }}
             />
           </ThemeProvider>
-          <Box
-            id="dropzone"
-            {...getRootProps()}
-            style={
-              isDragActive
-                ? {
-                    position: "absolute",
-                    border: "2px dashed #4caf50",
-                    backgroundColor: "rgba(76, 175, 80, 0.1)",
-                    width: "100%",
-                    height: "100%",
-                    top: 0,
-                    left: 0,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    pointerEvents: isDragging ? "auto" : "none",
-                  }
-                : {
-                    position: "absolute",
-                    width: "100%",
-                    height: "100%",
-                    top: 0,
-                    left: 0,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    pointerEvents: isDragging ? "auto" : "none",
-                  }
-            }
-          >
-            <input {...getInputProps()} />
-          </Box>
           <Popover
             open={EmojiLibraryOpen}
             onClose={handleCloseEmojiLibrary}
