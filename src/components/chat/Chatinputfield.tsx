@@ -137,10 +137,12 @@ const ChatInputField = ({ value, setValue }: propsChatInputFieldType) => {
             console.log("handleFileInputChange", type, accountStore.uid, currentChatroomStore._id, message, file);
 
             setLoading(false);
+            setIsDragging(false);
           }
         } catch (err) {
           console.error("Failed to handleFileInputChange: ", err);
           setLoading(false);
+          setIsDragging(false);
         }
       }
     },
@@ -150,7 +152,11 @@ const ChatInputField = ({ value, setValue }: propsChatInputFieldType) => {
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     noClick: true,
+    onDragEnter: () => setIsDragging(true),
+    onDragLeave: () => setIsDragging(false),
   });
+
+  const [isDragging, setIsDragging] = useState(false);
 
   const handleUploadClick = () => {
     if (fileInputRef.current) {
@@ -413,6 +419,7 @@ const ChatInputField = ({ value, setValue }: propsChatInputFieldType) => {
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
+                    pointerEvents: isDragging ? "auto" : "none",
                   }
                 : {
                     position: "absolute",
@@ -423,7 +430,7 @@ const ChatInputField = ({ value, setValue }: propsChatInputFieldType) => {
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    pointerEvents: "none",
+                    pointerEvents: isDragging ? "auto" : "none",
                   }
             }
           >
