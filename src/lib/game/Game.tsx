@@ -102,7 +102,7 @@ const Games: { [key: string]: Game } = {
     downloadImg: d53Download,
     card: d53Card,
     images: [d531, d532, d533, d534, d535, d536, d537, d538],
-    tabs: ["Action", "Shooter", "RPG"],
+    tabs: ["RPG", "Survival", "Play & Earn"],
     introduction: {
       en: `Unleash your creativity in a world where every action counts! <br><br>District 53 Metaverse is a voxel-based online world, where blockchain meets mining, crafting, and building. With integration into the Solar Blockchain, every move you make earns you SXP, turning your adventures into tangible rewards. Survival, Creative and PvP modes available!`,
       jp: "すべての行動が重要となる世界で、あなたの創造性を解き放ちましょう! <br><br>District 53 Metaverse は、ブロックチェーンが採掘、クラフト、建築と融合するボクセルベースのオンライン世界です。 Solar Blockchain に統合すると、あらゆる行動で SXP が獲得でき、冒険が目に見える報酬に変わります。 サバイバル、クリエイティブ、PvP モードが利用可能!",
@@ -244,7 +244,8 @@ const Games: { [key: string]: Game } = {
       en: "Veloren is in development and it's not related to Solar or tymt. If you need any more information, please check out here.",
       jp: "Velorenは開発中であり、Solarやtymtとは関係ありません。さらに詳しい情報が必要な場合は、こちらをご覧ください。",
     },
-    warningLink: "https://discord.com/invite/veloren-community-449602562165833758",
+    warningLink:
+      "https://discord.com/invite/veloren-community-449602562165833758",
     release: "July 1, 2023",
     developers: "Kristoffer Anderson",
     publisher: "veloren.net",
