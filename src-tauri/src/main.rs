@@ -61,12 +61,16 @@ fn create_named_mutex(name: &str) -> std::io::Result<()> {
 async fn main() -> std::io::Result<()> {
     let mutex_name = "tauri_single_instance";
 
-    if cfg!(target_family = "unix") {
+    if cfg!(target_os = "macos") {
+        // Do nothing for macOS
+    } else if cfg!(target_family = "unix") {
+        // This will apply to other Unix-like systems (Linux, etc.)
         if create_named_mutex(mutex_name).is_err() {
             println!("Another instance is already running.");
             std::process::exit(1);
         }
     } else if cfg!(target_family = "windows") {
+        // This applies to Windows
         if create_named_mutex(mutex_name).is_err() {
             println!("Another instance is already running.");
             std::process::exit(1);
