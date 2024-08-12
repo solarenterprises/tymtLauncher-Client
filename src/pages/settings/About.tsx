@@ -57,7 +57,7 @@ const About = ({ view, setView }: propsType) => {
                 </Stack>
               </Button>
               <Divider variant="fullWidth" sx={{ backgroundColor: "#FFFFFF1A" }} />
-              <Button
+              {/* <Button
                 className="common-btn"
                 sx={{ padding: "20px" }}
                 onClick={() => {
@@ -70,7 +70,7 @@ const About = ({ view, setView }: propsType) => {
                     <img src={externalIcon} />
                   </Box>
                 </Stack>
-              </Button>
+              </Button> */}
               <Divider variant="fullWidth" sx={{ backgroundColor: "#FFFFFF1A" }} />
               <Stack direction={"column"} justifyContent={"flex-start"} textAlign={"left"} gap={"20px"} padding={"20px"}>
                 <Box className="fs-h4 white">{t("set-54_follow-us")}</Box>
