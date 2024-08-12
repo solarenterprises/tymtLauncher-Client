@@ -1,3 +1,4 @@
+import { emit } from "@tauri-apps/api/event";
 import { IRsa } from "../../types/chatTypes";
 import {
   IChatroom,
@@ -108,18 +109,21 @@ export const addParticipant = async (_member: ICurrentChatroomMember) => {
     const currentChatroomStore: IChatroom = JSON.parse(sessionStorage.getItem(`currentChatroom`));
     if (!currentChatroomStore) {
       console.error("Failed to addOneCurrentChatroomMembers: currentChatroomStore undefined!");
+      await emit("error", { message: "Chatroom not existing!" });
       return null;
     }
 
     const sKeyListStore: ISKeyList = JSON.parse(sessionStorage.getItem(`sKeyList`));
     if (!sKeyListStore || !sKeyListStore.sKeys || !isArray(sKeyListStore.sKeys)) {
       console.error("Failed to addOneCurrentChatroomMembers: sKeyListStore undefined!");
+      await emit("error", { message: "Encryption keys not existing!" });
       return null;
     }
 
     const currentSKey = sKeyListStore?.sKeys?.find((element) => element?.roomId === currentChatroomStore?._id)?.sKey;
     if (!currentSKey && currentChatroomStore?.isPrivate) {
       console.error("Failed to addOneCurrentChatroomMembers: currentSKey undefined!");
+      await emit("error", { message: "Encryption key not existing!" });
       return null;
     }
 
@@ -131,6 +135,7 @@ export const addParticipant = async (_member: ICurrentChatroomMember) => {
     const res = await ChatroomAPI.addParticipant(body);
     if (res?.status !== 200 || !res?.data) {
       console.error("Failed to addParticipant: ", res);
+      await emit("error", { message: `Failed to addParticipant: ${res.status}` });
       return null;
     }
 
@@ -138,6 +143,7 @@ export const addParticipant = async (_member: ICurrentChatroomMember) => {
     return res?.data?.result;
   } catch (err) {
     console.error("Failed to addParticipant: ", err);
+    await emit("error", { message: err.toString() });
   }
 };
 

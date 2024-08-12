@@ -1,7 +1,7 @@
 import { useSelector, useDispatch } from "react-redux";
 import { useEffect, useRef } from "react";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import InfiniteScroll from "react-infinite-scroll-component";
 import _ from "lodash";
@@ -22,8 +22,8 @@ import { setMountedFalse, setMountedTrue } from "../../features/chat/IntercomSup
 import { getAccount } from "../../features/account/AccountSlice";
 import { getChatHistory, setChatHistory } from "../../features/chat/ChatHistorySlice";
 import { getContactList } from "../../features/chat/ContactListSlice";
-import { getCurrentChatroom } from "../../features/chat/CurrentChatroomSlice";
-import { ICurrentChatroomMembers, getCurrentChatroomMembers } from "../../features/chat/CurrentChatroomMembersSlice";
+import { fetchCurrentChatroomAsync, getCurrentChatroom } from "../../features/chat/CurrentChatroomSlice";
+import { ICurrentChatroomMembers, fetchCurrentChatroomMembersAsync, getCurrentChatroomMembers } from "../../features/chat/CurrentChatroomMembersSlice";
 
 import { useSocket } from "../../providers/SocketProvider";
 import GroupAvatar from "../../components/chat/GroupAvatar";
@@ -61,6 +61,7 @@ const Chatroom = () => {
   const { socket } = useSocket();
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
+  const { chatroomId } = useParams();
   const classes = ChatStyle();
 
   const [panel, setPanel] = useState("chatMainRoom");
@@ -119,6 +120,14 @@ const Chatroom = () => {
       dispatch(setChatHistory({ messages: [] }));
     }
   }, [currentChatroomStore]);
+
+  useEffect(() => {
+    if (chatroomId) {
+      console.log("chatroomId: ", chatroomId);
+      dispatch(fetchCurrentChatroomAsync(chatroomId));
+      dispatch(fetchCurrentChatroomMembersAsync(chatroomId));
+    }
+  }, [chatroomId]);
 
   const fetchMessages = async () => {
     try {

@@ -89,7 +89,7 @@ const AlertComp = ({ open, status, title, detail, setOpen, link }: propsAlertTyp
           },
         }}
         onClick={() => {
-          navigate(link);
+          if (link) navigate(link);
           if (title !== "Friend Request") {
           }
         }}

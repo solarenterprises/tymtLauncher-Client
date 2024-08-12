@@ -1,12 +1,21 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
-import AlertComp from "../components/AlertComp";
 import { useSelector } from "react-redux";
-import { selectNotification } from "../features/settings/NotificationSlice";
-import { notificationType } from "../types/settingTypes";
+import { useTranslation } from "react-i18next";
 import { useLocation } from "react-router-dom";
-import { isPermissionGranted, requestPermission, sendNotification } from "@tauri-apps/api/notification";
-import notiIcon from "../assets/main/32x32.png";
+
 import { invoke } from "@tauri-apps/api/tauri";
+import { listen } from "@tauri-apps/api/event";
+import { isPermissionGranted, requestPermission, sendNotification } from "@tauri-apps/api/notification";
+
+import AlertComp from "../components/AlertComp";
+
+import { selectNotification } from "../features/settings/NotificationSlice";
+
+import { notificationType } from "../types/settingTypes";
+
+import notiIcon from "../assets/main/32x32.png";
+
+import { translateString } from "../lib/api/Translate";
 
 interface NotificationContextType {
   setNotificationOpen: (open: boolean) => void;
@@ -31,6 +40,7 @@ interface NotificationProviderProps {
 }
 
 export const NotificationProvider: React.FC<NotificationProviderProps> = ({ children }) => {
+  const { t } = useTranslation();
   const location = useLocation();
   const [notificationOpen, setNotificationOpen] = useState<boolean>(false);
   const [notificationStatus, setNotificationStatus] = useState<string>("");
@@ -61,6 +71,21 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
       init();
     }
   }, [notificationStatus, notificationLink, notificationOpen, notificationTitle, notificationDetail, notificationStore.alert]);
+
+  useEffect(() => {
+    const unlisten_error = listen("error", async (event) => {
+      const message = (event.payload as any)?.message as string;
+      setNotificationStatus("failed");
+      setNotificationTitle(t("hom-23_error"));
+      setNotificationDetail(await translateString(message));
+      setNotificationOpen(true);
+      setNotificationLink(null);
+    });
+
+    return () => {
+      unlisten_error.then((unlistenFn) => unlistenFn());
+    };
+  });
 
   return (
     <NotificationContext.Provider
