@@ -4,6 +4,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { Box, Grid, Stack } from "@mui/material";
 
 import { useSocket } from "../../providers/SocketProvider";
+import { useNotification } from "../../providers/NotificationProvider";
+
 import GroupAvatar from "./GroupAvatar";
 import GroupListItemContextMenu from "./GroupListItemContextMenu";
 
@@ -23,6 +25,8 @@ import { IAlert } from "../../types/chatTypes";
 import AlertAPI from "../../lib/api/AlertAPI";
 import { SyncEventNames } from "../../consts/SyncEventNames";
 import { fetchUnreadMessageListAsync } from "../../features/chat/UnreadMessageListSlice";
+import { translateString } from "../../lib/api/Translate";
+import { useTranslation } from "react-i18next";
 
 export interface IPropsGroupListItem {
   group: IChatroom;
@@ -32,6 +36,8 @@ export interface IPropsGroupListItem {
 
 const GroupListItem = ({ group, index, setView }: IPropsGroupListItem) => {
   const { socket } = useSocket();
+  const { setNotificationStatus, setNotificationTitle, setNotificationDetail, setNotificationOpen, setNotificationLink } = useNotification();
+  const { t } = useTranslation();
 
   const dispatch = useDispatch<AppDispatch>();
   const accountStore: accountType = useSelector(getAccount);
@@ -113,6 +119,12 @@ const GroupListItem = ({ group, index, setView }: IPropsGroupListItem) => {
       console.log("handleGroupListItemClick");
     } catch (err) {
       console.error("Failed to handleGroupListItemClick: ", err);
+
+      setNotificationStatus("failed");
+      setNotificationTitle(t("hom-23_error"));
+      setNotificationDetail(await translateString(err.toString()));
+      setNotificationOpen(true);
+      setNotificationLink(null);
     }
   }, [accountStore, unreadAlertsForThisGroup, socket.current]);
 
