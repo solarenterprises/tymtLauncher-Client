@@ -1,5 +1,6 @@
 import { useCallback, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 
 import { Box, Grid, Stack } from "@mui/material";
 
@@ -30,12 +31,14 @@ import { IPoint } from "../../types/homeTypes";
 export interface IPropsUserListItem {
   user: userType;
   index: number;
+  roomMode?: boolean;
   setView?: (_: string) => void;
   page: string;
 }
 
-const UserListItem = ({ user, index, setView, page }: IPropsUserListItem) => {
+const UserListItem = ({ user, index, roomMode, setView, page }: IPropsUserListItem) => {
   const { socket } = useSocket();
+  const navigate = useNavigate();
 
   const dispatch = useDispatch<AppDispatch>();
   const contactListStore: IContactList = useSelector(getContactList);
@@ -81,8 +84,14 @@ const UserListItem = ({ user, index, setView, page }: IPropsUserListItem) => {
               .filter((chatroom) => !chatroom.room_name)
               .find((dm) => dm.participants.some((participant) => participant.userId === user._id));
             console.log("newCurrentChatroom: ", newCurrentChatroom);
-            dispatch(setCurrentChatroom(newCurrentChatroom));
-            await dispatch(fetchCurrentChatroomMembersAsync(newCurrentChatroom._id));
+
+            if (roomMode) {
+              navigate(`/chat/${newCurrentChatroom._id}`);
+            } else {
+              dispatch(setCurrentChatroom(newCurrentChatroom));
+              await dispatch(fetchCurrentChatroomMembersAsync(newCurrentChatroom._id));
+            }
+
             if (setView) setView("chatbox");
           }
           // Else if we didn't have any DM in the past
@@ -90,8 +99,13 @@ const UserListItem = ({ user, index, setView, page }: IPropsUserListItem) => {
             dispatch(createDMAsync(user._id)).then((action) => {
               if (action.type.endsWith("/fulfilled")) {
                 const newCurrentChatroom = action.payload as IChatroom;
-                dispatch(setCurrentChatroom(newCurrentChatroom));
-                dispatch(fetchCurrentChatroomMembersAsync(newCurrentChatroom._id));
+
+                if (roomMode) {
+                  navigate(`/chat/${newCurrentChatroom._id}`);
+                } else {
+                  dispatch(setCurrentChatroom(newCurrentChatroom));
+                  dispatch(fetchCurrentChatroomMembersAsync(newCurrentChatroom._id));
+                }
 
                 const data_1: ISocketParamsJoinMessageGroup = {
                   room_id: newCurrentChatroom._id,
@@ -125,8 +139,12 @@ const UserListItem = ({ user, index, setView, page }: IPropsUserListItem) => {
             dispatch(createDMAsync(user._id)).then((action) => {
               if (action.type.endsWith("/fulfilled")) {
                 const newCurrentChatroom = action.payload as IChatroom;
-                dispatch(setCurrentChatroom(newCurrentChatroom));
-                dispatch(fetchCurrentChatroomMembersAsync(newCurrentChatroom._id));
+                if (roomMode) {
+                  navigate(`/chat/${newCurrentChatroom._id}`);
+                } else {
+                  dispatch(setCurrentChatroom(newCurrentChatroom));
+                  dispatch(fetchCurrentChatroomMembersAsync(newCurrentChatroom._id));
+                }
 
                 const data_1: ISocketParamsJoinMessageGroup = {
                   room_id: newCurrentChatroom._id,

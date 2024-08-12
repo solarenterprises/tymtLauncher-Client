@@ -196,7 +196,7 @@ export const SocketProvider = () => {
                       setNotificationStatus("message");
                       setNotificationTitle(senderName ? senderName : roomName);
                       setNotificationDetail(decryptedMessage);
-                      setNotificationLink(`/chat?chatroomId=${data.room_id}`);
+                      setNotificationLink(`/chat/${data.room_id}`);
                     }
                   }
                 }

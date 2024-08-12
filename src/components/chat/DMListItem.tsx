@@ -24,15 +24,18 @@ import AlertAPI from "../../lib/api/AlertAPI";
 import { ISocketParamsSyncEvent } from "../../types/SocketTypes";
 import { SyncEventNames } from "../../consts/SyncEventNames";
 import { fetchUnreadMessageListAsync, getUnreadMessageList, IUnreadMessageList } from "../../features/chat/UnreadMessageListSlice";
+import { useNavigate } from "react-router-dom";
 
 export interface IPropsDMListItem {
   DM: IChatroom;
   index: number;
+  roomMode?: boolean;
   setView?: (_: string) => void;
 }
 
-const DMListItem = ({ DM, index, setView }: IPropsDMListItem) => {
+const DMListItem = ({ DM, index, roomMode, setView }: IPropsDMListItem) => {
   const { socket } = useSocket();
+  const navigate = useNavigate();
 
   const dispatch = useDispatch<AppDispatch>();
   const accountStore: accountType = useSelector(getAccount);
@@ -73,8 +76,12 @@ const DMListItem = ({ DM, index, setView }: IPropsDMListItem) => {
 
   const handleDMListItemClick = useCallback(async () => {
     try {
-      dispatch(setCurrentChatroom(DM));
-      dispatch(fetchCurrentChatroomMembersAsync(DM._id));
+      if (roomMode) {
+        navigate(`/chat/${DM._id}`);
+      } else {
+        dispatch(setCurrentChatroom(DM));
+        dispatch(fetchCurrentChatroomMembersAsync(DM._id));
+      }
 
       if (setView) setView("chatbox");
 

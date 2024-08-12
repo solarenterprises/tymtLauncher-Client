@@ -209,8 +209,8 @@ const Chatbox = ({ view, setView }: propsType) => {
               <Button
                 className={"setting-back-button"}
                 onClick={() => {
-                  navigate("/chat");
-                  dispatch(setChatHistory({ messages: [] }));
+                  navigate(`/chat/${currentChatroomStore._id}`);
+                  // dispatch(setChatHistory({ messages: [] }));
                 }}
               >
                 <Box component={"img"} src={maximize}></Box>

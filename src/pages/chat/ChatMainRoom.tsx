@@ -219,7 +219,7 @@ const ChatMainRoom = ({ view, setView }: propsType) => {
                 ) : (
                   <>
                     {(!value ? groupList : searchedGroupList)?.map((group, index) => {
-                      return <GroupListItem group={group} index={index} />;
+                      return <GroupListItem group={group} index={index} roomMode={true} />;
                     })}
                   </>
                 )}
@@ -240,7 +240,7 @@ const ChatMainRoom = ({ view, setView }: propsType) => {
                   <>
                     {!value &&
                       DMList.map((DM, index) => {
-                        return <DMListItem DM={DM} index={index} />;
+                        return <DMListItem DM={DM} index={index} roomMode={true} />;
                       })}
                     {value &&
                       searchedUserList.map((user, index) => {

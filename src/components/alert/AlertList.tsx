@@ -82,7 +82,7 @@ const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
   const handleAlertClick = useCallback(async () => {
     try {
       if (title === "chat") {
-        navigate(`/chat?chatroomId=${detail.note?.room_id}`);
+        navigate(`/chat/${detail.note?.room_id}`);
         dispatch(fetchCurrentChatroomAsync(detail.note?.room_id));
         dispatch(fetchCurrentChatroomMembersAsync(detail.note?.room_id));
 

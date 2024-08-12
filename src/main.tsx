@@ -132,6 +132,7 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
                             </Route>
                             <Route path="/" element={<Layoutchat />}>
                               <Route path="/chat" element={<Chatroom />} />
+                              <Route path="/chat/:chatroomId" element={<Chatroom />} />
                             </Route>
                           </Route>
                         </Route>

@@ -1,5 +1,7 @@
 import { useCallback, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 
 import { Box, Grid, Stack } from "@mui/material";
 
@@ -26,18 +28,19 @@ import AlertAPI from "../../lib/api/AlertAPI";
 import { SyncEventNames } from "../../consts/SyncEventNames";
 import { fetchUnreadMessageListAsync } from "../../features/chat/UnreadMessageListSlice";
 import { translateString } from "../../lib/api/Translate";
-import { useTranslation } from "react-i18next";
 
 export interface IPropsGroupListItem {
   group: IChatroom;
   index: number;
+  roomMode?: boolean;
   setView?: (_: string) => void;
 }
 
-const GroupListItem = ({ group, index, setView }: IPropsGroupListItem) => {
+const GroupListItem = ({ group, index, roomMode, setView }: IPropsGroupListItem) => {
   const { socket } = useSocket();
   const { setNotificationStatus, setNotificationTitle, setNotificationDetail, setNotificationOpen, setNotificationLink } = useNotification();
   const { t } = useTranslation();
+  const navigate = useNavigate();
 
   const dispatch = useDispatch<AppDispatch>();
   const accountStore: accountType = useSelector(getAccount);
@@ -79,8 +82,12 @@ const GroupListItem = ({ group, index, setView }: IPropsGroupListItem) => {
         ).then(async (action) => {
           if (action.type.endsWith("/fulfilled")) {
             const newChatroom = action.payload as IChatroom;
-            dispatch(setCurrentChatroom(newChatroom));
-            dispatch(fetchCurrentChatroomMembersAsync(newChatroom._id));
+            if (roomMode) {
+              navigate(`/chat/${group._id}`);
+            } else {
+              dispatch(setCurrentChatroom(newChatroom));
+              dispatch(fetchCurrentChatroomMembersAsync(newChatroom._id));
+            }
 
             if (socket.current && socket.current.connected) {
               const data: ISocketParamsJoinMessageGroup = {
@@ -95,8 +102,12 @@ const GroupListItem = ({ group, index, setView }: IPropsGroupListItem) => {
           }
         });
       } else {
-        await dispatch(fetchCurrentChatroomAsync(group._id));
-        dispatch(fetchCurrentChatroomMembersAsync(group._id));
+        if (roomMode) {
+          navigate(`/chat/${group._id}`);
+        } else {
+          await dispatch(fetchCurrentChatroomAsync(group._id));
+          dispatch(fetchCurrentChatroomMembersAsync(group._id));
+        }
 
         if (setView) setView("chatbox");
 
