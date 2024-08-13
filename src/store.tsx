@@ -47,6 +47,7 @@ import activeUserListReducer from "./features/chat/ActiveUserListSlice";
 import mutedListReducer from "./features/chat/MutedListSlice";
 import myInfoReducer from "./features/account/MyInfoSlice";
 import unreadMessageListReducer from "./features/chat/UnreadMessageListSlice";
+import renderTimeReducer from "./features/account/RenderTimeSlice";
 
 const blacklistActionTypes = ["intercomsupport/setChatMounted", "intercomsupport/setMountedTrue", "intercomsupport/setMountedFalse"];
 
@@ -102,6 +103,7 @@ const store = configureStore({
     mutedList: mutedListReducer,
     myInfo: myInfoReducer,
     unreadMessageList: unreadMessageListReducer,
+    renderTime: renderTimeReducer,
   },
   middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(stateSyncMiddleware),
 });

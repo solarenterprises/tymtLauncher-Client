@@ -134,7 +134,6 @@ const Avatar = ({ size, url, userid, onlineStatus, ischain, status }: any) => {
           )}
           <Box
             component={"img"}
-            key={`${new Date().getTime()}`}
             src={
               userid
                 ? `${tymt_avatar_url}/public/upload/avatars/${user?.avatar ? user?.avatar : "default.png"}?${Date.now()}`
@@ -153,6 +152,7 @@ const Avatar = ({ size, url, userid, onlineStatus, ischain, status }: any) => {
               maskSize: "cover",
               zIndex: 1,
               opacity: 0.9,
+              transition: "all 0.5s",
             }}
             loading="lazy"
             onError={(e) => {
