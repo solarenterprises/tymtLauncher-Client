@@ -249,7 +249,7 @@ const Chatbox = ({ view, setView }: propsType) => {
               releaseToRefreshContent={<Box className={"fs-14-regular white t-center"}>&#8593; {t("cha-35_release-to-refresh")}</Box>}
             >
               {[...chatHistoryStore.messages].reverse()?.map((message, index) => (
-                <Bubble roomMode={false} screenExpanded={false} message={message} index={index} />
+                <Bubble roomMode={false} screenExpanded={false} message={message} index={index} isDM={isDM} />
               ))}
             </InfiniteScroll>
             <div id={"emptyblock"}></div>

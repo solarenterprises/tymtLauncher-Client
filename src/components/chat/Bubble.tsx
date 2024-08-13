@@ -31,9 +31,10 @@ export interface IParamsBubble {
   index: number;
   screenExpanded: boolean;
   roomMode: boolean;
+  isDM: boolean;
 }
 
-const Bubble = ({ roomMode, screenExpanded, message, index }: IParamsBubble) => {
+const Bubble = ({ roomMode, screenExpanded, message, index, isDM }: IParamsBubble) => {
   const accountStore: accountType = useSelector(getAccount);
   const chatHistoryStore: ChatHistoryType = useSelector(getChatHistory);
   const currentChatroomStore: IChatroom = useSelector(getCurrentChatroom);
@@ -41,6 +42,12 @@ const Bubble = ({ roomMode, screenExpanded, message, index }: IParamsBubble) => 
   const activeUserListStore: IActiveUserList = useSelector(getActiveUserList);
   const currentChatroomMembersStore: ICurrentChatroomMembers = useSelector(getCurrentChatroomMembers);
   const notificationStore: notificationType = useSelector(selectNotification);
+
+  const displayNickname: string = useMemo(() => {
+    const sender = currentChatroomMembersStore.members.find((member) => member._id === message.sender_id);
+    if (sender) return sender.nickName;
+    return "Deleted";
+  }, [currentChatroomMembersStore]);
 
   const sKey = sKeyListStore.sKeys.find((element) => element.roomId === currentChatroomStore?._id)?.sKey;
 
@@ -127,19 +134,59 @@ const Bubble = ({ roomMode, screenExpanded, message, index }: IParamsBubble) => 
         )}
         {roomMode && screenExpanded && !isLastMessageOfStack && <div style={{ width: "40px", height: "40px" }} />}
         {(!message.type || message.type === "text") && (
-          <BubbleText roomMode={roomMode} message={message} decryptedMessage={decryptedMessage} isLastMessage={isLastMessageOfStack} isSender={isSender} />
+          <BubbleText
+            roomMode={roomMode}
+            message={message}
+            decryptedMessage={decryptedMessage}
+            isLastMessage={isLastMessageOfStack}
+            isSender={isSender}
+            displayNickname={displayNickname}
+            isDM={isDM}
+          />
         )}
         {message.type === "audio" && (
-          <BubbleAudio roomMode={roomMode} message={message} decryptedMessage={decryptedMessage} isLastMessage={isLastMessageOfStack} isSender={isSender} />
+          <BubbleAudio
+            roomMode={roomMode}
+            message={message}
+            decryptedMessage={decryptedMessage}
+            isLastMessage={isLastMessageOfStack}
+            isSender={isSender}
+            displayNickname={displayNickname}
+            isDM={isDM}
+          />
         )}
         {message.type === "image" && (
-          <BubbleImage roomMode={roomMode} message={message} decryptedMessage={decryptedMessage} isLastMessage={isLastMessageOfStack} isSender={isSender} />
+          <BubbleImage
+            roomMode={roomMode}
+            message={message}
+            decryptedMessage={decryptedMessage}
+            isLastMessage={isLastMessageOfStack}
+            isSender={isSender}
+            displayNickname={displayNickname}
+            isDM={isDM}
+          />
         )}
         {message.type === "video" && (
-          <BubbleVideo roomMode={roomMode} message={message} decryptedMessage={decryptedMessage} isLastMessage={isLastMessageOfStack} isSender={isSender} />
+          <BubbleVideo
+            roomMode={roomMode}
+            message={message}
+            decryptedMessage={decryptedMessage}
+            isLastMessage={isLastMessageOfStack}
+            isSender={isSender}
+            displayNickname={displayNickname}
+            isDM={isDM}
+          />
         )}
         {message.type === "file" && (
-          <BubbleFile roomMode={roomMode} message={message} decryptedMessage={decryptedMessage} isLastMessage={isLastMessageOfStack} isSender={isSender} />
+          <BubbleFile
+            roomMode={roomMode}
+            message={message}
+            decryptedMessage={decryptedMessage}
+            isLastMessage={isLastMessageOfStack}
+            isSender={isSender}
+            displayNickname={displayNickname}
+            isDM={isDM}
+          />
         )}
       </Stack>
     </Box>

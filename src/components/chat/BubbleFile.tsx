@@ -17,9 +17,11 @@ export interface IParamsBubbleFile {
   isLastMessage: boolean;
   isSender: boolean;
   roomMode: boolean;
+  displayNickname: string;
+  isDM: boolean;
 }
 
-const BubbleFile = ({ roomMode, message, decryptedMessage, isLastMessage, isSender }: IParamsBubbleFile) => {
+const BubbleFile = ({ roomMode, message, decryptedMessage, isLastMessage, isSender, displayNickname, isDM }: IParamsBubbleFile) => {
   const [mouseOn, setMouseOn] = useState<boolean>(false);
 
   const url = `${tymt_avatar_url}/public/upload/message/${message.message}`;
@@ -59,31 +61,34 @@ const BubbleFile = ({ roomMode, message, decryptedMessage, isLastMessage, isSend
         }}
       >
         {mouseOn && <BubbleDownloadButton url={url} name={decryptedMessage} />}
-        <Stack direction={"row"} gap={"8px"} alignItems={"center"} height={"48px"} width={"240px"}>
-          <Box
-            height={"48px"}
-            width={"32px"}
-            sx={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-            <FileIcon extension={fileDetail.extension} {...defaultStyles[fileDetail.extension]} />
-          </Box>
-          <Box
-            className="fs-16-regular white"
-            width={"200px"}
-            sx={{
-              display: "-webkit-box",
-              WebkitBoxOrient: "vertical",
-              WebkitLineClamp: 2,
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-            }}
-          >
-            {decryptedMessage}
-          </Box>
+        <Stack>
+          {!isDM && <Box className={"fs-12-regular white"}>{displayNickname}</Box>}
+          <Stack direction={"row"} gap={"8px"} alignItems={"center"} height={"48px"} width={"240px"}>
+            <Box
+              height={"48px"}
+              width={"32px"}
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <FileIcon extension={fileDetail.extension} {...defaultStyles[fileDetail.extension]} />
+            </Box>
+            <Box
+              className="fs-16-regular white"
+              width={"200px"}
+              sx={{
+                display: "-webkit-box",
+                WebkitBoxOrient: "vertical",
+                WebkitLineClamp: 2,
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              }}
+            >
+              {decryptedMessage}
+            </Box>
+          </Stack>
         </Stack>
       </Box>
     </>

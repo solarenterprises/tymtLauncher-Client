@@ -16,9 +16,11 @@ export interface IParamsBubbleImage {
   isLastMessage: boolean;
   isSender: boolean;
   roomMode: boolean;
+  displayNickname: string;
+  isDM: boolean;
 }
 
-const BubbleImage = ({ roomMode, message, decryptedMessage, isLastMessage, isSender }: IParamsBubbleImage) => {
+const BubbleImage = ({ roomMode, message, decryptedMessage, isLastMessage, isSender, displayNickname, isDM }: IParamsBubbleImage) => {
   const [_showTime, setShowTime] = useState<boolean>(false);
   const [showImageModal, setShowImageModal] = useState<boolean>(false);
   const [mouseOn, setMouseOn] = useState<boolean>(false);
@@ -50,6 +52,24 @@ const BubbleImage = ({ roomMode, message, decryptedMessage, isLastMessage, isSen
         }}
       >
         {mouseOn && <BubbleDownloadButton url={url} name={decryptedMessage} />}
+        {!mouseOn && !isDM && (
+          <Box
+            className={"fs-12-regular white"}
+            sx={{
+              position: "absolute",
+              top: "8px",
+              left: "8px",
+              zIndex: 1,
+              backgroundColor: "#00000088",
+              borderRadius: "50ch",
+              padding: "2px",
+              transition: "all 0.3s ease",
+            }}
+          >
+            {displayNickname}
+          </Box>
+        )}
+
         <Box
           component={"img"}
           src={url}

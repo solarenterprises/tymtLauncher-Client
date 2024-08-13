@@ -1,12 +1,9 @@
-import React, { useMemo } from "react";
-import { useSelector } from "react-redux";
+import React from "react";
 import { ThreeDots } from "react-loader-spinner";
 
 import { Box, Stack } from "@mui/material";
 
 import Linkify from "./Linkify";
-
-import { getCurrentChatroomMembers, ICurrentChatroomMembers } from "../../features/chat/CurrentChatroomMembersSlice";
 
 import { ChatMessageType } from "../../types/chatTypes";
 
@@ -16,16 +13,11 @@ export interface IParamsBubbleText {
   isLastMessage: boolean;
   isSender: boolean;
   roomMode: boolean;
+  displayNickname: string;
+  isDM: boolean;
 }
 
-const BubbleText = ({ roomMode, message, decryptedMessage, isLastMessage, isSender }: IParamsBubbleText) => {
-  const currentChatroomMembersStore: ICurrentChatroomMembers = useSelector(getCurrentChatroomMembers);
-  const displayNickname: string = useMemo(() => {
-    const sender = currentChatroomMembersStore.members.find((member) => member._id === message.sender_id);
-    if (sender) return sender.nickName;
-    return "Deleted";
-  }, [currentChatroomMembersStore]);
-
+const BubbleText = ({ roomMode, message, decryptedMessage, isLastMessage, isSender, displayNickname, isDM }: IParamsBubbleText) => {
   return (
     <>
       <Box
@@ -34,7 +26,7 @@ const BubbleText = ({ roomMode, message, decryptedMessage, isLastMessage, isSend
         }`}
       >
         <Stack>
-          <Box className={"fs-12-regular white"}>{displayNickname}</Box>
+          {!isDM && <Box className={"fs-12-regular white"}>{displayNickname}</Box>}
           <Box>
             {decryptedMessage !== undefined ? (
               <>

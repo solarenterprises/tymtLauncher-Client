@@ -336,7 +336,7 @@ const Chatroom = () => {
                   releaseToRefreshContent={<Box className={"fs-14-regular white t-center"}>&#8593; {t("cha-35_release-to-refresh")}</Box>}
                 >
                   {[...chatHistoryStore.messages].reverse()?.map((message, index) => (
-                    <Bubble roomMode={true} screenExpanded={screenexpanded} message={message} index={index} />
+                    <Bubble roomMode={true} screenExpanded={screenexpanded} message={message} index={index} isDM={isDM} />
                   ))}
                 </InfiniteScroll>
               </Box>

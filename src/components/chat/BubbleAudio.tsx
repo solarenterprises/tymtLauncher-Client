@@ -20,9 +20,11 @@ export interface IParamsBubbleAudio {
   isLastMessage: boolean;
   isSender: boolean;
   roomMode: boolean;
+  displayNickname: string;
+  isDM: boolean;
 }
 
-const BubbleAudio = ({ roomMode, message, decryptedMessage, isLastMessage, isSender }: IParamsBubbleAudio) => {
+const BubbleAudio = ({ roomMode, message, decryptedMessage, isLastMessage, isSender, displayNickname, isDM }: IParamsBubbleAudio) => {
   const { t } = useTranslation();
 
   const [blob, setBlob] = useState(null);
@@ -75,7 +77,9 @@ const BubbleAudio = ({ roomMode, message, decryptedMessage, isLastMessage, isSen
         }}
       >
         {mouseOn && <BubbleDownloadButton url={url} name={decryptedMessage} />}
+
         <Stack>
+          {!isDM && <Box className={"fs-12-regular white"}>{displayNickname}</Box>}
           <Stack direction="row" alignItems="center" gap="8px">
             <AudioToggleButton loaded={loadedDisplay} playing={playing} setPlaying={setPlaying} />
             <Stack gap={"2px"}>
