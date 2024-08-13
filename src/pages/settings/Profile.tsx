@@ -6,6 +6,8 @@ import * as Yup from "yup";
 import { Box, Button, Divider, Stack, Tooltip } from "@mui/material";
 
 import { useNotification } from "../../providers/NotificationProvider";
+import { useSocket } from "../../providers/SocketProvider";
+
 import Avatar from "../../components/home/Avatar";
 import InputText from "../../components/account/InputText";
 
@@ -23,16 +25,20 @@ import SettingStyle from "../../styles/SettingStyle";
 
 import backIcon from "../../assets/settings/back-icon.svg";
 import editIcon from "../../assets/settings/edit-icon.svg";
+import { ISocketParamsSyncEventsAll } from "../../types/SocketTypes";
+import { SyncEventNames } from "../../consts/SyncEventNames";
 
 const Profile = ({ view, setView }: propsType) => {
   const classname = SettingStyle();
   const { t } = useTranslation();
+  const { socket } = useSocket();
   const dispatch = useDispatch<AppDispatch>();
   const account: accountType = useSelector(getAccount);
   const nonCustodial: nonCustodialType = useSelector(getNonCustodial);
   const custodial: custodialType = useSelector(getCustodial);
   const notificationStore: notificationType = useSelector(selectNotification);
   const userStore = account.wallet === walletEnum.noncustodial ? nonCustodial : custodial;
+
   const [nickname, setNickname] = useState(userStore.nickname);
   const [error, setError] = useState<string>("");
 
@@ -82,7 +88,7 @@ const Profile = ({ view, setView }: propsType) => {
     }
   };
 
-  const uploadImg = () => {
+  const uploadImg = useCallback(() => {
     const fileInput = document.getElementById("file-input") as HTMLInputElement;
     const file = fileInput.files ? fileInput.files[0] : null;
     const formData = new FormData();
@@ -101,6 +107,17 @@ const Profile = ({ view, setView }: propsType) => {
             avatar: res.data.avatar,
           })
         );
+
+        if (socket.current && socket.current.connected) {
+          const data: ISocketParamsSyncEventsAll = {
+            sender_id: account.uid,
+            instructions: [SyncEventNames.UPDATE_IMAGE_RENDER_TIME],
+            is_to_self: true,
+          };
+          socket.current.emit("sync-events-all", JSON.stringify(data));
+          console.log("socket.current.emit > sync-events-all", data);
+        }
+
         setNotificationStatus("success");
         setNotificationTitle(t("alt-32_avatar-saved"));
         setNotificationDetail(t("alt-33_avatar-saved-intro"));
@@ -115,7 +132,7 @@ const Profile = ({ view, setView }: propsType) => {
         setNotificationOpen(true);
         setNotificationLink(null);
       });
-  };
+  }, [socket.current, account]);
 
   return (
     <>

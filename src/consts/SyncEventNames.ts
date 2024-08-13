@@ -5,4 +5,5 @@ export class SyncEventNames {
   static UPDATE_CHATROOM_LIST = "update-chatroom-list";
   static UPDATE_ALERT_LIST = "update-alert-list";
   static UPDATE_UNREAD_MESSAGE_LIST = "update-unread-message-list";
+  static UPDATE_IMAGE_RENDER_TIME = "update-image-render-time";
 }

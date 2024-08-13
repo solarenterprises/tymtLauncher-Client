@@ -8,6 +8,7 @@ import { Tooltip, Stack, Box } from "@mui/material";
 
 import { getChain } from "../../features/wallet/ChainSlice";
 import { ICurrentChatroomMember } from "../../features/chat/CurrentChatroomMembersSlice";
+import { getRenderTime, IRenderTime } from "../../features/account/RenderTimeSlice";
 
 import UserAPI from "../../lib/api/UserAPI";
 
@@ -23,6 +24,8 @@ const Avatar = ({ size, url, userid, onlineStatus, ischain, status }: any) => {
   const { t } = useTranslation();
   const chain: IChain = useSelector(getChain);
   const [user, setUser] = useState<ICurrentChatroomMember>();
+
+  const renderTimeStore: IRenderTime = useSelector(getRenderTime);
 
   useEffect(() => {
     if (userid) {
@@ -136,8 +139,8 @@ const Avatar = ({ size, url, userid, onlineStatus, ischain, status }: any) => {
             component={"img"}
             src={
               userid
-                ? `${tymt_avatar_url}/public/upload/avatars/${user?.avatar ? user?.avatar : "default.png"}?${Date.now()}`
-                : `${tymt_avatar_url}/public/upload/avatars/${url ? url : "default.png"}?${Date.now()}`
+                ? `${tymt_avatar_url}/public/upload/avatars/${user?.avatar ? user?.avatar : "default.png"}?${renderTimeStore.renderTime}`
+                : `${tymt_avatar_url}/public/upload/avatars/${url ? url : "default.png"}?${renderTimeStore.renderTime}`
             }
             sx={{
               position: "absolute",

@@ -44,6 +44,8 @@ import { ChatHistoryType, ISocketHash, IAlert, IContactList, IRsa } from "../typ
 import { Chatdecrypt } from "../lib/api/ChatEncrypt";
 import { SyncEventNames } from "../consts/SyncEventNames";
 import { fetchUnreadMessageListAsync } from "../features/chat/UnreadMessageListSlice";
+import { setRenderTime } from "../features/account/RenderTimeSlice";
+import { isArray } from "lodash";
 
 interface SocketContextType {
   socket: MutableRefObject<Socket>;
@@ -357,17 +359,77 @@ export const SocketProvider = () => {
               });
             }
 
-            if (!socket.current.hasListeners("user-online")) {
-              socket.current.on("user-online", async (userId: string) => {
-                console.log("socket.current.on > user-online", userId);
-                dispatch(addOneActiveUserList(userId));
-              });
-            }
+            if (!socket.current.hasListeners("sync-events-all")) {
+              socket.current.on("sync-events-all", async (dataString: string) => {
+                try {
+                  const data = JSON.parse(dataString);
+                  console.log("socket.current.on > sync-events-all", data);
 
-            if (!socket.current.hasListeners("user-offline")) {
-              socket.current.on("user-offline", async (userId: string) => {
-                console.log("socket.current.on > user-offline", userId);
-                dispatch(delOneActiveUserList(userId));
+                  if (data.event_identifier) {
+                    if (data.event_identifier === "user-online") {
+                      console.log("socket.current.on > sync-events-all > user-online", data.userId);
+                      dispatch(addOneActiveUserList(data.userId));
+                    } else if (data.event_identifier === "user-offline") {
+                      console.log("socket.current.on > sync-events-all > user-offline", data.userId);
+                      dispatch(delOneActiveUserList(data.userId));
+                    } else if (data.event_identifier === "alert-posted") {
+                      console.log("socket.current.on > sync-events-all > alert-posted", data.newAlert);
+                      const alert = data.newAlert as IAlert;
+                      if (!alert || !alert.alertType) {
+                        console.error("Alert wrong format!", alert);
+                        return;
+                      }
+
+                      const senderId = alert.note?.sender ?? "";
+                      const senderInBlockList = blockListStoreRef.current.contacts.find((element) => element._id === senderId);
+                      const senderInFriendList = friendListStoreRef.current.contacts.find((element) => element._id === senderId);
+
+                      // Block if the alert is from someone in the block list
+                      if (senderInBlockList) {
+                        console.log("Blocked the alert from someone in the block list!", alert);
+                        return;
+                      }
+
+                      // Friend request alert
+                      if (alert.alertType === "friend-request") {
+                        if (senderInFriendList) {
+                          console.log("Sender is already in my friend list!");
+                          return;
+                        }
+                        dispatch(addOneToUnreadList(alert));
+                        setNotificationOpen(true);
+                        setNotificationStatus("alert");
+                        setNotificationTitle(t("not-9_friend-request"));
+                        setNotificationDetail(t("not-10_fr-intro"));
+                        setNotificationLink(null);
+                      }
+                      // General alert
+                      else if (alert.alertType !== "chat") {
+                        dispatch(addOneToUnreadList(alert));
+                        setNotificationOpen(true);
+                        setNotificationStatus("alert");
+                        setNotificationTitle(`${alert.alertType}`);
+                        setNotificationDetail(`${alert.note.detail}`);
+                        setNotificationLink(null);
+                      }
+                      // Chat alert
+                      else if (alert.alertType === "chat") {
+                        dispatch(addOneToUnreadList(alert));
+                      }
+                    } else if (data.event_identifier === "alert-updated") {
+                      console.log("socket.current.on > sync-events-all > alert-udpated", data.updatedAlert);
+                    }
+                  } else if (data.instructions && isArray(data.instructions)) {
+                    data.instructions.map((instruction: string) => {
+                      if (instruction === SyncEventNames.UPDATE_IMAGE_RENDER_TIME) {
+                        console.log(instruction);
+                        dispatch(setRenderTime({ renderTime: Date.now() }));
+                      }
+                    });
+                  }
+                } catch (err) {
+                  console.error("Failed to sync-events-all: ", err);
+                }
               });
             }
 
@@ -419,6 +481,8 @@ export const SocketProvider = () => {
                           console.error("Failed to newSKeyArray: ", err);
                         }
                       });
+                    } else if (instruction === SyncEventNames.UPDATE_IMAGE_RENDER_TIME) {
+                      dispatch(setRenderTime({ renderTime: Date.now() }));
                     }
                   });
                 } catch (err) {

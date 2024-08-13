@@ -6,12 +6,13 @@ export interface IRenderTime {
 }
 
 const init: IRenderTime = {
-  renderTime: 0,
+  renderTime: Date.now(),
 };
 
 const loadRenderTime: () => IRenderTime = () => {
   const data = sessionStorage.getItem(`renderTime`);
   if (!data || !compareJSONStructure(JSON.parse(data), init)) {
+    sessionStorage.setItem(`renderTime`, JSON.stringify(init));
     return init;
   }
   return JSON.parse(data);
@@ -29,7 +30,7 @@ export const renderTimeSlice = createSlice({
   reducers: {
     setRenderTime: (state, action) => {
       state.data = action.payload;
-      sessionStorage.setItem(`renderTime`, JSON.stringify(action.payload));
+      sessionStorage.setItem(`renderTime`, JSON.stringify(state.data));
     },
   },
 });

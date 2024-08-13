@@ -150,7 +150,7 @@ const GroupListItem = ({ group, index, roomMode, setView }: IPropsGroupListItem)
 
   return (
     <>
-      <Box key={`${index}-${new Date().toISOString()}`} onClick={handleGroupListItemClick} onContextMenu={handleGroupListItemRightClick}>
+      <Box key={`${index}-${group._id}`} onClick={handleGroupListItemClick} onContextMenu={handleGroupListItemRightClick}>
         <Grid
           item
           xs={12}
