@@ -1,5 +1,5 @@
 import { useSelector, useDispatch } from "react-redux";
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -83,10 +83,15 @@ const Chatroom = () => {
   const currentChatroomStore: IChatroom = useSelector(getCurrentChatroom);
   const currentChatroomMembersStore: ICurrentChatroomMembers = useSelector(getCurrentChatroomMembers);
 
-  const isDM = currentChatroomStore?.room_name ? false : true;
+  const isDM = useMemo(() => {
+    return currentChatroomStore?.room_name ? false : true;
+  }, [currentChatroomStore]);
+  const isGlobal = useMemo(() => {
+    return currentChatroomStore.isGlobal;
+  }, [currentChatroomStore]);
   const currentPartner = isDM ? currentChatroomMembersStore?.members?.find((member) => member._id !== accountStore.uid) : null;
-  const displayChatroomName = currentChatroomStore?.room_name ? currentChatroomStore?.room_name : currentPartner?.nickName;
-  const displayChatroomSubName = currentChatroomStore?.room_name ? `${currentChatroomStore?.participants?.length ?? 0} Joined` : currentPartner?.sxpAddress;
+  const displayChatroomName = !isDM ? currentChatroomStore?.room_name : currentPartner?.nickName;
+  const displayChatroomSubName = isGlobal ? "Public channel" : !isDM ? `${currentChatroomStore?.participants?.length ?? 0} Joined` : currentPartner?.sxpAddress;
 
   const chatStoreRef = useRef(chatStore);
   const accountStoreRef = useRef(accountStore);

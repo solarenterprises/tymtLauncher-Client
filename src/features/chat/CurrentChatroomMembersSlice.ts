@@ -30,6 +30,7 @@ export interface ICurrentChatroomMember {
   friend?: string[];
   block?: string[];
   rsa_pub_key?: string;
+  roles: string[];
 }
 
 export interface ICurrentChatroomMembers {

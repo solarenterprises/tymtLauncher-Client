@@ -19,13 +19,11 @@ import { rsaDecrypt } from "../features/chat/RsaApi";
 
 import { accountType } from "../types/accountTypes";
 import { IChain, multiWalletType } from "../types/walletTypes";
-import { IChatroom, IParticipant, IReqChatroomAddParticipant } from "../types/ChatroomAPITypes";
+import { IChatroom, IParticipant } from "../types/ChatroomAPITypes";
 import { IRsa } from "../types/chatTypes";
 import { fetchMyInfoAsync } from "../features/account/MyInfoSlice";
 import { fetchUnreadMessageListAsync } from "../features/chat/UnreadMessageListSlice";
 import { fetchAlertListAsync } from "../features/alert/AlertListSlice";
-import ChatroomAPI from "../lib/api/ChatroomAPI";
-import { isArray } from "lodash";
 
 const AlertProvider = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -40,19 +38,7 @@ const AlertProvider = () => {
   const initAction = useCallback(async () => {
     try {
       console.log("initAction");
-      // Join public chat rooms
-      const globalChatrooms: IChatroom[] = (await ChatroomAPI.fetchGlobalChatrooms())?.data as IChatroom[];
-      if (globalChatrooms && isArray(globalChatrooms)) {
-        const joinPromises = globalChatrooms.map((chatroom) => {
-          const body: IReqChatroomAddParticipant = {
-            user_id: accountStore.uid,
-            user_key: "",
-            id: chatroom._id,
-          };
-          return ChatroomAPI.addParticipant(body);
-        });
-        await Promise.all(joinPromises);
-      }
+
       // Fetch all data
       dispatch(fetchMyInfoAsync(accountStore.uid));
       dispatch(fetchAlertListAsync(accountStore.uid));
@@ -67,6 +53,12 @@ const AlertProvider = () => {
             const newChatroomList = action.payload as IChatroom[];
 
             const newSKeyArray = newChatroomList.map((chatroom) => {
+              if (chatroom.isGlobal) {
+                return {
+                  roomId: chatroom._id,
+                  sKey: "",
+                };
+              }
               const mySelf: IParticipant = chatroom.participants.find((participant) => participant.userId === accountStore.uid);
               const sKey: ISKey = {
                 roomId: chatroom._id,

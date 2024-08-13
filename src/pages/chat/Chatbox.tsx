@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { useTranslation } from "react-i18next";
@@ -56,10 +56,15 @@ const Chatbox = ({ view, setView }: propsType) => {
   const currentChatroomMembersStore: ICurrentChatroomMembers = useSelector(getCurrentChatroomMembers);
   const activeUserListStore: IActiveUserList = useSelector(getActiveUserList);
 
-  const isDM = currentChatroomStore?.room_name ? false : true;
+  const isDM = useMemo(() => {
+    return currentChatroomStore?.room_name ? false : true;
+  }, [currentChatroomStore]);
+  const isGlobal = useMemo(() => {
+    return currentChatroomStore.isGlobal;
+  }, [currentChatroomStore]);
   const currentPartner = isDM ? currentChatroomMembersStore?.members?.find((member) => member._id !== accountStore.uid) : null;
-  const displayChatroomName = currentChatroomStore?.room_name ? currentChatroomStore?.room_name : currentPartner?.nickName;
-  const displayChatroomSubName = currentChatroomStore?.room_name ? `${currentChatroomStore?.participants?.length ?? 0} Joined` : currentPartner?.sxpAddress;
+  const displayChatroomName = !isDM ? currentChatroomStore?.room_name : currentPartner?.nickName;
+  const displayChatroomSubName = isGlobal ? "Public channel" : !isDM ? `${currentChatroomStore?.participants?.length ?? 0} Joined` : currentPartner?.sxpAddress;
 
   const accountStoreRef = useRef(accountStore);
   const currentChatroomStoreRef = useRef(currentChatroomStore);

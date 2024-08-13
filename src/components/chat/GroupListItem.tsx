@@ -14,7 +14,7 @@ import GroupListItemContextMenu from "./GroupListItemContextMenu";
 import { AppDispatch } from "../../store";
 import { getAccount } from "../../features/account/AccountSlice";
 import { fetchCurrentChatroomAsync, setCurrentChatroom } from "../../features/chat/CurrentChatroomSlice";
-import { fetchCurrentChatroomMembersAsync } from "../../features/chat/CurrentChatroomMembersSlice";
+import { fetchCurrentChatroomMembersAsync, setCurrentChatroomMembers } from "../../features/chat/CurrentChatroomMembersSlice";
 import { getChatroomList, joinPublicGroupAsync } from "../../features/chat/ChatroomListSlice";
 import { fetchAlertListAsync, getAlertList } from "../../features/alert/AlertListSlice";
 
@@ -86,7 +86,7 @@ const GroupListItem = ({ group, index, roomMode, setView }: IPropsGroupListItem)
               navigate(`/chat/${group._id}`);
             } else {
               dispatch(setCurrentChatroom(newChatroom));
-              dispatch(fetchCurrentChatroomMembersAsync(newChatroom._id));
+              newChatroom.isGlobal ? dispatch(setCurrentChatroomMembers([])) : dispatch(fetchCurrentChatroomMembersAsync(newChatroom._id));
             }
 
             if (socket.current && socket.current.connected) {
@@ -106,7 +106,7 @@ const GroupListItem = ({ group, index, roomMode, setView }: IPropsGroupListItem)
           navigate(`/chat/${group._id}`);
         } else {
           await dispatch(fetchCurrentChatroomAsync(group._id));
-          dispatch(fetchCurrentChatroomMembersAsync(group._id));
+          group.isGlobal ? dispatch(setCurrentChatroomMembers([])) : dispatch(fetchCurrentChatroomMembersAsync(group._id));
         }
 
         if (setView) setView("chatbox");
@@ -179,7 +179,11 @@ const GroupListItem = ({ group, index, roomMode, setView }: IPropsGroupListItem)
             <Box>
               <Stack direction={"column"} justifyContent={"flex-start"} spacing={1}>
                 <Box className={"fs-16 white"}>{group.room_name}</Box>
-                <Box className={"fs-12-light gray"}>{`${group.participants.length} Joined`}</Box>
+                {group.isGlobal ? (
+                  <Box className={"fs-12-light gray"}>{`Public channel`}</Box>
+                ) : (
+                  <Box className={"fs-12-light gray"}>{`${group.participants.length} Joined`}</Box>
+                )}
               </Stack>
             </Box>
 
