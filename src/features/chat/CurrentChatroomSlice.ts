@@ -9,6 +9,7 @@ const init: IChatroom = {
   participants: [],
   isDeleted: false,
   isPrivate: false,
+  isGlobal: false,
   room_name: "",
   createdAt: "",
   updatedAt: "",

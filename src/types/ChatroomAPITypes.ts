@@ -38,6 +38,7 @@ export interface IChatroom {
   participants: IParticipant[];
   isDeleted: boolean;
   isPrivate: boolean;
+  isGlobal: boolean;
   room_name: string;
   createdAt: string;
   updatedAt: string;

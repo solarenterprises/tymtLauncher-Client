@@ -1,4 +1,4 @@
-import { useCallback, useState, useRef, ChangeEvent } from "react";
+import { useCallback, useState, useRef, ChangeEvent, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector, useDispatch } from "react-redux";
 import { ThreeDots } from "react-loader-spinner";
@@ -59,6 +59,9 @@ const ChatInputField = ({ value, setValue }: propsChatInputFieldType) => {
   const myInfoStore: IMyInfo = useSelector(getMyInfo);
 
   const currentSKey: string = sKeyListStore.sKeys.find((element) => element.roomId === currentChatroomStore._id)?.sKey;
+  const isDisabled: boolean = useMemo(() => {
+    return !myInfoStore.isAdmin && currentChatroomStore.isGlobal;
+  }, [myInfoStore, currentChatroomStore]);
 
   const [anchorEl, setAnchorEl] = useState(null);
   const [EmojiLibraryOpen, setIsEmojiLibraryOpen] = useState(false);
@@ -328,6 +331,7 @@ const ChatInputField = ({ value, setValue }: propsChatInputFieldType) => {
         <Box sx={{ position: "relative" }}>
           <ThemeProvider theme={theme}>
             <TextField
+              disabled={isDisabled}
               className={classes.chat_input}
               color="secondary"
               value={value}
@@ -342,7 +346,7 @@ const ChatInputField = ({ value, setValue }: propsChatInputFieldType) => {
                 ),
                 endAdornment: (
                   <InputAdornment position="start">
-                    <Button className={classes.emoji_button} onClick={handleEmojiClick}>
+                    <Button className={classes.emoji_button} onClick={handleEmojiClick} disabled={isDisabled}>
                       <img
                         src={emotion}
                         style={{
@@ -351,25 +355,25 @@ const ChatInputField = ({ value, setValue }: propsChatInputFieldType) => {
                         }}
                       />
                     </Button>
-
                     <Button
                       className="send_button"
                       sx={{
                         display: value ? "block" : "none",
                       }}
                       onClick={sendMessage}
+                      disabled={isDisabled}
                     >
                       <Box className={"center-align"}>
                         <img src={send} />
                       </Box>
                     </Button>
-
                     <Button
                       className="upload_button"
                       sx={{
                         display: value ? "none" : "block",
                       }}
                       onClick={handleUploadClick}
+                      disabled={isDisabled}
                     >
                       <Box className={"center-align"}>
                         <FileUploadIcon sx={{ color: "#ffffff" }} />

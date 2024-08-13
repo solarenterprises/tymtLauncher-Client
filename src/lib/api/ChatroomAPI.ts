@@ -177,6 +177,10 @@ class ChatroomAPI {
       }
     );
   }
+
+  static async fetchGlobalChatrooms(): Promise<AxiosResponse<any, any>> {
+    return await axios.get(`${tymt_backend_url}/chatroom/global-chatrooms`);
+  }
 }
 
 export default ChatroomAPI;
