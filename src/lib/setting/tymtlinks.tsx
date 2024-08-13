@@ -2,7 +2,7 @@ export type tymtlinks = {
   links: {
     documentation: string;
     policy: string;
-    termsofservice: string;
+    /// termsofservice: string;
     twitter: string;
     discord: string;
   };
@@ -11,8 +11,8 @@ export type tymtlinks = {
 const Tymtlinks: tymtlinks = {
   links: {
     documentation: "https://solar.org/core#documentation",
-    policy: "https://solarenterprises.com/policy",
-    termsofservice: "https://solarenterprises.com/terms",
+    policy: "https://solarenterprises.com/privacy",
+    /// termsofservice: "https://solarenterprises.com/terms",
     twitter: "https://twitter.com/tymt_com",
     discord: "https://discord.gg/district53",
   },
