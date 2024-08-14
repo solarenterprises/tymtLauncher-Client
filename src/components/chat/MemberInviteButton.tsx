@@ -17,6 +17,7 @@ import { ISocketParamsJoinMessageGroup } from "../../types/SocketTypes";
 
 import { translateString } from "../../lib/api/Translate";
 import { useTranslation } from "react-i18next";
+import { fetchHistoricalChatroomMembersAsync } from "../../features/chat/HistoricalChatroomMembersSlice";
 
 export interface IPropsMemberInviteButton {
   member: ICurrentChatroomMember;
@@ -38,6 +39,7 @@ const MemberInviteButton = ({ member }: IPropsMemberInviteButton) => {
           const newCurrentChatroom = action.payload as IChatroom;
           dispatch(setCurrentChatroom(newCurrentChatroom));
           dispatch(fetchCurrentChatroomMembersAsync(newCurrentChatroom._id));
+          dispatch(fetchHistoricalChatroomMembersAsync(newCurrentChatroom._id));
 
           if (socket.current && socket.current.connected) {
             const data: ISocketParamsJoinMessageGroup = {

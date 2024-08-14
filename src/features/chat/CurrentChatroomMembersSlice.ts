@@ -42,7 +42,7 @@ const init: ICurrentChatroomMembers = {
 };
 
 const loadCurrentChatroomMembers: () => ICurrentChatroomMembers = () => {
-  const data = sessionStorage.getItem("currentChatroom");
+  const data = sessionStorage.getItem("currentChatroomMembers");
   return data ? JSON.parse(data) : init;
 };
 

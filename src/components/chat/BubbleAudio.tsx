@@ -12,6 +12,9 @@ import { ChatMessageType } from "../../types/chatTypes";
 
 import { tymt_avatar_url } from "../../configs";
 
+import adminIcon from "../../assets/chat/admin.png";
+import moderatorIcon from "../../assets/chat/moderator.png";
+
 // const AUDIO_URL = "https://dev.tymt.com/public/upload/BEN-48-Cryptocurrency.mp3";
 
 export interface IParamsBubbleAudio {
@@ -22,9 +25,10 @@ export interface IParamsBubbleAudio {
   roomMode: boolean;
   displayNickname: string;
   isDM: boolean;
+  displayRole: string;
 }
 
-const BubbleAudio = ({ roomMode, message, decryptedMessage, isLastMessage, isSender, displayNickname, isDM }: IParamsBubbleAudio) => {
+const BubbleAudio = ({ roomMode, message, decryptedMessage, isLastMessage, isSender, displayNickname, isDM, displayRole }: IParamsBubbleAudio) => {
   const { t } = useTranslation();
 
   const [blob, setBlob] = useState(null);
@@ -79,7 +83,11 @@ const BubbleAudio = ({ roomMode, message, decryptedMessage, isLastMessage, isSen
         {mouseOn && <BubbleDownloadButton url={url} name={decryptedMessage} />}
 
         <Stack>
-          {!isDM && <Box className={"fs-12-regular white"}>{displayNickname}</Box>}
+          <Stack direction={"row"} gap={"4px"} alignItems={"center"}>
+            {!isDM && <Box className={"fs-12-regular white"}>{displayNickname}</Box>}
+            {!isDM && displayRole === "admin" && <Box component={"img"} src={adminIcon} width={"12px"} height={"12px"} />}
+            {!isDM && displayRole === "moderator" && <Box component={"img"} src={moderatorIcon} width={"12px"} height={"12px"} />}
+          </Stack>
           <Stack direction="row" alignItems="center" gap="8px">
             <AudioToggleButton loaded={loadedDisplay} playing={playing} setPlaying={setPlaying} />
             <Stack gap={"2px"}>

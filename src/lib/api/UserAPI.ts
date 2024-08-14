@@ -9,8 +9,14 @@ class UserAPI {
     return await axios.get(`${tymt_backend_url}/users/${id}`);
   }
 
-  static async getUsersByRoles() {
-    return null;
+  static async getUsersByRoles(body: string[]) {
+    const saltTokenStore: ISaltToken = JSON.parse(tymtStorage.get(`saltToken`));
+    return await axios.post(`${tymt_backend_url}/users/by-roles`, body, {
+      headers: {
+        "x-token": saltTokenStore.token,
+        "Content-Type": "application/json",
+      },
+    });
   }
 
   static async createMutedList(body: IReqCreateMutedList) {

@@ -7,6 +7,9 @@ import Linkify from "./Linkify";
 
 import { ChatMessageType } from "../../types/chatTypes";
 
+import adminIcon from "../../assets/chat/admin.png";
+import moderatorIcon from "../../assets/chat/moderator.png";
+
 export interface IParamsBubbleText {
   message: ChatMessageType;
   decryptedMessage: string;
@@ -15,9 +18,10 @@ export interface IParamsBubbleText {
   roomMode: boolean;
   displayNickname: string;
   isDM: boolean;
+  displayRole: string;
 }
 
-const BubbleText = ({ roomMode, message, decryptedMessage, isLastMessage, isSender, displayNickname, isDM }: IParamsBubbleText) => {
+const BubbleText = ({ roomMode, message, decryptedMessage, isLastMessage, isSender, displayNickname, isDM, displayRole }: IParamsBubbleText) => {
   return (
     <>
       <Box
@@ -26,7 +30,11 @@ const BubbleText = ({ roomMode, message, decryptedMessage, isLastMessage, isSend
         }`}
       >
         <Stack>
-          {!isDM && <Box className={"fs-12-regular white"}>{displayNickname}</Box>}
+          <Stack direction={"row"} gap={"4px"} alignItems={"center"}>
+            {!isDM && <Box className={"fs-12-regular white"}>{displayNickname}</Box>}
+            {!isDM && displayRole === "admin" && <Box component={"img"} src={adminIcon} width={"12px"} height={"12px"} />}
+            {!isDM && displayRole === "moderator" && <Box component={"img"} src={moderatorIcon} width={"12px"} height={"12px"} />}
+          </Stack>
           <Box>
             {decryptedMessage !== undefined ? (
               <>

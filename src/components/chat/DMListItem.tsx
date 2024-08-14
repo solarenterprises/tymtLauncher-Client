@@ -25,6 +25,7 @@ import { ISocketParamsSyncEvent } from "../../types/SocketTypes";
 import { SyncEventNames } from "../../consts/SyncEventNames";
 import { fetchUnreadMessageListAsync, getUnreadMessageList, IUnreadMessageList } from "../../features/chat/UnreadMessageListSlice";
 import { useNavigate } from "react-router-dom";
+import { fetchHistoricalChatroomMembersAsync } from "../../features/chat/HistoricalChatroomMembersSlice";
 
 export interface IPropsDMListItem {
   DM: IChatroom;
@@ -81,6 +82,7 @@ const DMListItem = ({ DM, index, roomMode, setView }: IPropsDMListItem) => {
       } else {
         dispatch(setCurrentChatroom(DM));
         dispatch(fetchCurrentChatroomMembersAsync(DM._id));
+        dispatch(fetchHistoricalChatroomMembersAsync(DM._id));
       }
 
       if (setView) setView("chatbox");

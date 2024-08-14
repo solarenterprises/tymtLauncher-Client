@@ -28,6 +28,7 @@ import AlertAPI from "../../lib/api/AlertAPI";
 import { SyncEventNames } from "../../consts/SyncEventNames";
 import { fetchUnreadMessageListAsync } from "../../features/chat/UnreadMessageListSlice";
 import { translateString } from "../../lib/api/Translate";
+import { fetchHistoricalChatroomMembersAsync } from "../../features/chat/HistoricalChatroomMembersSlice";
 
 export interface IPropsGroupListItem {
   group: IChatroom;
@@ -87,6 +88,7 @@ const GroupListItem = ({ group, index, roomMode, setView }: IPropsGroupListItem)
             } else {
               dispatch(setCurrentChatroom(newChatroom));
               newChatroom.isGlobal ? dispatch(setCurrentChatroomMembers([])) : dispatch(fetchCurrentChatroomMembersAsync(newChatroom._id));
+              dispatch(fetchHistoricalChatroomMembersAsync(newChatroom._id));
             }
 
             if (socket.current && socket.current.connected) {
@@ -107,6 +109,7 @@ const GroupListItem = ({ group, index, roomMode, setView }: IPropsGroupListItem)
         } else {
           await dispatch(fetchCurrentChatroomAsync(group._id));
           group.isGlobal ? dispatch(setCurrentChatroomMembers([])) : dispatch(fetchCurrentChatroomMembersAsync(group._id));
+          dispatch(fetchHistoricalChatroomMembersAsync(group._id));
         }
 
         if (setView) setView("chatbox");

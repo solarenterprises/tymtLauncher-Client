@@ -33,6 +33,7 @@ export const createContact = async (_id: string) => {
     const saltTokenStore: ISaltToken = JSON.parse(tymtStorage.get(`saltToken`));
     const contact = {
       contact: _id,
+      participantsHistorical: [],
     };
     const res = await axios.post(`${tymt_backend_url}/users/contact`, contact, {
       headers: {

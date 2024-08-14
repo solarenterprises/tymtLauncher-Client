@@ -103,7 +103,17 @@ class ChatroomAPI {
 
   static async fetchCurrentChatroomMembers(_chatroomId: string): Promise<AxiosResponse<any, any>> {
     const saltTokenStore: ISaltToken = JSON.parse(tymtStorage.get(`saltToken`));
-    return await axios.get(`${tymt_backend_url}/chatroom/get-room-members/${_chatroomId}`, {
+    return await axios.get(`${tymt_backend_url}/chatroom/get-active-room-members/${_chatroomId}`, {
+      headers: {
+        "x-token": saltTokenStore.token,
+        "Content-Type": "application/json",
+      },
+    });
+  }
+
+  static async fetchHistoricalChatroomMembers(_chatroomId: string): Promise<AxiosResponse<any, any>> {
+    const saltTokenStore: ISaltToken = JSON.parse(tymtStorage.get(`saltToken`));
+    return await axios.get(`${tymt_backend_url}/chatroom/get-historical-room-members/${_chatroomId}`, {
       headers: {
         "x-token": saltTokenStore.token,
         "Content-Type": "application/json",

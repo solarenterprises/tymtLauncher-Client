@@ -46,6 +46,7 @@ import { SyncEventNames } from "../consts/SyncEventNames";
 import { fetchUnreadMessageListAsync } from "../features/chat/UnreadMessageListSlice";
 import { setRenderTime } from "../features/account/RenderTimeSlice";
 import { isArray } from "lodash";
+import { fetchHistoricalChatroomMembersAsync, setHistoricalChatroomMembers } from "../features/chat/HistoricalChatroomMembersSlice";
 
 interface SocketContextType {
   socket: MutableRefObject<Socket>;
@@ -188,18 +189,17 @@ export const SocketProvider = () => {
                         messages: updatedHistory,
                       })
                     );
-                  } else {
-                    const senderName = senderInContactList?.nickName;
-                    const roomName = roomInChatroomList?.room_name;
-                    const sKey = sKeyListStoreRef.current.sKeys.find((element) => element.roomId === data.room_id)?.sKey;
-                    const decryptedMessage = sKey ? Chatdecrypt(data.message, sKey) : data.message;
-                    if (!roomInMutedList) {
-                      setNotificationOpen(true);
-                      setNotificationStatus("message");
-                      setNotificationTitle(senderName ? senderName : roomName);
-                      setNotificationDetail(decryptedMessage);
-                      setNotificationLink(`/chat/${data.room_id}`);
-                    }
+                  }
+                  const senderName = senderInContactList?.nickName;
+                  const roomName = roomInChatroomList?.room_name;
+                  const sKey = sKeyListStoreRef.current.sKeys.find((element) => element.roomId === data.room_id)?.sKey;
+                  const decryptedMessage = sKey ? Chatdecrypt(data.message, sKey) : data.message;
+                  if (!roomInMutedList) {
+                    setNotificationOpen(true);
+                    setNotificationStatus("message");
+                    setNotificationTitle(senderName ? senderName : roomName);
+                    setNotificationDetail(decryptedMessage);
+                    setNotificationLink(`/chat/${data.room_id}`);
                   }
                 }
               });
@@ -320,6 +320,7 @@ export const SocketProvider = () => {
                         if (currentChatroomStoreRef.current?._id === room_id) {
                           dispatch(setCurrentChatroom(newAddedChatroom));
                           dispatch(fetchCurrentChatroomMembersAsync(newAddedChatroom._id));
+                          dispatch(fetchHistoricalChatroomMembersAsync(newAddedChatroom._id));
                         }
                       }
                     }
@@ -341,6 +342,7 @@ export const SocketProvider = () => {
                     if (currentChatroomStoreRef.current?._id === room_id) {
                       dispatch(setCurrentChatroom(null));
                       dispatch(setCurrentChatroomMembers([]));
+                      dispatch(setHistoricalChatroomMembers([]));
                     }
                   } else {
                     dispatch(addOneToChatroomListAsync(room_id)).then((action) => {
@@ -349,6 +351,7 @@ export const SocketProvider = () => {
                         if (currentChatroomStoreRef.current?._id === room_id) {
                           dispatch(setCurrentChatroom(newChatroom));
                           dispatch(fetchCurrentChatroomMembersAsync(newChatroom._id));
+                          dispatch(fetchHistoricalChatroomMembersAsync(newChatroom._id));
                         }
                       }
                     });

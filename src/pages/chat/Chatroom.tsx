@@ -42,6 +42,7 @@ import { chatType, notificationType } from "../../types/settingTypes";
 import { accountType } from "../../types/accountTypes";
 import { IActiveUserList, getActiveUserList } from "../../features/chat/ActiveUserListSlice";
 import { IChatroom } from "../../types/ChatroomAPITypes";
+import { fetchHistoricalChatroomMembersAsync } from "../../features/chat/HistoricalChatroomMembersSlice";
 
 const theme = createTheme({
   palette: {
@@ -131,6 +132,7 @@ const Chatroom = () => {
       console.log("chatroomId: ", chatroomId);
       dispatch(fetchCurrentChatroomAsync(chatroomId));
       dispatch(fetchCurrentChatroomMembersAsync(chatroomId));
+      dispatch(fetchHistoricalChatroomMembersAsync(chatroomId));
     }
   }, [chatroomId]);
 

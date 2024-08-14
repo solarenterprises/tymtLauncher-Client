@@ -17,6 +17,7 @@ import { IChatroom, IChatroomList } from "../../types/ChatroomAPITypes";
 import { ISocketParamsLeaveMessageGroup } from "../../types/SocketTypes";
 
 import { translateString } from "../../lib/api/Translate";
+import { fetchHistoricalChatroomMembersAsync } from "../../features/chat/HistoricalChatroomMembersSlice";
 
 export interface IPropsMemberRemoveButton {
   member: ICurrentChatroomMember;
@@ -39,6 +40,7 @@ const MemberRemoveButton = ({ member }: IPropsMemberRemoveButton) => {
             const newCurrentChatroom = action.payload as IChatroom;
             dispatch(setCurrentChatroom(newCurrentChatroom));
             dispatch(fetchCurrentChatroomMembersAsync(newCurrentChatroom._id));
+            dispatch(fetchHistoricalChatroomMembersAsync(newCurrentChatroom._id));
 
             if (socket.current && socket.current.connected) {
               const data: ISocketParamsLeaveMessageGroup = {

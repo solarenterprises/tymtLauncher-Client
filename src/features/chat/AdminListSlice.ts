@@ -1,6 +1,7 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { compareJSONStructure } from "../../lib/api/JSONHelper";
 import { ICurrentChatroomMember } from "./CurrentChatroomMembersSlice";
+import { fetchAdminList } from "./AdminListApi";
 
 export interface IAdminList {
   admins: ICurrentChatroomMember[];
@@ -26,6 +27,8 @@ const initialState = {
   msg: "",
 };
 
+export const fetchAdminListAsync = createAsyncThunk("adminList/fetchAdminListAsync", fetchAdminList);
+
 const adminListSlice = createSlice({
   name: "adminList",
   initialState,
@@ -34,6 +37,21 @@ const adminListSlice = createSlice({
       state.data.admins = action.payload;
       sessionStorage.setItem(`adminList`, JSON.stringify(state.data));
     },
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchAdminListAsync.pending, (state) => {
+        state.status = "loading";
+      })
+      .addCase(fetchAdminListAsync.fulfilled, (state, action: PayloadAction<any>) => {
+        if (!action.payload) {
+          console.error("Failed to fetchAdminListAsync: undefined!", action.payload);
+          return;
+        }
+        state.data = action.payload;
+        sessionStorage.setItem(`adminList`, JSON.stringify(state.data));
+        state.status = "adminList";
+      });
   },
 });
 

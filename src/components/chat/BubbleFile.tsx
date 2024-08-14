@@ -9,6 +9,9 @@ import BubbleDownloadButton from "./BubbleDownloadButton";
 
 import { ChatMessageType } from "../../types/chatTypes";
 
+import adminIcon from "../../assets/chat/admin.png";
+import moderatorIcon from "../../assets/chat/moderator.png";
+
 // const FILE_URL = "https://www.englishtco.com/wp-content/uploads/2018/06/Job-Interviews-In-English_Series-One-Pack.pdf";
 
 export interface IParamsBubbleFile {
@@ -19,9 +22,10 @@ export interface IParamsBubbleFile {
   roomMode: boolean;
   displayNickname: string;
   isDM: boolean;
+  displayRole: string;
 }
 
-const BubbleFile = ({ roomMode, message, decryptedMessage, isLastMessage, isSender, displayNickname, isDM }: IParamsBubbleFile) => {
+const BubbleFile = ({ roomMode, message, decryptedMessage, isLastMessage, isSender, displayNickname, isDM, displayRole }: IParamsBubbleFile) => {
   const [mouseOn, setMouseOn] = useState<boolean>(false);
 
   const url = `${tymt_avatar_url}/public/upload/message/${message.message}`;
@@ -62,7 +66,11 @@ const BubbleFile = ({ roomMode, message, decryptedMessage, isLastMessage, isSend
       >
         {mouseOn && <BubbleDownloadButton url={url} name={decryptedMessage} />}
         <Stack>
-          {!isDM && <Box className={"fs-12-regular white"}>{displayNickname}</Box>}
+          <Stack direction={"row"} gap={"4px"} alignItems={"center"}>
+            {!isDM && <Box className={"fs-12-regular white"}>{displayNickname}</Box>}
+            {!isDM && displayRole === "admin" && <Box component={"img"} src={adminIcon} width={"12px"} height={"12px"} />}
+            {!isDM && displayRole === "moderator" && <Box component={"img"} src={moderatorIcon} width={"12px"} height={"12px"} />}
+          </Stack>
           <Stack direction={"row"} gap={"8px"} alignItems={"center"} height={"48px"} width={"240px"}>
             <Box
               height={"48px"}

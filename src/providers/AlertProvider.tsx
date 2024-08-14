@@ -24,6 +24,7 @@ import { IRsa } from "../types/chatTypes";
 import { fetchMyInfoAsync } from "../features/account/MyInfoSlice";
 import { fetchUnreadMessageListAsync } from "../features/chat/UnreadMessageListSlice";
 import { fetchAlertListAsync } from "../features/alert/AlertListSlice";
+import { fetchAdminListAsync } from "../features/chat/AdminListSlice";
 
 const AlertProvider = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -41,6 +42,7 @@ const AlertProvider = () => {
 
       // Fetch all data
       dispatch(fetchMyInfoAsync(accountStore.uid));
+      dispatch(fetchAdminListAsync(["admin"]));
       dispatch(fetchAlertListAsync(accountStore.uid));
       dispatch(fetchContactListAsync());
       dispatch(fetchFriendListAsync());

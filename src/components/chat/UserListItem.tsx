@@ -27,6 +27,7 @@ import { IChatroom, IChatroomList } from "../../types/ChatroomAPITypes";
 import { ISocketParamsJoinMessageGroup } from "../../types/SocketTypes";
 import { accountType } from "../../types/accountTypes";
 import { IPoint } from "../../types/homeTypes";
+import { fetchHistoricalChatroomMembersAsync } from "../../features/chat/HistoricalChatroomMembersSlice";
 
 export interface IPropsUserListItem {
   user: userType;
@@ -89,7 +90,8 @@ const UserListItem = ({ user, index, roomMode, setView, page }: IPropsUserListIt
               navigate(`/chat/${newCurrentChatroom._id}`);
             } else {
               dispatch(setCurrentChatroom(newCurrentChatroom));
-              await dispatch(fetchCurrentChatroomMembersAsync(newCurrentChatroom._id));
+              dispatch(fetchCurrentChatroomMembersAsync(newCurrentChatroom._id));
+              dispatch(fetchHistoricalChatroomMembersAsync(newCurrentChatroom._id));
             }
 
             if (setView) setView("chatbox");
@@ -105,6 +107,7 @@ const UserListItem = ({ user, index, roomMode, setView, page }: IPropsUserListIt
                 } else {
                   dispatch(setCurrentChatroom(newCurrentChatroom));
                   dispatch(fetchCurrentChatroomMembersAsync(newCurrentChatroom._id));
+                  dispatch(fetchHistoricalChatroomMembersAsync(newCurrentChatroom._id));
                 }
 
                 const data_1: ISocketParamsJoinMessageGroup = {
@@ -144,6 +147,7 @@ const UserListItem = ({ user, index, roomMode, setView, page }: IPropsUserListIt
                 } else {
                   dispatch(setCurrentChatroom(newCurrentChatroom));
                   dispatch(fetchCurrentChatroomMembersAsync(newCurrentChatroom._id));
+                  dispatch(fetchHistoricalChatroomMembersAsync(newCurrentChatroom._id));
                 }
 
                 const data_1: ISocketParamsJoinMessageGroup = {

@@ -1,12 +1,15 @@
 import { useState } from "react";
 
-import { Box } from "@mui/material";
+import { Box, Stack } from "@mui/material";
 
 import BubbleImageModal from "./BubbleImageModal";
 import BubbleDownloadButton from "./BubbleDownloadButton";
 
 import { ChatMessageType } from "../../types/chatTypes";
 import { tymt_avatar_url } from "../../configs";
+
+import adminIcon from "../../assets/chat/admin.png";
+import moderatorIcon from "../../assets/chat/moderator.png";
 
 // const IMAGE_URL = "https://dev.tymt.com/public/upload/room-image/66855e3d70fe2851827b7ccb.jpg";
 
@@ -18,9 +21,10 @@ export interface IParamsBubbleImage {
   roomMode: boolean;
   displayNickname: string;
   isDM: boolean;
+  displayRole: string;
 }
 
-const BubbleImage = ({ roomMode, message, decryptedMessage, isLastMessage, isSender, displayNickname, isDM }: IParamsBubbleImage) => {
+const BubbleImage = ({ roomMode, message, decryptedMessage, isLastMessage, isSender, displayNickname, isDM, displayRole }: IParamsBubbleImage) => {
   const [_showTime, setShowTime] = useState<boolean>(false);
   const [showImageModal, setShowImageModal] = useState<boolean>(false);
   const [mouseOn, setMouseOn] = useState<boolean>(false);
@@ -53,8 +57,10 @@ const BubbleImage = ({ roomMode, message, decryptedMessage, isLastMessage, isSen
       >
         {mouseOn && <BubbleDownloadButton url={url} name={decryptedMessage} />}
         {!mouseOn && !isDM && (
-          <Box
-            className={"fs-12-regular white"}
+          <Stack
+            direction={"row"}
+            gap={"4px"}
+            alignItems={"center"}
             sx={{
               position: "absolute",
               top: "8px",
@@ -66,10 +72,11 @@ const BubbleImage = ({ roomMode, message, decryptedMessage, isLastMessage, isSen
               transition: "all 0.3s ease",
             }}
           >
-            {displayNickname}
-          </Box>
+            <Box className={"fs-12-regular white"}>{displayNickname}</Box>
+            {displayRole === "admin" && <Box component={"img"} src={adminIcon} width={"12px"} height={"12px"} />}
+            {displayRole === "moderator" && <Box component={"img"} src={moderatorIcon} width={"12px"} height={"12px"} />}
+          </Stack>
         )}
-
         <Box
           component={"img"}
           src={url}

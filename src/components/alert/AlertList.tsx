@@ -34,6 +34,7 @@ import readdot from "../../assets/alert/readdot.svg";
 
 import AlertAPI from "../../lib/api/AlertAPI";
 import { fetchUnreadMessageListAsync } from "../../features/chat/UnreadMessageListSlice";
+import { fetchHistoricalChatroomMembersAsync } from "../../features/chat/HistoricalChatroomMembersSlice";
 
 const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
   const { t } = useTranslation();
@@ -85,6 +86,7 @@ const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
         navigate(`/chat/${detail.note?.room_id}`);
         dispatch(fetchCurrentChatroomAsync(detail.note?.room_id));
         dispatch(fetchCurrentChatroomMembersAsync(detail.note?.room_id));
+        dispatch(fetchHistoricalChatroomMembersAsync(detail.note?.room_id));
 
         await AlertAPI.readAllUnreadAlertsForChatroom({ userId: accountStore.uid, roomId: detail.note?.room_id });
         dispatch(fetchAlertListAsync(accountStore.uid));

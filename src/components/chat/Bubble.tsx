@@ -21,10 +21,14 @@ import { getActiveUserList, IActiveUserList } from "../../features/chat/ActiveUs
 import { getCurrentChatroomMembers, ICurrentChatroomMembers } from "../../features/chat/CurrentChatroomMembersSlice";
 import { selectNotification } from "../../features/settings/NotificationSlice";
 
-import { ChatHistoryType, ChatMessageType } from "../../types/chatTypes";
+import { ChatHistoryType, ChatMessageType, IMyInfo } from "../../types/chatTypes";
 import { IChatroom } from "../../types/ChatroomAPITypes";
 import { accountType } from "../../types/accountTypes";
 import { notificationType } from "../../types/settingTypes";
+import { getAdminList, IAdminList } from "../../features/chat/AdminListSlice";
+import { isArray } from "lodash";
+import { getMyInfo } from "../../features/account/MyInfoSlice";
+import { getHistoricalChatroomMembers } from "../../features/chat/HistoricalChatroomMembersSlice";
 
 export interface IParamsBubble {
   message: ChatMessageType;
@@ -38,18 +42,35 @@ const Bubble = ({ roomMode, screenExpanded, message, index, isDM }: IParamsBubbl
   const accountStore: accountType = useSelector(getAccount);
   const chatHistoryStore: ChatHistoryType = useSelector(getChatHistory);
   const currentChatroomStore: IChatroom = useSelector(getCurrentChatroom);
+  const historicalChatroomMembersStore: ICurrentChatroomMembers = useSelector(getHistoricalChatroomMembers);
   const sKeyListStore: ISKeyList = useSelector(getSKeyList);
   const activeUserListStore: IActiveUserList = useSelector(getActiveUserList);
   const currentChatroomMembersStore: ICurrentChatroomMembers = useSelector(getCurrentChatroomMembers);
   const notificationStore: notificationType = useSelector(selectNotification);
+  const adminListStore: IAdminList = useSelector(getAdminList);
+  const myInfoStore: IMyInfo = useSelector(getMyInfo);
 
   const displayNickname: string = useMemo(() => {
-    const sender = currentChatroomMembersStore.members.find((member) => member._id === message.sender_id);
-    if (sender) return sender.nickName;
+    if (myInfoStore?._id === message?.sender_id) {
+      return myInfoStore?.nickName ?? "Deleted";
+    }
+    const sender = currentChatroomMembersStore?.members?.find((member) => member?._id === message?.sender_id);
+    if (sender) return sender?.nickName ?? "Deleted";
+    const history = historicalChatroomMembersStore?.members?.find((member) => member?._id === message?.sender_id);
+    if (history) return history?.nickName ?? "Deleted";
+    const admin = adminListStore?.admins?.find((admin) => admin?._id === message?.sender_id);
+    if (admin) return admin?.nickName ?? "Deleted";
     return "Deleted";
-  }, [currentChatroomMembersStore]);
+  }, [currentChatroomMembersStore, myInfoStore, historicalChatroomMembersStore]);
 
-  const sKey = sKeyListStore.sKeys.find((element) => element.roomId === currentChatroomStore?._id)?.sKey;
+  const displayRole: string = useMemo(() => {
+    const sender = adminListStore?.admins?.find((admin) => admin?._id === message?.sender_id);
+    if (!sender && !isArray(sender?.roles)) return "";
+    if (sender.roles.length === 0) return "";
+    return sender.roles[0];
+  }, [adminListStore]);
+
+  const sKey = sKeyListStore?.sKeys?.find((element) => element.roomId === currentChatroomStore?._id)?.sKey;
 
   const formatDateDifference = (date) => {
     const today: any = new Date(Date.now());
@@ -142,6 +163,7 @@ const Bubble = ({ roomMode, screenExpanded, message, index, isDM }: IParamsBubbl
             isSender={isSender}
             displayNickname={displayNickname}
             isDM={isDM}
+            displayRole={displayRole}
           />
         )}
         {message.type === "audio" && (
@@ -153,6 +175,7 @@ const Bubble = ({ roomMode, screenExpanded, message, index, isDM }: IParamsBubbl
             isSender={isSender}
             displayNickname={displayNickname}
             isDM={isDM}
+            displayRole={displayRole}
           />
         )}
         {message.type === "image" && (
@@ -164,6 +187,7 @@ const Bubble = ({ roomMode, screenExpanded, message, index, isDM }: IParamsBubbl
             isSender={isSender}
             displayNickname={displayNickname}
             isDM={isDM}
+            displayRole={displayRole}
           />
         )}
         {message.type === "video" && (
@@ -175,6 +199,7 @@ const Bubble = ({ roomMode, screenExpanded, message, index, isDM }: IParamsBubbl
             isSender={isSender}
             displayNickname={displayNickname}
             isDM={isDM}
+            displayRole={displayRole}
           />
         )}
         {message.type === "file" && (
@@ -186,6 +211,7 @@ const Bubble = ({ roomMode, screenExpanded, message, index, isDM }: IParamsBubbl
             isSender={isSender}
             displayNickname={displayNickname}
             isDM={isDM}
+            displayRole={displayRole}
           />
         )}
       </Stack>
