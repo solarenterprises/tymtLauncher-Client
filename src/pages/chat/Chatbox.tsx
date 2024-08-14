@@ -60,7 +60,7 @@ const Chatbox = ({ view, setView }: propsType) => {
     return currentChatroomStore?.room_name ? false : true;
   }, [currentChatroomStore]);
   const isGlobal = useMemo(() => {
-    return currentChatroomStore.isGlobal;
+    return currentChatroomStore?.isGlobal;
   }, [currentChatroomStore]);
   const currentPartner = isDM ? currentChatroomMembersStore?.members?.find((member) => member._id !== accountStore.uid) : null;
   const displayChatroomName = !isDM ? currentChatroomStore?.room_name : currentPartner?.nickName;
