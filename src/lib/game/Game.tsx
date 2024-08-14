@@ -89,13 +89,13 @@ export type GamesType = { [key: string]: Game };
 const Games: { [key: string]: Game } = {
   district53: {
     name: "District 53",
-    url: "http://d.com/",
+    url: "https://district53.io/",
     links: {
       website: "https://district53.io/",
       share: "",
       twitter: "https://x.com/D53_Metaverse/",
       facebook: "https://www.facebook.com/District53Metaverse/",
-      discord: "https://discord.district53.io/",
+      discord: "https://discord.gg/district53/",
     },
     thumbnail: d53Thumbnail,
     logo: d53Logo,
