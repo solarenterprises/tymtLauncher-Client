@@ -47,7 +47,7 @@ const ChatGroupEdit = ({ view, setView }: propsType) => {
       const file = fileInput.files ? fileInput.files[0] : null;
       const formData = new FormData();
       formData.append("file", file);
-      formData.append("room_id", currentChatroomStore._id);
+      formData.append("room_id", currentChatroomStore?._id);
       dispatch(updateGroupAvatarAsync(formData)).then((action) => {
         if (action.type.endsWith("/fulfilled")) {
           const newCurrentChatroom = action.payload as IChatroom;
@@ -59,7 +59,7 @@ const ChatGroupEdit = ({ view, setView }: propsType) => {
           setNotificationLink(null);
         }
       });
-      console.log("uploadGroupAvatar", file, currentChatroomStore._id);
+      console.log("uploadGroupAvatar", file, currentChatroomStore?._id);
     } catch (err) {
       console.error("Failed to uploadGroupAvatar: ", err);
       setNotificationStatus("failed");
@@ -73,7 +73,7 @@ const ChatGroupEdit = ({ view, setView }: propsType) => {
   const handleSaveClick = useCallback(() => {
     try {
       const body: IReqChatroomUpdateGroupName = {
-        room_id: currentChatroomStore._id,
+        room_id: currentChatroomStore?._id,
         room_name: groupName,
       };
       dispatch(updateGroupNameAsync(body)).then((action) => {
@@ -88,7 +88,7 @@ const ChatGroupEdit = ({ view, setView }: propsType) => {
         }
       });
 
-      console.log("handleSaveClick", groupName, currentChatroomStore._id);
+      console.log("handleSaveClick", groupName, currentChatroomStore?._id);
     } catch (err) {
       console.error("Failed to handleSaveClick:", err);
     }
@@ -96,7 +96,7 @@ const ChatGroupEdit = ({ view, setView }: propsType) => {
 
   useEffect(() => {
     if (view === "chatGroupEdit") {
-      setGroupName(currentChatroomStore.room_name);
+      setGroupName(currentChatroomStore?.room_name);
     }
   }, [view]);
 
@@ -116,7 +116,7 @@ const ChatGroupEdit = ({ view, setView }: propsType) => {
             <Stack direction={"row"} justifyContent={"space-between"} textAlign={"center"} padding={"30px"}>
               <Stack direction={"row"} justifyContent={"center"} textAlign={"right"} alignItems={"center"} gap={"10px"}>
                 <Box className="center-align">
-                  <GroupAvatar size={92} url={currentChatroomStore.room_image} />
+                  <GroupAvatar size={92} url={currentChatroomStore?.room_image} />
                 </Box>
                 <Box className="fs-h5 white">{t("set-68_change-avatar")}</Box>
               </Stack>

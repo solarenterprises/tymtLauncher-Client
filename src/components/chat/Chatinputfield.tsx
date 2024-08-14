@@ -96,8 +96,8 @@ const ChatInputField = ({ value, setValue }: propsChatInputFieldType) => {
 
             const formData = new FormData();
             formData.append("type", type);
-            formData.append("sender_id", accountStore.uid);
-            formData.append("room_id", currentChatroomStore._id);
+            formData.append("sender_id", accountStore?.uid);
+            formData.append("room_id", currentChatroomStore?._id);
             formData.append("message", storeName);
             formData.append("file", file);
 
@@ -137,7 +137,7 @@ const ChatInputField = ({ value, setValue }: propsChatInputFieldType) => {
               })
             );
 
-            console.log("handleFileInputChange", type, accountStore.uid, currentChatroomStore._id, message, file);
+            console.log("handleFileInputChange", type, accountStore?.uid, currentChatroomStore?._id, message, file);
 
             setLoading(false);
           }
@@ -182,8 +182,8 @@ const ChatInputField = ({ value, setValue }: propsChatInputFieldType) => {
 
             const formData = new FormData();
             formData.append("type", type);
-            formData.append("sender_id", accountStore.uid);
-            formData.append("room_id", currentChatroomStore._id);
+            formData.append("sender_id", accountStore?.uid);
+            formData.append("room_id", currentChatroomStore?._id);
             formData.append("message", storeName);
             formData.append("file", file);
 
@@ -223,7 +223,7 @@ const ChatInputField = ({ value, setValue }: propsChatInputFieldType) => {
               })
             );
 
-            console.log("handleFileInputChange", type, accountStore.uid, currentChatroomStore._id, message, file);
+            console.log("handleFileInputChange", type, accountStore?.uid, currentChatroomStore?._id, message, file);
 
             setLoading(false);
           }

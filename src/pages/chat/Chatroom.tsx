@@ -284,7 +284,7 @@ const Chatroom = () => {
                         status={currentPartner.notificationStatus}
                       />
                     )}
-                    {!isDM && <GroupAvatar size={40} url={currentChatroomStore.room_image} />}
+                    {!isDM && <GroupAvatar size={40} url={currentChatroomStore?.room_image} />}
                     <Stack marginLeft={"16px"} justifyContent={"flex-start"} direction={"column"} spacing={1} width={"444px"}>
                       <Box
                         className={"fs-18-bold white"}

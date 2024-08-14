@@ -197,7 +197,7 @@ const Chatbox = ({ view, setView }: propsType) => {
                       status={currentPartner.notificationStatus}
                     />
                   )}
-                  {!isDM && <GroupAvatar size={40} url={currentChatroomStore.room_image} />}
+                  {!isDM && <GroupAvatar size={40} url={currentChatroomStore?.room_image} />}
                   <Stack justifyContent={"flex-start"} direction={"column"} spacing={1} width={"244px"}>
                     <Box className={"fs-18-bold white"} sx={{ WebkitBoxOrient: "vertical", WebkitLineClamp: 1, overflow: "hidden", textOverflow: "ellipsis" }}>
                       {displayChatroomName}
@@ -214,7 +214,7 @@ const Chatbox = ({ view, setView }: propsType) => {
               <Button
                 className={"setting-back-button"}
                 onClick={() => {
-                  navigate(`/chat/${currentChatroomStore._id}`);
+                  navigate(`/chat/${currentChatroomStore?._id}`);
                   // dispatch(setChatHistory({ messages: [] }));
                 }}
               >
