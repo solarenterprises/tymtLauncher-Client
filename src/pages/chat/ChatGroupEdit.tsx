@@ -4,12 +4,14 @@ import { useDispatch, useSelector } from "react-redux";
 
 import { Box, Button, Divider, Stack, Tooltip } from "@mui/material";
 
+import { useSocket } from "../../providers/SocketProvider";
 import { useNotification } from "../../providers/NotificationProvider";
 
 import InputText from "../../components/account/InputText";
 import GroupAvatar from "../../components/chat/GroupAvatar";
 
 import { AppDispatch } from "../../store";
+import { getAccount } from "../../features/account/AccountSlice";
 import { getCurrentChatroom, setCurrentChatroom } from "../../features/chat/CurrentChatroomSlice";
 import { updateGroupAvatarAsync, updateGroupNameAsync } from "../../features/chat/ChatroomListSlice";
 
@@ -19,12 +21,17 @@ import editIcon from "../../assets/settings/edit-icon.svg";
 
 import { propsType } from "../../types/settingTypes";
 import { IChatroom, IReqChatroomUpdateGroupName } from "../../types/ChatroomAPITypes";
+import { ISocketParamsSyncEventsAll } from "../../types/SocketTypes";
+import { accountType } from "../../types/accountTypes";
+import { SyncEventNames } from "../../consts/SyncEventNames";
 
 const ChatGroupEdit = ({ view, setView }: propsType) => {
   const classname = SettingStyle();
   const { t } = useTranslation();
+  const { socket } = useSocket();
   const dispatch = useDispatch<AppDispatch>();
   const currentChatroomStore: IChatroom = useSelector(getCurrentChatroom);
+  const accountStore: accountType = useSelector(getAccount);
   const [groupName, setGroupName] = useState<string>("");
 
   const { setNotificationStatus, setNotificationTitle, setNotificationDetail, setNotificationOpen, setNotificationLink } = useNotification();
@@ -57,6 +64,16 @@ const ChatGroupEdit = ({ view, setView }: propsType) => {
           setNotificationDetail(t("alt-33_avatar-saved-intro"));
           setNotificationOpen(true);
           setNotificationLink(null);
+
+          if (socket.current && socket.current.connected) {
+            const data: ISocketParamsSyncEventsAll = {
+              sender_id: accountStore?.uid,
+              instructions: [SyncEventNames.UPDATE_IMAGE_RENDER_TIME],
+              is_to_self: true,
+            };
+            socket.current.emit("sync-events-all", JSON.stringify(data));
+            console.log("socket.current.emit > sync-events-all", data);
+          }
         }
       });
       console.log("uploadGroupAvatar", file, currentChatroomStore?._id);
@@ -68,7 +85,7 @@ const ChatGroupEdit = ({ view, setView }: propsType) => {
       setNotificationOpen(true);
       setNotificationLink(null);
     }
-  }, [currentChatroomStore]);
+  }, [socket.current, currentChatroomStore, accountStore]);
 
   const handleSaveClick = useCallback(() => {
     try {
