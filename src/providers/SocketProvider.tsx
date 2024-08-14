@@ -360,9 +360,8 @@ export const SocketProvider = () => {
             }
 
             if (!socket.current.hasListeners("sync-events-all")) {
-              socket.current.on("sync-events-all", async (dataString: string) => {
+              socket.current.on("sync-events-all", async (data: any) => {
                 try {
-                  const data = JSON.parse(dataString);
                   console.log("socket.current.on > sync-events-all", data);
 
                   if (data.event_identifier) {
