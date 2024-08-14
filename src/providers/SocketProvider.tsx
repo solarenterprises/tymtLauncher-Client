@@ -424,6 +424,32 @@ export const SocketProvider = () => {
                       if (instruction === SyncEventNames.UPDATE_IMAGE_RENDER_TIME) {
                         console.log(instruction);
                         dispatch(setRenderTime({ renderTime: Date.now() }));
+                      } else if (instruction === SyncEventNames.UPDATE_CHATROOM_LIST) {
+                        console.log(instruction);
+                        dispatch(fetchChatroomListAsync(accountStoreRef.current.uid)).then((action) => {
+                          try {
+                            if (action.type.endsWith("/fulfilled")) {
+                              const newChatroomList = action.payload as IChatroom[];
+                              const newSKeyArray = newChatroomList.map((chatroom) => {
+                                const mySelf: IParticipant = chatroom.participants.find((participant) => participant.userId === accountStore.uid);
+                                const sKey: ISKey = {
+                                  roomId: chatroom._id,
+                                  sKey: rsaDecrypt(mySelf.userKey, rsaStore.privateKey),
+                                };
+                                return sKey;
+                              });
+                              dispatch(setSKeyList(newSKeyArray));
+
+                              if (!newChatroomList.some((element) => element._id === currentChatroomStoreRef.current._id)) {
+                                dispatch(setCurrentChatroom(null));
+                                dispatch(setCurrentChatroomMembers([]));
+                                dispatch(setChatHistoryAsync({ messages: [] }));
+                              }
+                            }
+                          } catch (err) {
+                            console.error("Failed to newSKeyArray: ", err);
+                          }
+                        });
                       }
                     });
                   }
