@@ -82,8 +82,18 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
       setNotificationLink(null);
     });
 
+    const unlisten_success = listen("success", async (event) => {
+      const message = (event.payload as any)?.message as string;
+      setNotificationStatus("success");
+      setNotificationTitle(t("set-85_success"));
+      setNotificationDetail(await translateString(message));
+      setNotificationOpen(true);
+      setNotificationLink(null);
+    });
+
     return () => {
       unlisten_error.then((unlistenFn) => unlistenFn());
+      unlisten_success.then((unlistenFn) => unlistenFn());
     };
   });
 

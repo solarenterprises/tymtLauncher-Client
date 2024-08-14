@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
+import { emit } from "@tauri-apps/api/event";
 
 import { Box, Button, Divider, Stack, Tooltip } from "@mui/material";
 
 import { useSocket } from "../../providers/SocketProvider";
-import { useNotification } from "../../providers/NotificationProvider";
 
 import InputText from "../../components/account/InputText";
 import GroupAvatar from "../../components/chat/GroupAvatar";
@@ -34,8 +34,6 @@ const ChatGroupEdit = ({ view, setView }: propsType) => {
   const accountStore: accountType = useSelector(getAccount);
   const [groupName, setGroupName] = useState<string>("");
 
-  const { setNotificationStatus, setNotificationTitle, setNotificationDetail, setNotificationOpen, setNotificationLink } = useNotification();
-
   const handleBrowseClick = () => {
     try {
       const fileInput = document.getElementById("file-input-group-avatar");
@@ -58,12 +56,12 @@ const ChatGroupEdit = ({ view, setView }: propsType) => {
       dispatch(updateGroupAvatarAsync(formData)).then((action) => {
         if (action.type.endsWith("/fulfilled")) {
           const newCurrentChatroom = action.payload as IChatroom;
+          if (!newCurrentChatroom) {
+            emit("error", { message: "Error at updating the group image async" });
+            return;
+          }
           dispatch(setCurrentChatroom(newCurrentChatroom));
-          setNotificationStatus("success");
-          setNotificationTitle(t("alt-32_avatar-saved"));
-          setNotificationDetail(t("alt-33_avatar-saved-intro"));
-          setNotificationOpen(true);
-          setNotificationLink(null);
+          emit("success", { message: "Group image has been updated." });
 
           if (socket.current && socket.current.connected) {
             const data: ISocketParamsSyncEventsAll = {
@@ -79,16 +77,16 @@ const ChatGroupEdit = ({ view, setView }: propsType) => {
       console.log("uploadGroupAvatar", file, currentChatroomStore?._id);
     } catch (err) {
       console.error("Failed to uploadGroupAvatar: ", err);
-      setNotificationStatus("failed");
-      setNotificationTitle(t("alt-34_avatar-notsaved"));
-      setNotificationDetail(err.toString());
-      setNotificationOpen(true);
-      setNotificationLink(null);
+      emit("error", { message: err.toString() });
     }
   }, [socket.current, currentChatroomStore, accountStore]);
 
   const handleSaveClick = useCallback(() => {
     try {
+      if (!groupName) {
+        emit("error", { message: "The group name mustn't be empty." });
+        return;
+      }
       const body: IReqChatroomUpdateGroupName = {
         room_id: currentChatroomStore?._id,
         room_name: groupName,
@@ -96,20 +94,31 @@ const ChatGroupEdit = ({ view, setView }: propsType) => {
       dispatch(updateGroupNameAsync(body)).then((action) => {
         if (action.type.endsWith("/fulfilled")) {
           const newCurrentChatroom: IChatroom = action.payload as IChatroom;
+          if (!newCurrentChatroom) {
+            emit("error", { message: "Error at updating the group name async" });
+            return;
+          }
           dispatch(setCurrentChatroom(newCurrentChatroom));
-          setNotificationStatus("success");
-          setNotificationTitle(t("cha-56_group-image-saved"));
-          setNotificationDetail(t("cha-57_group-image-success"));
-          setNotificationOpen(true);
-          setNotificationLink(null);
+          emit("success", { message: "Group detail has been updated." });
+
+          if (socket.current && socket.current.connected) {
+            const data: ISocketParamsSyncEventsAll = {
+              sender_id: accountStore?.uid,
+              instructions: [SyncEventNames.UPDATE_CHATROOM_LIST],
+              is_to_self: true,
+            };
+            socket.current.emit("sync-events-all", JSON.stringify(data));
+            console.log("socket.current.emit > sync-events-all", data);
+          }
         }
       });
 
       console.log("handleSaveClick", groupName, currentChatroomStore?._id);
     } catch (err) {
       console.error("Failed to handleSaveClick:", err);
+      emit("error", { message: err.toString() });
     }
-  }, [groupName, currentChatroomStore]);
+  }, [socket.current, groupName, currentChatroomStore]);
 
   useEffect(() => {
     if (view === "chatGroupEdit") {

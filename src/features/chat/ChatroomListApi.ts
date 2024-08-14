@@ -231,13 +231,16 @@ export const updateGroupAvatar = async (formData: FormData) => {
     const res = await ChatroomAPI.uploadChatroomAvatar(formData);
     if (res?.status !== 200 || !res?.data || !res?.data?.result) {
       console.error("Failed to updateGroupAvatar: ", res);
+      emit("error", { message: "Error at updating the group image" });
       return null;
     }
 
     console.log("updateGroupAvatar");
+    // emit("success", { message: "Group image has been updated." });
     return res?.data?.result;
   } catch (err) {
     console.error("Failed to updateGroupAvatar: ", err);
+    emit("error", { message: err.toString() });
     return null;
   }
 };
@@ -247,13 +250,17 @@ export const updateGroupName = async (body: IReqChatroomUpdateGroupName) => {
     const res = await ChatroomAPI.updateChatroomName(body);
     if (res?.status !== 200 || !res?.data || !res?.data?.result) {
       console.error("Failed to updateGroupName: ", res);
+      emit("error", { message: "Error at updating the group name" });
       return null;
     }
 
     console.log("updateGroupName");
+    // emit("success", { message: "Group name has been updated." });
     return res?.data?.result;
   } catch (err) {
     console.error("Failed to updateGroupName: ", err);
+    emit("error", { message: err.toString() });
+    return null;
   }
 };
 
