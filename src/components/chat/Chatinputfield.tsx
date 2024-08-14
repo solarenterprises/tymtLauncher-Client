@@ -58,9 +58,9 @@ const ChatInputField = ({ value, setValue }: propsChatInputFieldType) => {
   const sKeyListStore: ISKeyList = useSelector(getSKeyList);
   const myInfoStore: IMyInfo = useSelector(getMyInfo);
 
-  const currentSKey: string = sKeyListStore.sKeys.find((element) => element.roomId === currentChatroomStore._id)?.sKey;
+  const currentSKey: string = sKeyListStore?.sKeys?.find((element) => element?.roomId === currentChatroomStore?._id)?.sKey;
   const isDisabled: boolean = useMemo(() => {
-    return currentChatroomStore.isGlobal && !myInfoStore.roles.some((role) => role === "admin") && !myInfoStore.roles.some((role) => role === "moderator");
+    return currentChatroomStore?.isGlobal && !myInfoStore?.roles?.some((role) => role === "admin") && !myInfoStore?.roles?.some((role) => role === "moderator");
   }, [myInfoStore, currentChatroomStore]);
 
   const [anchorEl, setAnchorEl] = useState(null);
