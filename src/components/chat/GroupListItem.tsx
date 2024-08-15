@@ -2,6 +2,7 @@ import { useCallback, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
+import { emit } from "@tauri-apps/api/event";
 
 import { Box, Grid, Stack } from "@mui/material";
 
@@ -101,6 +102,10 @@ const GroupListItem = ({ group, index, roomMode, setView }: IPropsGroupListItem)
             }
 
             if (setView) setView("chatbox");
+
+            setTimeout(() => {
+              emit("focus_chat_input_field");
+            }, 200);
           }
         });
       } else {
@@ -113,6 +118,10 @@ const GroupListItem = ({ group, index, roomMode, setView }: IPropsGroupListItem)
         }
 
         if (setView) setView("chatbox");
+
+        setTimeout(() => {
+          emit("focus_chat_input_field");
+        }, 200);
 
         if (socket.current && socket.current.connected) {
           const data_2: ISocketParamsSyncEvent = {

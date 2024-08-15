@@ -192,7 +192,7 @@ export const SocketProvider = () => {
                   }
                   const senderName = senderInContactList?.nickName;
                   const roomName = roomInChatroomList?.room_name;
-                  const sKey = sKeyListStoreRef.current.sKeys.find((element) => element.roomId === data.room_id)?.sKey;
+                  const sKey = sKeyListStoreRef?.current?.sKeys?.find((element) => element?.roomId === data?.room_id)?.sKey;
                   const decryptedMessage = sKey ? Chatdecrypt(data.message, sKey) : data.message;
                   if (!roomInMutedList) {
                     setNotificationOpen(true);
@@ -442,7 +442,12 @@ export const SocketProvider = () => {
                               });
                               dispatch(setSKeyList(newSKeyArray));
 
-                              if (!newChatroomList.some((element) => element._id === currentChatroomStoreRef.current._id)) {
+                              const newCurrentChatroom = newChatroomList.find((element) => element._id === currentChatroomStoreRef.current._id);
+                              if (newCurrentChatroom) {
+                                dispatch(setCurrentChatroom(newCurrentChatroom));
+                                dispatch(fetchCurrentChatroomMembersAsync(newCurrentChatroom._id));
+                                dispatch(fetchHistoricalChatroomMembersAsync(newCurrentChatroom._id));
+                              } else {
                                 dispatch(setCurrentChatroom(null));
                                 dispatch(setCurrentChatroomMembers([]));
                                 dispatch(setChatHistoryAsync({ messages: [] }));

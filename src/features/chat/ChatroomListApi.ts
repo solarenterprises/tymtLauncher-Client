@@ -69,6 +69,7 @@ export const createDM = async (_id: string) => {
     const body0: IReqChatroomCreateChatroom = {
       room_name: "",
       isPrivate: true,
+      participantsHistorical: [],
     };
     const res0 = await ChatroomAPI.createChatroom(body0);
     if (res0?.status !== 200 || !res0?.data?.result) {

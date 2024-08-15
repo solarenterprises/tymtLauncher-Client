@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { emit } from "@tauri-apps/api/event";
 
 import { Box, Grid, Stack } from "@mui/material";
 import Avatar from "../home/Avatar";
@@ -86,6 +87,10 @@ const DMListItem = ({ DM, index, roomMode, setView }: IPropsDMListItem) => {
       }
 
       if (setView) setView("chatbox");
+
+      setTimeout(() => {
+        emit("focus_chat_input_field");
+      }, 200);
 
       await AlertAPI.readAllUnreadAlertsForChatroom({ userId: accountStore.uid, roomId: DM._id });
       await dispatch(fetchUnreadMessageListAsync(accountStore.uid));

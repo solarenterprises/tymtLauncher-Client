@@ -54,6 +54,7 @@ const NewGroupModal = ({ open, setOpen, roomMode }: IPropsNewGroupModal) => {
           createGroupAsync({
             room_name: newGroupName,
             isPrivate: myInfoStore.isAdmin ? newGroupMode === "private" : true,
+            participantsHistorical: [],
           })
         ).then((action) => {
           if (action.type.endsWith("/fulfilled")) {

@@ -1,6 +1,7 @@
 export interface IReqChatroomCreateChatroom {
   room_name: string;
   isPrivate: boolean;
+  participantsHistorical?: string[];
 }
 
 export interface IReqChatroomAddParticipant {

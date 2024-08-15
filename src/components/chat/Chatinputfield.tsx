@@ -1,7 +1,8 @@
-import { useCallback, useState, useRef, ChangeEvent, useMemo } from "react";
+import { useCallback, useState, useRef, ChangeEvent, useMemo, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector, useDispatch } from "react-redux";
 import { ThreeDots } from "react-loader-spinner";
+import { listen } from "@tauri-apps/api/event";
 
 import EmojiPicker, { SkinTones } from "emoji-picker-react";
 
@@ -48,6 +49,7 @@ const theme = createTheme({
 const ChatInputField = ({ value, setValue }: propsChatInputFieldType) => {
   const { socket } = useSocket();
   const { t } = useTranslation();
+  const inputRef = useRef(null);
 
   const classes = ChatStyle();
 
@@ -69,6 +71,17 @@ const ChatInputField = ({ value, setValue }: propsChatInputFieldType) => {
   const [isDragging, setIsDragging] = useState(false);
 
   const fileInputRef = useRef(null);
+
+  useEffect(() => {
+    const unlisten_focus_chat_input_field = listen("focus_chat_input_field", (_event) => {
+      console.log("focus_chat_input_field");
+      inputRef.current.focus();
+    });
+
+    return () => {
+      unlisten_focus_chat_input_field.then((unlistenFn) => unlistenFn());
+    };
+  }, []);
 
   const onDrop = useCallback(
     async (acceptedFiles) => {
@@ -331,6 +344,7 @@ const ChatInputField = ({ value, setValue }: propsChatInputFieldType) => {
         <Box sx={{ position: "relative" }}>
           <ThemeProvider theme={theme}>
             <TextField
+              inputRef={inputRef}
               disabled={isDisabled}
               className={classes.chat_input}
               color="secondary"

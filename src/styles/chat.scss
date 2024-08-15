@@ -326,13 +326,12 @@ $Main-Red: #ef4444;
   width: 101%;
   flex-grow: 1;
   overflow: auto;
+  display: flex;
+  flex-direction: column-reverse;
   margin-bottom: 0px;
-  // height: calc(100vh - 200px);
   height: 100%;
   padding-right: 10px;
   scroll-behavior: smooth;
-  // justify-content: flex-end;
-  // scrollbar-width: none;
   &::-webkit-scrollbar {
     width: 5px;
     border-radius: 100px;

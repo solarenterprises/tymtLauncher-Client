@@ -1,6 +1,7 @@
 import { useCallback, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { emit } from "@tauri-apps/api/event";
 
 import { Box, Grid, Stack } from "@mui/material";
 
@@ -95,6 +96,10 @@ const UserListItem = ({ user, index, roomMode, setView, page }: IPropsUserListIt
             }
 
             if (setView) setView("chatbox");
+
+            setTimeout(() => {
+              emit("focus_chat_input_field");
+            }, 200);
           }
           // Else if we didn't have any DM in the past
           else {
@@ -132,6 +137,10 @@ const UserListItem = ({ user, index, roomMode, setView, page }: IPropsUserListIt
                 );
 
                 if (setView) setView("chatbox");
+
+                setTimeout(() => {
+                  emit("focus_chat_input_field");
+                }, 200);
               }
             });
           }
@@ -172,6 +181,10 @@ const UserListItem = ({ user, index, roomMode, setView, page }: IPropsUserListIt
                 );
 
                 if (setView) setView("chatbox");
+
+                setTimeout(() => {
+                  emit("focus_chat_input_field");
+                }, 200);
               }
             });
           });

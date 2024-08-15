@@ -231,33 +231,38 @@ const Chatbox = ({ view, setView }: propsType) => {
           </Box>
 
           {/* Message inbox */}
-          <Box className={"scroll_bar_chatbox"} display={"flex"} flexDirection={"column"} ref={scrollref} id={"container"}>
-            <Box sx={{ width: "100%", flex: "1 1 auto" }}></Box>
+          <Box className={"scroll_bar_chatbox"} ref={scrollref} id={"scroll_container"}>
+            {/* <Box sx={{ width: "100%", flex: "1 1 auto" }} /> */}
             <InfiniteScroll
               style={{
                 minHeight: "50px",
+                height: "100%",
+                display: "flex",
+                flexDirection: "column-reverse",
+                overflow: "none",
               }}
               dataLength={chatHistoryStore.messages.length} //This is important field to render the next data
               next={fetchMessages}
               hasMore={true}
+              inverse={true}
               loader={<Box className={"fs-14-regular white t-center"}>{t("cha-32_loading")}</Box>}
+              scrollableTarget={"scroll_container"}
               // endMessage={
               //   <Box className={"fs-14-regular white t-center"}>
               //     {t("cha-33_you-seen-all")}
               //   </Box>
               // }
               // below props only if you need pull down functionality
-              refreshFunction={fetchMessages}
-              pullDownToRefresh
-              pullDownToRefreshThreshold={50}
-              pullDownToRefreshContent={<Box className={"fs-14-regular white t-center"}>&#8595; {t("cha-34_pull-down")}</Box>}
-              releaseToRefreshContent={<Box className={"fs-14-regular white t-center"}>&#8593; {t("cha-35_release-to-refresh")}</Box>}
+              // refreshFunction={fetchMessages}
+              // pullDownToRefresh
+              // pullDownToRefreshThreshold={50}
+              // pullDownToRefreshContent={<Box className={"fs-14-regular white t-center"}>&#8595; {t("cha-34_pull-down")}</Box>}
+              // releaseToRefreshContent={<Box className={"fs-14-regular white t-center"}>&#8593; {t("cha-35_release-to-refresh")}</Box>}
             >
-              {[...chatHistoryStore.messages].reverse()?.map((message, index) => (
+              {chatHistoryStore.messages?.map((message, index) => (
                 <Bubble roomMode={false} screenExpanded={false} message={message} index={index} isDM={isDM} />
               ))}
             </InfiniteScroll>
-            <div id={"emptyblock"}></div>
           </Box>
 
           {/* Input field section */}
