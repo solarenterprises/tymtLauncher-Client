@@ -23,6 +23,8 @@ import { useSocket } from "../../providers/SocketProvider";
 import { ISocketParamsSyncEventsAll } from "../../types/SocketTypes";
 import { accountType } from "../../types/accountTypes";
 import { SyncEventNames } from "../../consts/SyncEventNames";
+import { INotificationParams } from "../../types/NotificationTypes";
+import { TauriEventNames } from "../../consts/TauriEventNames";
 
 const ChatGroupEditRoom = ({ view, setView }: propsType) => {
   const classname = SettingStyle();
@@ -56,11 +58,26 @@ const ChatGroupEditRoom = ({ view, setView }: propsType) => {
         if (action.type.endsWith("/fulfilled")) {
           const newCurrentChatroom = action.payload as IChatroom;
           if (!newCurrentChatroom) {
-            emit("error", { message: "Error at updating the group image async" });
+            const data: INotificationParams = {
+              status: "failed",
+              title: "Error",
+              message: "Error at updating the group image async",
+              link: null,
+              translate: true,
+            };
+            emit(TauriEventNames.NOTIFICATION, data);
             return;
           }
           dispatch(setCurrentChatroom(newCurrentChatroom));
-          emit("success", { message: "Group image has been updated." });
+
+          const data: INotificationParams = {
+            status: "success",
+            title: "Success",
+            message: "Group image has been updated.",
+            link: null,
+            translate: true,
+          };
+          emit(TauriEventNames.NOTIFICATION, data);
 
           if (socket.current && socket.current.connected) {
             const data: ISocketParamsSyncEventsAll = {
@@ -76,14 +93,28 @@ const ChatGroupEditRoom = ({ view, setView }: propsType) => {
       console.log("uploadGroupAvatar", file, currentChatroomStore?._id);
     } catch (err) {
       console.error("Failed to uploadGroupAvatar: ", err);
-      emit("error", { message: err.toString() });
+      const data: INotificationParams = {
+        status: "failed",
+        title: "Error",
+        message: err.toString(),
+        link: null,
+        translate: true,
+      };
+      emit(TauriEventNames.NOTIFICATION, data);
     }
   }, [socket.current, currentChatroomStore, accountStore]);
 
   const handleSaveClick = useCallback(() => {
     try {
       if (!groupName) {
-        emit("error", { message: "The group name mustn't be empty." });
+        const data: INotificationParams = {
+          status: "failed",
+          title: "Error",
+          message: "The group name mustn't be empty.",
+          link: null,
+          translate: true,
+        };
+        emit(TauriEventNames.NOTIFICATION, data);
         return;
       }
       const body: IReqChatroomUpdateGroupName = {
@@ -94,11 +125,26 @@ const ChatGroupEditRoom = ({ view, setView }: propsType) => {
         if (action.type.endsWith("/fulfilled")) {
           const newCurrentChatroom: IChatroom = action.payload as IChatroom;
           if (!newCurrentChatroom) {
-            emit("error", { message: "Error at updating the group name async" });
+            const data: INotificationParams = {
+              status: "failed",
+              title: "Error",
+              message: "Error at updating the group name async",
+              link: null,
+              translate: true,
+            };
+            emit(TauriEventNames.NOTIFICATION, data);
             return;
           }
           dispatch(setCurrentChatroom(newCurrentChatroom));
-          emit("success", { message: "Group detail has been updated." });
+
+          const data: INotificationParams = {
+            status: "success",
+            title: "Success",
+            message: "Group detail has been updated.",
+            link: null,
+            translate: true,
+          };
+          emit(TauriEventNames.NOTIFICATION, data);
 
           if (socket.current && socket.current.connected) {
             const data: ISocketParamsSyncEventsAll = {
@@ -115,7 +161,14 @@ const ChatGroupEditRoom = ({ view, setView }: propsType) => {
       console.log("handleSaveClick", groupName, currentChatroomStore?._id);
     } catch (err) {
       console.error("Failed to handleSaveClick:", err);
-      emit("error", { message: err.toString() });
+      const data: INotificationParams = {
+        status: "failed",
+        title: "Error",
+        message: err.toString(),
+        link: null,
+        translate: true,
+      };
+      emit(TauriEventNames.NOTIFICATION, data);
     }
   }, [socket.current, groupName, currentChatroomStore]);
 

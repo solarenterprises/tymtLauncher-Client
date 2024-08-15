@@ -1,25 +1,35 @@
+import { useTranslation } from "react-i18next";
+import { useSelector } from "react-redux";
+import { ThreeDots } from "react-loader-spinner";
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { emit } from "@tauri-apps/api/event";
+
+import { TauriEventNames } from "../../consts/TauriEventNames";
+
+import D53Modal from "./D53Modal";
+
 import { Button, Grid, Box, Stack, Tooltip } from "@mui/material";
+
+import { getDownloadStatus } from "../../features/home/DownloadStatusSlice";
+import { getInstallStatus } from "../../features/home/InstallStatusSlice";
+
 import "swiper/css";
 import "swiper/css/pagination";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { useTranslation } from "react-i18next";
-import homeStyles from "../../styles/homeStyles";
+
 import "../../fonts/Cobe/Cobe-Regular.ttf";
+
+import homeStyles from "../../styles/homeStyles";
 import districteffect from "../../assets/main/districteffect.svg";
 import districteffect1 from "../../assets/main/districteffect1.svg";
 import districteffect2 from "../../assets/main/districteffect2.svg";
+
 import { downloadGame, getGameFileSize, isInstalled } from "../../lib/api/Downloads";
-import { useDispatch, useSelector } from "react-redux";
-import { AppDispatch } from "../../store";
 import Games from "../../lib/game/Game";
-import D53Modal from "./D53Modal";
-import { useNotification } from "../../providers/NotificationProvider";
-import { ThreeDots } from "react-loader-spinner";
-import { useNavigate } from "react-router-dom";
-import { getDownloadStatus, setDownloadStatus } from "../../features/home/DownloadStatusSlice";
+
 import { IDownloadStatus, IInstallStatus } from "../../types/homeTypes";
-import { getInstallStatus } from "../../features/home/InstallStatusSlice";
+import { INotificationGameDownloadParams, INotificationParams } from "../../types/NotificationTypes";
 
 interface props {
   setImage?: (image: any) => void;
@@ -34,9 +44,6 @@ const District53intro = ({ setImage }: props) => {
   const [d53Open, setD53Open] = useState<boolean>(false);
   const [gameFileSize, setGameFileSize] = useState<string>("");
 
-  const { setNotificationStatus, setNotificationTitle, setNotificationDetail, setNotificationOpen, setNotificationLink } = useNotification();
-
-  const dispatch = useDispatch<AppDispatch>();
   const downloadStatusStore: IDownloadStatus = useSelector(getDownloadStatus);
   const installStatusStore: IInstallStatus = useSelector(getInstallStatus);
 
@@ -167,46 +174,37 @@ const District53intro = ({ setImage }: props) => {
                   onClick={async () => {
                     const online = await checkOnline();
                     if (!online) {
-                      setNotificationStatus("failed");
-                      setNotificationTitle(t("alt-26_internet-error"));
-                      setNotificationDetail(t("alt-27_you-not-connected"));
-                      setNotificationOpen(true);
-                      setNotificationLink(null);
+                      const noti_0: INotificationParams = {
+                        status: "failed",
+                        title: t("alt-26_internet-error"),
+                        message: t("alt-27_you-not-connected"),
+                        link: null,
+                        translate: false,
+                      };
+                      emit(TauriEventNames.NOTIFICATION, noti_0);
                     } else {
                       if (!installed) {
-                        setNotificationStatus("success");
-                        setNotificationTitle(t("alt-28_download-start"));
-                        setNotificationDetail(t("alt-29_wait-for-a-few"));
-                        setNotificationOpen(true);
-                        setNotificationLink(null);
-                        dispatch(
-                          setDownloadStatus({
-                            ...downloadStatusStore,
-                            isDownloading: true,
-                            name: "district53",
-                          })
-                        );
+                        const noti_1: INotificationGameDownloadParams = {
+                          status: "started",
+                          id: "district53",
+                        };
+                        emit(TauriEventNames.GAME_DOWNLOAD, noti_1);
+
                         const downloadable = await downloadGame("district53");
+
                         if (!downloadable) {
-                          setNotificationStatus("failed");
-                          setNotificationTitle(t("alt-5_os-not-support"));
-                          setNotificationDetail(t("alt-6_os-not-support-intro"));
-                          setNotificationOpen(true);
-                          setNotificationLink(null);
+                          const noti_1: INotificationGameDownloadParams = {
+                            status: "failed",
+                            id: "district53",
+                          };
+                          emit(TauriEventNames.GAME_DOWNLOAD, noti_1);
                         } else {
-                          setNotificationStatus("success");
-                          setNotificationTitle(t("alt-7_download-finish"));
-                          setNotificationDetail(t("alt-8_now-play-game"));
-                          setNotificationOpen(true);
-                          setNotificationLink(null);
+                          const noti_3: INotificationGameDownloadParams = {
+                            status: "finished",
+                            id: "district53",
+                          };
+                          emit(TauriEventNames.GAME_DOWNLOAD, noti_3);
                         }
-                        dispatch(
-                          setDownloadStatus({
-                            ...downloadStatusStore,
-                            isDownloading: false,
-                            name: "",
-                          })
-                        );
                         checkInstalled();
                       } else {
                         setD53Open(true);

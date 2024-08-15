@@ -15,6 +15,8 @@ import UserAPI from "../../lib/api/UserAPI";
 import { ISKeyList } from "./SKeyListSlice";
 import { ICurrentChatroomMember } from "./CurrentChatroomMembersSlice";
 import { isArray } from "lodash";
+import { INotificationParams } from "../../types/NotificationTypes";
+import { TauriEventNames } from "../../consts/TauriEventNames";
 
 export const fetchChatroomList = async (_id: string) => {
   try {
@@ -110,21 +112,42 @@ export const addParticipant = async (_member: ICurrentChatroomMember) => {
     const currentChatroomStore: IChatroom = JSON.parse(sessionStorage.getItem(`currentChatroom`));
     if (!currentChatroomStore) {
       console.error("Failed to addOneCurrentChatroomMembers: currentChatroomStore undefined!");
-      await emit("error", { message: "Chatroom not existing!" });
+      const data: INotificationParams = {
+        status: "failed",
+        title: "Error",
+        message: "Chatroom not existing!",
+        link: null,
+        translate: true,
+      };
+      emit(TauriEventNames.NOTIFICATION, data);
       return null;
     }
 
     const sKeyListStore: ISKeyList = JSON.parse(sessionStorage.getItem(`sKeyList`));
     if (!sKeyListStore || !sKeyListStore.sKeys || !isArray(sKeyListStore.sKeys)) {
       console.error("Failed to addOneCurrentChatroomMembers: sKeyListStore undefined!");
-      await emit("error", { message: "Encryption keys not existing!" });
+      const data: INotificationParams = {
+        status: "failed",
+        title: "Error",
+        message: "Encryption keys not existing!",
+        link: null,
+        translate: true,
+      };
+      emit(TauriEventNames.NOTIFICATION, data);
       return null;
     }
 
     const currentSKey = sKeyListStore?.sKeys?.find((element) => element?.roomId === currentChatroomStore?._id)?.sKey;
     if (!currentSKey && currentChatroomStore?.isPrivate) {
       console.error("Failed to addOneCurrentChatroomMembers: currentSKey undefined!");
-      await emit("error", { message: "Encryption key not existing!" });
+      const data: INotificationParams = {
+        status: "failed",
+        title: "Error",
+        message: "Encryption key not existing!",
+        link: null,
+        translate: true,
+      };
+      emit(TauriEventNames.NOTIFICATION, data);
       return null;
     }
 
@@ -136,7 +159,14 @@ export const addParticipant = async (_member: ICurrentChatroomMember) => {
     const res = await ChatroomAPI.addParticipant(body);
     if (res?.status !== 200 || !res?.data) {
       console.error("Failed to addParticipant: ", res);
-      await emit("error", { message: `Failed to addParticipant: ${res.status}` });
+      const data: INotificationParams = {
+        status: "failed",
+        title: "Error",
+        message: `Failed to addParticipant: ${res.status}`,
+        link: null,
+        translate: true,
+      };
+      emit(TauriEventNames.NOTIFICATION, data);
       return null;
     }
 
@@ -144,7 +174,14 @@ export const addParticipant = async (_member: ICurrentChatroomMember) => {
     return res?.data?.result;
   } catch (err) {
     console.error("Failed to addParticipant: ", err);
-    await emit("error", { message: err.toString() });
+    const data: INotificationParams = {
+      status: "failed",
+      title: "Error",
+      message: err.toString(),
+      link: null,
+      translate: true,
+    };
+    emit(TauriEventNames.NOTIFICATION, data);
   }
 };
 
@@ -232,7 +269,14 @@ export const updateGroupAvatar = async (formData: FormData) => {
     const res = await ChatroomAPI.uploadChatroomAvatar(formData);
     if (res?.status !== 200 || !res?.data || !res?.data?.result) {
       console.error("Failed to updateGroupAvatar: ", res);
-      emit("error", { message: "Error at updating the group image" });
+      const data: INotificationParams = {
+        status: "failed",
+        title: "Error",
+        message: "Error at updating the group image",
+        link: null,
+        translate: true,
+      };
+      emit(TauriEventNames.NOTIFICATION, data);
       return null;
     }
 
@@ -241,7 +285,14 @@ export const updateGroupAvatar = async (formData: FormData) => {
     return res?.data?.result;
   } catch (err) {
     console.error("Failed to updateGroupAvatar: ", err);
-    emit("error", { message: err.toString() });
+    const data: INotificationParams = {
+      status: "failed",
+      title: "Error",
+      message: err.toString(),
+      link: null,
+      translate: true,
+    };
+    emit(TauriEventNames.NOTIFICATION, data);
     return null;
   }
 };
@@ -251,7 +302,14 @@ export const updateGroupName = async (body: IReqChatroomUpdateGroupName) => {
     const res = await ChatroomAPI.updateChatroomName(body);
     if (res?.status !== 200 || !res?.data || !res?.data?.result) {
       console.error("Failed to updateGroupName: ", res);
-      emit("error", { message: "Error at updating the group name" });
+      const data: INotificationParams = {
+        status: "failed",
+        title: "Error",
+        message: "Error at updating the group name",
+        link: null,
+        translate: true,
+      };
+      emit(TauriEventNames.NOTIFICATION, data);
       return null;
     }
 
@@ -260,7 +318,14 @@ export const updateGroupName = async (body: IReqChatroomUpdateGroupName) => {
     return res?.data?.result;
   } catch (err) {
     console.error("Failed to updateGroupName: ", err);
-    emit("error", { message: err.toString() });
+    const data: INotificationParams = {
+      status: "failed",
+      title: "Error",
+      message: err.toString(),
+      link: null,
+      translate: true,
+    };
+    emit(TauriEventNames.NOTIFICATION, data);
     return null;
   }
 };

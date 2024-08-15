@@ -1,4 +1,3 @@
-import { emit } from "@tauri-apps/api/event";
 import UserAPI from "../../lib/api/UserAPI";
 
 export const fetchAdminList = async (body: string[]) => {
@@ -15,7 +14,6 @@ export const fetchAdminList = async (body: string[]) => {
     };
   } catch (err) {
     console.error("Failed to fetchAdminList: ", err);
-    emit("error", { message: err.toString() });
     return null;
   }
 };

@@ -1,47 +1,58 @@
 import { useEffect, useState } from "react";
-import { Grid, Stack, Box, Button, Tooltip } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
+import { ThreeDots } from "react-loader-spinner";
+import { emit } from "@tauri-apps/api/event";
+import { removeDir } from "@tauri-apps/api/fs";
+import { appDataDir } from "@tauri-apps/api/path";
+
+import { TauriEventNames } from "../../consts/TauriEventNames";
+
+import { useNotification } from "../../providers/NotificationProvider";
+
+import D53Modal from "../home/D53Modal";
+import AdviceModal from "./AdviceModal";
+import Overview from "./Overview";
+import Review from "./Review";
+import ComingModal from "../ComingModal";
+import Loading from "../Loading";
+import WarningModal from "../home/WarningModal";
+import SwitchBtnGameview from "./SwitchButton";
+import AnimatedComponent from "../AnimatedComponent";
+
+import { Grid, Stack, Box, Button, Tooltip } from "@mui/material";
+import DeleteOutlineRoundedIcon from "@mui/icons-material/DeleteOutlineRounded";
+
+import { selectLanguage } from "../../features/settings/LanguageSlice";
+import { getDownloadStatus } from "../../features/home/DownloadStatusSlice";
+import { getInstallStatus } from "../../features/home/InstallStatusSlice";
+
 import { viewType } from "../../types/storeTypes";
 import { Swiper, SwiperSlide } from "swiper/react";
+
+import { getViewmode } from "../../features/store/Gameview";
+import { downloadGame, getGameFileSize, isInstalled, openLink } from "../../lib/api/Downloads";
+import Games, { Game } from "../../lib/game/Game";
+
+import { languageType } from "../../types/settingTypes";
+import { tymt_version } from "../../configs";
+import { platformIconMap } from "../../types/GameTypes";
+import { chainIconMap } from "../../types/walletTypes";
+import { IDownloadStatus, IInstallStatus } from "../../types/homeTypes";
+import { INotificationGameDownloadParams, INotificationParams } from "../../types/NotificationTypes";
+
 import storeStyles from "../../styles/StoreStyles";
+
 import solar from "../../assets/chains/solar.svg";
 import Xicon from "../../assets/main/XIcon.png";
 import linkicon from "../../assets/main/linkIcon.png";
 import facebookicon from "../../assets/main/facebookIcon.png";
 import discordicon from "../../assets/main/discordIcon.png";
 import gradient1 from "../../assets/main/gradient-gameoverview.svg";
-import SwitchBtnGameview from "./SwitchButton";
-import { getViewmode } from "../../features/store/Gameview";
-import AdviceModal from "./AdviceModal";
-import Overview from "./Overview";
-import Review from "./Review";
-import { downloadGame, getGameFileSize, isInstalled, openLink } from "../../lib/api/Downloads";
-import ComingModal from "../ComingModal";
-import { AppDispatch } from "../../store";
-import Games, { Game } from "../../lib/game/Game";
-import WarningModal from "../home/WarningModal";
-import { selectLanguage } from "../../features/settings/LanguageSlice";
-import { languageType } from "../../types/settingTypes";
-import { removeDir } from "@tauri-apps/api/fs";
-import { appDataDir } from "@tauri-apps/api/path";
-import Loading from "../Loading";
-import DeleteOutlineRoundedIcon from "@mui/icons-material/DeleteOutlineRounded";
-import D53Modal from "../home/D53Modal";
-import { tymt_version } from "../../configs";
-import { useNotification } from "../../providers/NotificationProvider";
-import { platformIconMap } from "../../types/GameTypes";
-import { chainIconMap } from "../../types/walletTypes";
-import { ThreeDots } from "react-loader-spinner";
-import { IDownloadStatus, IInstallStatus } from "../../types/homeTypes";
-import { getDownloadStatus, setDownloadStatus } from "../../features/home/DownloadStatusSlice";
-import { getInstallStatus } from "../../features/home/InstallStatusSlice";
-import AnimatedComponent from "../AnimatedComponent";
 
 const GameOverview = () => {
   const viewmode: viewType = useSelector(getViewmode);
-  const dispatch = useDispatch<AppDispatch>();
   const classes = storeStyles();
   const param = useParams();
   const id: string = param.gameid ?? "";
@@ -126,46 +137,37 @@ const GameOverview = () => {
                   onClick={async () => {
                     const online = await checkOnline();
                     if (!online) {
-                      setNotificationStatus("failed");
-                      setNotificationTitle(t("alt-26_internet-error"));
-                      setNotificationDetail(t("alt-27_you-not-connected"));
-                      setNotificationOpen(true);
-                      setNotificationLink(null);
+                      const noti_0: INotificationParams = {
+                        status: "failed",
+                        title: t("alt-26_internet-error"),
+                        message: t("alt-27_you-not-connected"),
+                        link: null,
+                        translate: false,
+                      };
+                      emit(TauriEventNames.NOTIFICATION, noti_0);
                     } else {
                       if (!installed) {
-                        setNotificationStatus("success");
-                        setNotificationTitle(t("alt-28_download-start"));
-                        setNotificationDetail(t("alt-29_wait-for-a-few"));
-                        setNotificationOpen(true);
-                        setNotificationLink(null);
-                        dispatch(
-                          setDownloadStatus({
-                            ...downloadStatusStore,
-                            isDownloading: true,
-                            name: id,
-                          })
-                        );
+                        const noti_1: INotificationGameDownloadParams = {
+                          status: "started",
+                          id: id,
+                        };
+                        emit(TauriEventNames.GAME_DOWNLOAD, noti_1);
+
                         const downloadable = await downloadGame(id);
+
                         if (!downloadable) {
-                          setNotificationStatus("failed");
-                          setNotificationTitle(t("alt-5_os-not-support"));
-                          setNotificationDetail(t("alt-6_os-not-support-intro"));
-                          setNotificationOpen(true);
-                          setNotificationLink(null);
+                          const noti_1: INotificationGameDownloadParams = {
+                            status: "failed",
+                            id: id,
+                          };
+                          emit(TauriEventNames.GAME_DOWNLOAD, noti_1);
                         } else {
-                          setNotificationStatus("success");
-                          setNotificationTitle(t("alt-7_download-finish"));
-                          setNotificationDetail(t("alt-8_now-play-game"));
-                          setNotificationOpen(true);
-                          setNotificationLink(null);
+                          const noti_3: INotificationGameDownloadParams = {
+                            status: "finished",
+                            id: id,
+                          };
+                          emit(TauriEventNames.GAME_DOWNLOAD, noti_3);
                         }
-                        dispatch(
-                          setDownloadStatus({
-                            ...downloadStatusStore,
-                            isDownloading: false,
-                            name: "",
-                          })
-                        );
                         await checkInstalled(id);
                       } else {
                         if (id === "district53") {

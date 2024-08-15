@@ -1,14 +1,15 @@
-import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
-import { useSelector } from "react-redux";
+import React, { createContext, useContext, useState, ReactNode, useEffect, useRef } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { useLocation } from "react-router-dom";
 
 import { invoke } from "@tauri-apps/api/tauri";
-import { listen } from "@tauri-apps/api/event";
+import { emit, listen } from "@tauri-apps/api/event";
 import { isPermissionGranted, requestPermission, sendNotification } from "@tauri-apps/api/notification";
 
 import AlertComp from "../components/AlertComp";
 
+import { getDownloadStatus, setDownloadStatus } from "../features/home/DownloadStatusSlice";
 import { selectNotification } from "../features/settings/NotificationSlice";
 
 import { notificationType } from "../types/settingTypes";
@@ -16,6 +17,11 @@ import { notificationType } from "../types/settingTypes";
 import notiIcon from "../assets/main/32x32.png";
 
 import { translateString } from "../lib/api/Translate";
+
+import { IDownloadStatus } from "../types/homeTypes";
+import { INotificationGameDownloadParams, INotificationParams } from "../types/NotificationTypes";
+
+import { TauriEventNames } from "../consts/TauriEventNames";
 
 interface NotificationContextType {
   setNotificationOpen: (open: boolean) => void;
@@ -41,6 +47,7 @@ interface NotificationProviderProps {
 
 export const NotificationProvider: React.FC<NotificationProviderProps> = ({ children }) => {
   const { t } = useTranslation();
+  const dispatch = useDispatch();
   const location = useLocation();
   const [notificationOpen, setNotificationOpen] = useState<boolean>(false);
   const [notificationStatus, setNotificationStatus] = useState<string>("");
@@ -49,6 +56,13 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
   const [notificationLink, setNotificationLink] = useState<string>("");
 
   const notificationStore: notificationType = useSelector(selectNotification);
+  const downloadStatusStore: IDownloadStatus = useSelector(getDownloadStatus);
+
+  const downloadStatusStoreRef = useRef(downloadStatusStore);
+
+  useEffect(() => {
+    downloadStatusStoreRef.current = downloadStatusStore;
+  }, [downloadStatusStore]);
 
   useEffect(() => {
     const init = async () => {
@@ -73,27 +87,96 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
   }, [notificationStatus, notificationLink, notificationOpen, notificationTitle, notificationDetail, notificationStore.alert]);
 
   useEffect(() => {
-    const unlisten_error = listen("error", async (event) => {
-      const message = (event.payload as any)?.message as string;
-      setNotificationStatus("failed");
-      setNotificationTitle(t("hom-23_error"));
-      setNotificationDetail(await translateString(message));
+    const unlisten_notification = listen(TauriEventNames.NOTIFICATION, async (event) => {
+      const data = event.payload as INotificationParams;
+      setNotificationStatus(data.status);
+      setNotificationTitle(data.translate ? await translateString(data.title) : data.title);
+      setNotificationDetail(data.translate ? await translateString(data.message) : data.message);
       setNotificationOpen(true);
-      setNotificationLink(null);
+      setNotificationLink(data.link);
     });
 
-    const unlisten_success = listen("success", async (event) => {
-      const message = (event.payload as any)?.message as string;
-      setNotificationStatus("success");
-      setNotificationTitle(t("set-85_success"));
-      setNotificationDetail(await translateString(message));
-      setNotificationOpen(true);
-      setNotificationLink(null);
+    const unlisten_game_download = listen(TauriEventNames.GAME_DOWNLOAD, async (event) => {
+      const data = event.payload as INotificationGameDownloadParams;
+      if (data.status === "started") {
+        const noti: INotificationParams = {
+          status: "success",
+          title: t("alt-28_download-start"),
+          message: t("alt-29_wait-for-a-few"),
+          link: null,
+          translate: false,
+        };
+        emit(TauriEventNames.NOTIFICATION, noti);
+        dispatch(
+          setDownloadStatus({
+            progress: 0,
+            isDownloading: true,
+            name: data.id,
+          })
+        );
+      } else if (data.status === "finished") {
+        if (!downloadStatusStoreRef.current.isDownloading || downloadStatusStoreRef.current.name !== data.id) {
+          return;
+        }
+        const noti: INotificationParams = {
+          status: "success",
+          title: t("alt-7_download-finish"),
+          message: t("alt-8_now-play-game"),
+          link: null,
+          translate: false,
+        };
+        emit(TauriEventNames.NOTIFICATION, noti);
+        dispatch(
+          setDownloadStatus({
+            progress: 0,
+            isDownloading: false,
+            name: "",
+          })
+        );
+      } else if (data.status === "cancelled") {
+        if (!downloadStatusStoreRef.current.isDownloading || downloadStatusStoreRef.current.name !== data.id) {
+          return;
+        }
+        const noti: INotificationParams = {
+          status: "success",
+          title: "Success",
+          message: "Downloading has been cancelled!",
+          link: null,
+          translate: true,
+        };
+        emit(TauriEventNames.NOTIFICATION, noti);
+        dispatch(
+          setDownloadStatus({
+            progress: 0,
+            isDownloading: false,
+            name: "",
+          })
+        );
+      } else if (data.status === "failed") {
+        if (!downloadStatusStoreRef.current.isDownloading || downloadStatusStoreRef.current.name !== data.id) {
+          return;
+        }
+        const noti: INotificationParams = {
+          status: "failed",
+          title: t("alt-5_os-not-support"),
+          message: t("alt-6_os-not-support-intro"),
+          link: null,
+          translate: false,
+        };
+        emit(TauriEventNames.NOTIFICATION, noti);
+        dispatch(
+          setDownloadStatus({
+            progress: 0,
+            isDownloading: false,
+            name: "",
+          })
+        );
+      }
     });
 
     return () => {
-      unlisten_error.then((unlistenFn) => unlistenFn());
-      unlisten_success.then((unlistenFn) => unlistenFn());
+      unlisten_notification.then((unlistenFn) => unlistenFn());
+      unlisten_game_download.then((unlistenFn) => unlistenFn());
     };
   });
 
