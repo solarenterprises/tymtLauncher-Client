@@ -95,14 +95,14 @@ const Bubble = ({ roomMode, screenExpanded, message, index, isDM }: IParamsBubbl
 
   const isFirstMessageOfDay = useCallback(() => {
     if (index === 0) return true;
-    const previousMessageDate = new Date([...chatHistoryStore.messages].reverse()[index - 1]?.createdAt);
+    const previousMessageDate = new Date(chatHistoryStore.messages[index + 1]?.createdAt);
     const currentMessageDate = new Date(message.createdAt);
     return !isSameDay(previousMessageDate, currentMessageDate);
   }, [chatHistoryStore]);
 
   const detectLastMessageofStack = useCallback(() => {
-    const nextMessageSender = [...chatHistoryStore.messages].reverse()[index + 1]?.sender_id;
-    const currentMessageSender = [...chatHistoryStore.messages].reverse()[index]?.sender_id;
+    const nextMessageSender = chatHistoryStore.messages[index - 1]?.sender_id;
+    const currentMessageSender = chatHistoryStore.messages[index]?.sender_id;
     return nextMessageSender !== currentMessageSender;
   }, [chatHistoryStore]);
 
