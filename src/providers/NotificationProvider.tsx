@@ -89,6 +89,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
   useEffect(() => {
     const unlisten_notification = listen(TauriEventNames.NOTIFICATION, async (event) => {
       const data = event.payload as INotificationParams;
+      console.log("TauriEventNames.NOTIFICATION", data);
       setNotificationStatus(data.status);
       setNotificationTitle(data.translate ? await translateString(data.title) : data.title);
       setNotificationDetail(data.translate ? await translateString(data.message) : data.message);
@@ -98,6 +99,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
 
     const unlisten_game_download = listen(TauriEventNames.GAME_DOWNLOAD, async (event) => {
       const data = event.payload as INotificationGameDownloadParams;
+      console.log("TauriEventNames.GAME_DOWNLOAD", data);
       if (data.status === "started") {
         const noti: INotificationParams = {
           status: "success",

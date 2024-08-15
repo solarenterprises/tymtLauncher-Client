@@ -125,14 +125,7 @@ const ChatGroupEditRoom = ({ view, setView }: propsType) => {
         if (action.type.endsWith("/fulfilled")) {
           const newCurrentChatroom: IChatroom = action.payload as IChatroom;
           if (!newCurrentChatroom) {
-            const data: INotificationParams = {
-              status: "failed",
-              title: "Error",
-              message: "Error at updating the group name async",
-              link: null,
-              translate: true,
-            };
-            emit(TauriEventNames.NOTIFICATION, data);
+            console.error("Failed to updateGroupNameAsync: newCurrentChatroom undefined!");
             return;
           }
           dispatch(setCurrentChatroom(newCurrentChatroom));

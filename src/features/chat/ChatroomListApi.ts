@@ -301,11 +301,11 @@ export const updateGroupName = async (body: IReqChatroomUpdateGroupName) => {
   try {
     const res = await ChatroomAPI.updateChatroomName(body);
     if (res?.status !== 200 || !res?.data || !res?.data?.result) {
-      console.error("Failed to updateGroupName: ", res);
+      console.error("Failed to updateGroupName: response error", res);
       const data: INotificationParams = {
         status: "failed",
         title: "Error",
-        message: "Error at updating the group name",
+        message: res?.data?.message ? res.data.message : "Error at update group name",
         link: null,
         translate: true,
       };
@@ -314,7 +314,6 @@ export const updateGroupName = async (body: IReqChatroomUpdateGroupName) => {
     }
 
     console.log("updateGroupName");
-    // emit("success", { message: "Group name has been updated." });
     return res?.data?.result;
   } catch (err) {
     console.error("Failed to updateGroupName: ", err);
