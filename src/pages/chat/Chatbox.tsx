@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { useTranslation } from "react-i18next";
 import InfiniteScroll from "react-infinite-scroll-component";
+import { listen } from "@tauri-apps/api/event";
 import _ from "lodash";
 import "firebase/database";
 
@@ -156,6 +157,18 @@ const Chatbox = ({ view, setView }: propsType) => {
   useEffect(() => {
     if (scrollref.current && valueRef.current === "" && view === "chatbox") Scroll();
   }, [valueRef.current, view]);
+
+  useEffect(() => {
+    const unlisten_scroll_to_end = listen("scroll_to_end", (_event) => {
+      console.log("scroll_to_end");
+      const { scrollHeight } = scrollref.current as HTMLDivElement;
+      scrollref.current?.scrollTo(0, scrollHeight);
+    });
+
+    return () => {
+      unlisten_scroll_to_end.then((unlistenFn) => unlistenFn());
+    };
+  }, []);
 
   return (
     <>

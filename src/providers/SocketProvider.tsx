@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import { Outlet } from "react-router-dom";
 import { appWindow } from "@tauri-apps/api/window";
+import { emit } from "@tauri-apps/api/event";
 import { io, Socket } from "socket.io-client";
 
 import { socket_backend_url, tymt_version } from "../configs";
@@ -189,6 +190,10 @@ export const SocketProvider = () => {
                         messages: updatedHistory,
                       })
                     );
+
+                    setTimeout(() => {
+                      emit("scroll_to_end");
+                    }, 200);
                   }
                   const senderName = senderInContactList?.nickName;
                   const roomName = roomInChatroomList?.room_name;

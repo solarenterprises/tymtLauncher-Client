@@ -43,6 +43,7 @@ import { accountType } from "../../types/accountTypes";
 import { IActiveUserList, getActiveUserList } from "../../features/chat/ActiveUserListSlice";
 import { IChatroom } from "../../types/ChatroomAPITypes";
 import { fetchHistoricalChatroomMembersAsync } from "../../features/chat/HistoricalChatroomMembersSlice";
+import { listen } from "@tauri-apps/api/event";
 
 const theme = createTheme({
   palette: {
@@ -223,6 +224,18 @@ const Chatroom = () => {
   useEffect(() => {
     if (scrollref.current && valueRef.current === "") Scroll();
   }, [valueRef.current]);
+
+  useEffect(() => {
+    const unlisten_scroll_to_end = listen("scroll_to_end", (_event) => {
+      console.log("scroll_to_end");
+      const { scrollHeight } = scrollref.current as HTMLDivElement;
+      scrollref.current?.scrollTo(0, scrollHeight);
+    });
+
+    return () => {
+      unlisten_scroll_to_end.then((unlistenFn) => unlistenFn());
+    };
+  }, []);
 
   return (
     <>
