@@ -94,7 +94,7 @@ const Bubble = ({ roomMode, screenExpanded, message, index, isDM }: IParamsBubbl
   };
 
   const isFirstMessageOfDay = useCallback(() => {
-    if (index === 0) return true;
+    if (index === chatHistoryStore.messages?.length - 1) return true;
     const previousMessageDate = new Date(chatHistoryStore.messages[index + 1]?.createdAt);
     const currentMessageDate = new Date(message.createdAt);
     return !isSameDay(previousMessageDate, currentMessageDate);
