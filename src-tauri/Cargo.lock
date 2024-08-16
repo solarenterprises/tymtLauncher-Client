@@ -5534,7 +5534,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "tymtLauncher"
+name = "tymtLauncherDebug"
 version = "2.2.2"
 dependencies = [
  "actix-cors",

@@ -4,8 +4,8 @@ import { useTranslation } from "react-i18next";
 import SwipeableViews from "react-swipeable-views";
 import { debounce } from "lodash";
 
-import { ThemeProvider, createTheme, useTheme } from "@mui/material/styles";
-import { Box, Divider, Stack, TextField, InputAdornment, Grid, Button, Tabs, Tab } from "@mui/material";
+import { createTheme, ThemeProvider, Box, Divider, Stack, TextField, InputAdornment, Grid, Button, Tabs, Tab } from "@mui/material";
+import { useTheme } from "@mui/material/styles";
 
 import UserListItem from "../../components/chat/UserListItem";
 import NewGroupButton from "../../components/chat/NewGroupButton";

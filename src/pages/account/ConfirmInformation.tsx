@@ -161,6 +161,7 @@ const ConfirmInformation = () => {
       } else if (accountStore.mode === loginEnum.import) {
         dispatch(setMultiWallet(tempMultiWallet));
         try {
+          setLoading(true);
           const _mnemonic = await encrypt(tempNonCustodialStore.mnemonic.toString(), tempNonCustodialStore.password.toString());
           const _password = createKeccakHash("keccak256").update(tempNonCustodialStore.password).digest("hex");
           const _nickname = tempNonCustodialStore.nickname;
@@ -200,7 +201,6 @@ const ConfirmInformation = () => {
               password: "",
             })
           );
-          setLoading(true);
           const userExist = await AuthAPI.getUserBySolarAddress(tempMultiWallet.Solar.chain.wallet);
           if (userExist.data.users.length === 0) {
             const res = await AuthAPI.nonCustodySignup({

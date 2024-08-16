@@ -1,8 +1,7 @@
 import { useState } from "react";
-import { SelectChangeEvent } from "@mui/material/Select";
 import { useTranslation } from "react-i18next";
-import { ThemeProvider, createTheme } from "@mui/material/styles";
-import { Grid, Box, MenuItem, FormControl, Stack, Select, Checkbox } from "@mui/material";
+import { createTheme, ThemeProvider, Grid, Box, MenuItem, FormControl, Stack, Select, Checkbox } from "@mui/material";
+import { SelectChangeEvent } from "@mui/material/Select";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import solar from "../../assets/chains/solar.svg";
 import binance from "../../assets/chains/binance.svg";

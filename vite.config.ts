@@ -33,6 +33,8 @@ export default defineConfig({
     },
   },
   optimizeDeps: {
+    include: ["@mui/material/CssBaseline", "@mui/material/Box"],
+    force: true,
     esbuildOptions: {
       define: {
         global: "globalThis",

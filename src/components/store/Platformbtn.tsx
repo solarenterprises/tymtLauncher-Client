@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { SelectChangeEvent } from "@mui/material/Select";
 import { useTranslation } from "react-i18next";
-import { ThemeProvider, createTheme } from "@mui/material/styles";
-import { Box, MenuItem, FormControl, Select, Stack } from "@mui/material";
+
+import { createTheme, ThemeProvider, Box, MenuItem, FormControl, Select, Stack } from "@mui/material";
+import { SelectChangeEvent } from "@mui/material/Select";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import LinuxIcon from "../../assets/main/linux-icon.svg";
 import WinIcon from "../../assets/main/win-icon.svg";

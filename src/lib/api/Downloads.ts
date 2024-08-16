@@ -103,8 +103,8 @@ export async function runUrlArgs(url: string, args: string[]) {
 
 export async function downloadGame(game_key: string) {
   try {
-    let platform = await type();
-    let cpu = await arch();
+    let platform = type();
+    let cpu = arch();
     let game = Games[game_key];
     let url = "";
     switch (platform) {
@@ -209,8 +209,8 @@ export async function runGame(game_key: string, serverIp?: string, autoMode?: bo
   try {
     const dataDir = await appDataDir();
     let exePath = "";
-    const platform = await type();
-    const cpu = await arch();
+    const platform = type();
+    const cpu = arch();
     switch (platform) {
       case "linux":
         exePath =
@@ -310,8 +310,8 @@ export async function openLink(url: string) {
 export async function getGameFile(game_key: string) {
   try {
     const game = Games[game_key];
-    const platform = await type();
-    const cpu = await arch();
+    const platform = type();
+    const cpu = arch();
     let gameFileForOs: PlatformFileForOS;
     let gameFile: PlatformFile;
     switch (platform) {

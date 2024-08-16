@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import { debounce } from "lodash";
 
-import { Box, Stack, TextField, ThemeProvider, InputAdornment, Button, Divider, createTheme } from "@mui/material";
+import { createTheme, ThemeProvider, Box, Stack, TextField, InputAdornment, Button, Divider } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 
 import GroupMemberListItem from "../../components/chat/GroupMemberListItem";

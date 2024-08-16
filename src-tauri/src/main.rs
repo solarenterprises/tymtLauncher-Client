@@ -14,8 +14,10 @@ use std::path::{ Path, PathBuf };
 use std::process::Command;
 use std::sync::OnceLock;
 use std::{ fs, io };
-use tauri::Manager;
-use tauri::{ CustomMenuItem, SystemTray, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem };
+use tauri::{ Emitter, Listener, Manager };
+use tauri::tray::TrayIconBuilder;
+use tauri::menu::{ Menu, PredefinedMenuItem, MenuItemBuilder };
+
 // use dotenv::dotenv;
 // use std::env;
 
@@ -27,7 +29,7 @@ fn create_named_mutex(name: &str) -> std::io::Result<std::os::unix::net::UnixLis
     if socket_path.exists() {
         match std::os::unix::net::UnixStream::connect(socket_path) {
             Ok(mut stream) => {
-                stream.write_all(b"ping")?;
+                stream.write_all("ping")?;
                 return Err(io::Error::new(io::ErrorKind::AlreadyExists, "Socket already in use"));
             }
             Err(_) => {
@@ -77,35 +79,36 @@ async fn main() -> std::io::Result<()> {
         }
     }
 
-    let showvisible = CustomMenuItem::new("showVisible".to_string(), "Show tymtLauncher");
-    let fullscreen = CustomMenuItem::new("fullscreen".to_string(), "Full-screen Mode  (F11)");
-    let games = CustomMenuItem::new("games".to_string(), "Games");
-    let wallet = CustomMenuItem::new("wallet".to_string(), "Wallet");
-    let about = CustomMenuItem::new("about".to_string(), "About tymt");
-    let signout = CustomMenuItem::new("signout".to_string(), "Sign Out");
-    let quit = CustomMenuItem::new("quit".to_string(), "Quit");
-    let disable_notifications = CustomMenuItem::new(
-        "disable_notifications".to_string(),
-        "Disable Notifications"
-    );
-    let tray_menu = SystemTrayMenu::new()
-        .add_item(showvisible)
-        .add_native_item(SystemTrayMenuItem::Separator)
-        .add_item(fullscreen)
-        .add_native_item(SystemTrayMenuItem::Separator)
-        .add_item(games)
-        .add_native_item(SystemTrayMenuItem::Separator)
-        .add_item(wallet)
-        .add_native_item(SystemTrayMenuItem::Separator)
-        .add_item(signout)
-        .add_native_item(SystemTrayMenuItem::Separator)
-        .add_item(disable_notifications)
-        .add_native_item(SystemTrayMenuItem::Separator)
-        .add_item(about)
-        .add_native_item(SystemTrayMenuItem::Separator)
-        .add_item(quit);
+    // let showvisible = CustomMenuItem::new("showVisible".to_string(), "Show tymtLauncher");
+    // let fullscreen = CustomMenuItem::new("fullscreen".to_string(), "Full-screen Mode  (F11)");
+    // let games = CustomMenuItem::new("games".to_string(), "Games");
+    // let wallet = CustomMenuItem::new("wallet".to_string(), "Wallet");
+    // let about = CustomMenuItem::new("about".to_string(), "About tymt");
+    // let signout = CustomMenuItem::new("signout".to_string(), "Sign Out");
+    // let quit = CustomMenuItem::new("quit".to_string(), "Quit");
+    // let disable_notifications = CustomMenuItem::new(
+    //     "disable_notifications".to_string(),
+    //     "Disable Notifications"
+    // );
 
-    let tray = SystemTray::new().with_menu(tray_menu);
+    // let tray_menu = SystemTrayMenu::new()
+    //     .add_item(showvisible)
+    //     .add_native_item(SystemTrayMenuItem::Separator)
+    //     .add_item(fullscreen)
+    //     .add_native_item(SystemTrayMenuItem::Separator)
+    //     .add_item(games)
+    //     .add_native_item(SystemTrayMenuItem::Separator)
+    //     .add_item(wallet)
+    //     .add_native_item(SystemTrayMenuItem::Separator)
+    //     .add_item(signout)
+    //     .add_native_item(SystemTrayMenuItem::Separator)
+    //     .add_item(disable_notifications)
+    //     .add_native_item(SystemTrayMenuItem::Separator)
+    //     .add_item(about)
+    //     .add_native_item(SystemTrayMenuItem::Separator)
+    //     .add_item(quit);
+
+    // let tray = SystemTray::new().with_menu(tray_menu);
 
     tauri::Builder
         ::default()
@@ -131,89 +134,89 @@ async fn main() -> std::io::Result<()> {
                 set_tray_items_enabled
             ]
         )
-        .on_window_event(|event| {
-            match event.event() {
-                tauri::WindowEvent::CloseRequested { api, .. } => {
-                    event.window().hide().unwrap();
-                    api.prevent_close();
-                }
-                _ => {}
-            }
-        })
-        .system_tray(tray)
-        ///// SystemTray Event handlers
-        .on_system_tray_event(|app, event| {
-            match event {
-                SystemTrayEvent::LeftClick { position: _, size: _, .. } => {
-                    println!("system tray received a left click");
-                }
-                SystemTrayEvent::RightClick { position: _, size: _, .. } => {
-                    println!("system tray received a right click");
-                }
-                SystemTrayEvent::DoubleClick { position: _, size: _, .. } => {
-                    println!("system tray received a double click");
-                    let window = app.get_window("tymtLauncher").unwrap();
-                    window.show().unwrap();
-                    window.set_focus().unwrap();
-                }
-                SystemTrayEvent::MenuItemClick { id, .. } =>
-                    match id.as_str() {
-                        "quit" => {
-                            std::process::exit(0);
-                        }
-                        "hide" => {
-                            let window = app.get_window("tymtLauncher").unwrap();
-                            window.hide().unwrap();
-                        }
-                        "showVisible" => {
-                            println!("showVisible received a left click");
-                            let window = app.get_window("tymtLauncher").unwrap();
-                            window.show().unwrap();
-                            window.set_focus().unwrap();
-                        }
-                        "fullscreen" => {
-                            let window = app.get_window("tymtLauncher").unwrap();
-                            window.show().unwrap();
-                            window.set_focus().unwrap();
-                            window
-                                .set_fullscreen(!window.is_fullscreen().unwrap())
-                                .expect("failed to switch full-screen");
-                        }
-                        "wallet" => {
-                            app.emit_all("wallet", "wallet").expect("failed to emit event wallet");
-                            let window = app.get_window("tymtLauncher").unwrap();
-                            window.show().unwrap();
-                            window.set_focus().unwrap();
-                        }
-                        "games" => {
-                            app.emit_all("games", "games").expect("failed to emit event games");
-                            let window = app.get_window("tymtLauncher").unwrap();
-                            window.show().unwrap();
-                            window.set_focus().unwrap();
-                        }
-                        "about" => {
-                            app.emit_all("about-tymt", "about").expect(
-                                "failed to emit event about-tymt"
-                            );
-                        }
-                        "signout" => {
-                            app.emit_all("signout", "signout").expect(
-                                "failed to emit event signout"
-                            );
-                            let window = app.get_window("tymtLauncher").unwrap();
-                            window.show().unwrap();
-                            window.set_focus().unwrap();
-                        }
-                        "disable_notifications" => {
-                            app.emit_all("disable_notifications", "disable_notifications").expect(
-                                "failed to emit event disable_notifications"
-                            );
-                        }
-                        _ => {}
-                    }
-                _ => {}
-            }
-        })
+        // .on_window_event(|event| {
+        //     match event.event() {
+        //         tauri::WindowEvent::CloseRequested { api, .. } => {
+        //             event.window().hide().unwrap();
+        //             api.prevent_close();
+        //         }
+        //         _ => {}
+        //     }
+        // })
+        // .system_tray(tray)
+        // ///// SystemTray Event handlers
+        // .on_system_tray_event(|app, event| {
+        //     match event {
+        //         SystemTrayEvent::LeftClick { position: _, size: _, .. } => {
+        //             println!("system tray received a left click");
+        //         }
+        //         SystemTrayEvent::RightClick { position: _, size: _, .. } => {
+        //             println!("system tray received a right click");
+        //         }
+        //         SystemTrayEvent::DoubleClick { position: _, size: _, .. } => {
+        //             println!("system tray received a double click");
+        //             let window = app.get_webview_window("tymtLauncher").unwrap();
+        //             window.show().unwrap();
+        //             window.set_focus().unwrap();
+        //         }
+        //         SystemTrayEvent::MenuItemClick { id, .. } =>
+        //             match id.as_str() {
+        //                 "quit" => {
+        //                     std::process::exit(0);
+        //                 }
+        //                 "hide" => {
+        //                     let window = app.get_webview_window("tymtLauncher").unwrap();
+        //                     window.hide().unwrap();
+        //                 }
+        //                 "showVisible" => {
+        //                     println!("showVisible received a left click");
+        //                     let window = app.get_webview_window("tymtLauncher").unwrap();
+        //                     window.show().unwrap();
+        //                     window.set_focus().unwrap();
+        //                 }
+        //                 "fullscreen" => {
+        //                     let window = app.get_webview_window("tymtLauncher").unwrap();
+        //                     window.show().unwrap();
+        //                     window.set_focus().unwrap();
+        //                     window
+        //                         .set_fullscreen(!window.is_fullscreen().unwrap())
+        //                         .expect("failed to switch full-screen");
+        //                 }
+        //                 "wallet" => {
+        //                     app.emit_all("wallet", "wallet").expect("failed to emit event wallet");
+        //                     let window = app.get_webview_window("tymtLauncher").unwrap();
+        //                     window.show().unwrap();
+        //                     window.set_focus().unwrap();
+        //                 }
+        //                 "games" => {
+        //                     app.emit_all("games", "games").expect("failed to emit event games");
+        //                     let window = app.get_webview_window("tymtLauncher").unwrap();
+        //                     window.show().unwrap();
+        //                     window.set_focus().unwrap();
+        //                 }
+        //                 "about" => {
+        //                     app.emit_all("about-tymt", "about").expect(
+        //                         "failed to emit event about-tymt"
+        //                     );
+        //                 }
+        //                 "signout" => {
+        //                     app.emit_all("signout", "signout").expect(
+        //                         "failed to emit event signout"
+        //                     );
+        //                     let window = app.get_webview_window("tymtLauncher").unwrap();
+        //                     window.show().unwrap();
+        //                     window.set_focus().unwrap();
+        //                 }
+        //                 "disable_notifications" => {
+        //                     app.emit_all("disable_notifications", "disable_notifications").expect(
+        //                         "failed to emit event disable_notifications"
+        //                     );
+        //                 }
+        //                 _ => {}
+        //             }
+        //         _ => {}
+        //     }
+        // })
         .setup(|app| {
             let app_handle = app.handle().clone();
             _ = APPHANDLE.set(app_handle);
@@ -280,15 +283,15 @@ async fn main() -> std::io::Result<()> {
             async fn validate_token(token: String) -> bool {
                 APPHANDLE.get()
                     .expect("APPHANDLE is available")
-                    .emit_all("validate-token", token)
+                    .emit("validate-token", token)
                     .expect("failed to emit event validate-token");
 
                 let (tx, rx) = std::sync::mpsc::channel();
 
                 let response = APPHANDLE.get()
                     .expect("APPHANDLE is available")
-                    .listen_global("res-validate-token", move |event| {
-                        let payload = event.payload().unwrap().to_string();
+                    .listen_any("res-validate-token", move |event| {
+                        let payload = event.payload().to_string();
                         match tx.send(payload) {
                             Ok(()) => {
                                 // println!("Message sent successfully");
@@ -377,15 +380,15 @@ async fn main() -> std::io::Result<()> {
 
                 APPHANDLE.get()
                     .expect("APPHANDLE is available")
-                    .emit_all("POST-/get-account", json_data)
+                    .emit("POST-/get-account", json_data)
                     .expect("failed to emit event POST /get-account");
 
                 let (tx, rx) = std::sync::mpsc::channel();
 
                 let response = APPHANDLE.get()
                     .expect("APPHANDLE is available")
-                    .listen_global("res-POST-/get-account", move |event| {
-                        let payload = event.payload().unwrap().to_string();
+                    .listen_any("res-POST-/get-account", move |event| {
+                        let payload = event.payload().to_string();
                         println!("!!!----> res POST /get-account");
                         println!("{}", payload);
                         match tx.send(payload) {
@@ -436,15 +439,15 @@ async fn main() -> std::io::Result<()> {
 
                 APPHANDLE.get()
                     .expect("APPHANDLE is available")
-                    .emit_all("POST-/get-balance", json_data)
+                    .emit("POST-/get-balance", json_data)
                     .expect("failed to emit event POST /get-balance");
 
                 let (tx, rx) = std::sync::mpsc::channel();
 
                 let response = APPHANDLE.get()
                     .expect("APPHANDLE is available")
-                    .listen_global("res-POST-/get-balance", move |event| {
-                        let payload = event.payload().unwrap().to_string();
+                    .listen_any("res-POST-/get-balance", move |event| {
+                        let payload = event.payload().to_string();
                         println!("!!!----> res POST /get-balance");
                         println!("{}", payload);
                         match tx.send(payload) {
@@ -492,15 +495,15 @@ async fn main() -> std::io::Result<()> {
 
                 APPHANDLE.get()
                     .expect("APPHANDLE is available")
-                    .emit_all("POST-/send-transaction", json_data)
+                    .emit("POST-/send-transaction", json_data)
                     .expect("failed to emit event POST /send-transaction");
 
                 let (tx, rx) = std::sync::mpsc::channel();
 
                 let response = APPHANDLE.get()
                     .expect("APPHANDLE is available")
-                    .listen_global("res-POST-/send-transaction", move |event| {
-                        let payload = event.payload().unwrap().to_string();
+                    .listen_any("res-POST-/send-transaction", move |event| {
+                        let payload = event.payload().to_string();
                         println!("!!!----> res POST /send-transaction");
                         println!("{}", payload);
                         match tx.send(payload) {
@@ -673,15 +676,15 @@ async fn main() -> std::io::Result<()> {
 
                 APPHANDLE.get()
                     .expect("APPHANDLE is available")
-                    .emit_all("POST-/sign-message", json_data)
+                    .emit("POST-/sign-message", json_data)
                     .expect("failed to emit event POST /sign-message");
 
                 let (tx, rx) = std::sync::mpsc::channel();
 
                 let response = APPHANDLE.get()
                     .expect("APPHANDLE is available")
-                    .listen_global("res-POST-/sign-message", move |event| {
-                        let payload = event.payload().unwrap().to_string();
+                    .listen_any("res-POST-/sign-message", move |event| {
+                        let payload = event.payload().to_string();
                         println!("!!!----> res POST /sign-message");
                         println!("{}", payload);
                         match tx.send(payload) {
@@ -738,15 +741,15 @@ async fn main() -> std::io::Result<()> {
 
                 APPHANDLE.get()
                     .expect("APPHANDLE is available")
-                    .emit_all("POST-/verify-message", json_data)
+                    .emit("POST-/verify-message", json_data)
                     .expect("failed to emit event POST /verify-message");
 
                 let (tx, rx) = std::sync::mpsc::channel();
 
                 let response = APPHANDLE.get()
                     .expect("APPHANDLE is available")
-                    .listen_global("res-POST-/verify-message", move |event| {
-                        let payload = event.payload().unwrap().to_string();
+                    .listen_any("res-POST-/verify-message", move |event| {
+                        let payload = event.payload().to_string();
                         println!("!!!----> res POST /verify-message");
                         println!("{}", payload);
                         match tx.send(payload) {
@@ -832,15 +835,15 @@ async fn main() -> std::io::Result<()> {
 
                 APPHANDLE.get()
                     .expect("APPHANDLE is available")
-                    .emit_all("POST-/send-contract", json_data)
+                    .emit("POST-/send-contract", json_data)
                     .expect("failed to emit event POST /send-contract");
 
                 let (tx, rx) = std::sync::mpsc::channel();
 
                 let response = APPHANDLE.get()
                     .expect("APPHANDLE is available")
-                    .listen_global("res-POST-/send-contract", move |event| {
-                        let payload = event.payload().unwrap().to_string();
+                    .listen_any("res-POST-/send-contract", move |event| {
+                        let payload = event.payload().to_string();
                         println!("!!!----> res POST /send-contract");
                         println!("{}", payload);
                         match tx.send(payload) {
@@ -927,7 +930,7 @@ async fn download_appimage_linux(
     authorization: Option<String>
 ) -> bool {
     let app_dir = app_handle
-        .path_resolver()
+        .path()
         .app_data_dir()
         .unwrap()
         .into_os_string()
@@ -995,7 +998,7 @@ async fn download_and_unzip(app_handle: tauri::AppHandle, url: String, target: S
     println!("{}", target);
 
     let app_dir = app_handle
-        .path_resolver()
+        .path()
         .app_data_dir()
         .unwrap()
         .into_os_string()
@@ -1065,7 +1068,7 @@ async fn download_and_unzip_windows(
     println!("{}", target);
 
     let app_dir = app_handle
-        .path_resolver()
+        .path()
         .app_data_dir()
         .unwrap()
         .into_os_string()
@@ -1117,7 +1120,7 @@ async fn download_and_unzip_windows(
         file.write_all(part).expect("Failed to write part to file");
         let progress = (((i + 1) as f64) / 100.0) * 100.0; // i + 1 to make progress go from ~1% to 100%
         println!("Downloading {} %", progress);
-        app_handle.emit_all("download-progress", &progress).expect("Failed to emit progress event");
+        app_handle.emit("download-progress", &progress).expect("Failed to emit progress event");
     }
 
     let zip_file1 = File::open(&path).unwrap();
@@ -1162,7 +1165,7 @@ async fn download_and_unzip_linux(
     println!("{}", target);
 
     let app_dir = app_handle
-        .path_resolver()
+        .path()
         .app_data_dir()
         .unwrap()
         .into_os_string()
@@ -1206,7 +1209,7 @@ async fn download_and_unzip_linux(
         let progress = (((i + 1) as f64) / 100.0) * 100.0; // i + 1 to make progress go from ~1% to 100%
 
         println!("Downloading {} %", progress);
-        app_handle.emit_all("download-progress", &progress).expect("Failed to emit progress event");
+        app_handle.emit("download-progress", &progress).expect("Failed to emit progress event");
     }
 
     let zip_file1 = File::open(&path).unwrap();
@@ -1254,7 +1257,7 @@ async fn download_and_unzip_macos(
     println!("{}", target);
 
     let app_dir = app_handle
-        .path_resolver()
+        .path()
         .app_data_dir()
         .unwrap()
         .into_os_string()
@@ -1329,7 +1332,7 @@ async fn download_and_untarbz2_macos(
     println!("{}", target);
 
     let app_dir = app_handle
-        .path_resolver()
+        .path()
         .app_data_dir()
         .unwrap()
         .into_os_string()
@@ -1537,7 +1540,7 @@ fn is_window_visible(window: tauri::Window) -> bool {
 
 #[tauri::command]
 async fn show_transaction_window(app_handle: tauri::AppHandle) {
-    if let Some(window) = app_handle.get_window("tymt_d53_transaction") {
+    if let Some(window) = app_handle.get_webview_window("tymt_d53_transaction") {
         if let Err(e) = window.show() {
             eprintln!("Failed to show window: {}", e);
         }
@@ -1545,7 +1548,7 @@ async fn show_transaction_window(app_handle: tauri::AppHandle) {
         eprintln!("Window 'tymt_d53_transaction' not found");
     }
 
-    if let Some(window_to_hide) = app_handle.get_window("tymtLauncher") {
+    if let Some(window_to_hide) = app_handle.get_webview_window("tymtLauncher") {
         if let Err(e) = window_to_hide.hide() {
             eprintln!("Failed to hide window 'tymtLauncher': {}", e);
         }
@@ -1569,7 +1572,7 @@ async fn show_transaction_window(app_handle: tauri::AppHandle) {
 
 #[tauri::command]
 async fn hide_transaction_window(app_handle: tauri::AppHandle) {
-    if let Some(window) = app_handle.get_window("tymt_d53_transaction") {
+    if let Some(window) = app_handle.get_webview_window("tymt_d53_transaction") {
         if let Err(e) = window.hide() {
             eprintln!("Failed to hide window: {}", e);
         }
@@ -1577,7 +1580,7 @@ async fn hide_transaction_window(app_handle: tauri::AppHandle) {
         eprintln!("Window 'tymt_d53_transaction' not found");
     }
 
-    if let Some(window_to_hide) = app_handle.get_window("tymtLauncher") {
+    if let Some(window_to_hide) = app_handle.get_webview_window("tymtLauncher") {
         if let Err(e) = window_to_hide.show() {
             eprintln!("Failed to show window 'tymtLauncher': {}", e);
         }
@@ -1605,8 +1608,8 @@ async fn set_tray_items_enabled(
     item_ids: Vec<String>,
     enabled: bool
 ) {
-    let tray_handle = app_handle.tray_handle();
-    for item_id in item_ids {
-        let _ = tray_handle.get_item(&item_id).set_enabled(enabled);
-    }
+    // let tray_handle = app_handle.tray_handle();
+    // for item_id in item_ids {
+    //     let _ = tray_handle.get_item(&item_id).set_enabled(enabled);
+    // }
 }

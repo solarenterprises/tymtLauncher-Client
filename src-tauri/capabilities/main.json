@@ -1,10 +1,8 @@
 {
-  "identifier": "migrated",
+  "identifier": "main",
   "description": "permissions that were migrated from v1",
   "local": true,
-  "windows": [
-    "main"
-  ],
+  "windows": ["*"],
   "permissions": [
     "core:path:default",
     "core:event:default",
@@ -12,6 +10,13 @@
     "core:app:default",
     "core:resources:default",
     "core:menu:default",
-    "core:tray:default"
+    "core:tray:default",
+    "notification:default",
+    "fs:default",
+    "http:default",
+    "updater:default",
+    "os:default",
+    "process:default",
+    "shell:default"
   ]
 }

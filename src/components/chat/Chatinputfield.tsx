@@ -6,9 +6,9 @@ import { listen } from "@tauri-apps/api/event";
 
 import EmojiPicker, { SkinTones } from "emoji-picker-react";
 
-import { Box, Button, Divider, InputAdornment, Popover, TextField } from "@mui/material";
+import { createTheme, ThemeProvider, Box, Button, Divider, InputAdornment, Popover, TextField } from "@mui/material";
 import FileUploadIcon from "@mui/icons-material/FileUpload";
-import { ThemeProvider, createTheme } from "@mui/material/styles";
+
 import TextareaAutosize from "@mui/material/TextareaAutosize";
 
 import { useSocket } from "../../providers/SocketProvider";

@@ -49,7 +49,7 @@ const gameListSlice = createSlice({
   },
 });
 
-export const getDownloadStatus = (state: any) => state.gameList.data;
+export const getGameList = (state: any) => state.gameList.data;
 
 export default gameListSlice.reducer;
 

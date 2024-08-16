@@ -6,10 +6,9 @@ import { useTranslation } from "react-i18next";
 import InfiniteScroll from "react-infinite-scroll-component";
 import _ from "lodash";
 
-import Bubble from "../../components/chat/Bubble";
+import { createTheme, ThemeProvider, Box, Grid, Divider, Button, Stack } from "@mui/material";
 
-import { Box, Grid, Divider, Button, Stack } from "@mui/material";
-import { ThemeProvider, createTheme } from "@mui/material/styles";
+import Bubble from "../../components/chat/Bubble";
 
 import ChatStyle from "../../styles/ChatStyles";
 import x from "../../assets/chat/x.svg";
