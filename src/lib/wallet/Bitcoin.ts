@@ -10,7 +10,7 @@ import { INotification } from "../../features/wallet/CryptoSlice";
 import { IRecipient } from "../../features/wallet/CryptoApi";
 import tymtStorage from "../Storage";
 import { multiWalletType } from "../../types/walletTypes";
-import { fetch as tauriFetch, ResponseType } from "@tauri-apps/api/http";
+import { fetch as tauriFetch } from "@tauri-apps/plugin-http";
 import { translateString } from "../api/Translate";
 
 class Bitcoin implements IWallet {
@@ -94,8 +94,8 @@ class Bitcoin implements IWallet {
         const apiURL = `${btc_api_url}/rawaddr/${addr}?offset=${(page - 1) * 15}limit=15`;
         const response: any = await tauriFetch(apiURL, {
           method: "GET",
-          timeout: 30,
-          responseType: ResponseType.JSON,
+          connectTimeout: 30,
+          /// responseType: ResponseType.JSON,
         });
         if (!response) return [];
         if (response.status === 429) {
@@ -305,8 +305,8 @@ class Bitcoin implements IWallet {
       const apiURL = `https://unisat.io/wallet-api-v4/address/btc-utxo?address=${address}`;
       const response: any = await tauriFetch(apiURL, {
         method: "GET",
-        timeout: 30,
-        responseType: ResponseType.JSON,
+        connectTimeout: 30,
+        /// responseType: ResponseType.JSON,
       });
       const data = response?.data?.result;
       console.log(data);

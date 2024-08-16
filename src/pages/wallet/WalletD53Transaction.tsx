@@ -9,7 +9,7 @@ import { setMountedFalse, setMountedTrue } from "../../features/chat/IntercomSup
 import { languageType, walletType } from "../../types/settingTypes";
 import { IChain, ICurrency, INative, IToken, chainEnum, chainIconMap, multiWalletType } from "../../types/walletTypes";
 import { getMultiWallet, refreshBalancesAsync } from "../../features/wallet/MultiWalletSlice";
-import { invoke } from "@tauri-apps/api/tauri";
+import { invoke } from "@tauri-apps/api/core";
 import { useTranslation } from "react-i18next";
 import { useFormik } from "formik";
 import * as Yup from "yup";
@@ -31,7 +31,9 @@ import { INotification, sendCoinAPIAsync } from "../../features/wallet/CryptoSli
 import { IRecipient, ISendCoin } from "../../features/wallet/CryptoApi";
 import Loading from "../../components/Loading";
 import SwitchChainModal from "../../components/wallet/SwitchChainModal";
-import { appWindow, LogicalSize } from "@tauri-apps/api/window";
+import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
+import { LogicalSize } from '@tauri-apps/api/dpi';
+const appWindow = getCurrentWebviewWindow()
 
 const WalletD53Transaction = () => {
   const {

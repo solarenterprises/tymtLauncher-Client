@@ -5,7 +5,7 @@ import { runGame } from "../../lib/api/Downloads";
 import { useTranslation } from "react-i18next";
 import InputText from "../account/InputText";
 import { useNotification } from "../../providers/NotificationProvider";
-import { fetch as tauriFetch, ResponseType } from "@tauri-apps/api/http";
+import { fetch as tauriFetch } from "@tauri-apps/plugin-http";
 import { production_version } from "../../configs";
 
 interface props {
@@ -81,8 +81,8 @@ const D53Modal = ({ open, setOpen }: props) => {
         const apiURL = production_version === "prod" ? `https://serverlist.district53.io/` : `http://dev.game.district53.io:5000/`;
         const res: any = await tauriFetch(apiURL, {
           method: "GET",
-          timeout: 30,
-          responseType: ResponseType.JSON,
+          connectTimeout: 30,
+          /// responseType: ResponseType.JSON,
         });
         setServerList(res.data);
         setServerIp(res.data[0].ip);

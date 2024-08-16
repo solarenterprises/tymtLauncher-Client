@@ -6,7 +6,7 @@ import * as multichainWallet from "multichain-crypto-wallet";
 import { validate } from "multicoin-address-validator";
 import { INotification } from "../../features/wallet/CryptoSlice";
 import { IRecipient } from "../../features/wallet/CryptoApi";
-import { Body, fetch as tauriFetch, ResponseType } from "@tauri-apps/api/http";
+import { fetch as tauriFetch } from "@tauri-apps/plugin-http";
 import * as bs58 from "bs58";
 import { translateString } from "../api/Translate";
 
@@ -56,12 +56,12 @@ class Solana implements IWallet {
         method: "getBalance",
         params: [pbKey],
       };
-      const body = Body.json(bodyContent);
+      const body = JSON.parse(JSON.stringify(bodyContent));
       const response: any = await tauriFetch(apiURL, {
         method: "POST",
-        timeout: 30,
+        connectTimeout: 30,
         body: body,
-        responseType: ResponseType.JSON,
+        /// responseType: ResponseType.JSON,
       });
       const sols = response?.data?.result?.value / 1e9;
       return sols;
@@ -82,12 +82,12 @@ class Solana implements IWallet {
         method: "getSignaturesForAddress",
         params: [pbKey, { limit: 15 * page }],
       };
-      const body1 = Body.json(bodyContent1);
+      const body1 = JSON.parse(JSON.stringify(bodyContent1));
       const response1: any = await tauriFetch(apiURL, {
         method: "POST",
-        timeout: 30,
+        connectTimeout: 30,
         body: body1,
-        responseType: ResponseType.JSON,
+        /// responseType: ResponseType.JSON,
       });
       const signatures: string[] = response1?.data?.result.slice(-15).map((signature: any) => signature?.signature);
       // get transactions
@@ -100,12 +100,12 @@ class Solana implements IWallet {
           params: [signatures[i], { encoding: "jsonParsed", commitment: "finalized" }],
         });
       }
-      const body2 = Body.json(bodyContent2);
+      const body2 = JSON.parse(JSON.stringify(bodyContent2));
       const response2: any = await tauriFetch(apiURL, {
         method: "POST",
-        timeout: 30,
+        connectTimeout: 30,
         body: body2,
-        responseType: ResponseType.JSON,
+        /// responseType: ResponseType.JSON,
       });
       return Array.isArray(response2?.data) ? response2?.data : [];
     } catch (err) {
@@ -141,12 +141,12 @@ class Solana implements IWallet {
             },
           ],
         };
-        const body1 = Body.json(bodyContent1);
+        const body1 = JSON.parse(JSON.stringify(bodyContent1));
         const response1: any = await tauriFetch(apiURL, {
           method: "POST",
-          timeout: 30,
+          connectTimeout: 30,
           body: body1,
-          responseType: ResponseType.JSON,
+          /// responseType: ResponseType.JSON,
         });
         console.log(response1);
         const recentBlockhash = response1?.data?.result?.value?.blockhash;
@@ -164,12 +164,12 @@ class Solana implements IWallet {
           method: "sendTransaction",
           params: [rawTxString],
         };
-        const body2 = Body.json(bodyContent2);
+        const body2 = JSON.parse(JSON.stringify(bodyContent2));
         const response2: any = await tauriFetch(apiURL, {
           method: "POST",
-          timeout: 30,
+          connectTimeout: 30,
           body: body2,
-          responseType: ResponseType.JSON,
+          /// responseType: ResponseType.JSON,
         });
         console.log(response2);
 
@@ -219,12 +219,12 @@ class Solana implements IWallet {
             },
           ],
         };
-        const body1 = Body.json(bodyContent1);
+        const body1 = JSON.parse(JSON.stringify(bodyContent1));
         const response1: any = await tauriFetch(apiURL, {
           method: "POST",
-          timeout: 30,
+          connectTimeout: 30,
           body: body1,
-          responseType: ResponseType.JSON,
+          /// responseType: ResponseType.JSON,
         });
         console.log(response1);
         const recentBlockhash = response1?.data?.result?.value?.blockhash;
@@ -242,12 +242,12 @@ class Solana implements IWallet {
           method: "sendTransaction",
           params: [rawTxString],
         };
-        const body2 = Body.json(bodyContent2);
+        const body2 = JSON.parse(JSON.stringify(bodyContent2));
         const response2: any = await tauriFetch(apiURL, {
           method: "POST",
-          timeout: 30,
+          connectTimeout: 30,
           body: body2,
-          responseType: ResponseType.JSON,
+          /// responseType: ResponseType.JSON,
         });
         console.log(response2);
 

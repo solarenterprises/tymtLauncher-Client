@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useSelector, useDispatch } from "react-redux";
 import { AppDispatch } from "../../../store";
-import { readText } from "@tauri-apps/api/clipboard";
+import { readText } from "@tauri-apps/plugin-clipboard-manager";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { Grid, Box, Stack } from "@mui/material";

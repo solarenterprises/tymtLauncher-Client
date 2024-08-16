@@ -1,8 +1,8 @@
-import { exists, readDir } from "@tauri-apps/api/fs";
+import { exists, readDir } from "@tauri-apps/plugin-fs";
 import { appDataDir } from "@tauri-apps/api/path";
-import { type, arch } from "@tauri-apps/api/os";
-import { invoke } from "@tauri-apps/api/tauri";
-import { open } from "@tauri-apps/api/shell";
+import { type, arch } from "@tauri-apps/plugin-os";
+import { invoke } from "@tauri-apps/api/core";
+import { open } from "@tauri-apps/plugin-shell";
 import Games, { PlatformFile, PlatformFileForOS } from "../game/Game";
 import { local_server_port, production_version, tymt_version } from "../../configs";
 import { ISaltToken } from "../../types/accountTypes";
@@ -108,10 +108,10 @@ export async function downloadGame(game_key: string) {
     let game = Games[game_key];
     let url = "";
     switch (platform) {
-      case "Linux":
+      case "linux":
         url = production_version === "prod" ? game.executables.linux?.prod?.url ?? "" : game.executables.linux?.dev?.url ?? "";
         break;
-      case "Darwin":
+      case "macos":
         switch (cpu) {
           case "arm":
             url = production_version === "prod" ? game.executables.macosArm?.prod?.url ?? "" : game.executables.macosArm?.dev?.url ?? "";
@@ -121,7 +121,7 @@ export async function downloadGame(game_key: string) {
             break;
         }
         break;
-      case "Windows_NT":
+      case "windows":
         url = production_version === "prod" ? game.executables.windows64?.prod?.url ?? "" : game.executables.windows64?.dev?.url ?? "";
         break;
     }
@@ -130,7 +130,7 @@ export async function downloadGame(game_key: string) {
     }
     console.log("downloadGame: ", url);
     switch (platform) {
-      case "Linux":
+      case "linux":
         switch (production_version === "prod" ? game.executables.linux?.prod?.type ?? "" : game.executables.linux.dev?.type ?? "") {
           case "zip":
             await downloadAndUnzipLinux(
@@ -144,7 +144,7 @@ export async function downloadGame(game_key: string) {
             break;
         }
         break;
-      case "Darwin":
+      case "macos":
         switch (cpu) {
           case "arm":
             switch (production_version === "prod" ? game.executables.macosArm?.prod?.type ?? "" : game.executables.macosArm?.dev?.type ?? "") {
@@ -184,7 +184,7 @@ export async function downloadGame(game_key: string) {
             break;
         }
         break;
-      case "Windows_NT":
+      case "windows":
         await downloadAndUnzipWindows(url, `/v${tymt_version}/games/${game_key}`);
         break;
     }
@@ -212,11 +212,11 @@ export async function runGame(game_key: string, serverIp?: string, autoMode?: bo
     const platform = await type();
     const cpu = await arch();
     switch (platform) {
-      case "Linux":
+      case "linux":
         exePath =
           production_version === "prod" ? Games[game_key].executables.linux?.prod?.exePath ?? "" : Games[game_key].executables.linux?.dev?.exePath ?? "";
         break;
-      case "Darwin":
+      case "macos":
         switch (cpu) {
           case "arm":
             exePath =
@@ -232,7 +232,7 @@ export async function runGame(game_key: string, serverIp?: string, autoMode?: bo
             break;
         }
         break;
-      case "Windows_NT":
+      case "windows":
         exePath =
           production_version === "prod"
             ? Games[game_key].executables.windows64?.prod?.exePath ?? ""
@@ -256,7 +256,7 @@ export async function runGame(game_key: string, serverIp?: string, autoMode?: bo
       const token = saltTokenStore.token;
       const launcherUrl = `http://localhost:${local_server_port}`;
       switch (platform) {
-        case "Linux":
+        case "linux":
           switch (production_version === "prod" ? Games[game_key].executables.linux?.prod?.type ?? "" : Games[game_key].executables.linux?.dev?.type ?? "") {
             case "appimage":
               args = [`--appimage-extract-and-run`, `--launcher_url`, launcherUrl, `--token`, token];
@@ -265,10 +265,10 @@ export async function runGame(game_key: string, serverIp?: string, autoMode?: bo
               break;
           }
           break;
-        case "Windows_NT":
+        case "windows":
           args = [`--launcher_url`, launcherUrl, `--token`, token];
           break;
-        case "Darwin":
+        case "macos":
           args = [`--launcher_url`, launcherUrl, `--token`, token];
           break;
       }
@@ -276,13 +276,13 @@ export async function runGame(game_key: string, serverIp?: string, autoMode?: bo
     }
     console.log("runGame: ", url, args);
     switch (platform) {
-      case "Linux":
+      case "linux":
         await runUrlArgs(url, args);
         break;
-      case "Windows_NT":
+      case "windows":
         await runUrlArgs(url, args);
         break;
-      case "Darwin":
+      case "macos":
         await runUrlArgs("open", ["-a", url, "--args", ...args]);
         break;
     }
@@ -315,13 +315,13 @@ export async function getGameFile(game_key: string) {
     let gameFileForOs: PlatformFileForOS;
     let gameFile: PlatformFile;
     switch (platform) {
-      case "Linux":
+      case "linux":
         gameFileForOs = game.executables.linux;
         break;
-      case "Windows_NT":
+      case "windows":
         gameFileForOs = game.executables.windows64;
         break;
-      case "Darwin":
+      case "macos":
         switch (cpu) {
           case "arm":
             gameFileForOs = game.executables.macosArm;

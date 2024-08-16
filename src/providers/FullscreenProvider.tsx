@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, ReactNode } from "react";
-import { appWindow } from "@tauri-apps/api/window";
+import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
+const appWindow = getCurrentWebviewWindow()
 
 interface FullscreenContextType {}
 

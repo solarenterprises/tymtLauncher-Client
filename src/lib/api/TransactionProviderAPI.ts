@@ -1,5 +1,5 @@
 import { emit } from "@tauri-apps/api/event";
-import { Body, fetch as tauriFetch, ResponseType } from "@tauri-apps/api/http";
+import { fetch as tauriFetch } from "@tauri-apps/plugin-http";
 
 import { tymt_backend_url } from "../../configs";
 
@@ -377,13 +377,13 @@ export default class TransactionProviderAPI {
         status: "done",
         transaction: res?.transactionId,
       };
-      const body1 = Body.json(bodyContent1);
+      const body1 = JSON.parse(JSON.stringify(bodyContent1)); /// Body.json(bodyContent1);
       const res1: any = await tauriFetch(apiURL, {
         method: "PUT",
-        timeout: 30,
+        connectTimeout: 30,
         headers: headers,
         body: body1,
-        responseType: ResponseType.JSON,
+        /// responseType: ResponseType.JSON,
       });
       console.log("done", res1);
     } else if (res?.status === "failed") {
@@ -396,13 +396,13 @@ export default class TransactionProviderAPI {
         status: "error",
         transaction: res?.message,
       };
-      const body1 = Body.json(bodyContent1);
+      const body1 = JSON.parse(JSON.stringify(bodyContent1));
       const res1: any = await tauriFetch(apiURL, {
         method: "PUT",
-        timeout: 30,
+        connectTimeout: 30,
         headers: headers,
         body: body1,
-        responseType: ResponseType.JSON,
+        /// responseType: ResponseType.JSON,
       });
       console.log("error", res1);
     }
@@ -423,7 +423,7 @@ export default class TransactionProviderAPI {
           status: status,
         };
       }
-      const body1 = Body.json(bodyContent1);
+      const body1 = JSON.parse(JSON.stringify(bodyContent1));
       const apiURL = `${tymt_backend_url}/orders/update-order/${jsonData._id}`;
       const headers: Record<string, any> = {
         "Content-Type": "application/json",
@@ -431,10 +431,10 @@ export default class TransactionProviderAPI {
       };
       await tauriFetch(apiURL, {
         method: "PUT",
-        timeout: 30,
+        connectTimeout: 30,
         headers: headers,
         body: body1,
-        responseType: ResponseType.JSON,
+        /// responseType: ResponseType.JSON,
       });
     } catch (err) {
       console.error("Failed to update tx status: ", err);

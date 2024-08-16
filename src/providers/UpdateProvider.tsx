@@ -1,20 +1,20 @@
 import { useEffect } from "react";
 import { Outlet } from "react-router-dom";
 
-import { checkUpdate, installUpdate, onUpdaterEvent } from "@tauri-apps/api/updater";
-import { relaunch } from "@tauri-apps/api/process";
+import { check } from "@tauri-apps/plugin-updater";
+import { relaunch } from "@tauri-apps/plugin-process";
 
 const UpdateProvider = () => {
   useEffect(() => {
     const initUpdateCheck = async () => {
       try {
-        const { shouldUpdate, manifest } = await checkUpdate();
-        console.log("shouldUpdate", shouldUpdate, "manifest", manifest);
+        const update = await check();
 
-        if (shouldUpdate) {
-          console.log(`Installing update ${manifest?.version}, ${manifest?.date}, ${manifest?.body}`);
-
-          await installUpdate();
+        if (update?.available) {
+          console.log(`Update to ${update.version} available! Date: ${update.date}`);
+          console.log(`Release notes: ${update.body}`);
+          await update.downloadAndInstall();
+          // requires the `process` plugin
           await relaunch();
         }
       } catch (error) {
@@ -29,9 +29,9 @@ const UpdateProvider = () => {
     let unlisten: () => void;
     const initUpdaterEvent = async () => {
       try {
-        unlisten = await onUpdaterEvent(({ error, status }) => {
-          console.log("Updater event: ", { error, status });
-        });
+        // unlisten = await onUpdaterEvent(({ error, status }) => {
+        //   console.log("Updater event: ", { error, status });
+        // });
       } catch (error) {
         console.error("Failed to initialize updater event listener:", error);
       }

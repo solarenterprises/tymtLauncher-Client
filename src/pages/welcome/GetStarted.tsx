@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
-import { appWindow } from "@tauri-apps/api/window";
+import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { Grid, Box, Stack } from "@mui/material";
 import item1 from "../../assets/account/item1.svg";
 import item2 from "../../assets/account/item2.svg";
@@ -18,9 +18,10 @@ import { AppDispatch } from "../../store";
 import { getAccount, setAccount } from "../../features/account/AccountSlice";
 import { IMachineId, accountType, loginEnum } from "../../types/accountTypes";
 import { getMachineId, setMachineId } from "../../features/account/MachineIdSlice";
-import { invoke } from "@tauri-apps/api/tauri";
+import { invoke } from "@tauri-apps/api/core";
 import { setMnemonic } from "../../features/account/MnemonicSlice";
 import { motion } from "framer-motion";
+const appWindow = getCurrentWebviewWindow()
 
 const GetStarted = () => {
   const navigate = useNavigate();

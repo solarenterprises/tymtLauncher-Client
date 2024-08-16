@@ -4,7 +4,7 @@ import { useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { ThreeDots } from "react-loader-spinner";
 import { emit } from "@tauri-apps/api/event";
-import { removeDir } from "@tauri-apps/api/fs";
+import { remove } from "@tauri-apps/plugin-fs";
 import { appDataDir } from "@tauri-apps/api/path";
 
 import { TauriEventNames } from "../../consts/TauriEventNames";
@@ -201,7 +201,7 @@ const GameOverview = () => {
                   disabled={!installed}
                   onClick={async () => {
                     setLoading(true);
-                    await removeDir((await appDataDir()) + `v${tymt_version}/games/${id}`, {
+                    await remove((await appDataDir()) + `v${tymt_version}/games/${id}`, {
                       recursive: true,
                     });
                     setNotificationStatus("success");
