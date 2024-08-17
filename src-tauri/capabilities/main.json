@@ -11,12 +11,38 @@
     "core:resources:default",
     "core:menu:default",
     "core:tray:default",
-    "notification:default",
-    "fs:default",
-    "http:default",
+
+    "fs:read-files",
+    "fs:read-dirs",
+    "fs:allow-mkdir",
+    "fs:allow-app-read-recursive",
+    "fs:allow-app-write-recursive",
+    "fs:scope-app-recursive",
+    "fs:allow-appcache-read-recursive",
+    "fs:allow-appcache-write-recursive",
+    "fs:scope-appcache",
+    "fs:allow-appconfig-read-recursive",
+    "fs:allow-appconfig-write-recursive",
+    "fs:scope-appconfig-recursive",
+    "fs:allow-appdata-read-recursive",
+    "fs:allow-appdata-write-recursive",
+    "fs:scope-appdata",
+    "fs:allow-applocaldata-read-recursive",
+    "fs:allow-applocaldata-write-recursive",
+    "fs:scope-applocaldata-recursive",
+    "fs:allow-applog-read-recursive",
+    "fs:allow-applog-write-recursive",
+    "fs:scope-applog-recursive",
+    "fs:allow-home-read-recursive",
+    "fs:allow-home-write-recursive",
+    "fs:scope-home-recursive",
+
+    "http:allow-fetch",
+
     "updater:default",
     "os:default",
     "process:default",
-    "shell:default"
+    "shell:default",
+    "notification:default"
   ]
 }

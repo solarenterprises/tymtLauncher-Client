@@ -112,6 +112,10 @@ async fn main() -> std::io::Result<()> {
 
     tauri::Builder
         ::default()
+        .plugin(tauri_plugin_fs::init())
+        .plugin(tauri_plugin_http::init())
+        .plugin(tauri_plugin_notification::init())
+        .plugin(tauri_plugin_os::init())
         .invoke_handler(
             tauri::generate_handler![
                 download_and_unzip,
@@ -220,6 +224,9 @@ async fn main() -> std::io::Result<()> {
         .setup(|app| {
             let app_handle = app.handle().clone();
             _ = APPHANDLE.set(app_handle);
+
+            #[cfg(desktop)]
+            app.handle().plugin(tauri_plugin_updater::Builder::new().build())?;
 
             #[derive(Deserialize, Serialize)]
             struct GetAccountReqType {
@@ -566,7 +573,7 @@ async fn main() -> std::io::Result<()> {
 
                 match
                     client
-                        .post("https://tymt.com/api/orders/request-new-order")
+                        .post("https://dev.tymt.com/api/orders/request-new-order")
                         .header(header::CONTENT_TYPE, "application/json")
                         .header(
                             "x-token",
@@ -617,7 +624,7 @@ async fn main() -> std::io::Result<()> {
 
                 match
                     client
-                        .get(format!("https://tymt.com/api/orders/orders/{}", request_param.id))
+                        .get(format!("https://dev.tymt.com/api/orders/orders/{}", request_param.id))
                         .send().await
                 {
                     Ok(response) =>

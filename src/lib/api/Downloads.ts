@@ -197,7 +197,7 @@ export async function downloadGame(game_key: string) {
 
 export async function isInstalled(game_key: string) {
   try {
-    await readDir(`${await appDataDir()}v${tymt_version}/games/${game_key}`);
+    await readDir(`${await appDataDir()}/v${tymt_version}/games/${game_key}`);
     return true;
   } catch (err) {
     console.error("Failed to isInstalled: ", err);
