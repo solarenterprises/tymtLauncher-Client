@@ -37,7 +37,10 @@
     "fs:allow-home-write-recursive",
     "fs:scope-home-recursive",
 
-    "http:allow-fetch",
+    {
+      "identifier": "http:default",
+      "allow": ["https://tymt.com/", "https://dev.tymt.com/", "http://dev.game.district53.io:5000/"]
+    },
 
     "updater:default",
     "os:default",
