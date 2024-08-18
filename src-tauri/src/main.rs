@@ -3,20 +3,20 @@
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 
-use actix_web::{ web, App, HttpRequest, HttpResponse, HttpServer };
 use actix_cors::Cors;
-use machineid_rs::{ Encryption, HWIDComponent, IdBuilder };
-use reqwest::{ header, Client };
-use serde::{ Deserialize, Serialize };
+use actix_web::{web, App, HttpRequest, HttpResponse, HttpServer};
+use machineid_rs::{Encryption, HWIDComponent, IdBuilder};
+use reqwest::{header, Client};
+use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::io::prelude::*;
-use std::path::{ Path, PathBuf };
+use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::sync::OnceLock;
-use std::{ fs, io };
-use tauri::{ Emitter, Listener, Manager };
+use std::{fs, io};
+use tauri::menu::{Menu, MenuItemBuilder, PredefinedMenuItem};
 use tauri::tray::TrayIconBuilder;
-use tauri::menu::{ Menu, PredefinedMenuItem, MenuItemBuilder };
+use tauri::{Emitter, Listener, Manager};
 
 // use dotenv::dotenv;
 // use std::env;
@@ -29,8 +29,11 @@ fn create_named_mutex(name: &str) -> std::io::Result<std::os::unix::net::UnixLis
     if socket_path.exists() {
         match std::os::unix::net::UnixStream::connect(socket_path) {
             Ok(mut stream) => {
-                stream.write_all("ping")?;
-                return Err(io::Error::new(io::ErrorKind::AlreadyExists, "Socket already in use"));
+                stream.write_all(b"ping")?;
+                return Err(io::Error::new(
+                    io::ErrorKind::AlreadyExists,
+                    "Socket already in use",
+                ));
             }
             Err(_) => {
                 // Previous instance did not clean up socket, remove it
@@ -43,9 +46,9 @@ fn create_named_mutex(name: &str) -> std::io::Result<std::os::unix::net::UnixLis
 
 #[cfg(target_family = "windows")]
 fn create_named_mutex(name: &str) -> std::io::Result<()> {
-    use winapi::um::synchapi::CreateMutexA;
-    use winapi::um::errhandlingapi::GetLastError;
     use winapi::shared::winerror::ERROR_ALREADY_EXISTS;
+    use winapi::um::errhandlingapi::GetLastError;
+    use winapi::um::synchapi::CreateMutexA;
 
     let mutex_name = std::ffi::CString::new(name).expect("CString::new failed");
     let handle = unsafe { CreateMutexA(std::ptr::null_mut(), 0, mutex_name.as_ptr()) };
@@ -54,7 +57,10 @@ fn create_named_mutex(name: &str) -> std::io::Result<()> {
         return Err(std::io::Error::last_os_error());
     }
     if (unsafe { GetLastError() }) == ERROR_ALREADY_EXISTS {
-        return Err(std::io::Error::new(std::io::ErrorKind::AlreadyExists, "Mutex already exists"));
+        return Err(std::io::Error::new(
+            std::io::ErrorKind::AlreadyExists,
+            "Mutex already exists",
+        ));
     }
     Ok(())
 }
@@ -110,34 +116,31 @@ async fn main() -> std::io::Result<()> {
 
     // let tray = SystemTray::new().with_menu(tray_menu);
 
-    tauri::Builder
-        ::default()
+    tauri::Builder::default()
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_http::init())
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_os::init())
-        .invoke_handler(
-            tauri::generate_handler![
-                download_and_unzip,
-                download_appimage_linux,
-                download_and_unzip_linux,
-                download_and_unzip_macos,
-                download_and_untarbz2_macos,
-                download_and_unzip_windows,
-                run_exe,
-                run_url_args,
-                run_linux,
-                run_macos,
-                run_app_macos,
-                run_command,
-                open_directory,
-                get_machine_id,
-                is_window_visible,
-                show_transaction_window,
-                hide_transaction_window,
-                set_tray_items_enabled
-            ]
-        )
+        .invoke_handler(tauri::generate_handler![
+            download_and_unzip,
+            download_appimage_linux,
+            download_and_unzip_linux,
+            download_and_unzip_macos,
+            download_and_untarbz2_macos,
+            download_and_unzip_windows,
+            run_exe,
+            run_url_args,
+            run_linux,
+            run_macos,
+            run_app_macos,
+            run_command,
+            open_directory,
+            get_machine_id,
+            is_window_visible,
+            show_transaction_window,
+            hide_transaction_window,
+            set_tray_items_enabled
+        ])
         // .on_window_event(|event| {
         //     match event.event() {
         //         tauri::WindowEvent::CloseRequested { api, .. } => {
@@ -226,7 +229,8 @@ async fn main() -> std::io::Result<()> {
             _ = APPHANDLE.set(app_handle);
 
             #[cfg(desktop)]
-            app.handle().plugin(tauri_plugin_updater::Builder::new().build())?;
+            app.handle()
+                .plugin(tauri_plugin_updater::Builder::new().build())?;
 
             #[derive(Deserialize, Serialize)]
             struct GetAccountReqType {
@@ -288,16 +292,17 @@ async fn main() -> std::io::Result<()> {
             }
 
             async fn validate_token(token: String) -> bool {
-                APPHANDLE.get()
+                APPHANDLE
+                    .get()
                     .expect("APPHANDLE is available")
                     .emit("validate-token", token)
                     .expect("failed to emit event validate-token");
 
                 let (tx, rx) = std::sync::mpsc::channel();
 
-                let response = APPHANDLE.get()
-                    .expect("APPHANDLE is available")
-                    .listen_any("res-validate-token", move |event| {
+                let response = APPHANDLE.get().expect("APPHANDLE is available").listen_any(
+                    "res-validate-token",
+                    move |event| {
                         let payload = event.payload().to_string();
                         match tx.send(payload) {
                             Ok(()) => {
@@ -307,12 +312,16 @@ async fn main() -> std::io::Result<()> {
                                 println!("Error sending message: {:?}", err);
                             }
                         }
-                    });
+                    },
+                );
 
                 match rx.recv() {
                     Ok(received) => {
                         // println!("Received: {}", received);
-                        APPHANDLE.get().expect("APPHANDLE is available").unlisten(response);
+                        APPHANDLE
+                            .get()
+                            .expect("APPHANDLE is available")
+                            .unlisten(response);
                         let res = received == "true";
                         if !res {
                             println!("Invalid token");
@@ -321,23 +330,25 @@ async fn main() -> std::io::Result<()> {
                     }
                     Err(err) => {
                         println!("Error receiving message: {:?}", err);
-                        APPHANDLE.get().expect("APPHANDLE is available").unlisten(response);
+                        APPHANDLE
+                            .get()
+                            .expect("APPHANDLE is available")
+                            .unlisten(response);
                         return false;
                     }
                 }
             }
 
             async fn validate_chain(name: String) -> bool {
-                if
-                    name != "solar" &&
-                    name != "bitcoin" &&
-                    name != "solana" &&
-                    name != "ethereum" &&
-                    name != "polygon" &&
-                    name != "binance" &&
-                    name != "avalanche" &&
-                    name != "arbitrum" &&
-                    name != "optimism"
+                if name != "solar"
+                    && name != "bitcoin"
+                    && name != "solana"
+                    && name != "ethereum"
+                    && name != "polygon"
+                    && name != "binance"
+                    && name != "avalanche"
+                    && name != "arbitrum"
+                    && name != "optimism"
                 {
                     println!("Invalid chain");
                     return false;
@@ -364,13 +375,20 @@ async fn main() -> std::io::Result<()> {
 
             async fn get_account(
                 request: HttpRequest,
-                request_param: web::Json<GetAccountReqType>
+                request_param: web::Json<GetAccountReqType>,
             ) -> HttpResponse {
                 println!("-------> POST /get-account");
 
                 let is_valid_token = validate_token(
-                    request.headers().get("x-token").unwrap().to_str().unwrap().to_string()
-                ).await;
+                    request
+                        .headers()
+                        .get("x-token")
+                        .unwrap()
+                        .to_str()
+                        .unwrap()
+                        .to_string(),
+                )
+                .await;
                 if !is_valid_token {
                     return HttpResponse::InternalServerError().body("Invalid token");
                 }
@@ -380,21 +398,21 @@ async fn main() -> std::io::Result<()> {
                     return HttpResponse::InternalServerError().body("Invalid chain");
                 }
 
-                let json_data = serde_json
-                    ::to_string(&request_param)
-                    .expect("Failed to serialize JSON data");
+                let json_data =
+                    serde_json::to_string(&request_param).expect("Failed to serialize JSON data");
                 println!("{}", json_data);
 
-                APPHANDLE.get()
+                APPHANDLE
+                    .get()
                     .expect("APPHANDLE is available")
                     .emit("POST-/get-account", json_data)
                     .expect("failed to emit event POST /get-account");
 
                 let (tx, rx) = std::sync::mpsc::channel();
 
-                let response = APPHANDLE.get()
-                    .expect("APPHANDLE is available")
-                    .listen_any("res-POST-/get-account", move |event| {
+                let response = APPHANDLE.get().expect("APPHANDLE is available").listen_any(
+                    "res-POST-/get-account",
+                    move |event| {
                         let payload = event.payload().to_string();
                         println!("!!!----> res POST /get-account");
                         println!("{}", payload);
@@ -406,17 +424,24 @@ async fn main() -> std::io::Result<()> {
                                 println!("Error sending message: {:?}", err);
                             }
                         }
-                    });
+                    },
+                );
 
                 match rx.recv() {
                     Ok(received) => {
                         // println!("Received: {}", received);
-                        APPHANDLE.get().expect("APPHANDLE is available").unlisten(response);
+                        APPHANDLE
+                            .get()
+                            .expect("APPHANDLE is available")
+                            .unlisten(response);
                         return HttpResponse::Ok().body(received);
                     }
                     Err(err) => {
                         println!("Error receiving message: {:?}", err);
-                        APPHANDLE.get().expect("APPHANDLE is available").unlisten(response);
+                        APPHANDLE
+                            .get()
+                            .expect("APPHANDLE is available")
+                            .unlisten(response);
                         return HttpResponse::InternalServerError().finish();
                     }
                 }
@@ -424,13 +449,20 @@ async fn main() -> std::io::Result<()> {
 
             async fn get_balance(
                 request: HttpRequest,
-                request_param: web::Json<GetBalanceReqType>
+                request_param: web::Json<GetBalanceReqType>,
             ) -> HttpResponse {
                 println!("-------> POST /get-balance");
 
                 let is_valid_token = validate_token(
-                    request.headers().get("x-token").unwrap().to_str().unwrap().to_string()
-                ).await;
+                    request
+                        .headers()
+                        .get("x-token")
+                        .unwrap()
+                        .to_str()
+                        .unwrap()
+                        .to_string(),
+                )
+                .await;
                 if !is_valid_token {
                     return HttpResponse::InternalServerError().body("Invalid token");
                 }
@@ -439,21 +471,21 @@ async fn main() -> std::io::Result<()> {
                 if !is_valid_chain {
                     return HttpResponse::InternalServerError().body("Invalid chain");
                 }
-                let json_data = serde_json
-                    ::to_string(&request_param)
-                    .expect("Failed to serialize JSON data");
+                let json_data =
+                    serde_json::to_string(&request_param).expect("Failed to serialize JSON data");
                 println!("{}", json_data);
 
-                APPHANDLE.get()
+                APPHANDLE
+                    .get()
                     .expect("APPHANDLE is available")
                     .emit("POST-/get-balance", json_data)
                     .expect("failed to emit event POST /get-balance");
 
                 let (tx, rx) = std::sync::mpsc::channel();
 
-                let response = APPHANDLE.get()
-                    .expect("APPHANDLE is available")
-                    .listen_any("res-POST-/get-balance", move |event| {
+                let response = APPHANDLE.get().expect("APPHANDLE is available").listen_any(
+                    "res-POST-/get-balance",
+                    move |event| {
                         let payload = event.payload().to_string();
                         println!("!!!----> res POST /get-balance");
                         println!("{}", payload);
@@ -465,16 +497,23 @@ async fn main() -> std::io::Result<()> {
                                 println!("Error sending message: {:?}", err);
                             }
                         }
-                    });
+                    },
+                );
 
                 match rx.recv() {
                     Ok(received) => {
-                        APPHANDLE.get().expect("APPHANDLE is available").unlisten(response);
+                        APPHANDLE
+                            .get()
+                            .expect("APPHANDLE is available")
+                            .unlisten(response);
                         return HttpResponse::Ok().json(received);
                     }
                     Err(err) => {
                         println!("Error receiving message: {:?}", err);
-                        APPHANDLE.get().expect("APPHANDLE is available").unlisten(response);
+                        APPHANDLE
+                            .get()
+                            .expect("APPHANDLE is available")
+                            .unlisten(response);
                         return HttpResponse::InternalServerError().finish();
                     }
                 }
@@ -485,31 +524,29 @@ async fn main() -> std::io::Result<()> {
 
                 if request_param.transfers.len() > 1 && request_param.chain != "solar" {
                     println!("Invalid batch transfer {}", request_param.chain);
-                    return HttpResponse::BadRequest().body(
-                        format!(
-                            "Batch transfer is not enabled for now on {} chain",
-                            request_param.chain
-                        )
-                    );
+                    return HttpResponse::BadRequest().body(format!(
+                        "Batch transfer is not enabled for now on {} chain",
+                        request_param.chain
+                    ));
                 }
 
                 show_transaction_window(APPHANDLE.get().unwrap().clone()).await;
 
-                let json_data = serde_json
-                    ::to_string(&request_param)
-                    .expect("Failed to serialize JSON data");
+                let json_data =
+                    serde_json::to_string(&request_param).expect("Failed to serialize JSON data");
                 println!("{}", json_data);
 
-                APPHANDLE.get()
+                APPHANDLE
+                    .get()
                     .expect("APPHANDLE is available")
                     .emit("POST-/send-transaction", json_data)
                     .expect("failed to emit event POST /send-transaction");
 
                 let (tx, rx) = std::sync::mpsc::channel();
 
-                let response = APPHANDLE.get()
-                    .expect("APPHANDLE is available")
-                    .listen_any("res-POST-/send-transaction", move |event| {
+                let response = APPHANDLE.get().expect("APPHANDLE is available").listen_any(
+                    "res-POST-/send-transaction",
+                    move |event| {
                         let payload = event.payload().to_string();
                         println!("!!!----> res POST /send-transaction");
                         println!("{}", payload);
@@ -521,17 +558,24 @@ async fn main() -> std::io::Result<()> {
                                 println!("Error sending message: {:?}", err);
                             }
                         }
-                    });
+                    },
+                );
 
                 match rx.recv() {
                     Ok(received) => {
                         // println!("Received: {}", received);
-                        APPHANDLE.get().expect("APPHANDLE is available").unlisten(response);
+                        APPHANDLE
+                            .get()
+                            .expect("APPHANDLE is available")
+                            .unlisten(response);
                         return HttpResponse::Ok().body(received);
                     }
                     Err(err) => {
                         println!("Error receiving message: {:?}", err);
-                        APPHANDLE.get().expect("APPHANDLE is available").unlisten(response);
+                        APPHANDLE
+                            .get()
+                            .expect("APPHANDLE is available")
+                            .unlisten(response);
                         return HttpResponse::InternalServerError().finish();
                     }
                 }
@@ -539,13 +583,20 @@ async fn main() -> std::io::Result<()> {
 
             async fn request_new_order(
                 request: HttpRequest,
-                request_param: web::Json<SendTransactionReqType>
+                request_param: web::Json<SendTransactionReqType>,
             ) -> HttpResponse {
                 println!("-------> POST /request-new-order");
 
                 let is_valid_token = validate_token(
-                    request.headers().get("x-token").unwrap().to_str().unwrap().to_string()
-                ).await;
+                    request
+                        .headers()
+                        .get("x-token")
+                        .unwrap()
+                        .to_str()
+                        .unwrap()
+                        .to_string(),
+                )
+                .await;
                 if !is_valid_token {
                     return HttpResponse::InternalServerError().body("Invalid token");
                 }
@@ -557,12 +608,10 @@ async fn main() -> std::io::Result<()> {
 
                 if request_param.transfers.len() > 1 && request_param.chain != "solar" {
                     println!("Invalid batch transfer {}", request_param.chain);
-                    return HttpResponse::BadRequest().body(
-                        format!(
-                            "Batch transfer is not enabled for now on {} chain",
-                            request_param.chain
-                        )
-                    );
+                    return HttpResponse::BadRequest().body(format!(
+                        "Batch transfer is not enabled for now on {} chain",
+                        request_param.chain
+                    ));
                 }
 
                 let mut param = request_param.into_inner();
@@ -571,31 +620,35 @@ async fn main() -> std::io::Result<()> {
 
                 let client = Client::new();
 
-                match
-                    client
-                        .post("https://dev.tymt.com/api/orders/request-new-order")
-                        .header(header::CONTENT_TYPE, "application/json")
-                        .header(
-                            "x-token",
-                            request.headers().get("x-token").unwrap().to_str().unwrap().to_string()
-                        )
-                        .body(serde_json::to_string(&param).unwrap())
-                        .send().await
+                match client
+                    .post("https://dev.tymt.com/api/orders/request-new-order")
+                    .header(header::CONTENT_TYPE, "application/json")
+                    .header(
+                        "x-token",
+                        request
+                            .headers()
+                            .get("x-token")
+                            .unwrap()
+                            .to_str()
+                            .unwrap()
+                            .to_string(),
+                    )
+                    .body(serde_json::to_string(&param).unwrap())
+                    .send()
+                    .await
                 {
-                    Ok(response) =>
-                        match response.text().await {
-                            Ok(json) => {
-                                println!("!!!----> POST /request-new-order");
-                                println!("{}", json);
-                                HttpResponse::Ok().body(json)
-                            }
-                            Err(err) => {
-                                eprintln!("Failed to parse response as JSON: {:?}", err);
-                                HttpResponse::InternalServerError().body(
-                                    "Failed to parse response as JSON"
-                                )
-                            }
+                    Ok(response) => match response.text().await {
+                        Ok(json) => {
+                            println!("!!!----> POST /request-new-order");
+                            println!("{}", json);
+                            HttpResponse::Ok().body(json)
                         }
+                        Err(err) => {
+                            eprintln!("Failed to parse response as JSON: {:?}", err);
+                            HttpResponse::InternalServerError()
+                                .body("Failed to parse response as JSON")
+                        }
+                    },
                     Err(err) => {
                         eprintln!("Failed to send request: {:?}", err);
                         HttpResponse::InternalServerError().body("Failed to send request")
@@ -609,43 +662,48 @@ async fn main() -> std::io::Result<()> {
             }
             async fn execute_order(
                 request: HttpRequest,
-                request_param: web::Json<ExecuteOrderReqType>
+                request_param: web::Json<ExecuteOrderReqType>,
             ) -> HttpResponse {
                 println!("-------> POST /execute-order");
 
                 let is_valid_token = validate_token(
-                    request.headers().get("x-token").unwrap().to_str().unwrap().to_string()
-                ).await;
+                    request
+                        .headers()
+                        .get("x-token")
+                        .unwrap()
+                        .to_str()
+                        .unwrap()
+                        .to_string(),
+                )
+                .await;
                 if !is_valid_token {
                     return HttpResponse::InternalServerError().body("Invalid token");
                 }
 
                 let client = Client::new();
 
-                match
-                    client
-                        .get(format!("https://dev.tymt.com/api/orders/orders/{}", request_param.id))
-                        .send().await
+                match client
+                    .get(format!(
+                        "https://dev.tymt.com/api/orders/orders/{}",
+                        request_param.id
+                    ))
+                    .send()
+                    .await
                 {
-                    Ok(response) =>
-                        match response.text().await {
-                            Ok(json) => {
-                                println!("{}", json);
-                                let parsed_struct: GetOrderResType = serde_json
-                                    ::from_str(&json)
-                                    .unwrap();
-                                let json_struct: web::Json<GetOrderResType> = web::Json(
-                                    parsed_struct
-                                );
-                                send_transaction(json_struct.result.data.clone()).await
-                            }
-                            Err(err) => {
-                                eprintln!("Failed to parse response as JSON: {:?}", err);
-                                HttpResponse::InternalServerError().body(
-                                    "Failed to parse response as JSON"
-                                )
-                            }
+                    Ok(response) => match response.text().await {
+                        Ok(json) => {
+                            println!("{}", json);
+                            let parsed_struct: GetOrderResType =
+                                serde_json::from_str(&json).unwrap();
+                            let json_struct: web::Json<GetOrderResType> = web::Json(parsed_struct);
+                            send_transaction(json_struct.result.data.clone()).await
                         }
+                        Err(err) => {
+                            eprintln!("Failed to parse response as JSON: {:?}", err);
+                            HttpResponse::InternalServerError()
+                                .body("Failed to parse response as JSON")
+                        }
+                    },
                     Err(err) => {
                         eprintln!("Failed to send request: {:?}", err);
                         HttpResponse::InternalServerError().body("Failed to send request")
@@ -660,13 +718,20 @@ async fn main() -> std::io::Result<()> {
             }
             async fn sign_message(
                 request: HttpRequest,
-                request_param: web::Json<SignMessageReqType>
+                request_param: web::Json<SignMessageReqType>,
             ) -> HttpResponse {
                 println!("-------> POST /sign-message");
 
                 let is_valid_token = validate_token(
-                    request.headers().get("x-token").unwrap().to_str().unwrap().to_string()
-                ).await;
+                    request
+                        .headers()
+                        .get("x-token")
+                        .unwrap()
+                        .to_str()
+                        .unwrap()
+                        .to_string(),
+                )
+                .await;
                 if !is_valid_token {
                     return HttpResponse::InternalServerError().body("Invalid token");
                 }
@@ -676,21 +741,21 @@ async fn main() -> std::io::Result<()> {
                     return HttpResponse::InternalServerError().body("Invalid chain");
                 }
 
-                let json_data = serde_json
-                    ::to_string(&request_param)
-                    .expect("Failed to serialize JSON data");
+                let json_data =
+                    serde_json::to_string(&request_param).expect("Failed to serialize JSON data");
                 println!("{}", json_data);
 
-                APPHANDLE.get()
+                APPHANDLE
+                    .get()
                     .expect("APPHANDLE is available")
                     .emit("POST-/sign-message", json_data)
                     .expect("failed to emit event POST /sign-message");
 
                 let (tx, rx) = std::sync::mpsc::channel();
 
-                let response = APPHANDLE.get()
-                    .expect("APPHANDLE is available")
-                    .listen_any("res-POST-/sign-message", move |event| {
+                let response = APPHANDLE.get().expect("APPHANDLE is available").listen_any(
+                    "res-POST-/sign-message",
+                    move |event| {
                         let payload = event.payload().to_string();
                         println!("!!!----> res POST /sign-message");
                         println!("{}", payload);
@@ -702,12 +767,16 @@ async fn main() -> std::io::Result<()> {
                                 println!("Error sending message: {:?}", err);
                             }
                         }
-                    });
+                    },
+                );
 
                 match rx.recv() {
                     Ok(received) => {
                         // println!("Received: {}", received);
-                        APPHANDLE.get().expect("APPHANDLE is available").unlisten(response);
+                        APPHANDLE
+                            .get()
+                            .expect("APPHANDLE is available")
+                            .unlisten(response);
                         if received == "" {
                             return HttpResponse::InternalServerError().finish();
                         } else {
@@ -716,7 +785,10 @@ async fn main() -> std::io::Result<()> {
                     }
                     Err(err) => {
                         println!("Error receiving message: {:?}", err);
-                        APPHANDLE.get().expect("APPHANDLE is available").unlisten(response);
+                        APPHANDLE
+                            .get()
+                            .expect("APPHANDLE is available")
+                            .unlisten(response);
                         return HttpResponse::InternalServerError().finish();
                     }
                 }
@@ -730,32 +802,39 @@ async fn main() -> std::io::Result<()> {
             }
             async fn verify_message(
                 request: HttpRequest,
-                request_param: web::Json<VerifyMessageReqType>
+                request_param: web::Json<VerifyMessageReqType>,
             ) -> HttpResponse {
                 println!("-------> POST /verify-message");
 
                 let is_valid_token = validate_token(
-                    request.headers().get("x-token").unwrap().to_str().unwrap().to_string()
-                ).await;
+                    request
+                        .headers()
+                        .get("x-token")
+                        .unwrap()
+                        .to_str()
+                        .unwrap()
+                        .to_string(),
+                )
+                .await;
                 if !is_valid_token {
                     return HttpResponse::InternalServerError().body("Invalid token");
                 }
 
-                let json_data = serde_json
-                    ::to_string(&request_param)
-                    .expect("Failed to serialize JSON data");
+                let json_data =
+                    serde_json::to_string(&request_param).expect("Failed to serialize JSON data");
                 println!("{}", json_data);
 
-                APPHANDLE.get()
+                APPHANDLE
+                    .get()
                     .expect("APPHANDLE is available")
                     .emit("POST-/verify-message", json_data)
                     .expect("failed to emit event POST /verify-message");
 
                 let (tx, rx) = std::sync::mpsc::channel();
 
-                let response = APPHANDLE.get()
-                    .expect("APPHANDLE is available")
-                    .listen_any("res-POST-/verify-message", move |event| {
+                let response = APPHANDLE.get().expect("APPHANDLE is available").listen_any(
+                    "res-POST-/verify-message",
+                    move |event| {
                         let payload = event.payload().to_string();
                         println!("!!!----> res POST /verify-message");
                         println!("{}", payload);
@@ -767,17 +846,24 @@ async fn main() -> std::io::Result<()> {
                                 println!("Error sending message: {:?}", err);
                             }
                         }
-                    });
+                    },
+                );
 
                 match rx.recv() {
                     Ok(received) => {
                         // println!("Received: {}", received);
-                        APPHANDLE.get().expect("APPHANDLE is available").unlisten(response);
+                        APPHANDLE
+                            .get()
+                            .expect("APPHANDLE is available")
+                            .unlisten(response);
                         return HttpResponse::Ok().body(received);
                     }
                     Err(err) => {
                         println!("Error receiving message: {:?}", err);
-                        APPHANDLE.get().expect("APPHANDLE is available").unlisten(response);
+                        APPHANDLE
+                            .get()
+                            .expect("APPHANDLE is available")
+                            .unlisten(response);
                         return HttpResponse::InternalServerError().finish();
                     }
                 }
@@ -824,32 +910,39 @@ async fn main() -> std::io::Result<()> {
 
             async fn send_contract(
                 request: HttpRequest,
-                request_param: web::Json<SendContractReqType>
+                request_param: web::Json<SendContractReqType>,
             ) -> HttpResponse {
                 println!("-------> POST /send-contract");
 
                 let is_valid_token = validate_token(
-                    request.headers().get("x-token").unwrap().to_str().unwrap().to_string()
-                ).await;
+                    request
+                        .headers()
+                        .get("x-token")
+                        .unwrap()
+                        .to_str()
+                        .unwrap()
+                        .to_string(),
+                )
+                .await;
                 if !is_valid_token {
                     return HttpResponse::InternalServerError().body("Invalid token");
                 }
 
-                let json_data = serde_json
-                    ::to_string(&request_param)
-                    .expect("Failed to serialize JSON data");
+                let json_data =
+                    serde_json::to_string(&request_param).expect("Failed to serialize JSON data");
                 println!("{}", json_data);
 
-                APPHANDLE.get()
+                APPHANDLE
+                    .get()
                     .expect("APPHANDLE is available")
                     .emit("POST-/send-contract", json_data)
                     .expect("failed to emit event POST /send-contract");
 
                 let (tx, rx) = std::sync::mpsc::channel();
 
-                let response = APPHANDLE.get()
-                    .expect("APPHANDLE is available")
-                    .listen_any("res-POST-/send-contract", move |event| {
+                let response = APPHANDLE.get().expect("APPHANDLE is available").listen_any(
+                    "res-POST-/send-contract",
+                    move |event| {
                         let payload = event.payload().to_string();
                         println!("!!!----> res POST /send-contract");
                         println!("{}", payload);
@@ -861,17 +954,24 @@ async fn main() -> std::io::Result<()> {
                                 println!("Error sending message: {:?}", err);
                             }
                         }
-                    });
+                    },
+                );
 
                 match rx.recv() {
                     Ok(received) => {
                         // println!("Received: {}", received);
-                        APPHANDLE.get().expect("APPHANDLE is available").unlisten(response);
+                        APPHANDLE
+                            .get()
+                            .expect("APPHANDLE is available")
+                            .unlisten(response);
                         return HttpResponse::Ok().body(received);
                     }
                     Err(err) => {
                         println!("Error receiving message: {:?}", err);
-                        APPHANDLE.get().expect("APPHANDLE is available").unlisten(response);
+                        APPHANDLE
+                            .get()
+                            .expect("APPHANDLE is available")
+                            .unlisten(response);
                         return HttpResponse::InternalServerError().finish();
                     }
                 }
@@ -890,7 +990,10 @@ async fn main() -> std::io::Result<()> {
                 HttpServer::new(move || {
                     App::new()
                         .wrap(
-                            Cors::default().allow_any_origin().allow_any_method().allow_any_header()
+                            Cors::default()
+                                .allow_any_origin()
+                                .allow_any_method()
+                                .allow_any_header(),
                         )
                         .route("/get-account", web::post().to(get_account))
                         .route("/get-balance", web::post().to(get_balance))
@@ -902,9 +1005,9 @@ async fn main() -> std::io::Result<()> {
                         .route("/verify-message", web::post().to(verify_message))
                         .route("/send-contract", web::post().to(send_contract))
                 })
-                    .bind(("127.0.0.1", 3331))
-                    .expect("Failed to bind address")
-                    .run()
+                .bind(("127.0.0.1", 3331))
+                .expect("Failed to bind address")
+                .run(),
             );
 
             Ok(())
@@ -934,7 +1037,7 @@ async fn download_appimage_linux(
     app_handle: tauri::AppHandle,
     url: String,
     target: String,
-    authorization: Option<String>
+    authorization: Option<String>,
 ) -> bool {
     let app_dir = app_handle
         .path()
@@ -951,7 +1054,8 @@ async fn download_appimage_linux(
             .get(&url)
             .header(header::CONTENT_TYPE, "application/json")
             .header(header::AUTHORIZATION, format!("{}", auth))
-            .send().await
+            .send()
+            .await
             .unwrap()
     } else {
         client.get(&url).send().await.unwrap()
@@ -1041,7 +1145,7 @@ async fn download_and_unzip(app_handle: tauri::AppHandle, url: String, target: S
     println!("{}", final_location);
     let _ = zip_extensions::read::zip_extract(
         &PathBuf::from(path),
-        &PathBuf::from(final_location.clone())
+        &PathBuf::from(final_location.clone()),
     );
     println!("checking for folders");
 
@@ -1049,7 +1153,10 @@ async fn download_and_unzip(app_handle: tauri::AppHandle, url: String, target: S
     println!("found {} folders", count);
     if count == 1 {
         for file in fs::read_dir(final_location.clone()).unwrap() {
-            if fs::metadata(file.as_ref().unwrap().path()).unwrap().is_dir() {
+            if fs::metadata(file.as_ref().unwrap().path())
+                .unwrap()
+                .is_dir()
+            {
                 let _ = copy_dir_all(file.as_ref().unwrap().path(), final_location.clone());
                 fs::remove_dir_all(file.as_ref().unwrap().path()).unwrap();
             }
@@ -1069,7 +1176,7 @@ async fn download_and_unzip_windows(
     app_handle: tauri::AppHandle,
     url: String,
     target: String,
-    authorization: Option<String>
+    authorization: Option<String>,
 ) -> bool {
     println!("{}", url);
     println!("{}", target);
@@ -1089,7 +1196,8 @@ async fn download_and_unzip_windows(
             .get(&url)
             .header(header::CONTENT_TYPE, "application/json")
             .header(header::AUTHORIZATION, format!("{}", auth))
-            .send().await
+            .send()
+            .await
             .unwrap()
     } else {
         client.get(&url).send().await.unwrap()
@@ -1121,13 +1229,19 @@ async fn download_and_unzip_windows(
 
     for i in 0..100 {
         let start = i * part_size;
-        let end = if i == 99 { total_size } else { start + part_size };
+        let end = if i == 99 {
+            total_size
+        } else {
+            start + part_size
+        };
         let part = &content[start..end];
 
         file.write_all(part).expect("Failed to write part to file");
         let progress = (((i + 1) as f64) / 100.0) * 100.0; // i + 1 to make progress go from ~1% to 100%
         println!("Downloading {} %", progress);
-        app_handle.emit("download-progress", &progress).expect("Failed to emit progress event");
+        app_handle
+            .emit("download-progress", &progress)
+            .expect("Failed to emit progress event");
     }
 
     let zip_file1 = File::open(&path).unwrap();
@@ -1138,7 +1252,7 @@ async fn download_and_unzip_windows(
     println!("{}", final_location);
     let _ = zip_extensions::read::zip_extract(
         &PathBuf::from(path),
-        &PathBuf::from(final_location.clone())
+        &PathBuf::from(final_location.clone()),
     );
     println!("checking for folders");
 
@@ -1146,7 +1260,10 @@ async fn download_and_unzip_windows(
     println!("found {} folders", count);
     if count == 1 {
         for file in fs::read_dir(final_location.clone()).unwrap() {
-            if fs::metadata(file.as_ref().unwrap().path()).unwrap().is_dir() {
+            if fs::metadata(file.as_ref().unwrap().path())
+                .unwrap()
+                .is_dir()
+            {
                 let _ = copy_dir_all(file.as_ref().unwrap().path(), final_location.clone());
                 fs::remove_dir_all(file.as_ref().unwrap().path()).unwrap();
             }
@@ -1166,7 +1283,7 @@ async fn download_and_unzip_linux(
     app_handle: tauri::AppHandle,
     url: String,
     target: String,
-    exeLocation: String
+    exeLocation: String,
 ) -> bool {
     println!("{}", url);
     println!("{}", target);
@@ -1208,7 +1325,11 @@ async fn download_and_unzip_linux(
 
     for i in 0..100 {
         let start = i * part_size;
-        let end = if i == 99 { total_size } else { start + part_size };
+        let end = if i == 99 {
+            total_size
+        } else {
+            start + part_size
+        };
         let part = &content[start..end];
 
         file.write_all(part).expect("Failed to write part to file");
@@ -1216,7 +1337,9 @@ async fn download_and_unzip_linux(
         let progress = (((i + 1) as f64) / 100.0) * 100.0; // i + 1 to make progress go from ~1% to 100%
 
         println!("Downloading {} %", progress);
-        app_handle.emit("download-progress", &progress).expect("Failed to emit progress event");
+        app_handle
+            .emit("download-progress", &progress)
+            .expect("Failed to emit progress event");
     }
 
     let zip_file1 = File::open(&path).unwrap();
@@ -1227,7 +1350,7 @@ async fn download_and_unzip_linux(
     println!("{}", final_location);
     let _ = zip_extensions::read::zip_extract(
         &PathBuf::from(path),
-        &PathBuf::from(final_location.clone())
+        &PathBuf::from(final_location.clone()),
     );
     println!("checking for folders");
 
@@ -1235,7 +1358,10 @@ async fn download_and_unzip_linux(
     println!("found {} folders", count);
     if count == 1 {
         for file in fs::read_dir(final_location.clone()).unwrap() {
-            if fs::metadata(file.as_ref().unwrap().path()).unwrap().is_dir() {
+            if fs::metadata(file.as_ref().unwrap().path())
+                .unwrap()
+                .is_dir()
+            {
                 let _ = copy_dir_all(file.as_ref().unwrap().path(), final_location.clone());
                 fs::remove_dir_all(file.as_ref().unwrap().path()).unwrap();
             }
@@ -1258,7 +1384,7 @@ async fn download_and_unzip_macos(
     url: String,
     target: String,
     exeLocation: String,
-    authorization: Option<String>
+    authorization: Option<String>,
 ) -> bool {
     println!("{}", url);
     println!("{}", target);
@@ -1278,7 +1404,8 @@ async fn download_and_unzip_macos(
             .get(&url)
             .header(header::CONTENT_TYPE, "application/json")
             .header(header::AUTHORIZATION, format!("{}", auth))
-            .send().await
+            .send()
+            .await
             .unwrap()
     } else {
         client.get(&url).send().await.unwrap()
@@ -1333,7 +1460,7 @@ async fn download_and_untarbz2_macos(
     app_handle: tauri::AppHandle,
     url: String,
     target: String,
-    exeLocation: String
+    exeLocation: String,
 ) -> bool {
     println!("{}", url);
     println!("{}", target);
@@ -1398,7 +1525,10 @@ async fn download_and_untarbz2_macos(
     let exePath = app_dir.to_string() + &target + &exeLocation;
 
     // Make it executable
-    Command::new("chmod").args(["+x", &exePath]).output().expect("failed to make it executable");
+    Command::new("chmod")
+        .args(["+x", &exePath])
+        .output()
+        .expect("failed to make it executable");
 
     println!("done");
     return true;
@@ -1466,7 +1596,11 @@ fn run_url_args(url: String, args: Vec<String>) {
         println!("{}", arg);
     }
 
-    let path = if url == "open" { Path::new(&args[1]) } else { Path::new(&url) };
+    let path = if url == "open" {
+        Path::new(&args[1])
+    } else {
+        Path::new(&url)
+    };
     let working_directory = match path.parent() {
         Some(dir) => dir,
         None => {
@@ -1501,17 +1635,24 @@ fn run_url_args(url: String, args: Vec<String>) {
 #[tauri::command]
 fn run_linux(url: String) {
     // Use std::process::Command to run your .exe file
-    Command::new(url).spawn().expect("failed to execute process");
+    Command::new(url)
+        .spawn()
+        .expect("failed to execute process");
 }
 
 #[tauri::command]
 fn run_macos(url: String) {
-    Command::new(url).spawn().expect("failed to execute process");
+    Command::new(url)
+        .spawn()
+        .expect("failed to execute process");
 }
 
 #[tauri::command]
 fn run_app_macos(url: String) {
-    Command::new("open").args([url]).spawn().expect("failed to execute process");
+    Command::new("open")
+        .args([url])
+        .spawn()
+        .expect("failed to execute process");
 }
 
 #[tauri::command]
@@ -1535,7 +1676,9 @@ fn open_directory(path: &str) {
 fn get_machine_id() -> Result<String, String> {
     let mut builder = IdBuilder::new(Encryption::SHA256);
     builder.add_component(HWIDComponent::SystemID);
-    let hwid = builder.build("tymtLauncher").map_err(|err| err.to_string())?;
+    let hwid = builder
+        .build("tymtLauncher")
+        .map_err(|err| err.to_string())?;
 
     Ok(hwid)
 }
@@ -1571,7 +1714,7 @@ async fn show_transaction_window(app_handle: tauri::AppHandle) {
         "about".to_string(),
         "signout".to_string(),
         "quit".to_string(),
-        "disable_notifications".to_string()
+        "disable_notifications".to_string(),
     ];
     let enabled = false;
     set_tray_items_enabled(app_handle, item_ids, enabled).await
@@ -1603,7 +1746,7 @@ async fn hide_transaction_window(app_handle: tauri::AppHandle) {
         "about".to_string(),
         "signout".to_string(),
         "quit".to_string(),
-        "disable_notifications".to_string()
+        "disable_notifications".to_string(),
     ];
     let enabled = true;
     set_tray_items_enabled(app_handle, item_ids, enabled).await
@@ -1613,7 +1756,7 @@ async fn hide_transaction_window(app_handle: tauri::AppHandle) {
 async fn set_tray_items_enabled(
     app_handle: tauri::AppHandle,
     item_ids: Vec<String>,
-    enabled: bool
+    enabled: bool,
 ) {
     // let tray_handle = app_handle.tray_handle();
     // for item_id in item_ids {
