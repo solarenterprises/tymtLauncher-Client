@@ -377,7 +377,7 @@ export const getAddressesFromMnemonic = async (payload: MnemonicPayload) => {
 
 export const refreshChainBalance = async ({ _multiWalletStore, _chain }: { _multiWalletStore: multiWalletType; _chain: string }) => {
   try {
-    const currentChain: IChain = _multiWalletStore[Object.keys(_multiWalletStore).find((rowKey) => _multiWalletStore[rowKey].chain.name === _chain ?? "Solar")];
+    const currentChain: IChain = _multiWalletStore[Object.keys(_multiWalletStore).find((rowKey) => _multiWalletStore[rowKey].chain.name === _chain)];
     const currentAddr = currentChain.chain.wallet;
     const currentTokens = currentChain.tokens;
 

@@ -169,11 +169,11 @@ $Main-Red: #ef4444;
     height: 40px;
     border-radius: 52px;
     background: #ef4444;
+    transition: opacity 0.5s ease, transform 0.1s ease;
+    transform: scale(1);
     &:hover {
       background: #992727;
     }
-    transition: opacity 0.5s ease, transform 0.1s ease;
-    transform: scale(1);
     &:active {
       transform: scale(0.9);
     }
@@ -188,11 +188,11 @@ $Main-Red: #ef4444;
     height: 40px;
     border-radius: 52px;
     background: #52e1f2;
+    transition: opacity 0.5s ease, transform 0.1s ease;
+    transform: scale(1);
     &:hover {
       background: #0d99ff;
     }
-    transition: opacity 0.5s ease, transform 0.1s ease;
-    transform: scale(1);
     &:active {
       transform: scale(0.9);
     }
