@@ -1,11 +1,23 @@
-import { Grid, Box } from "@mui/material";
+import { useSelector } from "react-redux";
+
+import "swiper/css";
+import "swiper/css/pagination";
+import { Swiper, SwiperSlide } from "swiper/react";
+
+import { Grid, Box, Stack } from "@mui/material";
 import { useTranslation } from "react-i18next";
-import foxhead from "../../assets/main/foxhead-comingsoon.png";
+// import foxhead from "../../assets/main/foxhead-comingsoon.png";
+
+import { getComingGameList } from "../../features/store/ComingGameListSlice";
+
+import { IGameList } from "../../types/GameTypes";
 
 import ellipse from "../../assets/main/ellipse.svg";
+import ComingGameCard from "./ComingGameCard";
 
 const ComingSoonD53 = () => {
   const { t } = useTranslation();
+  const comingGameList: IGameList = useSelector(getComingGameList);
 
   return (
     <Grid item xs={12} container sx={{ marginTop: "80px" }}>
@@ -21,17 +33,31 @@ const ComingSoonD53 = () => {
           }}
         />
         <Grid xs={12} container sx={{ justifyContent: "space-between", alignItems: "center" }}>
-          <Box className={"fs-38-bold"} color={"white"} textTransform={"none"}>
+          <Box className={"fs-40-bold"} color={"white"} textTransform={"none"}>
             {t("hom-11_coming-soon")}
           </Box>
         </Grid>
 
-        <Box sx={{ justifyContent: "center", display: "flex", marginTop: "32px" }}>
+        {/* <Box sx={{ justifyContent: "center", display: "flex", marginTop: "32px" }}>
           <img src={foxhead} width={"220px"} />
         </Box>
         <Box className={"fs-24-regular white"} textAlign={"center"} marginBottom={"30px"}>
           {t("hom-19_more-games")}
-        </Box>
+        </Box> */}
+        <Swiper
+          spaceBetween={15}
+          slidesPerView={"auto"}
+          loop={false}
+          style={{
+            marginTop: "32px",
+          }}
+        >
+          {comingGameList.games.map((game) => (
+            <SwiperSlide style={{ width: "300px" }}>
+              <ComingGameCard key={game._id} game={game} />
+            </SwiperSlide>
+          ))}
+        </Swiper>
       </Box>
     </Grid>
   );

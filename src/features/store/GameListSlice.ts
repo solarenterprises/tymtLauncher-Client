@@ -39,7 +39,7 @@ const gameListSlice = createSlice({
       })
       .addCase(fetchGameListAsync.fulfilled, (state, action: PayloadAction<any>) => {
         if (!action.payload) {
-          console.error("Failed to fetchUnreadMessageListAsync: action.payload undefined!");
+          console.error("Failed to fetchGameListAsync: action.payload undefined!");
           return;
         }
         state.data = action.payload;
@@ -49,7 +49,7 @@ const gameListSlice = createSlice({
   },
 });
 
-export const getDownloadStatus = (state: any) => state.gameList.data;
+export const getGameList = (state: any) => state.gameList.data;
 
 export default gameListSlice.reducer;
 

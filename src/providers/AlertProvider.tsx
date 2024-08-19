@@ -15,17 +15,18 @@ import { refreshCurrencyAsync } from "../features/wallet/CurrencySlice";
 import { ISKey, setSKeyList } from "../features/chat/SKeyListSlice";
 import { fetchMutedListAsync } from "../features/chat/MutedListSlice";
 import { getRsa } from "../features/chat/RsaSlice";
+import { fetchMyInfoAsync } from "../features/account/MyInfoSlice";
+import { fetchUnreadMessageListAsync } from "../features/chat/UnreadMessageListSlice";
+import { fetchAlertListAsync } from "../features/alert/AlertListSlice";
+import { fetchAdminListAsync } from "../features/chat/AdminListSlice";
+import { fetchGameListAsync } from "../features/store/GameListSlice";
+import { fetchComingGameListAsync } from "../features/store/ComingGameListSlice";
 import { rsaDecrypt } from "../features/chat/RsaApi";
 
 import { accountType } from "../types/accountTypes";
 import { IChain, multiWalletType } from "../types/walletTypes";
 import { IChatroom, IParticipant } from "../types/ChatroomAPITypes";
 import { IRsa } from "../types/chatTypes";
-import { fetchMyInfoAsync } from "../features/account/MyInfoSlice";
-import { fetchUnreadMessageListAsync } from "../features/chat/UnreadMessageListSlice";
-import { fetchAlertListAsync } from "../features/alert/AlertListSlice";
-import { fetchAdminListAsync } from "../features/chat/AdminListSlice";
-import { fetchGameListAsync } from "../features/store/GameListSlice";
 
 const AlertProvider = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -44,6 +45,7 @@ const AlertProvider = () => {
       // Fetch all data
       dispatch(fetchMyInfoAsync(accountStore.uid));
       dispatch(fetchGameListAsync());
+      dispatch(fetchComingGameListAsync());
       dispatch(fetchAdminListAsync(["admin"]));
       dispatch(fetchAlertListAsync(accountStore.uid));
       dispatch(fetchContactListAsync());
