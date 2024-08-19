@@ -1,23 +1,38 @@
+import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 
 import "swiper/css";
 import "swiper/css/pagination";
 import { Swiper, SwiperSlide } from "swiper/react";
 
-import { Grid, Box, Stack } from "@mui/material";
-import { useTranslation } from "react-i18next";
+import { Grid, Box } from "@mui/material";
 // import foxhead from "../../assets/main/foxhead-comingsoon.png";
+
+import ComingGameCard from "./ComingGameCard";
+import ComingGameSwiperButtonGroup from "./ComingGameSwiperButtonGroup";
 
 import { getComingGameList } from "../../features/store/ComingGameListSlice";
 
 import { IGameList } from "../../types/GameTypes";
 
 import ellipse from "../../assets/main/ellipse.svg";
-import ComingGameCard from "./ComingGameCard";
+import { useCallback, useRef } from "react";
 
 const ComingSoonD53 = () => {
   const { t } = useTranslation();
   const comingGameList: IGameList = useSelector(getComingGameList);
+
+  const swiperRef = useRef<any | null>(null);
+
+  const handleNextSlide = useCallback(() => {
+    if (!swiperRef.current) return;
+    swiperRef.current.swiper.slideNext();
+  }, []);
+
+  const handlePrevSlide = useCallback(() => {
+    if (!swiperRef.current) return;
+    swiperRef.current.swiper.slidePrev();
+  }, []);
 
   return (
     <Grid item xs={12} container sx={{ marginTop: "80px" }}>
@@ -45,6 +60,7 @@ const ComingSoonD53 = () => {
           {t("hom-19_more-games")}
         </Box> */}
         <Swiper
+          ref={swiperRef}
           spaceBetween={15}
           slidesPerView={"auto"}
           loop={false}
@@ -58,6 +74,7 @@ const ComingSoonD53 = () => {
             </SwiperSlide>
           ))}
         </Swiper>
+        <ComingGameSwiperButtonGroup handleNextSlide={handleNextSlide} handlePrevSlide={handlePrevSlide} />
       </Box>
     </Grid>
   );
