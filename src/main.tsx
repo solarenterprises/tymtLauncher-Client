@@ -40,6 +40,7 @@ import Chatroom from "./pages/chat/Chatroom";
 import Store from "./pages/main/Store";
 import Library from "./pages/main/Library";
 import GameOverview from "./components/store/Gameoverview";
+import ComingGameOverview from "./components/store/ComingGameOverview";
 
 import Wallet from "./pages/wallet/index";
 import WalletSendSXP from "./pages/wallet/WalletSendSXP";
@@ -128,6 +129,7 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
                               <Route path="/home" element={<Homepage />} />
                               <Route path="/store" element={<Store />} />
                               <Route path="/store/:gameid" element={<GameOverview />} />
+                              <Route path="/coming/:gameid" element={<ComingGameOverview />} />
                               <Route path="/library" element={<Library />} />
                             </Route>
                             <Route path="/" element={<Layoutchat />}>

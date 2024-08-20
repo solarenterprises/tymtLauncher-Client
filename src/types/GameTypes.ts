@@ -21,7 +21,7 @@ export interface IGame {
   imageUrl: string;
   launch_epic: boolean;
   link: string;
-  projetMeta: {
+  projectMeta: {
     id: number;
     name: string;
     tags: string[];

@@ -1,12 +1,14 @@
 import { Box } from "@mui/material";
 
 import { IGame } from "../../types/GameTypes";
+import { useNavigate } from "react-router-dom";
 
 export interface IPropsComingGameCard {
   game: IGame;
 }
 
 const ComingGameCard = ({ game }: IPropsComingGameCard) => {
+  const navigate = useNavigate();
   return (
     <Box
       sx={{
@@ -30,6 +32,9 @@ const ComingGameCard = ({ game }: IPropsComingGameCard) => {
         "&:active": {
           background: "var(--bg-stroke-icon-button-bg-active-30, rgba(128, 128, 128, 0.3))",
         },
+      }}
+      onClick={() => {
+        navigate(`/coming/${game._id}`);
       }}
     >
       <Box
