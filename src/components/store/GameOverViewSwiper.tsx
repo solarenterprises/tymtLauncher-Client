@@ -3,6 +3,7 @@ import { Swiper, SwiperSlide } from "swiper/react";
 
 import { IGame } from "../../types/GameTypes";
 import { Box } from "@mui/material";
+import { useEffect } from "react";
 
 export interface IPropsGameOverViewSwiper {
   game: IGame;
@@ -13,6 +14,12 @@ export interface IPropsGameOverViewSwiper {
 }
 
 const GameOverViewSwiper = ({ game, currentImageIndex, setSrc, setType, setCurrentImageIndex }: IPropsGameOverViewSwiper) => {
+  useEffect(() => {
+    setCurrentImageIndex(0);
+    setSrc(game?.projectMeta?.gallery[0]?.src);
+    setType(game?.projectMeta?.gallery[0]?.type);
+  }, [game]);
+
   return (
     <Swiper spaceBetween={15} slidesPerView={"auto"} loop={false}>
       {game?.projectMeta?.gallery?.map((item, index) => (
