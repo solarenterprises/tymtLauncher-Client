@@ -13,7 +13,7 @@ const GameOverViewSystemRequirement = ({ game }: IPropsGameOverViewSystemRequire
   return (
     game?.projectMeta?.system_requirements && (
       <Box marginTop={"12px"} borderBottom={"1px solid rgba(255, 255, 255, 0.10)"} paddingBottom={"16px"}>
-        <Box className={"fs-14-regular gray"}>{t("sto-38_system_requirement")}</Box>
+        <Box className={"fs-14-regular gray"}>{t("sto-38_system-requirement")}</Box>
         <Stack mt={"16px"}>
           {game?.projectMeta?.system_requirements?.cpu && <Box className={"fs-14-regular white"}>{`CPU: ${game.projectMeta.system_requirements.cpu}`}</Box>}
           {game?.projectMeta?.system_requirements?.gpu && <Box className={"fs-14-regular white"}>{`GPU: ${game.projectMeta.system_requirements.gpu}`}</Box>}

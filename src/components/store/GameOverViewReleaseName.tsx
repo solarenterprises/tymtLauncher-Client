@@ -17,7 +17,7 @@ const GameOverViewReleaseName = ({ game }: IPropsGameOverViewReleaseName) => {
   return (
     game?.releaseMeta?.name && (
       <Box className={classes.box_gameoption}>
-        <Box className={"fs-14-regular gray"}>{t("sto-37_release_version")}</Box>
+        <Box className={"fs-14-regular gray"}>{t("sto-37_release-version")}</Box>
         <Box className={"fs-14-regular white"}>{game?.releaseMeta?.name}</Box>
       </Box>
     )

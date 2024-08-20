@@ -10,6 +10,7 @@ import Xicon from "../../assets/main/XIcon.png";
 import linkicon from "../../assets/main/linkIcon.png";
 // import facebookicon from "../../assets/main/facebookIcon.png";
 import discordicon from "../../assets/main/discordIcon.png";
+import youtubeIcon from "../../assets/main/youtubeIcon.png";
 
 export interface IPropsGameOverViewFollow {
   game: IGame;
@@ -42,6 +43,17 @@ const GameOverViewFollow = ({ game }: IPropsGameOverViewFollow) => {
             }}
           >
             <img src={Xicon} />
+          </Button>
+        )}
+
+        {game?.projectMeta?.youtube_url && (
+          <Button
+            className="button_navbar_common"
+            onClick={() => {
+              openLink(game?.projectMeta?.youtube_url);
+            }}
+          >
+            <img src={youtubeIcon} />
           </Button>
         )}
 
