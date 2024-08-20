@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 
-import { Box, Stack } from "@mui/material";
+import { Box } from "@mui/material";
 
 import { IGame } from "../../types/GameTypes";
 
@@ -16,10 +16,12 @@ const GameOverViewNative = ({ game }: IPropsGameOverViewNative) => {
   const { t } = useTranslation();
 
   return (
-    <Box className={classes.box_gameoption}>
-      <Box className={"fs-14-regular gray"}>{t("sto-39_type")}</Box>
-      <Box className={"fs-14-regular white"}>{game?.projectMeta?.type}</Box>
-    </Box>
+    game?.projectMeta?.type && (
+      <Box className={classes.box_gameoption}>
+        <Box className={"fs-14-regular gray"}>{t("sto-39_type")}</Box>
+        <Box className={"fs-14-regular white"}>{game?.projectMeta?.type}</Box>
+      </Box>
+    )
   );
 };
 

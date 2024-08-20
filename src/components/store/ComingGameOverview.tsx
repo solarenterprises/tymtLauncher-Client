@@ -12,11 +12,10 @@ import GameOverViewFollow from "./GameOverViewFollow";
 import GameOverViewSwiper from "./GameOverViewSwiper";
 import GameOverViewHeader from "./GameOverViewHeader";
 
-import { Grid, Box } from "@mui/material";
+import { Grid } from "@mui/material";
 
 import { getComingGameList } from "../../features/store/ComingGameListSlice";
 
-import SwitchBtnGameview from "./SwitchButton";
 import AnimatedComponent from "../AnimatedComponent";
 
 import storeStyles from "../../styles/StoreStyles";

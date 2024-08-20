@@ -6,13 +6,13 @@ import Platformbtn from "../../components/store/Platformbtn";
 import Genrebtn from "../../components/store/Genre";
 import Rankingbtn from "../../components/store/Ranking";
 import Storeshow from "../../components/store/Storeshow";
-import AnimatedComponent from "../../components/AnimatedComponent";
+import StoreGameItems from "../../components/store/StoreGameItems";
 
 const Store = () => {
   const { t } = useTranslation();
 
   return (
-    <AnimatedComponent>
+    <>
       <Grid item xs={12}>
         <Box className={"fs-60-bold white"}>{t("hom-2_store")}</Box>
         <Grid
@@ -49,8 +49,9 @@ const Store = () => {
         }}
       >
         <Storeshow />
+        <StoreGameItems />
       </Grid>
-    </AnimatedComponent>
+    </>
   );
 };
 
