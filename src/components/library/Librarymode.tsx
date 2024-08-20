@@ -44,6 +44,23 @@ const LibrarymodeBtn = ({ status, setStatus }: propsmodeType) => {
           {t("lib-3_download")}
         </Box>
       </Button>
+      <Button
+        className={classes.library_switch_button}
+        onClick={() => {
+          setStatus(3);
+          setMode(3);
+        }}
+        sx={{
+          backgroundColor: mode === 3 ? "rgba(82, 225, 242, 0.10)" : undefined,
+          "&:hover": {
+            backgroundColor: mode === 3 ? "rgba(82, 225, 242, 0.10)" : undefined,
+          },
+        }}
+      >
+        <Box className={classes.switch_btn} sx={{ color: mode === 2 ? "#52E1F2" : "white" }}>
+          {t("lib-5_coming")}
+        </Box>
+      </Button>
     </Stack>
   );
 };

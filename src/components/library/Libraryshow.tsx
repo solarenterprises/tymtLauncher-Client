@@ -50,6 +50,7 @@ const Libraryshow = () => {
         {data.mode === 0 && <Box className={"fs-40-bold white"}>{t("lib-1_your-games")}</Box>}
         {data.mode === 1 && <Box className={"fs-40-bold white"}>{t("lib-2_wishlist")}</Box>}
         {data.mode === 2 && <Box className={"fs-40-bold white"}>{t("lib-3_download")}</Box>}
+        {data.mode === 3 && <Box className={"fs-40-bold white"}>{t("lib-5_coming")}</Box>}
       </Grid>
       <Grid item xs={12} container spacing={"32px"} mt={"32px"}>
         {loading && <Loading />}

@@ -57,6 +57,7 @@ const ComingGameCard = ({ game }: IPropsComingGameCard) => {
         height={"165px"}
         sx={{
           borderRadius: "16px",
+          objectFit: "cover",
         }}
       />
       <Box
