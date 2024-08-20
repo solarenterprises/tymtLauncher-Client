@@ -24,6 +24,7 @@ import { IGameList } from "../../types/GameTypes";
 
 import gradient1 from "../../assets/main/gradient-gameoverview.svg";
 import GameOverViewJumbo from "./GameOverViewJumbo";
+import GameOverViewDescription from "./GameOverViewDescription";
 
 const ComingGameOverview = () => {
   const { gameid } = useParams();
@@ -40,7 +41,7 @@ const ComingGameOverview = () => {
 
   return (
     <>
-      <Grid item xs={12} container className={classes.gameoverview_container}>
+      <Grid item xs={12} container className={classes.gameoverview_container} mb={"32px"}>
         <AnimatedComponent threshold={0}>
           <img src={gradient1} style={{ position: "absolute", right: 0, top: 0 }} />
           <Grid item xs={12} display={"flex"} justifyContent={"space-between"} alignItems={"center"}>
@@ -72,9 +73,7 @@ const ComingGameOverview = () => {
               </Grid>
 
               <Grid item xs={12} marginTop={"32px"}>
-                <Box>
-                  <SwitchBtnGameview />
-                </Box>
+                <GameOverViewDescription game={game} />
               </Grid>
             </Grid>
             <Grid item sx={{ width: "320px" }}>
