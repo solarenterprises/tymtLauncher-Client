@@ -3,24 +3,15 @@ import { useTranslation } from "react-i18next";
 import { useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 
-import { Swiper, SwiperSlide } from "swiper/react";
-
 import { Grid, Stack, Box, Button } from "@mui/material";
 import DeleteOutlineRoundedIcon from "@mui/icons-material/DeleteOutlineRounded";
 
 import { getComingGameList } from "../../features/store/ComingGameListSlice";
 
-import Overview from "./Overview";
-import Review from "./Review";
 import SwitchBtnGameview from "./SwitchButton";
 import AnimatedComponent from "../AnimatedComponent";
 
-import { getViewmode } from "../../features/store/Gameview";
-
-import { platformEnum, platformIconMap } from "../../types/GameTypes";
-
 import storeStyles from "../../styles/StoreStyles";
-import { viewType } from "../../types/storeTypes";
 import { IGameList } from "../../types/GameTypes";
 
 import gradient1 from "../../assets/main/gradient-gameoverview.svg";
@@ -30,6 +21,7 @@ import GameOverViewReleaseName from "./GameOverViewReleaseName";
 import GameOverViewTags from "./GameOverViewTags";
 import GameOverViewShortDescription from "./GameOverViewShortDescription";
 import GameOverViewFollow from "./GameOverViewFollow";
+import GameOverViewSwiper from "./GameOverViewSwiper";
 
 const ComingGameOverview = () => {
   const { t } = useTranslation();
@@ -51,41 +43,36 @@ const ComingGameOverview = () => {
         <AnimatedComponent threshold={0}>
           <img src={gradient1} style={{ position: "absolute", right: 0, top: 0 }} />
           <Grid item xs={12} display={"flex"} justifyContent={"space-between"} alignItems={"center"}>
-            <Grid item xs={8} flexDirection={"row"} justifyContent={"space-between"} display={"flex"} paddingRight={"20px"}>
-              <Stack flexDirection={"row"} alignItems={"center"}>
-                {/* <Box
+            <Grid item xs={12} flexDirection={"row"} justifyContent={"space-between"} display={"flex"} paddingRight={"20px"}>
+              <Stack direction={"row"} alignItems={"center"} gap={"16px"}>
+                <Box
                   component={"img"}
-                  height={game?.name === "Veloren" ? "55px" : "84px"}
-                  src={game?.logo}
+                  src={game.imageUrl}
+                  width={"124px"}
+                  height={"82px"}
                   sx={{
                     borderRadius: "16px",
                   }}
-                /> */}
-                <Box className="m-10">
+                />
+                <Stack gap={"8px"}>
                   <Box className={"fs-40-bold white"}>{game?.title}</Box>
-                </Box>
-              </Stack>
-              {/* <Stack direction={"row"} alignItems={"center"} spacing={2}>
-                <img src={solar} width={"24px"} />
-                <Box className={"fs-20-regular white"}>0.0</Box>
-                <Box className={classes.chip_free}>{t("hom-15_free")}</Box>
-              </Stack> */}
-            </Grid>
-            <Grid item xs={4} display={"flex"} flexDirection={"row"} justifyContent={"space-between"} paddingLeft={"10px"}>
-              <Grid item xs={9}>
-                <Button className={"red-button-Gameoverview"} fullWidth onClick={async () => {}}>
-                  {t("hom-20_install-game")}
-                </Button>
-              </Grid>
-              <Grid item xs={2}>
-                <Button className="button_navbar_common" onClick={async () => {}}>
-                  <DeleteOutlineRoundedIcon
+                  <Box
+                    className={"fs-12-regular white"}
                     sx={{
-                      color: "white",
+                      borderRadius: "8px",
+                      background: "rgba(255, 165, 0, 0.40)",
+                      backdropFilter: "blur(10px)",
+                      display: "flex",
+                      padding: "6px 2px",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      width: "93px",
                     }}
-                  />
-                </Button>
-              </Grid>
+                  >
+                    COMING SOON
+                  </Box>
+                </Stack>
+              </Stack>
             </Grid>
           </Grid>
           <Grid item xs={12} container display={"flex"} justifyContent={"space-between"} marginTop={"32px"}>
@@ -113,46 +100,13 @@ const ComingGameOverview = () => {
                   overflow: "hidden",
                 }}
               >
-                <Swiper spaceBetween={15} slidesPerView={"auto"} loop={false}>
-                  {game?.projectMeta?.gallery?.map((image, index) => (
-                    <SwiperSlide style={{ width: "150px" }}>
-                      <img
-                        key={`${gameid}-${index}`}
-                        src={image.src}
-                        width={`150px`}
-                        height={`120px`}
-                        onClick={() => {
-                          setImage(image.src);
-                          setCurrentImageIndex(index);
-                        }}
-                        style={{
-                          transition: "all 0.3s ease",
-                          cursor: "pointer",
-                          opacity: currentImageIndex === index ? 1 : 0.7,
-                          border: currentImageIndex === index ? "2px solid #52e1f2" : "none",
-                          borderRadius: "16px",
-                          marginRight: "10px",
-                        }}
-                      />
-                    </SwiperSlide>
-                  ))}
-                </Swiper>
+                <GameOverViewSwiper game={game} currentImageIndex={currentImageIndex} setImage={setImage} setCurrentImageIndex={setCurrentImageIndex} />
               </Grid>
 
               <Grid item xs={12} marginTop={"32px"}>
                 <Box>
                   <SwitchBtnGameview />
                 </Box>
-                {/* {viewmode.mode === "overview" && (
-                  <AnimatedComponent threshold={0}>
-                    <Overview />
-                  </AnimatedComponent>
-                )}
-                {viewmode.mode === "review" && (
-                  <AnimatedComponent threshold={0}>
-                    <Review />
-                  </AnimatedComponent>
-                )} */}
               </Grid>
             </Grid>
             <Grid item sx={{ width: "320px" }}>
