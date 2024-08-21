@@ -15,6 +15,7 @@ const Store = () => {
   const { t } = useTranslation();
 
   const [platform, setPlatform] = useState<string>("");
+  const [genre, setGenre] = useState<string>("");
 
   return (
     <>
@@ -34,7 +35,7 @@ const Store = () => {
         >
           <Releasebtn />
           <Multichainbtn />
-          <Genrebtn />
+          <Genrebtn genre={genre} setGenre={setGenre} />
           <Platformbtn platform={platform} setPlatform={setPlatform} />
           <Rankingbtn />
         </Grid>
@@ -54,7 +55,7 @@ const Store = () => {
         }}
       >
         <Storeshow />
-        <StoreGameItems platform={platform} />
+        <StoreGameItems platform={platform} genre={genre} />
       </Grid>
     </>
   );

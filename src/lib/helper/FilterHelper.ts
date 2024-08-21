@@ -10,3 +10,9 @@ export const filterByPlatform = (games: IGame[], platform: string) => {
   }
   return data;
 };
+
+export const filterByGenre = (games: IGame[], genre: string) => {
+  let data = games;
+  data = data.filter((game) => game.projectMeta.tags.some((tag) => tag === genre));
+  return data;
+};

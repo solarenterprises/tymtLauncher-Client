@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { SelectChangeEvent } from "@mui/material/Select";
 import { useTranslation } from "react-i18next";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
@@ -55,11 +54,16 @@ const Genre = ["sto-20_action", "sto-21_adventure", "sto-22_strategy"];
 
 var selectedshow: boolean = false;
 
-const Genrebtn = () => {
+export interface IPropsGenrebtn {
+  genre: string;
+  setGenre: (_: string) => void;
+}
+
+const Genrebtn = ({ genre, setGenre }: IPropsGenrebtn) => {
   const { t } = useTranslation();
-  const [releasedate, setReleaseDate] = useState<string>("");
+
   const handleChange = (event: SelectChangeEvent) => {
-    setReleaseDate(event.target.value);
+    setGenre(event.target.value);
   };
 
   return (
@@ -89,7 +93,7 @@ const Genrebtn = () => {
           }}
           fullWidth
           displayEmpty
-          value={releasedate}
+          value={genre}
           onChange={handleChange}
           MenuProps={MenuProps}
           IconComponent={ExpandMoreIcon}
