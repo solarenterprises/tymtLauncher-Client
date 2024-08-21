@@ -1,6 +1,6 @@
-import { useState } from "react";
-import { SelectChangeEvent } from "@mui/material/Select";
 import { useTranslation } from "react-i18next";
+
+import { SelectChangeEvent } from "@mui/material/Select";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import { Box, MenuItem, FormControl, Select } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
@@ -55,12 +55,17 @@ const Releasedate = ["sto-6_coming-soon", "sto-7_last-7days", "sto-8_last-30-day
 
 var selectedshow: boolean = false;
 
-const Releasebtn = () => {
+export interface IPropsReleasebtn {
+  releaseDate: string;
+  setReleaseDate: (_: string) => void;
+}
+
+const Releasebtn = ({ releaseDate, setReleaseDate }: IPropsReleasebtn) => {
   const { t } = useTranslation();
-  const [releasedate, setReleaseDate] = useState<string>("");
+
   const handleChange = (event: SelectChangeEvent) => {
     const value = event.target.value;
-    if (value === releasedate) {
+    if (value === releaseDate) {
       setReleaseDate("");
     } else {
       setReleaseDate(value);
@@ -73,9 +78,9 @@ const Releasebtn = () => {
         <ThemeProvider theme={theme}>
           <Select
             fullWidth
-            // disabled
+            disabled
             displayEmpty
-            value={releasedate}
+            value={releaseDate}
             onChange={handleChange}
             IconComponent={ExpandMoreIcon}
             MenuProps={MenuProps}

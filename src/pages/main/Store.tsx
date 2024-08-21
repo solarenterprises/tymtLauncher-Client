@@ -14,8 +14,10 @@ import StoreGameItems from "../../components/store/StoreGameItems";
 const Store = () => {
   const { t } = useTranslation();
 
-  const [platform, setPlatform] = useState<string>("");
+  const [releaseDate, setReleaseDate] = useState<string>("");
   const [genre, setGenre] = useState<string>("");
+  const [platform, setPlatform] = useState<string>("");
+  const [rank, setRank] = useState<string>("");
 
   return (
     <>
@@ -33,11 +35,11 @@ const Store = () => {
             paddingBottom: "24px",
           }}
         >
-          <Releasebtn />
+          <Releasebtn releaseDate={releaseDate} setReleaseDate={setReleaseDate} />
           <Multichainbtn />
           <Genrebtn genre={genre} setGenre={setGenre} />
           <Platformbtn platform={platform} setPlatform={setPlatform} />
-          <Rankingbtn />
+          <Rankingbtn rank={rank} setRank={setRank} />
         </Grid>
         <Divider
           sx={{
@@ -55,7 +57,7 @@ const Store = () => {
         }}
       >
         <Storeshow />
-        <StoreGameItems platform={platform} genre={genre} />
+        <StoreGameItems releaseDate={releaseDate} genre={genre} platform={platform} rank={rank} />
       </Grid>
     </>
   );

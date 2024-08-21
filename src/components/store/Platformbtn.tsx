@@ -117,7 +117,7 @@ const Platformbtn = ({ platform, setPlatform }: IPropsPlatformbtn) => {
             {Platform.map((one) => (
               <MenuItem
                 sx={{
-                  width: "150px",
+                  width: "240px",
                   display: "flex",
                   justifyContent: "space-between",
                   borderBottom: "1px solid var(--bg-stroke-white-10-stroke-default, rgba(255, 255, 255, 0.10))",

@@ -1,5 +1,6 @@
-import { SelectChangeEvent } from "@mui/material/Select";
 import { useTranslation } from "react-i18next";
+
+import { SelectChangeEvent } from "@mui/material/Select";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import { Box, MenuItem, FormControl, Select } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
@@ -50,7 +51,8 @@ const theme = createTheme({
   },
 });
 
-const Genre = ["sto-20_action", "sto-21_adventure", "sto-22_strategy"];
+// const Genre = ["sto-20_action", "sto-21_adventure", "sto-22_strategy"];
+const Genre = ["Action", "Adventure", "Strategy"];
 
 var selectedshow: boolean = false;
 
@@ -107,21 +109,21 @@ const Genrebtn = ({ genre, setGenre }: IPropsGenrebtn) => {
           {Genre.map((one) => (
             <MenuItem
               sx={{
-                width: "130px",
+                width: "200px",
                 display: "flex",
                 justifyContent: "space-between",
                 borderBottom: "1px solid var(--bg-stroke-white-10-stroke-default, rgba(255, 255, 255, 0.10))",
+                backdropFilter: "blur(10px)",
                 "&:hover": {
                   background: "var(--bg-stroke-blue-stroke-default-10, rgba(82, 225, 242, 0.10))",
                 },
                 "&.Mui-selected": {
                   background: "var(--bg-stroke-blue-stroke-default-10, rgba(82, 225, 242, 0.10))",
+                  backdropFilter: "blur(10px)",
                   "&:hover": {
                     background: "var(--bg-stroke-blue-stroke-default-10, rgba(82, 225, 242, 0.10))",
                   },
-                  backdropFilter: "blur(10px)",
                 },
-                backdropFilter: "blur(10px)",
               }}
               key={one}
               value={t(`${one}`)}
