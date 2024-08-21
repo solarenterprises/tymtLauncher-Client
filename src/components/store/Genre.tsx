@@ -5,6 +5,8 @@ import { ThemeProvider, createTheme } from "@mui/material/styles";
 import { Box, MenuItem, FormControl, Select } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
+import { FilterOptionNames } from "../../consts/FilterOptionNames";
+
 const MenuProps = {
   MenuListProps: {
     style: {
@@ -14,9 +16,9 @@ const MenuProps = {
   },
   PaperProps: {
     style: {
+      minWidth: "0px",
       marginTop: "5px",
       maxHeight: "none",
-      width: "80px",
       display: "flex",
       alignItems: "center",
       borderRadius: "16px",
@@ -51,8 +53,13 @@ const theme = createTheme({
   },
 });
 
-// const Genre = ["sto-20_action", "sto-21_adventure", "sto-22_strategy"];
-const Genre = ["Action", "Adventure", "Strategy"];
+const Genre = [
+  FilterOptionNames.GENRE_ALL,
+  FilterOptionNames.GENRE_ACTION,
+  FilterOptionNames.GENRE_ADVENTURE,
+  FilterOptionNames.GENRE_ROLE_PLAYING,
+  FilterOptionNames.GENRE_SIMULATION,
+];
 
 var selectedshow: boolean = false;
 
@@ -109,7 +116,6 @@ const Genrebtn = ({ genre, setGenre }: IPropsGenrebtn) => {
           {Genre.map((one) => (
             <MenuItem
               sx={{
-                width: "200px",
                 display: "flex",
                 justifyContent: "space-between",
                 borderBottom: "1px solid var(--bg-stroke-white-10-stroke-default, rgba(255, 255, 255, 0.10))",
@@ -126,9 +132,9 @@ const Genrebtn = ({ genre, setGenre }: IPropsGenrebtn) => {
                 },
               }}
               key={one}
-              value={t(`${one}`)}
+              value={one}
             >
-              <Box className={"fs-16 white"} sx={{ marginLeft: "8px" }}>
+              <Box className={"fs-16 white"} sx={{ margin: "0px 8px" }}>
                 {t(`${one}`)}
               </Box>
             </MenuItem>

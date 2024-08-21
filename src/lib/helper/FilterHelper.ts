@@ -20,7 +20,18 @@ export const filterByPlatform = (games: IGame[], platform: string) => {
 export const filterByGenre = (games: IGame[], genre: string) => {
   try {
     let data = games;
-    data = data.filter((game) => game.projectMeta.tags.some((tag) => tag === genre));
+    if (genre === FilterOptionNames.GENRE_ALL) {
+    } else if (genre === FilterOptionNames.GENRE_ACTION) {
+      data = data.filter((game) => game.projectMeta.tags.some((tag) => tag === "Action"));
+    } else if (genre === FilterOptionNames.GENRE_ADVENTURE) {
+      data = data.filter((game) => game.projectMeta.tags.some((tag) => tag === "Adventure"));
+    } else if (genre === FilterOptionNames.GENRE_STRATEGY) {
+      data = data.filter((game) => game.projectMeta.tags.some((tag) => tag === "Strategy"));
+    } else if (genre === FilterOptionNames.GENRE_ROLE_PLAYING) {
+      data = data.filter((game) => game.projectMeta.tags.some((tag) => tag === "Role-Playing"));
+    } else if (genre === FilterOptionNames.GENRE_SIMULATION) {
+      data = data.filter((game) => game.projectMeta.tags.some((tag) => tag === "Simulation"));
+    }
     return data;
   } catch (err) {
     console.error("Failed to filterByGenre: ", err);

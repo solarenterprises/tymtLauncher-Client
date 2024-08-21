@@ -16,9 +16,9 @@ const MenuProps = {
   },
   PaperProps: {
     style: {
+      minWidth: "0px",
       marginTop: "5px",
       maxHeight: "none",
-      width: "200px",
       display: "flex",
       alignItems: "center",
       borderRadius: "16px",
@@ -113,26 +113,25 @@ const Rankingbtn = ({ rank, setRank }: IPropsRankingbtn) => {
             {Ranking.map((one) => (
               <MenuItem
                 sx={{
-                  width: "200px",
                   display: "flex",
                   justifyContent: "space-between",
                   borderBottom: "1px solid var(--bg-stroke-white-10-stroke-default, rgba(255, 255, 255, 0.10))",
+                  backdropFilter: "blur(10px)",
                   "&:hover": {
                     background: "var(--bg-stroke-blue-stroke-default-10, rgba(82, 225, 242, 0.10))",
                   },
                   "&.Mui-selected": {
                     background: "var(--bg-stroke-blue-stroke-default-10, rgba(82, 225, 242, 0.10))",
+                    backdropFilter: "blur(10px)",
                     "&:hover": {
                       background: "var(--bg-stroke-blue-stroke-default-10, rgba(82, 225, 242, 0.10))",
                     },
-                    backdropFilter: "blur(10px)",
                   },
-                  backdropFilter: "blur(10px)",
                 }}
                 key={one}
                 value={one}
               >
-                <Box className={"fs-16 white"} sx={{ marginLeft: "8px" }}>
+                <Box className={"fs-16 white"} sx={{ margin: "0px 8px" }}>
                   {t(`${one}`)}
                 </Box>
               </MenuItem>
