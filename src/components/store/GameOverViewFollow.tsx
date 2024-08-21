@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 
-import { Box, Button } from "@mui/material";
+import { Box, Button, Tooltip, Stack } from "@mui/material";
 
 import { openLink } from "../../lib/api/Downloads";
 
@@ -25,36 +25,114 @@ const GameOverViewFollow = ({ game }: IPropsGameOverViewFollow) => {
 
       <Box marginTop={"16px"} display={"flex"} flexDirection={"row"} gap={2}>
         {game?.projectMeta?.external_url && (
-          <Button
-            className="button_navbar_common"
-            onClick={() => {
-              openLink(game?.projectMeta?.external_url);
+          <Tooltip
+            placement="bottom"
+            title={
+              <Stack
+                spacing={"10px"}
+                sx={{
+                  marginTop: "-12px",
+                  backgroundColor: "rgb(49, 53, 53)",
+                  padding: "6px 8px",
+                  borderRadius: "32px",
+                  border: "1px solid rgb(71, 76, 76)",
+                }}
+              >
+                <Box className="fs-12-regular white">{game?.projectMeta?.external_url}</Box>
+              </Stack>
+            }
+            PopperProps={{
+              sx: {
+                [`& .MuiTooltip-tooltip`]: {
+                  backgroundColor: "transparent",
+                  boxShadow: "none",
+                },
+              },
             }}
           >
-            <img src={linkicon} />
-          </Button>
+            <Button
+              className="button_navbar_common"
+              onClick={() => {
+                openLink(game?.projectMeta?.external_url);
+              }}
+            >
+              <img src={linkicon} />
+            </Button>
+          </Tooltip>
         )}
 
         {game?.projectMeta?.twitter_url && (
-          <Button
-            className="button_navbar_common"
-            onClick={() => {
-              openLink(game?.projectMeta?.twitter_url);
+          <Tooltip
+            placement="bottom"
+            title={
+              <Stack
+                spacing={"10px"}
+                sx={{
+                  marginTop: "-12px",
+                  backgroundColor: "rgb(49, 53, 53)",
+                  padding: "6px 8px",
+                  borderRadius: "32px",
+                  border: "1px solid rgb(71, 76, 76)",
+                }}
+              >
+                <Box className="fs-12-regular white">{game?.projectMeta?.twitter_url}</Box>
+              </Stack>
+            }
+            PopperProps={{
+              sx: {
+                [`& .MuiTooltip-tooltip`]: {
+                  backgroundColor: "transparent",
+                  boxShadow: "none",
+                },
+              },
             }}
           >
-            <img src={Xicon} />
-          </Button>
+            <Button
+              className="button_navbar_common"
+              onClick={() => {
+                openLink(game?.projectMeta?.twitter_url);
+              }}
+            >
+              <img src={Xicon} />
+            </Button>
+          </Tooltip>
         )}
 
         {game?.projectMeta?.youtube_url && (
-          <Button
-            className="button_navbar_common"
-            onClick={() => {
-              openLink(game?.projectMeta?.youtube_url);
+          <Tooltip
+            placement="bottom"
+            title={
+              <Stack
+                spacing={"10px"}
+                sx={{
+                  marginTop: "-12px",
+                  backgroundColor: "rgb(49, 53, 53)",
+                  padding: "6px 8px",
+                  borderRadius: "32px",
+                  border: "1px solid rgb(71, 76, 76)",
+                }}
+              >
+                <Box className="fs-12-regular white">{game?.projectMeta?.youtube_url}</Box>
+              </Stack>
+            }
+            PopperProps={{
+              sx: {
+                [`& .MuiTooltip-tooltip`]: {
+                  backgroundColor: "transparent",
+                  boxShadow: "none",
+                },
+              },
             }}
           >
-            <img src={youtubeIcon} />
-          </Button>
+            <Button
+              className="button_navbar_common"
+              onClick={() => {
+                openLink(game?.projectMeta?.youtube_url);
+              }}
+            >
+              <img src={youtubeIcon} />
+            </Button>
+          </Tooltip>
         )}
 
         {/* <Button
@@ -67,14 +145,40 @@ const GameOverViewFollow = ({ game }: IPropsGameOverViewFollow) => {
       </Button> */}
 
         {game?.projectMeta?.discord_url && (
-          <Button
-            className="button_navbar_common"
-            onClick={() => {
-              openLink(game?.projectMeta?.discord_url);
+          <Tooltip
+            placement="bottom"
+            title={
+              <Stack
+                spacing={"10px"}
+                sx={{
+                  marginTop: "-12px",
+                  backgroundColor: "rgb(49, 53, 53)",
+                  padding: "6px 8px",
+                  borderRadius: "32px",
+                  border: "1px solid rgb(71, 76, 76)",
+                }}
+              >
+                <Box className="fs-12-regular white">{game?.projectMeta?.discord_url}</Box>
+              </Stack>
+            }
+            PopperProps={{
+              sx: {
+                [`& .MuiTooltip-tooltip`]: {
+                  backgroundColor: "transparent",
+                  boxShadow: "none",
+                },
+              },
             }}
           >
-            <img src={discordicon} />
-          </Button>
+            <Button
+              className="button_navbar_common"
+              onClick={() => {
+                openLink(game?.projectMeta?.discord_url);
+              }}
+            >
+              <img src={discordicon} />
+            </Button>
+          </Tooltip>
         )}
       </Box>
     </Box>
