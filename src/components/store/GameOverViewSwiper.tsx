@@ -1,4 +1,4 @@
-import ReactPlayer from "react-player";
+import ReactPlayer from "react-player/youtube";
 import { Swiper, SwiperSlide } from "swiper/react";
 
 import { IGame } from "../../types/GameTypes";
@@ -58,10 +58,23 @@ const GameOverViewSwiper = ({ game, currentImageIndex, setSrc, setType, setCurre
                 cursor: "pointer",
                 opacity: currentImageIndex === index ? 1 : 0.7,
                 border: currentImageIndex === index ? "2px solid #52e1f2" : "none",
-                borderRadius: "16px",
+                // borderRadius: "16px",
+                position: "relative",
               }}
             >
-              <ReactPlayer className="react-player" url={item.src} width={"150px"} height={"120px"} controls />
+              <Box
+                width={"150px"}
+                height={"120px"}
+                sx={{ zIndex: 10000, position: "absolute", top: 0, left: 0 }}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setSrc(item.src);
+                  setType(item.type);
+                  setCurrentImageIndex(index);
+                }}
+              />
+              <ReactPlayer className="react-player" url={item.src} width={"150px"} height={"120px"} controls={false} />
             </Box>
           )}
         </SwiperSlide>

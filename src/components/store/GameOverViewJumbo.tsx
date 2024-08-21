@@ -27,9 +27,10 @@ const GameOverViewJumbo = ({ type, src }: IPropsGameOverViewJumbo) => {
             width: "100%",
             aspectRatio: "1.78",
             borderRadius: "16px",
+            alignContent: "center",
           }}
         >
-          <ReactPlayer url={src} width={"100%"} controls />
+          <ReactPlayer playing url={src} width={"100%"} height={"100%"} controls />
         </Box>
       )}
     </>
