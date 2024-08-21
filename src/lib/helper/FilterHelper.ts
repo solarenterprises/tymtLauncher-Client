@@ -56,3 +56,19 @@ export const filterByRank = (games: IGame[], rank: string) => {
     return games;
   }
 };
+
+export const filterByType = (games: IGame[], type: string) => {
+  try {
+    let data = games;
+    if (type === FilterOptionNames.TYPE_ALL) {
+    } else if (type === FilterOptionNames.TYPE_NATIVE) {
+      data = data.filter((game) => game.projectMeta.type === "native");
+    } else if (type === FilterOptionNames.TYPE_BROWSER) {
+      data = data.filter((game) => game.projectMeta.type === "browser");
+    }
+    return data;
+  } catch (err) {
+    console.error("Failed to filterByRank: ", err);
+    return games;
+  }
+};

@@ -11,16 +11,17 @@ import { getComingGameList } from "../../features/store/ComingGameListSlice";
 
 import { IGame, IGameList } from "../../types/GameTypes";
 
-import { filterByGenre, filterByPlatform, filterByRank } from "../../lib/helper/FilterHelper";
+import { filterByGenre, filterByPlatform, filterByRank, filterByType } from "../../lib/helper/FilterHelper";
 
 export interface IPropsStoreGameItems {
   platform?: string;
   genre?: string;
   releaseDate?: string;
   rank?: string;
+  type?: string;
 }
 
-const StoreGameItems = ({ platform, genre, rank }: IPropsStoreGameItems) => {
+const StoreGameItems = ({ platform, genre, rank, type }: IPropsStoreGameItems) => {
   const gameListStore: IGameList = useSelector(getGameList);
   const comingGameListStore: IGameList = useSelector(getComingGameList);
 
@@ -32,8 +33,9 @@ const StoreGameItems = ({ platform, genre, rank }: IPropsStoreGameItems) => {
     if (genre) data = filterByGenre(data, genre);
     // if (releaseDate) data = filterByReleaseDate(data, releaseDate);
     if (rank) data = filterByRank(data, rank);
+    if (type) data = filterByType(data, type);
     return data;
-  }, [allGames, platform, genre, rank]);
+  }, [allGames, platform, genre, rank, type]);
 
   return (
     <Grid item xs={12} container spacing={"32px"} sx={{ width: "100%", marginTop: "0px" }}>

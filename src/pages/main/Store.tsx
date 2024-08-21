@@ -10,6 +10,7 @@ import Genrebtn from "../../components/store/Genre";
 import Rankingbtn from "../../components/store/Ranking";
 import Storeshow from "../../components/store/Storeshow";
 import StoreGameItems from "../../components/store/StoreGameItems";
+import TypeBtn from "../../components/store/TypeBtn";
 
 const Store = () => {
   const { t } = useTranslation();
@@ -18,6 +19,7 @@ const Store = () => {
   const [genre, setGenre] = useState<string>("");
   const [platform, setPlatform] = useState<string>("");
   const [rank, setRank] = useState<string>("");
+  const [type, setType] = useState<string>("");
 
   return (
     <>
@@ -40,6 +42,7 @@ const Store = () => {
           <Genrebtn genre={genre} setGenre={setGenre} />
           <Platformbtn platform={platform} setPlatform={setPlatform} />
           <Rankingbtn rank={rank} setRank={setRank} />
+          <TypeBtn type={type} setType={setType} />
         </Grid>
         <Divider
           sx={{
@@ -57,7 +60,7 @@ const Store = () => {
         }}
       >
         <Storeshow />
-        <StoreGameItems releaseDate={releaseDate} genre={genre} platform={platform} rank={rank} />
+        <StoreGameItems releaseDate={releaseDate} genre={genre} platform={platform} rank={rank} type={type} />
       </Grid>
     </>
   );

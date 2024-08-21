@@ -10,4 +10,8 @@ export class FilterOptionNames {
   static GENRE_STRATEGY = "sto-22_strategy";
   static GENRE_ROLE_PLAYING = "sto-44_role-playing";
   static GENRE_SIMULATION = "sto-45_simulation";
+
+  static TYPE_ALL = "sto-40_all";
+  static TYPE_NATIVE = "sto-46_native";
+  static TYPE_BROWSER = "sto-47_browser";
 }
