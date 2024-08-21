@@ -58,7 +58,7 @@ const GameOverViewSwiper = ({ game, currentImageIndex, setSrc, setType, setCurre
                 cursor: "pointer",
                 opacity: currentImageIndex === index ? 1 : 0.7,
                 border: currentImageIndex === index ? "2px solid #52e1f2" : "none",
-                // borderRadius: "16px",
+                borderRadius: "16px",
                 position: "relative",
               }}
             >
