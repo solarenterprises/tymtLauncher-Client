@@ -1,9 +1,10 @@
-import { useState } from "react";
-import { SelectChangeEvent } from "@mui/material/Select";
 import { useTranslation } from "react-i18next";
+
+import { SelectChangeEvent } from "@mui/material/Select";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import { Box, MenuItem, FormControl, Select, Stack } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+
 import LinuxIcon from "../../assets/main/linux-icon.svg";
 import WinIcon from "../../assets/main/win-icon.svg";
 import macIcon from "../../assets/main/mac-icon.svg";
@@ -55,18 +56,23 @@ const theme = createTheme({
 });
 
 const Platform = [
-  { platform: "sto-23_windows", icon: WinIcon },
-  { platform: "sto-24_macos", icon: macIcon },
-  { platform: "sto-25_linux", icon: LinuxIcon },
+  { platform: "sto-23_windows", icon: WinIcon }, // Windows
+  { platform: "sto-24_macos", icon: macIcon }, // macOS
+  { platform: "sto-25_linux", icon: LinuxIcon }, // Linux
 ];
 
 var selectedshow: boolean = false;
 
-const Platformbtn = () => {
+export interface IPropsPlatformbtn {
+  platform: string;
+  setPlatform: (_: string) => void;
+}
+
+const Platformbtn = ({ platform, setPlatform }: IPropsPlatformbtn) => {
   const { t } = useTranslation();
-  const [releasedate, setReleaseDate] = useState<string>("");
+
   const handleChange = (event: SelectChangeEvent) => {
-    setReleaseDate(event.target.value);
+    setPlatform(event.target.value);
   };
 
   return (
@@ -74,7 +80,7 @@ const Platformbtn = () => {
       <FormControl>
         <ThemeProvider theme={theme}>
           <Select
-            disabled
+            // disabled
             sx={{
               height: "40px",
               display: "flex",
@@ -97,7 +103,7 @@ const Platformbtn = () => {
             }}
             fullWidth
             displayEmpty
-            value={releasedate}
+            value={platform}
             onChange={handleChange}
             IconComponent={ExpandMoreIcon}
             MenuProps={MenuProps}

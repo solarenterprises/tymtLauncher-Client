@@ -86,7 +86,7 @@ const Multichainbtn = () => {
     <FormControl>
       <ThemeProvider theme={theme}>
         <Select
-          disabled
+          // disabled
           sx={{
             height: "40px",
             display: "flex",
@@ -103,7 +103,7 @@ const Multichainbtn = () => {
               backgroundColor: "var(--bg-stroke-blue-stroke-default-20, rgba(82, 225, 242, 0.20))",
             },
             "& .MuiSelect-icon": {
-              color: "rgba(0, 0, 0, 0.26)",
+              color: "var(--Basic-Light, #AFAFAF)",
             },
           }}
           fullWidth

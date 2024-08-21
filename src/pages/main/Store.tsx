@@ -1,5 +1,8 @@
-import { Grid, Box, Divider } from "@mui/material";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
+
+import { Grid, Box, Divider } from "@mui/material";
+
 import Multichainbtn from "../../components/store/Multichainbtn";
 import Releasebtn from "../../components/store/Releasebtn";
 import Platformbtn from "../../components/store/Platformbtn";
@@ -10,6 +13,8 @@ import StoreGameItems from "../../components/store/StoreGameItems";
 
 const Store = () => {
   const { t } = useTranslation();
+
+  const [platform, setPlatform] = useState<string>("");
 
   return (
     <>
@@ -30,7 +35,7 @@ const Store = () => {
           <Releasebtn />
           <Multichainbtn />
           <Genrebtn />
-          <Platformbtn />
+          <Platformbtn platform={platform} setPlatform={setPlatform} />
           <Rankingbtn />
         </Grid>
         <Divider
@@ -49,7 +54,7 @@ const Store = () => {
         }}
       >
         <Storeshow />
-        <StoreGameItems />
+        <StoreGameItems platform={platform} />
       </Grid>
     </>
   );
