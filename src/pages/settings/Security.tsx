@@ -32,6 +32,15 @@ const Security = ({ view, setView }: propsType) => {
               </Stack>
             </Button>
             <Divider variant="fullWidth" sx={{ backgroundColor: "#FFFFFF1A" }} />
+            <Button className="common-btn" sx={{ padding: "20px" }} onClick={() => setView("backup")}>
+              <Stack direction={"row"} justifyContent={"space-between"} textAlign={"center"}>
+                <Box className="fs-h4 white">{t("set-89_backup-passphrase")}</Box>
+                <Box className="center-align">
+                  <img src={arrowImg} />
+                </Box>
+              </Stack>
+            </Button>
+            <Divider variant="fullWidth" sx={{ backgroundColor: "#FFFFFF1A" }} />
             <Stack
               direction={"column"}
               justifyContent={"flex-start"}

@@ -195,6 +195,11 @@ const SettingStyle = makeStyles({
         backgroundColor: "#EF4444",
         boxShadow: "1px 1px #EF44445F",
       },
+      "&:disabled": {
+        backgroundColor: "#222222", // Example: light gray background
+        color: "#A0A0A0", // Example: gray text color
+        borderColor: "#222222", // Example: gray border color
+      },
     },
   },
 });
