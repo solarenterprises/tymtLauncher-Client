@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useLocation } from "react-router-dom";
 
 import { Grid, Box, Divider } from "@mui/material";
 
@@ -14,6 +15,11 @@ import TypeBtn from "../../components/store/TypeBtn";
 
 const Store = () => {
   const { t } = useTranslation();
+
+  const location = useLocation();
+
+  const params = new URLSearchParams(location.search);
+  const keyword = params.get("key");
 
   const [releaseDate, setReleaseDate] = useState<string>("");
   const [genre, setGenre] = useState<string>("");
@@ -60,7 +66,7 @@ const Store = () => {
         }}
       >
         <Storeshow />
-        <StoreGameItems releaseDate={releaseDate} genre={genre} platform={platform} rank={rank} type={type} />
+        <StoreGameItems releaseDate={releaseDate} genre={genre} platform={platform} rank={rank} type={type} keyword={keyword} />
       </Grid>
     </>
   );

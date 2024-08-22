@@ -127,7 +127,7 @@ const Navbar = () => {
           )}
           <ThemeProvider theme={theme}>
             <TextField
-              disabled
+              // disabled
               className="searchbar"
               color="secondary"
               placeholder={t("hom-4_search")}
@@ -141,7 +141,13 @@ const Navbar = () => {
                 endAdornment: (
                   <InputAdornment position="end">
                     {value !== "" && (
-                      <Button className={"clear_filter"} onClick={() => setValue("")}>
+                      <Button
+                        className={"clear_filter"}
+                        onClick={() => {
+                          setValue("");
+                          if (location.pathname === `/store`) navigate(`/store`);
+                        }}
+                      >
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                           <path d="M17 7L7 17M7 7L17 17" stroke="white" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
@@ -153,6 +159,13 @@ const Navbar = () => {
               }}
               onChange={(e) => {
                 if (setValue) setValue(e.target.value);
+                if (!e.target.value && location.pathname === `/store`) navigate(`/store`);
+              }}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  console.log("Enter key pressed");
+                  navigate(`/store?key=${value}`);
+                }
               }}
             />
           </ThemeProvider>

@@ -68,7 +68,18 @@ export const filterByType = (games: IGame[], type: string) => {
     }
     return data;
   } catch (err) {
-    console.error("Failed to filterByRank: ", err);
+    console.error("Failed to filterByType: ", err);
+    return games;
+  }
+};
+
+export const filterByKeyword = (games: IGame[], keyword: string) => {
+  try {
+    let data = games;
+    data = data.filter((game) => game.title.toLowerCase().includes(keyword.toLowerCase()));
+    return data;
+  } catch (err) {
+    console.error("Failed to filterByKeyword: ", err);
     return games;
   }
 };
