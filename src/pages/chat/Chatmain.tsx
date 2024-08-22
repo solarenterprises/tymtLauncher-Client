@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import SwipeableViews from "react-swipeable-views";
@@ -12,12 +12,13 @@ import NewGroupButton from "../../components/chat/NewGroupButton";
 import GroupListItem from "../../components/chat/GroupListItem";
 import DMListItem from "../../components/chat/DMListItem";
 
-// import { getAlertList } from "../../features/alert/AlertListSlice";
-import { searchUsers } from "../../features/chat/ContactListApi";
 import { getFriendList } from "../../features/chat/FriendListSlice";
 import { getChatroomList } from "../../features/chat/ChatroomListSlice";
 import { getBlockList } from "../../features/chat/BlockListSlice";
+import { getPublicChatroomList } from "../../features/chat/PublicChatroomListSlice";
+import { getAccount } from "../../features/account/AccountSlice";
 
+import { searchUsers } from "../../features/chat/ContactListApi";
 import { searchGroups } from "../../features/chat/ChatroomListApi";
 
 import ChatStyle from "../../styles/ChatStyles";
@@ -27,8 +28,6 @@ import nocontact from "../../assets/chat/nocontact.png";
 
 import { IContactList, propsType, userType } from "../../types/chatTypes";
 import { accountType } from "../../types/accountTypes";
-import { getAccount } from "../../features/account/AccountSlice";
-// import { IAlertList } from "../../types/alertTypes";
 import { IChatroom, IChatroomList } from "../../types/ChatroomAPITypes";
 
 const theme = createTheme({
@@ -61,12 +60,18 @@ const Chatmain = ({ view, setView }: propsType) => {
   }, [value]);
 
   const chatroomListStore: IChatroomList = useSelector(getChatroomList);
+  const publicChatroomListStore: IChatroomList = useSelector(getPublicChatroomList);
   const friendListStore: IContactList = useSelector(getFriendList);
   const blockListStore: IContactList = useSelector(getBlockList);
   const DMList: IChatroom[] = chatroomListStore.chatrooms.filter((element) => !element.room_name);
   const groupList: IChatroom[] = chatroomListStore.chatrooms.filter((element) => element.room_name);
   const accountStore: accountType = useSelector(getAccount);
   // const alertListStore: IAlertList = useSelector(getAlertList);
+
+  const displayChatroomList: IChatroom[] = useMemo(() => {
+    const joinedPrivateGroupList = groupList?.filter((group) => !publicChatroomListStore?.chatrooms?.some((one) => group?._id === one?._id));
+    return [...publicChatroomListStore.chatrooms, ...joinedPrivateGroupList];
+  }, [groupList, publicChatroomListStore]);
 
   const accountStoreRef = useRef(accountStore);
   const friendListStoreRef = useRef(friendListStore);
@@ -257,7 +262,7 @@ const Chatmain = ({ view, setView }: propsType) => {
               <TabPanel value={tab} index={0} dir={otheme.direction}>
                 <Box className={classes.scroll_bar}>
                   <NewGroupButton roomMode={false} />
-                  {groupList?.length === 0 && !value ? (
+                  {displayChatroomList?.length === 0 && publicChatroomListStore?.chatrooms?.length === 0 && !value ? (
                     <>
                       <Grid container sx={{ justifyContent: "center" }}>
                         <img src={nocontact} style={{ marginTop: "40%", display: "block" }}></img>
@@ -268,8 +273,16 @@ const Chatmain = ({ view, setView }: propsType) => {
                     </>
                   ) : (
                     <>
-                      {(!value ? groupList : searchedGroupList)?.map((group, index) => {
-                        return <GroupListItem group={group} index={index} setView={setView} key={`${index}-${Date.now()}`} />;
+                      {(!value ? displayChatroomList : searchedGroupList)?.map((group, index) => {
+                        return (
+                          <GroupListItem
+                            group={group}
+                            index={index}
+                            setView={setView}
+                            key={`${index}-${Date.now()}`}
+                            gray={!groupList?.some((one) => one?._id === group?._id)}
+                          />
+                        );
                       })}
                     </>
                   )}

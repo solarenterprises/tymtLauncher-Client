@@ -11,6 +11,7 @@ import { useNotification } from "../../providers/NotificationProvider";
 
 import GroupAvatar from "./GroupAvatar";
 import GroupListItemContextMenu from "./GroupListItemContextMenu";
+import PublicBadge from "./PublicBadge";
 
 import { AppDispatch } from "../../store";
 import { getAccount } from "../../features/account/AccountSlice";
@@ -36,9 +37,10 @@ export interface IPropsGroupListItem {
   index: number;
   roomMode?: boolean;
   setView?: (_: string) => void;
+  gray?: boolean;
 }
 
-const GroupListItem = ({ group, index, roomMode, setView }: IPropsGroupListItem) => {
+const GroupListItem = ({ group, index, roomMode, setView, gray }: IPropsGroupListItem) => {
   const { socket } = useSocket();
   const { setNotificationStatus, setNotificationTitle, setNotificationDetail, setNotificationOpen, setNotificationLink } = useNotification();
   const { t } = useTranslation();
@@ -162,7 +164,14 @@ const GroupListItem = ({ group, index, roomMode, setView }: IPropsGroupListItem)
 
   return (
     <>
-      <Box key={`${index}-${group._id}`} onClick={handleGroupListItemClick} onContextMenu={handleGroupListItemRightClick}>
+      <Box
+        key={`${index}-${group._id}`}
+        onClick={handleGroupListItemClick}
+        onContextMenu={handleGroupListItemRightClick}
+        sx={{
+          filter: gray ? "grayscale(100%)" : "none",
+        }}
+      >
         <Grid
           item
           xs={12}
@@ -190,9 +199,12 @@ const GroupListItem = ({ group, index, roomMode, setView }: IPropsGroupListItem)
           <Stack flexDirection={"row"} alignItems={"center"} justifyContent={"space-between"} display={"flex"} sx={{ marginLeft: "25px", width: "320px" }}>
             <Box>
               <Stack direction={"column"} justifyContent={"flex-start"} spacing={1}>
-                <Box className={"fs-16 white"}>{group.room_name}</Box>
+                <Stack direction={"row"} alignItems={"center"} gap={"8px"}>
+                  <Box className={"fs-16 white"}>{group.room_name}</Box>
+                  {!group.isPrivate && <PublicBadge />}
+                </Stack>
                 {group.isGlobal ? (
-                  <Box className={"fs-12-light gray"}>{`Public channel`}</Box>
+                  <Box className={"fs-12-light gray"}>{`Global channel`}</Box>
                 ) : (
                   <Box className={"fs-12-light gray"}>{`${group.participants.length} Joined`}</Box>
                 )}

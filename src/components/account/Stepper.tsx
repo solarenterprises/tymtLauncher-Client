@@ -58,9 +58,9 @@ const Stepper = ({ all, now, texts }: props) => {
           <Stack direction={"row"}>
             {texts.map((_value, index) =>
               index === now - 1 ? (
-                <Box component={"img"} src={enableStep} width={"20px"} height={"5px"} />
+                <Box component={"img"} src={enableStep} width={"20px"} height={"5px"} key={index} />
               ) : (
-                <Box component={"img"} src={disableStep} width={"5px"} height={"5px"} />
+                <Box component={"img"} src={disableStep} width={"5px"} height={"5px"} key={index} />
               )
             )}
           </Stack>

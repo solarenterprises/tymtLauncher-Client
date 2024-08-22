@@ -27,6 +27,8 @@ import { accountType } from "../types/accountTypes";
 import { IChain, multiWalletType } from "../types/walletTypes";
 import { IChatroom, IParticipant } from "../types/ChatroomAPITypes";
 import { IRsa } from "../types/chatTypes";
+import { fetchGlobalChatroomListAsync } from "../features/chat/GlobalChatroomListSlice";
+import { fetchPublicChatroomListAsync } from "../features/chat/PublicChatroomListSlice";
 
 const AlertProvider = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -53,6 +55,8 @@ const AlertProvider = () => {
       dispatch(fetchBlockListAsync());
       dispatch(fetchMutedListAsync());
       dispatch(fetchUnreadMessageListAsync(accountStore?.uid));
+      dispatch(fetchGlobalChatroomListAsync());
+      dispatch(fetchPublicChatroomListAsync());
       dispatch(fetchChatroomListAsync(accountStore?.uid)).then((action) => {
         try {
           if (action.type.endsWith("/fulfilled")) {

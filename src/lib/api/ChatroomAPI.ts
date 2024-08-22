@@ -189,7 +189,21 @@ class ChatroomAPI {
   }
 
   static async fetchGlobalChatrooms(): Promise<AxiosResponse<any, any>> {
-    return await axios.get(`${tymt_backend_url}/chatroom/global-chatrooms`);
+    return await axios.get(`${tymt_backend_url}/chatroom/global-chatrooms`, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+  }
+
+  static async fetchAllPublicChatrooms(): Promise<AxiosResponse<any, any>> {
+    const saltTokenStore: ISaltToken = JSON.parse(tymtStorage.get(`saltToken`));
+    return await axios.get(`${tymt_backend_url}/chatroom/public-chatrooms`, {
+      headers: {
+        "x-token": saltTokenStore.token,
+        "Content-Type": "application/json",
+      },
+    });
   }
 }
 

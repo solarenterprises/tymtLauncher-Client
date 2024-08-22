@@ -32,6 +32,7 @@ const GroupAvatar = ({ size, url }: IPropsGroupAvatar) => {
           component={"img"}
           key={`${url}-${new Date().getTime()}`}
           src={`${tymt_avatar_url}/public/upload/room-image/${url ? url : "default.png"}?${renderTimeStore.renderTime}`}
+          loading="lazy"
           sx={{
             position: "absolute",
             top: "50%",

@@ -41,8 +41,6 @@ const ComingSoonD53 = () => {
       const totalSlides = swiperRef.current.swiper.slides.length;
       const nextIndex = swiperRef.current.swiper.activeIndex + 3;
 
-      console.log(totalSlides, nextIndex);
-
       if (nextIndex >= totalSlides - 1) {
         swiperRef.current.swiper.slideTo(0);
       } else {
