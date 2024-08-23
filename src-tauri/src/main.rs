@@ -6,16 +6,20 @@
 use actix_web::{ web, App, HttpRequest, HttpResponse, HttpServer };
 use actix_cors::Cors;
 use machineid_rs::{ Encryption, HWIDComponent, IdBuilder };
+use reqwest::header::ACCEPT;
 use reqwest::{ header, Client };
 use serde::{ Deserialize, Serialize };
+use std::cmp::min;
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::{ Path, PathBuf };
 use std::process::Command;
 use std::sync::OnceLock;
+use std::time::Instant;
 use std::{ fs, io };
 use tauri::Manager;
 use tauri::{ CustomMenuItem, SystemTray, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem };
+use futures_util::stream::StreamExt;
 // use dotenv::dotenv;
 // use std::env;
 
@@ -117,6 +121,8 @@ async fn main() -> std::io::Result<()> {
                 download_and_unzip_macos,
                 download_and_untarbz2_macos,
                 download_and_unzip_windows,
+                download_and_unzip_new_game_windows,
+                download_to_app_dir,
                 run_exe,
                 run_url_args,
                 run_linux,
@@ -1616,4 +1622,102 @@ async fn set_tray_items_enabled(
 fn write_file(content: String, filepath: String) -> Result<(), String> {
     std::fs::write(&filepath, content).map_err(|e| e.to_string())?;
     Ok(())
+}
+
+#[tauri::command]
+async fn download_and_unzip_new_game_windows(
+    app_handle: tauri::AppHandle,
+    install_path: String,
+    url: String,
+    executable_path: String,
+    file_name: String
+) {
+    println!("{}", url);
+    println!("{}", install_path);
+    println!("{}", executable_path);
+    println!("{}", file_name);
+
+    download_to_app_dir(app_handle, url, file_name).await;
+}
+
+#[derive(serde::Serialize)]
+struct DownloadProgress {
+    downloaded: u64,
+    speed: Option<f64>,
+    total_size: u64,
+}
+
+#[tauri::command]
+async fn download_to_app_dir(
+    app_handle: tauri::AppHandle,
+    url: String,
+    file_name: String
+) -> Result<(), String> {
+    let app_dir = app_handle
+        .path_resolver()
+        .app_data_dir()
+        .unwrap()
+        .into_os_string()
+        .into_string()
+        .to_owned()
+        .unwrap();
+
+    let file_location = (app_dir.to_string() + "/" + &file_name).to_owned();
+    println!("{}", file_location);
+
+    let path = Path::new(&file_location);
+
+    if let Some(parent) = path.parent() {
+        if !parent.exists() {
+            match fs::create_dir_all(&parent) {
+                Err(why) => panic!("couldn't create directory: {}", why),
+                Ok(_) => println!("Successfully created the directory"),
+            }
+        }
+    }
+
+    // fs::create_dir_all("./download/").expect("Error at create_dir_all");
+    let start_time = Instant::now();
+    let client = Client::new();
+    let res = client
+        .get(&url)
+        .header(ACCEPT, "application/octet-stream")
+        .send().await
+        .or(Err(format!("Failed to GET from '{}'", &url)))?;
+    let total_size = res
+        .content_length()
+        .ok_or(format!("Failed to get content length from '{}'", &url))?;
+
+    let mut file = File::create(&path).or(
+        Err(format!("Failed to create file '{}'", file_location))
+    )?;
+    let mut downloaded: u64 = 0;
+    let mut stream = res.bytes_stream();
+    while let Some(item) = stream.next().await {
+        let chunk = item.or(Err(format!("Error while downloading file")))?;
+        file.write_all(&chunk).or(Err(format!("Error while writing to file")))?;
+        downloaded = min(downloaded + (chunk.len() as u64), total_size);
+        let duration = start_time.elapsed().as_secs_f64();
+        let speed = if duration > 0.0 {
+            Some((downloaded as f64) / duration / 1024.0 / 1024.0)
+        } else {
+            None
+        };
+
+        let progress = DownloadProgress {
+            downloaded,
+            speed,
+            total_size,
+        };
+
+        app_handle
+            .emit_all("game-download-progress", &progress)
+            .expect("Failed to emit progress event");
+
+        println!("downloaded => {}", downloaded);
+        println!("total_size => {}", total_size);
+        println!("speed => {:?}", speed);
+    }
+
+    return Ok(());
 }

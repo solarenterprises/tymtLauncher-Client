@@ -1,3 +1,5 @@
+import { IGame } from "./GameTypes";
+
 export interface PaginationType {
   index: number;
   page: string;
@@ -18,8 +20,10 @@ export interface librarymodeType {
 
 export interface IDownloadStatus {
   progress: number;
+  speed: number;
+  total: number;
   isDownloading: boolean;
-  name: string;
+  game: IGame;
 }
 
 export interface IInstallStatus {

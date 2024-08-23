@@ -8,6 +8,7 @@ import { local_server_port, production_version, tymt_version } from "../../confi
 import { ISaltToken } from "../../types/accountTypes";
 import tymtStorage from "../Storage";
 import path from "path";
+import { IGame } from "../../types/GameTypes";
 
 export async function downloadAppImageLinux(url: string, targetDir: string) {
   return invoke("download_appimage_linux", {
@@ -195,9 +196,9 @@ export async function downloadGame(game_key: string) {
   }
 }
 
-export async function isInstalled(game_key: string) {
+export async function isInstalled(game: IGame) {
   try {
-    await readDir(`${await appDataDir()}v${tymt_version}/games/${game_key}`);
+    await readDir(`${await appDataDir()}v${tymt_version}/games/${game.project_name}`);
     return true;
   } catch (err) {
     console.error("Failed to isInstalled: ", err);
@@ -373,3 +374,204 @@ export async function getGameFileSize(game_key: string) {
     return null;
   }
 }
+
+export const checkOnline = async (): Promise<boolean> => {
+  try {
+    await fetch("https://www.google.com", {
+      mode: "no-cors",
+    });
+    return true;
+  } catch (error) {
+    return false;
+  }
+};
+
+export const downloadNewGame = async (game: IGame) => {
+  try {
+    let url: string = await getDownloadLinkNewGame(game);
+    let executablePath: string = await getExecutablePathNewGame(game);
+    let fileName: string = await getDownloadFileNameNewGame(game);
+    let gameId: string = game?.project_name;
+
+    console.log("downloadNewGame: ", gameId, url, executablePath, fileName);
+
+    if (!url || !executablePath || !fileName || !gameId) {
+      return false;
+    }
+    await downloadAndUnzipNewGame(gameId, url, executablePath, fileName);
+    return true;
+  } catch (err) {
+    console.error("Failed to downloadGame: ", err);
+    return false;
+  }
+};
+
+export const getDownloadLinkNewGame = async (game: IGame) => {
+  try {
+    let res: string = "";
+    if (game.projectMeta.type === "browser") {
+      return res;
+    }
+    const platform = await type();
+    const cpu = await arch();
+    switch (platform) {
+      case "Linux":
+        break;
+      case "Windows_NT":
+        switch (cpu) {
+          case "arm":
+            break;
+          case "x86_64":
+            res = game?.releaseMeta?.platforms?.windows_amd64?.external_url;
+            break;
+        }
+        break;
+      case "Darwin":
+        switch (cpu) {
+          case "arm":
+            break;
+          case "x86_64":
+            break;
+        }
+        break;
+    }
+    return res;
+  } catch (err) {
+    console.error("Failed to getDownloadLinkNewGame: ", err);
+  }
+};
+
+export const getExecutablePathNewGame = async (game: IGame) => {
+  try {
+    let res: string = "";
+    if (game.projectMeta.type === "browser") {
+      return res;
+    }
+    const platform = await type();
+    const cpu = await arch();
+    switch (platform) {
+      case "Linux":
+        break;
+      case "Windows_NT":
+        switch (cpu) {
+          case "arm":
+            break;
+          case "x86_64":
+            res = game?.releaseMeta?.platforms?.windows_amd64?.executable;
+            break;
+        }
+        break;
+      case "Darwin":
+        switch (cpu) {
+          case "arm":
+            break;
+          case "x86_64":
+            break;
+        }
+        break;
+    }
+    return res;
+  } catch (err) {
+    console.error("Failed to getExecutablePathNewGame: ", err);
+  }
+};
+
+export const getDownloadFileNameNewGame = async (game: IGame) => {
+  try {
+    let res: string = "";
+    if (game.projectMeta.type === "browser") {
+      return res;
+    }
+    const platform = await type();
+    const cpu = await arch();
+    switch (platform) {
+      case "Linux":
+        break;
+      case "Windows_NT":
+        switch (cpu) {
+          case "arm":
+            break;
+          case "x86_64":
+            res = game?.releaseMeta?.platforms?.windows_amd64?.name;
+            break;
+        }
+        break;
+      case "Darwin":
+        switch (cpu) {
+          case "arm":
+            break;
+          case "x86_64":
+            break;
+        }
+        break;
+    }
+    return res;
+  } catch (err) {
+    console.error("Failed to getDownloadFileNameNewGame: ", err);
+  }
+};
+
+export const getDownloadSizeNewGame = async (game: IGame) => {
+  try {
+    let res: string = "";
+    if (game?.projectMeta?.type === "browser") {
+      return res;
+    }
+    const platform = await type();
+    const cpu = await arch();
+    switch (platform) {
+      case "Linux":
+        break;
+      case "Windows_NT":
+        switch (cpu) {
+          case "arm":
+            break;
+          case "x86_64":
+            res = game?.releaseMeta?.platforms?.windows_amd64?.downloadSize;
+            break;
+        }
+        break;
+      case "Darwin":
+        switch (cpu) {
+          case "arm":
+            break;
+          case "x86_64":
+            break;
+        }
+        break;
+    }
+    return res;
+  } catch (err) {
+    console.error("Failed to getDownloadSizeNewGame: ", err);
+  }
+};
+
+export const downloadAndUnzipNewGame = async (game_id: string, url: string, executable_path: string, file_name: string) => {
+  try {
+    const platform = await type();
+    switch (platform) {
+      case "Linux":
+        break;
+      case "Windows_NT":
+        await downloadAndUnzipNewGameWindows(`/v${tymt_version}/games/${game_id}`, url, executable_path, file_name);
+        break;
+      case "Darwin":
+        break;
+    }
+  } catch (err) {
+    console.error("Failed to downloadAndUnzipNewGame: ", err);
+  }
+};
+
+export const downloadAndUnzipNewGameWindows = async (install_path: string, url: string, executable_path: string, file_name: string) => {
+  try {
+    return invoke("download_and_unzip_new_game_windows", {
+      installPath: install_path,
+      url: url,
+      executablePath: executable_path,
+      fileName: file_name,
+    });
+  } catch (err) {
+    console.error("Failed to downloadAndUnzipNewGameWindows: ", err);
+  }
+};

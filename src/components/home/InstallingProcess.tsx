@@ -1,6 +1,5 @@
 import { useSelector } from "react-redux";
-import { useEffect, useState } from "react";
-import { listen } from "@tauri-apps/api/event";
+import { useState } from "react";
 import { Button, Box, Stack } from "@mui/material";
 
 import InstallProcessContextMenu from "./InstallProcessContextMenu";
@@ -13,7 +12,6 @@ import downloadsmall from "../../assets/main/downloadsmall.svg";
 import { getCurrentLogo } from "../../features/home/Tymtlogo";
 
 import { IDownloadStatus, IPoint, TymtlogoType } from "../../types/homeTypes";
-import Games from "../../lib/game/Game";
 import { openDir } from "../../lib/api/Downloads";
 
 const InstallingProcess = () => {
@@ -25,16 +23,6 @@ const InstallingProcess = () => {
     x: 0,
     y: 0,
   });
-
-  useEffect(() => {
-    const unlisten = listen("download-progress", (event) => {
-      console.log(event.payload as string);
-    });
-
-    return () => {
-      unlisten.then((unlistenFn) => unlistenFn());
-    };
-  }, []);
 
   const handleRightClick = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     e.preventDefault();
@@ -78,7 +66,7 @@ const InstallingProcess = () => {
             }}
           >
             <img
-              src={Games[downloadStatusStore.name]?.downloadImg}
+              src={downloadStatusStore?.game?.imageUrl}
               style={{
                 position: "absolute",
                 left: "0px",
@@ -94,7 +82,7 @@ const InstallingProcess = () => {
               }}
             >
               <Box className={"fs-16 white"} sx={{ textTransform: "none", display: "flex", marginLeft: 0.5 }}>
-                {Games[downloadStatusStore.name]?.name}
+                {downloadStatusStore?.game?.title}
               </Box>
               <Box
                 className={"fs-14-regular gray"}
@@ -106,6 +94,26 @@ const InstallingProcess = () => {
               >
                 <img src={downloadbig} />
                 Downloading...
+              </Box>
+              <Box
+                className={"fs-14-regular gray"}
+                sx={{
+                  textTransform: "none",
+                  display: "flex",
+                  alignItems: "center",
+                }}
+              >
+                {`${downloadStatusStore?.progress}/${downloadStatusStore?.total}`}
+              </Box>
+              <Box
+                className={"fs-14-regular gray"}
+                sx={{
+                  textTransform: "none",
+                  display: "flex",
+                  alignItems: "center",
+                }}
+              >
+                {`${downloadStatusStore?.speed} MB/s`}
               </Box>
             </Stack>
           </Button>
@@ -141,7 +149,7 @@ const InstallingProcess = () => {
               }
             }}
           >
-            <img src={Games[downloadStatusStore.name]?.downloadImg} style={{ position: "absolute", left: -2, width: "21px" }} />
+            <img src={downloadStatusStore?.game?.imageUrl} style={{ position: "absolute", left: -2, width: "21px" }} />
             <Box
               className={"fs-14-regular gray"}
               sx={{

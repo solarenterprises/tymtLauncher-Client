@@ -3,9 +3,9 @@ import { useSelector } from "react-redux";
 import { ThreeDots } from "react-loader-spinner";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { emit } from "@tauri-apps/api/event";
+// import { emit } from "@tauri-apps/api/event";
 
-import { TauriEventNames } from "../../consts/TauriEventNames";
+// import { TauriEventNames } from "../../consts/TauriEventNames";
 
 import D53Modal from "./D53Modal";
 
@@ -25,11 +25,11 @@ import districteffect from "../../assets/main/districteffect.svg";
 import districteffect1 from "../../assets/main/districteffect1.svg";
 import districteffect2 from "../../assets/main/districteffect2.svg";
 
-import { downloadGame, getGameFileSize, isInstalled } from "../../lib/api/Downloads";
+import { getGameFileSize } from "../../lib/api/Downloads";
 import Games from "../../lib/game/Game";
 
 import { IDownloadStatus, IInstallStatus } from "../../types/homeTypes";
-import { INotificationGameDownloadParams, INotificationParams } from "../../types/NotificationTypes";
+// import { INotificationGameDownloadParams, INotificationParams } from "../../types/NotificationTypes";
 
 interface props {
   setImage?: (image: any) => void;
@@ -40,6 +40,7 @@ const District53intro = ({ setImage }: props) => {
   const navigate = useNavigate();
   const homeclasses = homeStyles();
   const [selected, setSelected] = useState(0);
+  //@ts-ignore
   const [installed, setInstalled] = useState(false);
   const [d53Open, setD53Open] = useState<boolean>(false);
   const [gameFileSize, setGameFileSize] = useState<string>("");
@@ -47,24 +48,24 @@ const District53intro = ({ setImage }: props) => {
   const downloadStatusStore: IDownloadStatus = useSelector(getDownloadStatus);
   const installStatusStore: IInstallStatus = useSelector(getInstallStatus);
 
-  const checkInstalled = async () => {
-    setInstalled(await isInstalled("district53"));
-  };
+  // const checkInstalled = async () => {
+  //   setInstalled(await isInstalled("district53"));
+  // };
 
-  const checkOnline = async (): Promise<boolean> => {
-    try {
-      await fetch("https://www.google.com", {
-        mode: "no-cors",
-      });
-      return true;
-    } catch (error) {
-      return false;
-    }
-  };
+  // const checkOnline = async (): Promise<boolean> => {
+  //   try {
+  //     await fetch("https://www.google.com", {
+  //       mode: "no-cors",
+  //     });
+  //     return true;
+  //   } catch (error) {
+  //     return false;
+  //   }
+  // };
 
-  useEffect(() => {
-    checkInstalled();
-  }, []);
+  // useEffect(() => {
+  //   checkInstalled();
+  // }, []);
 
   useEffect(() => {
     const init = async () => {
@@ -171,46 +172,46 @@ const District53intro = ({ setImage }: props) => {
                   fullWidth
                   className={"red-button-D53"}
                   disabled={downloadStatusStore.isDownloading || installStatusStore.isInstalling}
-                  onClick={async () => {
-                    const online = await checkOnline();
-                    if (!online) {
-                      const noti_0: INotificationParams = {
-                        status: "failed",
-                        title: t("alt-26_internet-error"),
-                        message: t("alt-27_you-not-connected"),
-                        link: null,
-                        translate: false,
-                      };
-                      emit(TauriEventNames.NOTIFICATION, noti_0);
-                    } else {
-                      if (!installed) {
-                        const noti_1: INotificationGameDownloadParams = {
-                          status: "started",
-                          id: "district53",
-                        };
-                        emit(TauriEventNames.GAME_DOWNLOAD, noti_1);
+                  // onClick={async () => {
+                  //   const online = await checkOnline();
+                  //   if (!online) {
+                  //     const noti_0: INotificationParams = {
+                  //       status: "failed",
+                  //       title: t("alt-26_internet-error"),
+                  //       message: t("alt-27_you-not-connected"),
+                  //       link: null,
+                  //       translate: false,
+                  //     };
+                  //     emit(TauriEventNames.NOTIFICATION, noti_0);
+                  //   } else {
+                  //     if (!installed) {
+                  //       const noti_1: INotificationGameDownloadParams = {
+                  //         status: "started",
+                  //         id: "district53",
+                  //       };
+                  //       emit(TauriEventNames.GAME_DOWNLOAD, noti_1);
 
-                        const downloadable = await downloadGame("district53");
+                  //       const downloadable = await downloadGame("district53");
 
-                        if (!downloadable) {
-                          const noti_1: INotificationGameDownloadParams = {
-                            status: "failed",
-                            id: "district53",
-                          };
-                          emit(TauriEventNames.GAME_DOWNLOAD, noti_1);
-                        } else {
-                          const noti_3: INotificationGameDownloadParams = {
-                            status: "finished",
-                            id: "district53",
-                          };
-                          emit(TauriEventNames.GAME_DOWNLOAD, noti_3);
-                        }
-                        checkInstalled();
-                      } else {
-                        setD53Open(true);
-                      }
-                    }
-                  }}
+                  //       if (!downloadable) {
+                  //         const noti_1: INotificationGameDownloadParams = {
+                  //           status: "failed",
+                  //           id: "district53",
+                  //         };
+                  //         emit(TauriEventNames.GAME_DOWNLOAD, noti_1);
+                  //       } else {
+                  //         const noti_3: INotificationGameDownloadParams = {
+                  //           status: "finished",
+                  //           id: "district53",
+                  //         };
+                  //         emit(TauriEventNames.GAME_DOWNLOAD, noti_3);
+                  //       }
+                  //       checkInstalled();
+                  //     } else {
+                  //       setD53Open(true);
+                  //     }
+                  //   }
+                  // }}
                 >
                   {!downloadStatusStore.isDownloading && !installStatusStore.isInstalling && installed && t("hom-7_play-game")}
                   {!downloadStatusStore.isDownloading && !installStatusStore.isInstalling && !installed && t("hom-20_install-game")}

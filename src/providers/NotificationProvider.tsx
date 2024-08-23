@@ -19,7 +19,7 @@ import notiIcon from "../assets/main/32x32.png";
 import { translateString } from "../lib/api/Translate";
 
 import { IDownloadStatus } from "../types/homeTypes";
-import { INotificationGameDownloadParams, INotificationParams } from "../types/NotificationTypes";
+import { INotificationGameDownloadParams, INotificationGameDownloadProgressParams, INotificationParams } from "../types/NotificationTypes";
 
 import { TauriEventNames } from "../consts/TauriEventNames";
 
@@ -112,12 +112,14 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
         dispatch(
           setDownloadStatus({
             progress: 0,
+            speed: 0,
+            total: 0,
             isDownloading: true,
-            name: data.id,
+            game: data.game,
           })
         );
       } else if (data.status === "finished") {
-        if (!downloadStatusStoreRef.current.isDownloading || downloadStatusStoreRef.current.name !== data.id) {
+        if (!downloadStatusStoreRef.current.isDownloading || downloadStatusStoreRef.current.game._id !== data.game._id) {
           return;
         }
         const noti: INotificationParams = {
@@ -131,12 +133,14 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
         dispatch(
           setDownloadStatus({
             progress: 0,
-            isDownloading: false,
-            name: "",
+            speed: 0,
+            total: 0,
+            isDownloading: true,
+            game: null,
           })
         );
       } else if (data.status === "cancelled") {
-        if (!downloadStatusStoreRef.current.isDownloading || downloadStatusStoreRef.current.name !== data.id) {
+        if (!downloadStatusStoreRef.current.isDownloading || downloadStatusStoreRef.current.game._id !== data.game._id) {
           return;
         }
         const noti: INotificationParams = {
@@ -150,12 +154,14 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
         dispatch(
           setDownloadStatus({
             progress: 0,
-            isDownloading: false,
-            name: "",
+            speed: 0,
+            total: 0,
+            isDownloading: true,
+            game: null,
           })
         );
       } else if (data.status === "failed") {
-        if (!downloadStatusStoreRef.current.isDownloading || downloadStatusStoreRef.current.name !== data.id) {
+        if (!downloadStatusStoreRef.current.isDownloading || downloadStatusStoreRef.current.game._id !== data.game._id) {
           return;
         }
         const noti: INotificationParams = {
@@ -169,16 +175,32 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
         dispatch(
           setDownloadStatus({
             progress: 0,
-            isDownloading: false,
-            name: "",
+            speed: 0,
+            total: 0,
+            isDownloading: true,
+            game: null,
           })
         );
       }
     });
 
+    const unlisten_game_download_progress = listen(TauriEventNames.GAME_DOWNLOAD_PROGRESS, async (event) => {
+      const data = event.payload as INotificationGameDownloadProgressParams;
+      // console.log("TauriEventNames.GAME_DOWNLOAD_PROGRESS", data);
+      dispatch(
+        setDownloadStatus({
+          ...downloadStatusStoreRef.current,
+          speed: data.speed,
+          progress: data.downloaded,
+          total: data.total_size,
+        })
+      );
+    });
+
     return () => {
       unlisten_notification.then((unlistenFn) => unlistenFn());
       unlisten_game_download.then((unlistenFn) => unlistenFn());
+      unlisten_game_download_progress.then((unlistenFn) => unlistenFn());
     };
   });
 
