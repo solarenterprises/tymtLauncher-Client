@@ -3,24 +3,29 @@ import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { appWindow } from "@tauri-apps/api/window";
+import { invoke } from "@tauri-apps/api/tauri";
+
+import { motion } from "framer-motion";
+
 import { Grid, Box, Stack } from "@mui/material";
-import item1 from "../../assets/account/item1.svg";
-import item2 from "../../assets/account/item2.svg";
-import item3 from "../../assets/account/item3.svg";
-import item4 from "../../assets/account/item4.svg";
-import tymt1 from "../../assets/account/tymt1.png";
+
 import AccountNextButton from "../../components/account/AccountNextButton";
 import AccountHeader from "../../components/account/AccountHeader";
-import AccountIconBar from "../../components/account/AccountIconBar";
-import { selectLanguage } from "../../features/settings/LanguageSlice";
-import { languageType } from "../../types/settingTypes";
+import SignModeButton from "../../components/account/SignModeButton";
+
 import { AppDispatch } from "../../store";
+import { selectLanguage } from "../../features/settings/LanguageSlice";
 import { getAccount, setAccount } from "../../features/account/AccountSlice";
-import { IMachineId, accountType, loginEnum } from "../../types/accountTypes";
 import { getMachineId, setMachineId } from "../../features/account/MachineIdSlice";
-import { invoke } from "@tauri-apps/api/tauri";
 import { setMnemonic } from "../../features/account/MnemonicSlice";
-import { motion } from "framer-motion";
+
+import { languageType } from "../../types/settingTypes";
+import { IMachineId, accountType, loginEnum } from "../../types/accountTypes";
+
+import tymt1 from "../../assets/account/tymt1.png";
+
+import GuestIcon from "../../assets/account/Guest.svg";
+import ImportIcon from "../../assets/account/Import.svg";
 
 const Welcome = () => {
   const navigate = useNavigate();
@@ -104,19 +109,11 @@ const Welcome = () => {
                     <Grid item xs={12}>
                       <AccountHeader title={"Hello!"} />
                     </Grid>
-                    <Grid item xs={12} container spacing={"32px"} mt={"12px"}>
-                      <Grid item xs={12}>
-                        <AccountIconBar icon={item1} text={t("wc-3_manage-game-assets")} />
-                      </Grid>
-                      <Grid item xs={12}>
-                        <AccountIconBar icon={item2} text={t("wc-4_enjoy-traditional-games")} />
-                      </Grid>
-                      <Grid item xs={12}>
-                        <AccountIconBar icon={item3} text={t("wc-5_browse-game-library")} />
-                      </Grid>
-                      <Grid item xs={12}>
-                        <AccountIconBar icon={item4} text={t("wc-6_keep-your-assets")} />
-                      </Grid>
+                    <Grid item xs={12} mt={"12px"}>
+                      <Stack direction={"row"} alignItems={"center"} gap={"16px"}>
+                        <SignModeButton icon={GuestIcon} text={"Play as a guest"} />
+                        <SignModeButton icon={ImportIcon} text={"Import wallet"} />
+                      </Stack>
                     </Grid>
                     <Grid item xs={12} mt={"40px"}>
                       <Box className={"fs-18-light light"}>
