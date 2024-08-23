@@ -200,10 +200,14 @@ export const SocketProvider = () => {
                   const sKey = sKeyListStoreRef?.current?.sKeys?.find((element) => element?.roomId === data?.room_id)?.sKey;
                   const decryptedMessage = sKey ? Chatdecrypt(data.message, sKey) : data.message;
                   if (!roomInMutedList) {
+                    let notiMessage: string = decryptedMessage;
+                    if (data.type === "image" || data.type === "audio" || data.type === "file" || data.type === "video") {
+                      notiMessage = decryptedMessage.slice(0, -32);
+                    }
                     setNotificationOpen(true);
                     setNotificationStatus("message");
                     setNotificationTitle(senderName ? senderName : roomName);
-                    setNotificationDetail(decryptedMessage);
+                    setNotificationDetail(notiMessage);
                     setNotificationLink(`/chat/${data.room_id}`);
                   }
                 }
