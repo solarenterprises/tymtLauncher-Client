@@ -1,7 +1,7 @@
 import { Box, Stack, Modal, Fade } from "@mui/material";
 import closeIcon from "../assets/settings/x-icon.svg";
 import logo from "../assets/main/foxhead-comingsoon.png";
-import { tymt_release_date, tymt_version } from "../configs";
+// import { tymt_release_date, tymt_version } from "../configs";
 import { useTranslation } from "react-i18next";
 
 interface props {
@@ -35,8 +35,8 @@ const ComingModal = ({ open, setOpen }: props) => {
             </Box>
             <Stack direction={"column"} justifyContent={"center"} alignItems={"center"} textAlign={"center"} gap={"10px"}>
               <Box className="fs-h3 blue">{t("hom-16_coming-soon")}</Box>
-              <Box className="fs-h3 white">{`tymtLauncher v${tymt_version}`}</Box>
-              <Box className="fs-h3 white">{`(${tymt_release_date} released)`}</Box>
+              {/* <Box className="fs-h3 white">{`tymtLauncher v${tymt_version}`}</Box>
+              <Box className="fs-h3 white">{`(${tymt_release_date} released)`}</Box> */}
             </Stack>
           </Stack>
         </Box>
