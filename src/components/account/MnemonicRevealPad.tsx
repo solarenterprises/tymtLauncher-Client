@@ -83,7 +83,7 @@ const MnemonicRevealPad = ({ passphrase, blur, setBlur }: IPropsMnemonicRevealPa
           filter: blur ? "blur(5px)" : "none",
         }}
         onClick={() => {
-          if (passphrase) {
+          if (passphrase && blur) {
             setBlur(false);
             setTimeout(() => {
               setBlur(true);

@@ -33,7 +33,7 @@ const Backup = ({ view, setView }: propsType) => {
 
   const [passphrase, setPassphrase] = useState<string>("");
   const [blur, setBlur] = useState<boolean>(true);
-  const [time, setTime] = useState<number>(-1);
+  const [time, setTime] = useState<number>(10);
 
   const handleSubmit = useCallback(
     async (password: string) => {
@@ -79,7 +79,7 @@ const Backup = ({ view, setView }: propsType) => {
     if (formik.touched.password && formik.errors.password) {
       setBlur(true);
       setPassphrase("");
-      setTime(-1);
+      setTime(10);
     }
   }, [formik.touched.password, formik.errors.password]);
 
@@ -111,7 +111,7 @@ const Backup = ({ view, setView }: propsType) => {
                 setView("security");
                 setBlur(true);
                 setPassphrase("");
-                setTime(-1);
+                setTime(10);
                 formik.resetForm();
               }}
             >
@@ -161,7 +161,7 @@ const Backup = ({ view, setView }: propsType) => {
                 {passphrase && !blur && `${t("set-92_will-blur-again")} ${time} ${t("set-93_seconds")}`}
               </Box>
               <Box padding={"20px"} width={"90%"} sx={{ position: "absolute", bottom: "30px" }}>
-                <Button fullWidth className={classname.action_button} onClick={() => {}} disabled={formik.errors.password ? true : false} type="submit">
+                <Button fullWidth className={classname.action_button} disabled={formik.errors.password ? true : false} type="submit">
                   {t("ncca-51_confirm")}
                 </Button>
               </Box>
