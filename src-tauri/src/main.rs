@@ -128,7 +128,8 @@ async fn main() -> std::io::Result<()> {
                 is_window_visible,
                 show_transaction_window,
                 hide_transaction_window,
-                set_tray_items_enabled
+                set_tray_items_enabled,
+                write_file
             ]
         )
         .on_window_event(|event| {
@@ -1609,4 +1610,10 @@ async fn set_tray_items_enabled(
     for item_id in item_ids {
         let _ = tray_handle.get_item(&item_id).set_enabled(enabled);
     }
+}
+
+#[tauri::command]
+fn write_file(content: String, filepath: String) -> Result<(), String> {
+    std::fs::write(&filepath, content).map_err(|e| e.to_string())?;
+    Ok(())
 }

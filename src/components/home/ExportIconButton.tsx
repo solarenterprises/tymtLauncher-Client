@@ -1,13 +1,14 @@
 import { useTranslation } from "react-i18next";
 import { Tooltip, Stack, Box, IconButton } from "@mui/material";
-import CopyIcon from "../../assets/main/Copy.svg";
-import CopyHoverIcon from "../../assets/main/CopyHover.svg";
+// import ExportIcon from "../../assets/main/export.png";
+import ExportIcon from "../../assets/main/Export.svg";
+import ExportHoverIcon from "../../assets/main/ExportHover.svg";
 
-export interface IPropsCopyIconButton {
+export interface IPropsExportIconButton {
   onClick: () => void;
 }
 
-const CopyIconButton = ({ onClick }: IPropsCopyIconButton) => {
+const ExportIconButton = ({ onClick }: IPropsExportIconButton) => {
   const { t } = useTranslation();
 
   return (
@@ -24,7 +25,7 @@ const CopyIconButton = ({ onClick }: IPropsCopyIconButton) => {
             border: "1px solid rgb(71, 76, 76)",
           }}
         >
-          <Box className="fs-16-regular white">{t("ncca-57_copy")}</Box>
+          <Box className="fs-16-regular white">{t("cha-60_export")}</Box>
         </Stack>
       }
       PopperProps={{
@@ -45,13 +46,13 @@ const CopyIconButton = ({ onClick }: IPropsCopyIconButton) => {
           alignSelf: "center",
           position: "relative",
           "&:hover img": {
-            content: "url(" + CopyHoverIcon + ")",
+            content: "url(" + ExportHoverIcon + ")",
           },
         }}
       >
         <Box
           component={"img"}
-          src={CopyIcon}
+          src={ExportIcon}
           sx={{
             width: "100%",
             height: "100%",
@@ -63,4 +64,4 @@ const CopyIconButton = ({ onClick }: IPropsCopyIconButton) => {
   );
 };
 
-export default CopyIconButton;
+export default ExportIconButton;

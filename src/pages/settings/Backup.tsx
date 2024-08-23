@@ -24,7 +24,6 @@ import { INotificationParams } from "../../types/NotificationTypes";
 import SettingStyle from "../../styles/SettingStyle";
 
 import backIcon from "../../assets/settings/back-icon.svg";
-import CopyIconButton from "../../components/home/CopyIconButton";
 
 const Backup = ({ view, setView }: propsType) => {
   const classname = SettingStyle();
@@ -76,10 +75,6 @@ const Backup = ({ view, setView }: propsType) => {
     onSubmit: () => handleSubmit(formik.values.password),
   });
 
-  const copyMnemonicToClipboard = useCallback(() => {
-    navigator.clipboard.writeText(passphrase);
-  }, [passphrase]);
-
   useEffect(() => {
     if (formik.touched.password && formik.errors.password) {
       setBlur(true);
@@ -89,25 +84,20 @@ const Backup = ({ view, setView }: propsType) => {
   }, [formik.touched.password, formik.errors.password]);
 
   useEffect(() => {
-    let intervalId;
-
-    const timerFunction = async () => {
-      try {
-        setTime(time - 1);
-      } catch (err) {
-        console.error("Failed to timerFunction: ", err);
-      }
-    };
-
-    intervalId = setInterval(timerFunction, 1 * 1e3);
-    if (time <= 0 && intervalId) {
-      clearInterval(intervalId);
+    let intervalId: NodeJS.Timeout;
+    if (!blur) {
+      intervalId = setInterval(() => {
+        setTime((prev) => prev - 1);
+      }, 1 * 1e3);
+    } else {
+      if (intervalId) clearInterval(intervalId);
+      setTime(10);
     }
 
     return () => {
       if (intervalId) clearInterval(intervalId);
     };
-  }, [time]);
+  }, [blur]);
 
   return (
     <>
@@ -151,21 +141,8 @@ const Backup = ({ view, setView }: propsType) => {
                   </Box>
                 )}
               </Stack>
-              <Box
-                sx={{
-                  filter: blur ? "blur(5px)" : "none",
-                }}
-                onClick={() => {
-                  if (passphrase) {
-                    setBlur(false);
-                    setTimeout(() => {
-                      setBlur(true);
-                    }, 10 * 1e3);
-                    setTime(10);
-                  }
-                }}
-              >
-                <MnemonicRevealPad passphrase={passphrase} />
+              <Box>
+                <MnemonicRevealPad passphrase={passphrase} blur={blur} setBlur={setBlur} />
               </Box>
               <Box
                 className={"fs-16-regular white"}
@@ -183,7 +160,6 @@ const Backup = ({ view, setView }: propsType) => {
                 {!passphrase && blur && t("set-91_please-input-passphrase")}
                 {passphrase && !blur && `${t("set-92_will-blur-again")} ${time} ${t("set-93_seconds")}`}
               </Box>
-              {passphrase && <CopyIconButton onClick={copyMnemonicToClipboard} />}
               <Box padding={"20px"} width={"90%"} sx={{ position: "absolute", bottom: "30px" }}>
                 <Button fullWidth className={classname.action_button} onClick={() => {}} disabled={formik.errors.password ? true : false} type="submit">
                   {t("ncca-51_confirm")}
