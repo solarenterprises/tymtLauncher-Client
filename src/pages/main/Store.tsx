@@ -43,8 +43,8 @@ const Store = () => {
             paddingBottom: "24px",
           }}
         >
-          <Releasebtn releaseDate={releaseDate} setReleaseDate={setReleaseDate} />
-          <Multichainbtn />
+          {false && <Releasebtn releaseDate={releaseDate} setReleaseDate={setReleaseDate} />}
+          {false && <Multichainbtn />}
           <Genrebtn genre={genre} setGenre={setGenre} />
           <Platformbtn platform={platform} setPlatform={setPlatform} />
           <Rankingbtn rank={rank} setRank={setRank} />
