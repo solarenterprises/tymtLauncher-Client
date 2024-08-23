@@ -30,7 +30,7 @@ const Library = () => {
       <Box className={"fs-60-bold white"}>{t("hom-3_library")}</Box>
       <Grid item xs={12} container display={"flex"} marginTop={"48px"} justifyContent={"space-between"}>
         <LibrarymodeBtn status={status} setStatus={setStatus} />
-        <Multichainbtn />
+        {false && <Multichainbtn />}
       </Grid>
       <Grid item xs={12} marginTop={"32px"}>
         <Libraryshow />
