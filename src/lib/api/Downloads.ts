@@ -206,6 +206,22 @@ export async function isInstalled(game: IGame) {
   }
 }
 
+export const runNewGame = async (game: IGame, args: string[]) => {
+  try {
+    const executablePath = await getExecutablePathNewGame(game);
+    console.log("executablePath: ", executablePath);
+    if (!executablePath) return false;
+    const fullExecutablePath = `${await appDataDir()}v${tymt_version}/games/${game.project_name}/${executablePath}`;
+    console.log("fullExecutablePath: ", fullExecutablePath);
+    if (!fullExecutablePath) return false;
+    await runUrlArgs(fullExecutablePath, args);
+    return true;
+  } catch (err) {
+    console.error("Failed to runNewGame: ", err);
+    return false;
+  }
+};
+
 export async function runGame(game_key: string, serverIp?: string, autoMode?: boolean) {
   try {
     const dataDir = await appDataDir();

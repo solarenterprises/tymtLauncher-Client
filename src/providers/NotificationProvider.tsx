@@ -135,7 +135,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
             progress: 0,
             speed: 0,
             total: 0,
-            isDownloading: true,
+            isDownloading: false,
             game: null,
           })
         );
@@ -156,7 +156,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
             progress: 0,
             speed: 0,
             total: 0,
-            isDownloading: true,
+            isDownloading: false,
             game: null,
           })
         );
@@ -177,7 +177,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
             progress: 0,
             speed: 0,
             total: 0,
-            isDownloading: true,
+            isDownloading: false,
             game: null,
           })
         );
@@ -197,10 +197,23 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
       );
     });
 
+    const unlisten_game_download_finished_rust = listen(TauriEventNames.GAME_DOWNLOAD_FINISHED_RUST, async (_event) => {
+      dispatch(
+        setDownloadStatus({
+          progress: 0,
+          speed: 0,
+          total: 0,
+          isDownloading: false,
+          game: null,
+        })
+      );
+    });
+
     return () => {
       unlisten_notification.then((unlistenFn) => unlistenFn());
       unlisten_game_download.then((unlistenFn) => unlistenFn());
       unlisten_game_download_progress.then((unlistenFn) => unlistenFn());
+      unlisten_game_download_finished_rust.then((unlistenFn) => unlistenFn());
     };
   });
 

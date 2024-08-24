@@ -16,6 +16,7 @@ import { INotificationGameDownloadParams, INotificationParams } from "../../type
 
 import { checkOnline, downloadNewGame, isInstalled } from "../../lib/api/Downloads";
 import { IDownloadStatus } from "../../types/homeTypes";
+import WarningModalNewGame from "../home/WarningModalNewGame";
 
 export interface IPropsInstallButton {
   game: IGame;
@@ -26,10 +27,15 @@ const InstallButton = ({ game }: IPropsInstallButton) => {
 
   const downloadStatusStore: IDownloadStatus = useSelector(getDownloadStatus);
 
+  const [modalView, setModalView] = useState<boolean>(false);
   const [isSupporting, setIsSupporting] = useState<boolean>(false);
   const [installed, setInstalled] = useState(false);
 
   const handleClick = useCallback(async () => {
+    if (installed) {
+      setModalView(true);
+      return;
+    }
     const id = game?.project_name;
     if (!id) return;
     const online = await checkOnline();
@@ -68,7 +74,7 @@ const InstallButton = ({ game }: IPropsInstallButton) => {
         setInstalled(await isInstalled(game));
       }
     }
-  }, [game]);
+  }, [game, installed]);
 
   useEffect(() => {
     const checkSupport = async () => {
@@ -98,42 +104,53 @@ const InstallButton = ({ game }: IPropsInstallButton) => {
     checkSupport();
   }, [game]);
 
+  useEffect(() => {
+    const checkInstalled = async (game: IGame) => {
+      setInstalled(await isInstalled(game));
+    };
+
+    checkInstalled(game);
+  }, [game]);
+
   return (
-    <Button
-      fullWidth
-      onClick={handleClick}
-      disabled={!isSupporting}
-      sx={{
-        height: "46px",
-        width: "226px",
-        color: "white",
-        fontFamily: "Cobe-Bold",
-        fontSize: "14px",
-        fontStyle: "normal",
-        fontWeight: "400",
-        lineHeight: "normal",
-        borderRadius: "16px",
-        backgroundColor: "#ef4444",
-        textTransform: "none",
-        "&:hover": {
-          backgroundColor: "#992727",
-        },
-        "&.Mui-disabled": {
-          backgroundColor: "#2a2525",
-          color: "#7c7c7c",
-        },
-      }}
-    >
-      {!isSupporting && `Not supported`}
-      {isSupporting && !installed && !downloadStatusStore.isDownloading && t("hom-20_install-game")}
-      {isSupporting && installed && !downloadStatusStore.isDownloading && t("hom-7_play-game")}
-      {downloadStatusStore.isDownloading && (
-        <Stack direction={"row"} alignItems={"center"} gap={"4px"}>
-          <Box className={"fs-14-regular white t-center"}>{`${t("hom-21_downloading")}`}</Box>
-          <ThreeDots height="12px" width={"24px"} radius={4} color={`white`} />
-        </Stack>
-      )}
-    </Button>
+    <>
+      <Button
+        fullWidth
+        onClick={handleClick}
+        disabled={!isSupporting || downloadStatusStore?.isDownloading}
+        sx={{
+          height: "46px",
+          width: "226px",
+          color: "white",
+          fontFamily: "Cobe-Bold",
+          fontSize: "14px",
+          fontStyle: "normal",
+          fontWeight: "400",
+          lineHeight: "normal",
+          borderRadius: "16px",
+          backgroundColor: "#ef4444",
+          textTransform: "none",
+          "&:hover": {
+            backgroundColor: "#992727",
+          },
+          "&.Mui-disabled": {
+            backgroundColor: "#2a2525",
+            color: "#7c7c7c",
+          },
+        }}
+      >
+        {!isSupporting && `Not supported`}
+        {isSupporting && !installed && !downloadStatusStore?.isDownloading && t("hom-20_install-game")}
+        {isSupporting && installed && !downloadStatusStore?.isDownloading && t("hom-7_play-game")}
+        {downloadStatusStore?.isDownloading && (
+          <Stack direction={"row"} alignItems={"center"} gap={"4px"}>
+            <Box className={"fs-14-regular white t-center"}>{`${t("hom-21_downloading")}`}</Box>
+            <ThreeDots height="12px" width={"24px"} radius={4} color={`white`} />
+          </Stack>
+        )}
+      </Button>
+      <WarningModalNewGame open={modalView} setOpen={setModalView} game={game} />
+    </>
   );
 };
 
