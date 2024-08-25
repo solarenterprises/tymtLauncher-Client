@@ -18,7 +18,7 @@ export const AuthProvider = () => {
 
   useEffect(() => {
     if (!accountStoreRef.current.isLoggedIn) {
-      navigate("/start");
+      navigate("/welcome");
     }
   }, [accountStoreRef.current.isLoggedIn]);
 

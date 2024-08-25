@@ -13,8 +13,8 @@ import { INotificationParams } from "../../types/NotificationTypes";
 
 export interface IPropsMnemonicRevealPad {
   passphrase: string;
-  blur: boolean;
-  setBlur: (_: boolean) => void;
+  blur?: boolean;
+  setBlur?: (_: boolean) => void;
 }
 
 const MnemonicRevealPad = ({ passphrase, blur, setBlur }: IPropsMnemonicRevealPad) => {

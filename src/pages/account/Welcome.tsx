@@ -1,87 +1,23 @@
 import { useNavigate } from "react-router-dom";
-import { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { useTranslation } from "react-i18next";
-import { appWindow } from "@tauri-apps/api/window";
-import { invoke } from "@tauri-apps/api/tauri";
 
 import { motion } from "framer-motion";
 
-import { Grid, Box, Stack } from "@mui/material";
+import { Grid, Box, Stack, Divider } from "@mui/material";
 
 import AccountNextButton from "../../components/account/AccountNextButton";
 import AccountHeader from "../../components/account/AccountHeader";
 import SignModeButton from "../../components/account/SignModeButton";
 
-import { AppDispatch } from "../../store";
-import { selectLanguage } from "../../features/settings/LanguageSlice";
-import { getAccount, setAccount } from "../../features/account/AccountSlice";
-import { getMachineId, setMachineId } from "../../features/account/MachineIdSlice";
-import { setMnemonic } from "../../features/account/MnemonicSlice";
-
-import { languageType } from "../../types/settingTypes";
-import { IMachineId, accountType, loginEnum } from "../../types/accountTypes";
-
 import tymt1 from "../../assets/account/tymt1.png";
 
 import GuestIcon from "../../assets/account/Guest.svg";
 import ImportIcon from "../../assets/account/Import.svg";
+import CreateAccountForm from "../../components/account/CreateAccountForm";
+import OrLine from "../../components/account/OrLine";
+import AuthIconButtons from "../../components/account/AuthIconButtons";
 
 const Welcome = () => {
   const navigate = useNavigate();
-  const dispatch = useDispatch<AppDispatch>();
-  const accountStore: accountType = useSelector(getAccount);
-  const machineIdStore: IMachineId = useSelector(getMachineId);
-
-  const {
-    t,
-    i18n: { changeLanguage },
-  } = useTranslation();
-  const languageStore: languageType = useSelector(selectLanguage);
-
-  useEffect(() => {
-    changeLanguage(languageStore.language);
-  }, [changeLanguage, languageStore.language]);
-
-  useEffect(() => {
-    const handleKeyDown = async (e: KeyboardEvent) => {
-      if (e.key === "F11") {
-        e.preventDefault();
-        const isFullscreen = await appWindow.isFullscreen();
-        if (isFullscreen) {
-          await appWindow.setFullscreen(false);
-        } else {
-          await appWindow.setFullscreen(true);
-        }
-      }
-    };
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, []);
-
-  useEffect(() => {
-    invoke("get_machine_id")
-      .then((hwid) => {
-        console.log("Unique Machine ID:", hwid);
-        dispatch(
-          setMachineId({
-            ...machineIdStore,
-            machineId: hwid,
-          })
-        );
-      })
-      .catch((error) => {
-        console.error("Error getting Machine ID:", error);
-      });
-    dispatch(
-      setAccount({
-        ...accountStore,
-        mode: loginEnum.login,
-        isLoggedIn: false,
-      })
-    );
-    dispatch(setMnemonic({ mnemonic: "" }));
-  }, []);
 
   return (
     <>
@@ -109,26 +45,31 @@ const Welcome = () => {
                     <Grid item xs={12}>
                       <AccountHeader title={"Hello!"} />
                     </Grid>
-                    <Grid item xs={12} mt={"12px"}>
+                    <Grid item xs={12} mt={"48px"}>
                       <Stack direction={"row"} alignItems={"center"} gap={"16px"}>
-                        <SignModeButton icon={GuestIcon} text={"Play as a guest"} />
-                        <SignModeButton icon={ImportIcon} text={"Import wallet"} />
+                        <SignModeButton icon={GuestIcon} text={"Play as a guest"} onClick={() => navigate("/home")} />
+                        <SignModeButton icon={ImportIcon} text={"Import wallet"} onClick={() => navigate("/non-custodial/login/2")} />
                       </Stack>
                     </Grid>
-                    <Grid item xs={12} mt={"40px"}>
-                      <Box className={"fs-18-light light"}>
-                        {t("wc-7_if-you-already")}
-                        <br /> <br />
-                        {t("wc-8_you-create-account")}
-                      </Box>
+                    <Grid item xs={12} mt={"32px"}>
+                      <Divider variant="fullWidth" sx={{ backgroundColor: "#FFFFFF1A" }} />
                     </Grid>
-                    <Grid item xs={12} mt={"40px"}>
+                    <Grid item xs={12} mt={"32px"}>
+                      <CreateAccountForm />
+                    </Grid>
+                    <Grid item xs={12} mt={"24px"}>
                       <AccountNextButton
-                        text={t("wc-9_get-started")}
+                        text={"Next"}
                         onClick={() => {
-                          navigate("/start");
+                          navigate("/non-custodial/signup/2");
                         }}
                       />
+                    </Grid>
+                    <Grid item xs={12} mt={"32px"}>
+                      <OrLine />
+                    </Grid>
+                    <Grid item xs={12} mt={"32px"}>
+                      <AuthIconButtons />
                     </Grid>
                   </Grid>
                 </Grid>

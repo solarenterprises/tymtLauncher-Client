@@ -129,7 +129,7 @@ const GetStarted = () => {
                       <AccountNextButton
                         text={t("wc-9_get-started")}
                         onClick={() => {
-                          navigate("/start");
+                          navigate("/welcome");
                         }}
                       />
                     </Grid>

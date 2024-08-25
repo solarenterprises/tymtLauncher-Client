@@ -1,8 +1,5 @@
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { useSelector, useDispatch } from "react-redux";
-import { getTempNonCustodial, setTempNonCustodial } from "../../../features/account/TempNonCustodialSlice";
-import { getAccount } from "../../../features/account/AccountSlice";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { Grid, Box, Stack } from "@mui/material";
@@ -11,20 +8,13 @@ import AccountHeader from "../../../components/account/AccountHeader";
 import InputText from "../../../components/account/InputText";
 import AccountNextButton from "../../../components/account/AccountNextButton";
 import Stepper from "../../../components/account/Stepper";
-import HaveAccount from "../../../components/account/HaveAccount";
-import SecurityLevel from "../../../components/account/SecurityLevel";
-import IAgreeTerms from "../../../components/account/IAgreeTerms";
 import tymt3 from "../../../assets/account/tymt3.png";
 import "../../../global.css";
-import { accountType, nonCustodialType } from "../../../types/accountTypes";
 import { motion } from "framer-motion";
 
 const NonCustodialImport1 = () => {
   const navigate = useNavigate();
-  const dispatch = useDispatch();
   const { t } = useTranslation();
-  const tempNonCustodialStore: nonCustodialType = useSelector(getTempNonCustodial);
-  const accountStore: accountType = useSelector(getAccount);
 
   const formik = useFormik({
     initialValues: {
@@ -57,18 +47,18 @@ const NonCustodialImport1 = () => {
         .oneOf([Yup.ref("password")], t("cca-64_password-must-match")),
     }),
     onSubmit: () => {
-      dispatch(
-        setTempNonCustodial({
-          ...tempNonCustodialStore,
-          password: formik.values.password,
-        })
-      );
-      navigate("/non-custodial/import/2");
+      // dispatch(
+      //   setTempNonCustodial({
+      //     ...tempNonCustodialStore,
+      //     password: formik.values.password,
+      //   })
+      // );
+      navigate("/non-custodial/signup/4");
     },
   });
 
   const handleBackClick = () => {
-    navigate("/start");
+    navigate("/welcome");
   };
 
   return (
@@ -100,14 +90,14 @@ const NonCustodialImport1 = () => {
                     </Grid>
 
                     <Grid item xs={12} mt={"80px"}>
-                      <AccountHeader title={t("ncca-1_create-account")} text={t("ncca-2_remember-strong-password")} />
+                      <AccountHeader title={"Hello again!"} text={"Please type your mnemonic phrase exactly as it was shown to ensure it's correct."} />
                     </Grid>
                     <form onSubmit={formik.handleSubmit} style={{ width: "100%" }}>
                       <Grid item xs={12} mt={"48px"}>
                         <InputText
                           id="non-custodial-new-password"
                           name="password"
-                          label={t("ncca-3_password")}
+                          label={"Create password"}
                           type="password"
                           value={formik.values.password}
                           onChange={formik.handleChange}
@@ -115,9 +105,9 @@ const NonCustodialImport1 = () => {
                           error={formik.touched.password && formik.errors.password ? true : false}
                         />
                       </Grid>
-                      <Grid item xs={12} mt={"16px"}>
+                      {/* <Grid item xs={12} mt={"16px"}>
                         <SecurityLevel password={formik.values.password} />
-                      </Grid>
+                      </Grid> */}
                       <Grid item xs={12} mt={"40px"}>
                         <InputText
                           id="non-custodial-repeat-password"
@@ -142,20 +132,14 @@ const NonCustodialImport1 = () => {
                           <Box className={"fs-16-regular red"}>{formik.errors.passwordMatch}</Box>
                         )}
                       </Grid>
-                      <Grid item xs={12} mt={"20px"}>
-                        <IAgreeTerms />
-                      </Grid>
-                      <Grid item xs={12} mt={"48px"}>
+                      <Grid item xs={12} mt={"24px"}>
                         <AccountNextButton
                           isSubmit={true}
                           text={t("ncl-6_next")}
-                          disabled={formik.errors.password || formik.errors.passwordMatch || !accountStore.agreedTerms ? true : false}
+                          disabled={formik.errors.password || formik.errors.passwordMatch ? true : false}
                         />
                       </Grid>
                     </form>
-                    <Grid item xs={12} mt={"50px"}>
-                      <HaveAccount />
-                    </Grid>
                   </Grid>
                 </Grid>
               </Stack>

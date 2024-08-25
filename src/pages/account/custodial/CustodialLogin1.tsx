@@ -50,7 +50,7 @@ const CustodialLogIn1 = () => {
   });
 
   const handleBackClick = () => {
-    navigate("/start");
+    navigate("/welcome");
   };
 
   useEffect(() => {

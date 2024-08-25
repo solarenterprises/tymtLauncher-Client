@@ -22,7 +22,7 @@ const CustodialReset2 = () => {
   const [error, setError] = useState<boolean>(false);
 
   const handleBackClick = () => {
-    navigate("/start");
+    navigate("/welcome");
   };
 
   const handleNextClick = () => {

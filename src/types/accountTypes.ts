@@ -56,12 +56,6 @@ export interface connectModalType {
   setOpen: (status: boolean) => void;
 }
 
-export interface benefitModalType {
-  open: boolean;
-  setOpen: (status: boolean) => void;
-  path: string;
-}
-
 export interface ITymt {
   version: string;
 }

@@ -21,18 +21,11 @@ import CustodialReset1ResetLink from "./pages/account/custodial/CustodialReset1R
 import CustodialReset2 from "./pages/account/custodial/CustodialReset2";
 import CustodialReset3 from "./pages/account/custodial/CustodialReset3";
 
-import NonCustodialSignUp1 from "./pages/account/non-custodial/NonCustodialSignUp1";
 import NonCustodialSignUp2 from "./pages/account/non-custodial/NonCustodialSignUp2";
 import NonCustodialSignUp3 from "./pages/account/non-custodial/NonCustodialSignUp3";
 import NonCustodialSignUp4 from "./pages/account/non-custodial/NonCustodialSignUp4";
-import NonCustodialLogIn1 from "./pages/account/non-custodial/NonCustodialLogIn1";
 import NonCustodialLogIn2 from "./pages/account/non-custodial/NonCustodialLogIn2";
-import NonCustodialReset1 from "./pages/account/non-custodial/NonCustodialReset1";
-import NonCustodialReset2 from "./pages/account/non-custodial/NonCustodialReset2";
 import NonCustodialImport1 from "./pages/account/non-custodial/NonCustodialImport1";
-import NonCustodialImport2 from "./pages/account/non-custodial/NonCustodialImport2";
-import NonCustodialImport3 from "./pages/account/non-custodial/NonCustodialImport3";
-import NonCustodialImport4 from "./pages/account/non-custodial/NonCustodialImport4";
 
 import ConfirmInformation from "./pages/account/ConfirmInformation";
 
@@ -92,18 +85,11 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
                     <Route path="/get-started" element={<GetStarted />} />
                     <Route path="/start" element={<Start />} />
                     <Route path="/welcome" element={<Welcome />} />
-                    <Route path="/non-custodial/signup/1" element={<NonCustodialSignUp1 />} />
                     <Route path="/non-custodial/signup/2" element={<NonCustodialSignUp2 />} />
                     <Route path="/non-custodial/signup/3" element={<NonCustodialSignUp3 />} />
                     <Route path="/non-custodial/signup/4" element={<NonCustodialSignUp4 />} />
-                    <Route path="/non-custodial/login/1" element={<NonCustodialLogIn1 />} />
                     <Route path="/non-custodial/login/2" element={<NonCustodialLogIn2 />} />
-                    <Route path="/non-custodial/reset/1" element={<NonCustodialReset1 />} />
-                    <Route path="/non-custodial/reset/2" element={<NonCustodialReset2 />} />
                     <Route path="/non-custodial/import/1" element={<NonCustodialImport1 />} />
-                    <Route path="/non-custodial/import/2" element={<NonCustodialImport2 />} />
-                    <Route path="/non-custodial/import/3" element={<NonCustodialImport3 />} />
-                    <Route path="/non-custodial/import/4" element={<NonCustodialImport4 />} />
                     <Route path="/custodial/signup/1" element={<CustodialSignUp1 />} />
                     <Route path="/custodial/signup/1/verify-email" element={<CustodialSignUp1VerifyEmail />} />
                     <Route path="/custodial/signup/2" element={<CustodialSignUp2 />} />

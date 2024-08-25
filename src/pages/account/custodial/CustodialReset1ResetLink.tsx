@@ -21,7 +21,7 @@ const CustodialReset1ResetLink = () => {
   const { t } = useTranslation();
 
   const handleBackClick = () => {
-    navigate("/start");
+    navigate("/welcome");
   };
 
   return (

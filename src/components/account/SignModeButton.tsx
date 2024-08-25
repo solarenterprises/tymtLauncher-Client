@@ -1,16 +1,19 @@
-import { Box, Stack } from "@mui/material";
+import { Box, Stack, Button } from "@mui/material";
 
 import RightArrow from "../../assets/chevronright.svg";
 
 export interface IPropsSignModeButton {
   icon: string;
   text: string;
+  onClick: () => void;
 }
 
-const SignModeButton = ({ icon, text }: IPropsSignModeButton) => {
+const SignModeButton = ({ icon, text, onClick }: IPropsSignModeButton) => {
   return (
-    <Box
+    <Button
+      onClick={onClick}
       sx={{
+        textTransform: "none",
         width: "100%",
         border: "1px solid #52E1F233",
         padding: "12px 16px",
@@ -19,17 +22,18 @@ const SignModeButton = ({ icon, text }: IPropsSignModeButton) => {
         transition: "all 0.3s ease",
         "&:hover": {
           background: "var(--bg-stroke-white-10-stroke-default, #FFFFFF1A)",
+          border: "1px solid #ffffff33",
         },
       }}
     >
-      <Stack direction={"row"} alignItems={"center"} justifyContent={"space-between"}>
+      <Stack direction={"row"} alignItems={"center"} justifyContent={"space-between"} width={"100%"}>
         <Stack direction="row" alignItems="center" gap="16px">
           <Box component={"img"} src={icon} />
           <Box className={"fs-18-regular white"}>{text}</Box>
         </Stack>
         <Box component={"img"} src={RightArrow} width={"24px"} height={"24px"} />
       </Stack>
-    </Box>
+    </Button>
   );
 };
 

@@ -82,7 +82,7 @@ const CustodialSignUp1 = () => {
   });
 
   const handleBackClick = () => {
-    navigate("/start");
+    navigate("/welcome");
   };
 
   return (

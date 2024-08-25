@@ -1,16 +1,16 @@
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { useSelector, useDispatch } from "react-redux";
+// import { useSelector, useDispatch } from "react-redux";
 import { useState } from "react";
 import { readText } from "@tauri-apps/api/clipboard";
 
-import { AppDispatch } from "../../../store";
-import { getNonCustodial } from "../../../features/account/NonCustodialSlice";
-import { getTempNonCustodial, setTempNonCustodial } from "../../../features/account/TempNonCustodialSlice";
-import { getTempAddressesFromMnemonicAsync } from "../../../features/wallet/TempMultiWalletSlice";
-import { getAccount, setAccount } from "../../../features/account/AccountSlice";
+// import { AppDispatch } from "../../../store";
+// import { getNonCustodial } from "../../../features/account/NonCustodialSlice";
+// import { getTempNonCustodial, setTempNonCustodial } from "../../../features/account/TempNonCustodialSlice";
+// import { getTempAddressesFromMnemonicAsync } from "../../../features/wallet/TempMultiWalletSlice";
+// import { getAccount, setAccount } from "../../../features/account/AccountSlice";
 
-import AuthAPI from "../../../lib/api/AuthAPI";
+// import AuthAPI from "../../../lib/api/AuthAPI";
 
 import { useFormik } from "formik";
 import * as Yup from "yup";
@@ -23,23 +23,24 @@ import AccountHeader from "../../../components/account/AccountHeader";
 import InputText from "../../../components/account/InputText";
 import AccountNextButton from "../../../components/account/AccountNextButton";
 import Stepper from "../../../components/account/Stepper";
-import DontHaveAccount from "../../../components/account/DontHaveAccount";
 
 import tymt2 from "../../../assets/account/tymt2.png";
 import "../../../global.css";
 
-import { accountType, loginEnum, nonCustodialType } from "../../../types/accountTypes";
+// import { accountType, loginEnum, nonCustodialType } from "../../../types/accountTypes";
 
-import tymtCore from "../../../lib/core/tymtCore";
+// import tymtCore from "../../../lib/core/tymtCore";
 import { checkMnemonic } from "../../../consts/mnemonics";
+import MnemonicRevealPad from "../../../components/account/MnemonicRevealPad";
 
 const NonCustodialLogIn2 = () => {
   const navigate = useNavigate();
-  const nonCustodialStore: nonCustodialType = useSelector(getNonCustodial);
-  const tempNonCustodialStore: nonCustodialType = useSelector(getTempNonCustodial);
-  const dispatch = useDispatch<AppDispatch>();
-  const accountStore: accountType = useSelector(getAccount);
+  // const nonCustodialStore: nonCustodialType = useSelector(getNonCustodial);
+  // const tempNonCustodialStore: nonCustodialType = useSelector(getTempNonCustodial);
+  // const dispatch = useDispatch<AppDispatch>();
+  // const accountStore: accountType = useSelector(getAccount);
   const { t } = useTranslation();
+  //@ts-ignore
   const [loading, setLoading] = useState<boolean>(false);
 
   const formik = useFormik({
@@ -63,44 +64,45 @@ const NonCustodialLogIn2 = () => {
         }),
     }),
     onSubmit: () => {
-      dispatch(
-        setAccount({
-          ...accountStore,
-          mode: loginEnum.import,
-        })
-      );
-      dispatch(
-        setTempNonCustodial({
-          ...tempNonCustodialStore,
-          mnemonic: formik.values.mnemonic,
-        })
-      );
-      setLoading(true);
-      dispatch(getTempAddressesFromMnemonicAsync({ mnemonic: formik.values.mnemonic })).then(async () => {
-        const res = await AuthAPI.getUserBySolarAddress(await tymtCore.Blockchains.solar.wallet.getAddress(formik.values.mnemonic));
-        if (res.data.users.length === 0) {
-          navigate("/non-custodial/import/1");
-        } else {
-          dispatch(
-            setTempNonCustodial({
-              ...tempNonCustodialStore,
-              mnemonic: formik.values.mnemonic,
-              nickname: res.data.users[0].nickName,
-            })
-          );
-          if (nonCustodialStore.password === "") {
-            navigate("/non-custodial/import/3");
-          } else {
-            navigate("/non-custodial/import/4");
-          }
-        }
-        setLoading(false);
-      });
+      navigate("/non-custodial/import/1");
+      // dispatch(
+      //   setAccount({
+      //     ...accountStore,
+      //     mode: loginEnum.import,
+      //   })
+      // );
+      // dispatch(
+      //   setTempNonCustodial({
+      //     ...tempNonCustodialStore,
+      //     mnemonic: formik.values.mnemonic,
+      //   })
+      // );
+      // setLoading(true);
+      // dispatch(getTempAddressesFromMnemonicAsync({ mnemonic: formik.values.mnemonic })).then(async () => {
+      //   const res = await AuthAPI.getUserBySolarAddress(await tymtCore.Blockchains.solar.wallet.getAddress(formik.values.mnemonic));
+      //   if (res.data.users.length === 0) {
+      //     navigate("/non-custodial/import/1");
+      //   } else {
+      //     dispatch(
+      //       setTempNonCustodial({
+      //         ...tempNonCustodialStore,
+      //         mnemonic: formik.values.mnemonic,
+      //         nickname: res.data.users[0].nickName,
+      //       })
+      //     );
+      //     if (nonCustodialStore.password === "") {
+      //       navigate("/non-custodial/import/3");
+      //     } else {
+      //       navigate("/non-custodial/import/4");
+      //     }
+      //   }
+      //   setLoading(false);
+      // });
     },
   });
 
   const handleBackClick = () => {
-    navigate("/start");
+    navigate("/welcome");
   };
 
   const handlePasteClick = async () => {
@@ -141,7 +143,7 @@ const NonCustodialLogIn2 = () => {
                     </Grid>
 
                     <Grid item xs={12} mt={"80px"}>
-                      <AccountHeader title={t("ncl-2_welcome-back")} text={t("ncl-12_type-your-mnemonic")} />
+                      <AccountHeader title={"Hello"} text={t("ncl-12_type-your-mnemonic")} />
                     </Grid>
                     <form onSubmit={formik.handleSubmit} style={{ width: "100%" }}>
                       <Grid item xs={12} mt={"48px"}>
@@ -167,6 +169,9 @@ const NonCustodialLogIn2 = () => {
                       >
                         {formik.touched.mnemonic && formik.errors.mnemonic && <Box className={"fs-16-regular red"}>{formik.errors.mnemonic}</Box>}
                       </Grid>
+                      <Grid item xs={12}>
+                        <MnemonicRevealPad passphrase={formik?.values?.mnemonic} />
+                      </Grid>
                       <Grid item xs={12} mt={"40px"}>
                         <AccountNextButton
                           text={t("ncl-6_next")}
@@ -176,9 +181,6 @@ const NonCustodialLogIn2 = () => {
                         />
                       </Grid>
                     </form>
-                    <Grid item xs={12} mt={"50px"}>
-                      <DontHaveAccount />
-                    </Grid>
                   </Grid>
                 </Grid>
               </Stack>

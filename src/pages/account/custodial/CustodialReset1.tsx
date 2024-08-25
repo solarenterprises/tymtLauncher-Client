@@ -42,7 +42,7 @@ const CustodialReset1 = () => {
   });
 
   const handleBackClick = () => {
-    navigate("/start");
+    navigate("/welcome");
   };
 
   return (

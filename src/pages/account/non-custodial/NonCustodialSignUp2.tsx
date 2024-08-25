@@ -6,7 +6,6 @@ import Back from "../../../components/account/Back";
 import AccountHeader from "../../../components/account/AccountHeader";
 import AccountNextButton from "../../../components/account/AccountNextButton";
 import Stepper from "../../../components/account/Stepper";
-import HaveAccount from "../../../components/account/HaveAccount";
 import MnemonicComboBox from "../../../components/account/MnemonicComboBox";
 import MnemonicPad from "../../../components/account/MnemonicPad";
 import tymt3 from "../../../assets/account/tymt3.png";
@@ -18,14 +17,12 @@ const NonCustodialSignUp2 = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
-  const [path, setPath] = useState("");
 
   const handleBackClick = () => {
-    navigate("/start");
+    navigate("/welcome");
   };
 
   const handleNextClick = () => {
-    setPath("/non-custodial/signup/3");
     setOpen(true);
   };
 
@@ -69,9 +66,6 @@ const NonCustodialSignUp2 = () => {
                     <Grid item xs={12} mt={"48px"}>
                       <AccountNextButton text={t("ncl-6_next")} onClick={handleNextClick} />
                     </Grid>
-                    <Grid item xs={12} mt={length === 12 ? "91px" : "40px"}>
-                      <HaveAccount />
-                    </Grid>
                   </Grid>
                 </Grid>
               </Stack>
@@ -86,7 +80,7 @@ const NonCustodialSignUp2 = () => {
           </motion.div>
         </Grid>
       </Grid>
-      <PassphraseModal open={open} setOpen={setOpen} path={path} />
+      <PassphraseModal open={open} setOpen={setOpen} />
     </>
   );
 };

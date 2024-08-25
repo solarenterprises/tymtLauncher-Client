@@ -21,7 +21,7 @@ const CustodialSignUp1VerifyEmail = () => {
   const { t } = useTranslation();
 
   const handleBackClick = () => {
-    navigate("/start");
+    navigate("/welcome");
   };
 
   return (

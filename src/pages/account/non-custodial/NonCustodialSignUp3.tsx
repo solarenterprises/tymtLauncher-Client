@@ -10,10 +10,9 @@ import Back from "../../../components/account/Back";
 import AccountHeader from "../../../components/account/AccountHeader";
 import AccountNextButton from "../../../components/account/AccountNextButton";
 import Stepper from "../../../components/account/Stepper";
-import HaveAccount from "../../../components/account/HaveAccount";
 import MnemonicRandomPad from "../../../components/account/MnemonicRandomPad";
 import MnemonicConfirm from "../../../components/account/MnemonicConfirm";
-import { getTempAddressesFromMnemonicAsync } from "../../../features/wallet/TempMultiWalletSlice";
+// import { getTempAddressesFromMnemonicAsync } from "../../../features/wallet/TempMultiWalletSlice";
 import tymt3 from "../../../assets/account/tymt3.png";
 import "../../../global.css";
 import { nonCustodialType, threeConfirmType } from "../../../types/accountTypes";
@@ -26,38 +25,41 @@ const NonCustodialSignUp3 = () => {
   const dispatch = useDispatch<AppDispatch>();
   const threeConfirmStore: threeConfirmType = useSelector(getThreeConfirm);
   const tempNonCustodialStore: nonCustodialType = useSelector(getTempNonCustodial);
+  //@ts-ignore
   const [error, setError] = useState<boolean>(false);
+  //@ts-ignore
   const [loading, setLoading] = useState<boolean>(false);
 
   const handleBackClick = () => {
-    navigate("/start");
+    navigate("/welcome");
   };
 
   const handleNextClick = useCallback(async () => {
-    const mnemonicString = tempNonCustodialStore.mnemonic;
-    const mnemonic = mnemonicString.split(" ");
-    console.log(mnemonic, threeConfirmStore, tempNonCustodialStore);
-    if (threeConfirmStore.first === mnemonic[2] && threeConfirmStore.second === mnemonic[5] && threeConfirmStore.third === mnemonic[8]) {
-      setLoading(true);
-      dispatch(
-        getTempAddressesFromMnemonicAsync({
-          mnemonic: tempNonCustodialStore.mnemonic,
-        })
-      ).then(() => {
-        setLoading(false);
-        navigate("/non-custodial/signup/4");
-        dispatch(
-          setThreeConfirm({
-            first: "",
-            second: "",
-            third: "",
-            focus: 1,
-          })
-        );
-      });
-    } else {
-      setError(true);
-    }
+    navigate("/non-custodial/signup/4");
+    // const mnemonicString = tempNonCustodialStore.mnemonic;
+    // const mnemonic = mnemonicString.split(" ");
+    // console.log(mnemonic, threeConfirmStore, tempNonCustodialStore);
+    // if (threeConfirmStore.first === mnemonic[2] && threeConfirmStore.second === mnemonic[5] && threeConfirmStore.third === mnemonic[8]) {
+    //   setLoading(true);
+    //   dispatch(
+    //     getTempAddressesFromMnemonicAsync({
+    //       mnemonic: tempNonCustodialStore.mnemonic,
+    //     })
+    //   ).then(() => {
+    //     setLoading(false);
+    //     navigate("/non-custodial/signup/4");
+    //     dispatch(
+    //       setThreeConfirm({
+    //         first: "",
+    //         second: "",
+    //         third: "",
+    //         focus: 1,
+    //       })
+    //     );
+    //   });
+    // } else {
+    //   setError(true);
+    // }
   }, [tempNonCustodialStore, threeConfirmStore]);
 
   useEffect(() => {
@@ -125,9 +127,6 @@ const NonCustodialSignUp3 = () => {
                         loading={loading}
                         onClick={handleNextClick}
                       />
-                    </Grid>
-                    <Grid item xs={12} mt={length === 12 ? "91px" : "40px"}>
-                      <HaveAccount />
                     </Grid>
                   </Grid>
                 </Grid>

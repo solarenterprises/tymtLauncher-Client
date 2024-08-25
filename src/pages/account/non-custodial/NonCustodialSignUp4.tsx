@@ -1,8 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
-import { AppDispatch } from "../../../store";
-import { getTempNonCustodial, setTempNonCustodial } from "../../../features/account/TempNonCustodialSlice";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { Grid, Box, Stack } from "@mui/material";
@@ -11,17 +8,13 @@ import AccountHeader from "../../../components/account/AccountHeader";
 import InputText from "../../../components/account/InputText";
 import AccountNextButton from "../../../components/account/AccountNextButton";
 import Stepper from "../../../components/account/Stepper";
-import HaveAccount from "../../../components/account/HaveAccount";
 import tymt3 from "../../../assets/account/tymt3.png";
 import "../../../global.css";
-import { nonCustodialType } from "../../../types/accountTypes";
 import { motion } from "framer-motion";
 
 const NonCustodialSignUp4 = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const dispatch = useDispatch<AppDispatch>();
-  const tempNonCustodialStore: nonCustodialType = useSelector(getTempNonCustodial);
 
   const formik = useFormik({
     initialValues: {
@@ -35,18 +28,18 @@ const NonCustodialSignUp4 = () => {
         .matches(/^[a-zA-Z0-9_ !@#$%^&*()\-+=,.?]+$/, t("ncca-61_invalid-characters")),
     }),
     onSubmit: async () => {
-      dispatch(
-        setTempNonCustodial({
-          ...tempNonCustodialStore,
-          nickname: formik.values.nickname,
-        })
-      );
+      // dispatch(
+      //   setTempNonCustodial({
+      //     ...tempNonCustodialStore,
+      //     nickname: formik.values.nickname,
+      //   })
+      // );
       navigate("/confirm-information");
     },
   });
 
   const handleBackClick = () => {
-    navigate("/start");
+    navigate("/welcome");
   };
 
   return (
@@ -104,9 +97,6 @@ const NonCustodialSignUp4 = () => {
                         <AccountNextButton isSubmit={true} text={t("ncca-44_verify-and-complete")} disabled={formik.errors.nickname ? true : false} />
                       </Grid>
                     </form>
-                    <Grid item xs={12} mt={"50px"}>
-                      <HaveAccount />
-                    </Grid>
                   </Grid>
                 </Grid>
               </Stack>

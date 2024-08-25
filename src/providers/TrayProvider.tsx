@@ -83,7 +83,7 @@ export const TrayProvider: React.FC<TrayProviderProps> = ({ children }) => {
     });
 
     const unlisten_signout = listen("signout", (event) => {
-      navigate("/start");
+      navigate("/welcome");
       appWindow.setFocus();
       console.log(event.payload as string);
     });
