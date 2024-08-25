@@ -106,10 +106,15 @@ const InstallButton = ({ game }: IPropsInstallButton) => {
 
   useEffect(() => {
     const checkInstalled = async (game: IGame) => {
+      console.log("checkInstalled");
       setInstalled(await isInstalled(game));
     };
 
-    checkInstalled(game);
+    let intervalId = setInterval(() => checkInstalled(game), 1 * 1e3);
+
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+    };
   }, [game]);
 
   return (

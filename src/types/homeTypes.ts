@@ -32,6 +32,10 @@ export interface IInstallStatus {
   name: string;
 }
 
+export interface IRemoveStatus {
+  game: IGame;
+}
+
 export interface IPoint {
   x: number;
   y: number;

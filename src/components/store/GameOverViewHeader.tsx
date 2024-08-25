@@ -1,9 +1,9 @@
-
 import { Stack, Box } from "@mui/material";
 
 import InstallButton from "./InstallButton";
 
 import { IGame } from "../../types/GameTypes";
+import RemoveButton from "./RemoveButton";
 
 export interface IPropsGameOverViewHeader {
   game: IGame;
@@ -41,7 +41,10 @@ const GameOverViewHeader = ({ game }: IPropsGameOverViewHeader) => {
           </Box>
         </Stack>
       </Stack>
-      <InstallButton game={game} />
+      <Stack direction={"row"} alignItems={"center"} gap={"16px"}>
+        <InstallButton game={game} />
+        <RemoveButton game={game} />
+      </Stack>
     </Stack>
   );
 };
