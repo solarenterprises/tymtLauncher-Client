@@ -3,8 +3,10 @@ import { IDownloadStatus } from "../../types/homeTypes";
 
 const init: IDownloadStatus = {
   progress: 0,
+  speed: 0,
+  total: 0,
   isDownloading: false,
-  name: "",
+  game: null,
 };
 
 const loadDownloadStatus: () => IDownloadStatus = () => {

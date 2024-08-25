@@ -54,6 +54,7 @@ import adminListReducer from "./features/chat/AdminListSlice";
 import historicalChatroomMembersReducer from "./features/chat/HistoricalChatroomMembersSlice";
 import gameListReducer from "./features/store/GameListSlice";
 import comingGameListReducer from "./features/store/ComingGameListSlice";
+import removeStatusReducer from "./features/home/RemoveStatusSlice";
 
 const blacklistActionTypes = ["intercomsupport/setChatMounted", "intercomsupport/setMountedTrue", "intercomsupport/setMountedFalse"];
 
@@ -116,6 +117,7 @@ const store = configureStore({
     historicalChatroomMembers: historicalChatroomMembersReducer,
     gameList: gameListReducer,
     comingGameList: comingGameListReducer,
+    removeStatus: removeStatusReducer,
   },
   middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(stateSyncMiddleware),
 });

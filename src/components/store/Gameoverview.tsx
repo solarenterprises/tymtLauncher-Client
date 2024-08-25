@@ -3,11 +3,8 @@ import { useTranslation } from "react-i18next";
 import { useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { ThreeDots } from "react-loader-spinner";
-import { emit } from "@tauri-apps/api/event";
 import { removeDir } from "@tauri-apps/api/fs";
 import { appDataDir } from "@tauri-apps/api/path";
-
-import { TauriEventNames } from "../../consts/TauriEventNames";
 
 import { useNotification } from "../../providers/NotificationProvider";
 
@@ -32,7 +29,7 @@ import { viewType } from "../../types/storeTypes";
 import { Swiper, SwiperSlide } from "swiper/react";
 
 import { getViewmode } from "../../features/store/Gameview";
-import { downloadGame, getGameFileSize, isInstalled, openLink } from "../../lib/api/Downloads";
+import { getGameFileSize, openLink } from "../../lib/api/Downloads";
 import Games, { Game } from "../../lib/game/Game";
 
 import { languageType } from "../../types/settingTypes";
@@ -40,7 +37,6 @@ import { tymt_version } from "../../configs";
 import { platformIconMap } from "../../types/GameTypes";
 import { chainIconMap } from "../../types/walletTypes";
 import { IDownloadStatus, IInstallStatus } from "../../types/homeTypes";
-import { INotificationGameDownloadParams, INotificationParams } from "../../types/NotificationTypes";
 
 import storeStyles from "../../styles/StoreStyles";
 
@@ -61,6 +57,7 @@ const GameOverview = () => {
   const installStatusStore: IInstallStatus = useSelector(getInstallStatus);
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
+  //@ts-ignore
   const [installed, setInstalled] = useState(false);
   const [selected, setSelected] = useState(0);
   const [image, setImage] = useState(Games[id].images[0]);
@@ -74,24 +71,24 @@ const GameOverview = () => {
 
   const { setNotificationStatus, setNotificationTitle, setNotificationDetail, setNotificationOpen, setNotificationLink } = useNotification();
 
-  const checkInstalled = async (_id: string) => {
-    setInstalled(await isInstalled(_id));
-  };
+  // const checkInstalled = async (_id: string) => {
+  //   setInstalled(await isInstalled(_id));
+  // };
 
-  const checkOnline = async (): Promise<boolean> => {
-    try {
-      await fetch("https://www.google.com", {
-        mode: "no-cors",
-      });
-      return true;
-    } catch (error) {
-      return false;
-    }
-  };
+  // const checkOnline = async (): Promise<boolean> => {
+  //   try {
+  //     await fetch("https://www.google.com", {
+  //       mode: "no-cors",
+  //     });
+  //     return true;
+  //   } catch (error) {
+  //     return false;
+  //   }
+  // };
 
-  useEffect(() => {
-    checkInstalled(id);
-  }, [id]);
+  // useEffect(() => {
+  //   checkInstalled(id);
+  // }, [id]);
 
   useEffect(() => {
     const init = async () => {
@@ -134,50 +131,50 @@ const GameOverview = () => {
                   className={"red-button-Gameoverview"}
                   fullWidth
                   disabled={downloadStatusStore.isDownloading || installStatusStore.isInstalling}
-                  onClick={async () => {
-                    const online = await checkOnline();
-                    if (!online) {
-                      const noti_0: INotificationParams = {
-                        status: "failed",
-                        title: t("alt-26_internet-error"),
-                        message: t("alt-27_you-not-connected"),
-                        link: null,
-                        translate: false,
-                      };
-                      emit(TauriEventNames.NOTIFICATION, noti_0);
-                    } else {
-                      if (!installed) {
-                        const noti_1: INotificationGameDownloadParams = {
-                          status: "started",
-                          id: id,
-                        };
-                        emit(TauriEventNames.GAME_DOWNLOAD, noti_1);
+                  // onClick={async () => {
+                  //   const online = await checkOnline();
+                  //   if (!online) {
+                  //     const noti_0: INotificationParams = {
+                  //       status: "failed",
+                  //       title: t("alt-26_internet-error"),
+                  //       message: t("alt-27_you-not-connected"),
+                  //       link: null,
+                  //       translate: false,
+                  //     };
+                  //     emit(TauriEventNames.NOTIFICATION, noti_0);
+                  //   } else {
+                  //     if (!installed) {
+                  //       const noti_1: INotificationGameDownloadParams = {
+                  //         status: "started",
+                  //         id: id,
+                  //       };
+                  //       emit(TauriEventNames.GAME_DOWNLOAD, noti_1);
 
-                        const downloadable = await downloadGame(id);
+                  //       const downloadable = await downloadGame(id);
 
-                        if (!downloadable) {
-                          const noti_1: INotificationGameDownloadParams = {
-                            status: "failed",
-                            id: id,
-                          };
-                          emit(TauriEventNames.GAME_DOWNLOAD, noti_1);
-                        } else {
-                          const noti_3: INotificationGameDownloadParams = {
-                            status: "finished",
-                            id: id,
-                          };
-                          emit(TauriEventNames.GAME_DOWNLOAD, noti_3);
-                        }
-                        await checkInstalled(id);
-                      } else {
-                        if (id === "district53") {
-                          setD53Open(true);
-                        } else {
-                          setWarningView(true);
-                        }
-                      }
-                    }
-                  }}
+                  //       if (!downloadable) {
+                  //         const noti_1: INotificationGameDownloadParams = {
+                  //           status: "failed",
+                  //           id: id,
+                  //         };
+                  //         emit(TauriEventNames.GAME_DOWNLOAD, noti_1);
+                  //       } else {
+                  //         const noti_3: INotificationGameDownloadParams = {
+                  //           status: "finished",
+                  //           id: id,
+                  //         };
+                  //         emit(TauriEventNames.GAME_DOWNLOAD, noti_3);
+                  //       }
+                  //       await checkInstalled(id);
+                  //     } else {
+                  //       if (id === "district53") {
+                  //         setD53Open(true);
+                  //       } else {
+                  //         setWarningView(true);
+                  //       }
+                  //     }
+                  //   }
+                  // }}
                 >
                   {!downloadStatusStore.isDownloading && !installStatusStore.isInstalling && installed && t("hom-7_play-game")}
                   {!downloadStatusStore.isDownloading && !installStatusStore.isInstalling && !installed && t("hom-20_install-game")}
@@ -209,7 +206,7 @@ const GameOverview = () => {
                     setNotificationDetail(t("alt-31_game-removed-intro"));
                     setNotificationOpen(true);
                     setNotificationLink(null);
-                    await checkInstalled(id);
+                    // await checkInstalled(id);
                     setLoading(false);
                   }}
                 >

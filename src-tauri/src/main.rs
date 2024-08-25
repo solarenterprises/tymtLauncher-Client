@@ -6,16 +6,24 @@
 use actix_web::{ web, App, HttpRequest, HttpResponse, HttpServer };
 use actix_cors::Cors;
 use machineid_rs::{ Encryption, HWIDComponent, IdBuilder };
+use reqwest::header::ACCEPT;
 use reqwest::{ header, Client };
 use serde::{ Deserialize, Serialize };
+use std::cmp::min;
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::{ Path, PathBuf };
 use std::process::Command;
 use std::sync::OnceLock;
+use std::time::{ Instant, Duration };
 use std::{ fs, io };
 use tauri::Manager;
 use tauri::{ CustomMenuItem, SystemTray, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem };
+use futures_util::stream::StreamExt;
+
+use std::sync::Arc;
+use tokio::sync::{ Mutex, oneshot };
+
 // use dotenv::dotenv;
 // use std::env;
 
@@ -117,6 +125,10 @@ async fn main() -> std::io::Result<()> {
                 download_and_unzip_macos,
                 download_and_untarbz2_macos,
                 download_and_unzip_windows,
+                download_and_unzip_new_game_windows,
+                download_to_app_dir,
+                unzip_windows,
+                delete_file,
                 run_exe,
                 run_url_args,
                 run_linux,
@@ -1615,5 +1627,162 @@ async fn set_tray_items_enabled(
 #[tauri::command]
 fn write_file(content: String, filepath: String) -> Result<(), String> {
     std::fs::write(&filepath, content).map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+#[tauri::command]
+async fn download_and_unzip_new_game_windows(
+    app_handle: tauri::AppHandle,
+    install_path: String,
+    url: String,
+    executable_path: String,
+    file_name: String
+) {
+    println!("{}", url);
+    println!("{}", install_path);
+    println!("{}", executable_path);
+    println!("{}", file_name);
+
+    let app_dir = app_handle
+        .path_resolver()
+        .app_data_dir()
+        .unwrap()
+        .into_os_string()
+        .into_string()
+        .to_owned()
+        .unwrap();
+
+    let file_location = (app_dir.to_string() + "/" + &file_name).to_owned();
+    let install_dir = app_dir.to_string() + &install_path;
+
+    println!("file_location: {}", file_location);
+    println!("install_dir: {}", install_dir);
+
+    if
+        let Err(e) = download_to_app_dir(
+            app_handle.clone(),
+            url.clone(),
+            file_location.clone()
+        ).await
+    {
+        eprintln!("Error downloading file: {}", e);
+    }
+
+    if
+        let Err(e) = unzip_windows(
+            app_handle.clone(),
+            file_location.clone(),
+            install_dir.clone()
+        ).await
+    {
+        eprintln!("Error unzipping file: {}", e);
+    }
+
+    if let Err(e) = delete_file(app_handle.clone(), file_location.clone()).await {
+        eprintln!("Error deleting file: {}", e);
+    }
+
+    app_handle.emit_all("download_finished_rust", "download_finished_rust");
+}
+
+#[derive(serde::Serialize)]
+struct DownloadProgress {
+    downloaded: u64,
+    speed: Option<f64>,
+    total_size: u64,
+}
+
+#[tauri::command]
+async fn download_to_app_dir(
+    app_handle: tauri::AppHandle,
+    url: String,
+    file_location: String
+) -> Result<(), String> {
+    let path = Path::new(&file_location);
+
+    if let Some(parent) = path.parent() {
+        if !parent.exists() {
+            match fs::create_dir_all(&parent) {
+                Err(why) => panic!("couldn't create directory: {}", why),
+                Ok(_) => println!("Successfully created the directory"),
+            }
+        }
+    }
+
+    // fs::create_dir_all("./download/").expect("Error at create_dir_all");
+    let start_time = Instant::now();
+    let client = Client::new();
+    let res = client
+        .get(&url)
+        .header(ACCEPT, "application/octet-stream")
+        .send().await
+        .or(Err(format!("Failed to GET from '{}'", &url)))?;
+    let total_size = res
+        .content_length()
+        .ok_or(format!("Failed to get content length from '{}'", &url))?;
+
+    let mut file = File::create(&path).or(
+        Err(format!("Failed to create file '{}'", file_location))
+    )?;
+    let mut downloaded: u64 = 0;
+    let mut stream = res.bytes_stream();
+
+    let mut last_emit_time = Instant::now();
+
+    while let Some(item) = stream.next().await {
+        let chunk = item.or(Err(format!("Error while downloading file")))?;
+        file.write_all(&chunk).or(Err(format!("Error while writing to file")))?;
+        downloaded = min(downloaded + (chunk.len() as u64), total_size);
+        let duration = start_time.elapsed().as_secs_f64();
+        let speed = if duration > 0.0 {
+            Some((downloaded as f64) / duration / 1024.0 / 1024.0)
+        } else {
+            None
+        };
+
+        if last_emit_time.elapsed() >= Duration::new(1, 0) {
+            let progress = DownloadProgress {
+                downloaded,
+                speed,
+                total_size,
+            };
+
+            app_handle
+                .emit_all("game-download-progress", &progress)
+                .expect("Failed to emit progress event");
+
+            last_emit_time = Instant::now();
+        }
+
+        println!("downloaded => {}", downloaded);
+        println!("total_size => {}", total_size);
+        println!("speed => {:?}", speed);
+    }
+
+    return Ok(());
+}
+
+#[tauri::command]
+async fn unzip_windows(
+    app_handle: tauri::AppHandle,
+    file_location: String,
+    install_dir: String
+) -> Result<(), String> {
+    let zip_path = PathBuf::from(file_location);
+    let extract_path = PathBuf::from(install_dir);
+
+    let _ = zip_extensions::read
+        ::zip_extract(&zip_path, &extract_path)
+        .map_err(|e| format!("Failed to unzip file: {}", e))?;
+
+    Ok(())
+}
+
+#[tauri::command]
+async fn delete_file(app_handle: tauri::AppHandle, file_location: String) -> Result<(), String> {
+    let path = PathBuf::from(file_location);
+
+    fs::remove_file(&path).map_err(|e| format!("Failed to delete file: {}", e))?;
+
     Ok(())
 }

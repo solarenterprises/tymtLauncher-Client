@@ -28,7 +28,7 @@ const InstallProcessContextMenu = ({ view, setView, contextMenuPosition }: IProp
     try {
       const data: INotificationGameDownloadParams = {
         status: "cancelled",
-        id: downloadStatusStore.name,
+        game: downloadStatusStore.game,
       };
       emit(TauriEventNames.GAME_DOWNLOAD, data);
       setView(false);

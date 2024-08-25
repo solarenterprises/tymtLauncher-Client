@@ -1,3 +1,4 @@
+//@ts-ignore
 import { useState, useEffect } from "react";
 import { Grid, Box, Stack } from "@mui/material";
 import { useTranslation } from "react-i18next";
@@ -6,6 +7,7 @@ import { useSelector } from "react-redux";
 import nogames from "../../assets/main/nogames.png";
 import { librarymodeType } from "../../types/homeTypes";
 import Games from "../../lib/game/Game";
+//@ts-ignore
 import { isInstalled } from "../../lib/api/Downloads";
 import { useNavigate } from "react-router-dom";
 import solar from "../../assets/chains/solar.svg";
@@ -16,33 +18,36 @@ const Libraryshow = () => {
   const { t } = useTranslation();
   const data: librarymodeType = useSelector(getLibrarymode);
   const navigate = useNavigate();
+  //@ts-ignore
   const [installList, setInstallList] = useState<string[]>([]);
+  //@ts-ignore
   const [uninstallList, setUninstallList] = useState<string[]>([]);
+  //@ts-ignore
   const [loading, setLoading] = useState<boolean>(false);
 
-  useEffect(() => {
-    const init = async () => {
-      setLoading(true);
-      await checkInstalled();
-      setLoading(false);
-    };
-    init();
-  }, []);
+  // useEffect(() => {
+  //   const init = async () => {
+  //     setLoading(true);
+  //     await checkInstalled();
+  //     setLoading(false);
+  //   };
+  //   init();
+  // }, []);
 
-  const checkInstalled = async () => {
-    const list: string[] = Object.keys(Games).map((rowKey, _index) => rowKey);
-    const tempInstallList: string[] = [];
-    const tempUninstallList: string[] = [];
-    for (let i = 0; i < list.length; i++) {
-      if (await isInstalled(list[i])) {
-        tempInstallList.push(list[i]);
-      } else {
-        tempUninstallList.push(list[i]);
-      }
-    }
-    setInstallList(tempInstallList);
-    setUninstallList(tempUninstallList);
-  };
+  // const checkInstalled = async () => {
+  //   const list: string[] = Object.keys(Games).map((rowKey, _index) => rowKey);
+  //   const tempInstallList: string[] = [];
+  //   const tempUninstallList: string[] = [];
+  //   for (let i = 0; i < list.length; i++) {
+  //     if (await isInstalled(list[i])) {
+  //       tempInstallList.push(list[i]);
+  //     } else {
+  //       tempUninstallList.push(list[i]);
+  //     }
+  //   }
+  //   setInstallList(tempInstallList);
+  //   setUninstallList(tempUninstallList);
+  // };
 
   return (
     <>

@@ -44,7 +44,7 @@ const ComingGameOverview = () => {
         <AnimatedComponent threshold={0}>
           <img src={gradient1} style={{ position: "absolute", right: 0, top: 0 }} />
           <Grid item xs={12} display={"flex"} justifyContent={"space-between"} alignItems={"center"}>
-            <Grid item xs={12} flexDirection={"row"} justifyContent={"space-between"} display={"flex"} paddingRight={"20px"}>
+            <Grid item xs={12} flexDirection={"row"} justifyContent={"space-between"} display={"flex"}>
               <GameOverViewHeader game={game} />
             </Grid>
           </Grid>

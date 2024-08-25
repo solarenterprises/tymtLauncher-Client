@@ -6,22 +6,26 @@ import { useLocation } from "react-router-dom";
 import { invoke } from "@tauri-apps/api/tauri";
 import { emit, listen } from "@tauri-apps/api/event";
 import { isPermissionGranted, requestPermission, sendNotification } from "@tauri-apps/api/notification";
+import { appDataDir } from "@tauri-apps/api/path";
+import { removeDir } from "@tauri-apps/api/fs";
+
+import { tymt_version } from "../configs";
+import { TauriEventNames } from "../consts/TauriEventNames";
 
 import AlertComp from "../components/AlertComp";
 
 import { getDownloadStatus, setDownloadStatus } from "../features/home/DownloadStatusSlice";
 import { selectNotification } from "../features/settings/NotificationSlice";
 
-import { notificationType } from "../types/settingTypes";
-
 import notiIcon from "../assets/main/32x32.png";
 
 import { translateString } from "../lib/api/Translate";
 
 import { IDownloadStatus } from "../types/homeTypes";
-import { INotificationGameDownloadParams, INotificationParams } from "../types/NotificationTypes";
-
-import { TauriEventNames } from "../consts/TauriEventNames";
+import { notificationType } from "../types/settingTypes";
+import { IGame } from "../types/GameTypes";
+import { INotificationGameDownloadParams, INotificationGameDownloadProgressParams, INotificationParams } from "../types/NotificationTypes";
+import { addRemoveStatus, delRemoveStatus } from "../features/home/RemoveStatusSlice";
 
 interface NotificationContextType {
   setNotificationOpen: (open: boolean) => void;
@@ -112,12 +116,14 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
         dispatch(
           setDownloadStatus({
             progress: 0,
+            speed: 0,
+            total: 0,
             isDownloading: true,
-            name: data.id,
+            game: data.game,
           })
         );
       } else if (data.status === "finished") {
-        if (!downloadStatusStoreRef.current.isDownloading || downloadStatusStoreRef.current.name !== data.id) {
+        if (!downloadStatusStoreRef.current.isDownloading || downloadStatusStoreRef.current.game._id !== data.game._id) {
           return;
         }
         const noti: INotificationParams = {
@@ -131,12 +137,14 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
         dispatch(
           setDownloadStatus({
             progress: 0,
+            speed: 0,
+            total: 0,
             isDownloading: false,
-            name: "",
+            game: null,
           })
         );
       } else if (data.status === "cancelled") {
-        if (!downloadStatusStoreRef.current.isDownloading || downloadStatusStoreRef.current.name !== data.id) {
+        if (!downloadStatusStoreRef.current.isDownloading || downloadStatusStoreRef.current.game._id !== data.game._id) {
           return;
         }
         const noti: INotificationParams = {
@@ -150,12 +158,14 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
         dispatch(
           setDownloadStatus({
             progress: 0,
+            speed: 0,
+            total: 0,
             isDownloading: false,
-            name: "",
+            game: null,
           })
         );
       } else if (data.status === "failed") {
-        if (!downloadStatusStoreRef.current.isDownloading || downloadStatusStoreRef.current.name !== data.id) {
+        if (!downloadStatusStoreRef.current.isDownloading || downloadStatusStoreRef.current.game._id !== data.game._id) {
           return;
         }
         const noti: INotificationParams = {
@@ -169,16 +179,65 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
         dispatch(
           setDownloadStatus({
             progress: 0,
+            speed: 0,
+            total: 0,
             isDownloading: false,
-            name: "",
+            game: null,
           })
         );
       }
     });
 
+    const unlisten_game_download_progress = listen(TauriEventNames.GAME_DOWNLOAD_PROGRESS, async (event) => {
+      const data = event.payload as INotificationGameDownloadProgressParams;
+      // console.log("TauriEventNames.GAME_DOWNLOAD_PROGRESS", data);
+      dispatch(
+        setDownloadStatus({
+          ...downloadStatusStoreRef.current,
+          speed: data.speed,
+          progress: data.downloaded,
+          total: data.total_size,
+        })
+      );
+    });
+
+    const unlisten_game_download_finished_rust = listen(TauriEventNames.GAME_DOWNLOAD_FINISHED_RUST, async (_event) => {
+      dispatch(
+        setDownloadStatus({
+          progress: 0,
+          speed: 0,
+          total: 0,
+          isDownloading: false,
+          game: null,
+        })
+      );
+    });
+
+    const unlisten_fs_remove_dir = listen(TauriEventNames.FS_REMOVE_DIR, async (event) => {
+      const game = event.payload as IGame;
+      if (!game) {
+        console.log("Failed to unlisten_fs_remove_dir: event.payload is not IGame!");
+        return;
+      }
+      console.log("unlisten_fs_remove_dir", game);
+      dispatch(addRemoveStatus(game));
+      try {
+        const dirPath = (await appDataDir()) + `v${tymt_version}/games/${game?.project_name}`;
+        await removeDir(dirPath, {
+          recursive: true,
+        });
+      } catch (err) {
+        console.log("Failed to unlisten_fs_remove_dir: ", err);
+      }
+      dispatch(delRemoveStatus(game));
+    });
+
     return () => {
       unlisten_notification.then((unlistenFn) => unlistenFn());
       unlisten_game_download.then((unlistenFn) => unlistenFn());
+      unlisten_game_download_progress.then((unlistenFn) => unlistenFn());
+      unlisten_game_download_finished_rust.then((unlistenFn) => unlistenFn());
+      unlisten_fs_remove_dir.then((unlistenFn) => unlistenFn());
     };
   });
 
