@@ -43,7 +43,7 @@ const StoreGameCard = ({ game, isComing }: IPropsStoreGameCard) => {
             },
           }}
           onClick={() => {
-            navigate(`/coming/${game._id}`);
+            navigate(`/coming/${game?._id}`);
           }}
         >
           {isComing && (
@@ -63,7 +63,7 @@ const StoreGameCard = ({ game, isComing }: IPropsStoreGameCard) => {
           )}
           <Box
             component={"img"}
-            src={game.imageUrl}
+            src={game?.imageUrl}
             width={"100%"}
             height={"165px"}
             sx={{
@@ -73,7 +73,7 @@ const StoreGameCard = ({ game, isComing }: IPropsStoreGameCard) => {
           />
 
           <Stack padding="16px" gap={"16px"}>
-            <Box className="fs-20-regular white">{game.title}</Box>
+            <Box className="fs-20-regular white">{game?.title}</Box>
 
             <Swiper
               spaceBetween={"4px"}

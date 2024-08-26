@@ -55,7 +55,7 @@ const ComingGameCard = ({ game }: IPropsComingGameCard) => {
           {/* <Box className="sparkle-button">adfasdf</Box> */}
           <Box
             component={"img"}
-            src={game.imageUrl}
+            src={game?.imageUrl}
             width={"100%"}
             height={"165px"}
             sx={{
