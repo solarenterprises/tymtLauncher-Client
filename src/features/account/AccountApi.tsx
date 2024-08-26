@@ -1,8 +1,9 @@
 import { tymt_backend_url } from "../../configs";
 import Axios from "../../lib/Aixo";
 import axios from "axios";
-import { ISaltToken, accountType } from "../../types/accountTypes";
+import { ISaltToken } from "../../types/accountTypes";
 import tymtStorage from "../../lib/Storage";
+import { IMyInfo } from "../../types/chatTypes";
 
 export const fileUpload = async (formdata) => {
   const saltTokenStore: ISaltToken = JSON.parse(tymtStorage.get(`saltToken`));
@@ -14,9 +15,9 @@ export const fileUpload = async (formdata) => {
   });
 };
 
-export const updateUser = (data: accountType) => {
+export const updateUser = (data: IMyInfo) => {
   const saltTokenStore: ISaltToken = JSON.parse(tymtStorage.get(`saltToken`));
-  return Axios.put(`${tymt_backend_url}/user/` + data.uid, data, {
+  return Axios.put(`${tymt_backend_url}/user/` + data._id, data, {
     headers: {
       "x-token": saltTokenStore.token,
     },

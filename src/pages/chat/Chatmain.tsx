@@ -16,7 +16,6 @@ import { getFriendList } from "../../features/chat/FriendListSlice";
 import { getChatroomList } from "../../features/chat/ChatroomListSlice";
 import { getBlockList } from "../../features/chat/BlockListSlice";
 import { getPublicChatroomList } from "../../features/chat/PublicChatroomListSlice";
-import { getAccount } from "../../features/account/AccountSlice";
 
 import { searchUsers } from "../../features/chat/ContactListApi";
 import { searchGroups } from "../../features/chat/ChatroomListApi";
@@ -27,7 +26,6 @@ import settingicon from "../../assets/chat/settings.svg";
 import nocontact from "../../assets/chat/nocontact.png";
 
 import { IContactList, propsType, userType } from "../../types/chatTypes";
-import { accountType } from "../../types/accountTypes";
 import { IChatroom, IChatroomList } from "../../types/ChatroomAPITypes";
 
 const theme = createTheme({
@@ -65,21 +63,15 @@ const Chatmain = ({ view, setView }: propsType) => {
   const blockListStore: IContactList = useSelector(getBlockList);
   const DMList: IChatroom[] = chatroomListStore.chatrooms.filter((element) => !element.room_name);
   const groupList: IChatroom[] = chatroomListStore.chatrooms.filter((element) => element.room_name);
-  const accountStore: accountType = useSelector(getAccount);
-  // const alertListStore: IAlertList = useSelector(getAlertList);
 
   const displayChatroomList: IChatroom[] = useMemo(() => {
     const joinedPrivateGroupList = groupList?.filter((group) => !publicChatroomListStore?.chatrooms?.some((one) => group?._id === one?._id));
     return [...publicChatroomListStore.chatrooms, ...joinedPrivateGroupList];
   }, [groupList, publicChatroomListStore]);
 
-  const accountStoreRef = useRef(accountStore);
   const friendListStoreRef = useRef(friendListStore);
   const blockListStoreRef = useRef(blockListStore);
 
-  useEffect(() => {
-    accountStoreRef.current = accountStore;
-  }, [accountStore]);
   useEffect(() => {
     friendListStoreRef.current = friendListStore;
   }, [friendListStore]);

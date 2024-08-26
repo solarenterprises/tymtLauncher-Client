@@ -2,7 +2,7 @@ import { useSelector } from "react-redux";
 import { getTempNonCustodial } from "../../features/account/TempNonCustodialSlice";
 import MnemonicRandomWord from "./MnemonicRandomWord";
 import { nonCustodialType } from "../../types/accountTypes";
-import { shuffleArray } from "../../consts/mnemonics";
+import { shuffleArray } from "../../lib/helper/WalletHelper";
 
 export interface IPropsMnemonicRandomPad {
   passphrase: string;

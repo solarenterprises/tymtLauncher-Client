@@ -10,7 +10,6 @@ import InputText from "../account/InputText";
 
 import { AppDispatch } from "../../store";
 import { createGroupAsync } from "../../features/chat/ChatroomListSlice";
-import { getAccount } from "../../features/account/AccountSlice";
 import { addOneSKeyList } from "../../features/chat/SKeyListSlice";
 import { getRsa } from "../../features/chat/RsaSlice";
 import { getMyInfo } from "../../features/account/MyInfoSlice";
@@ -19,7 +18,6 @@ import { rsaDecrypt } from "../../features/chat/RsaApi";
 import { IChatroom } from "../../types/ChatroomAPITypes";
 import { IMyInfo, IRsa } from "../../types/chatTypes";
 import { ISocketParamsJoinMessageGroup } from "../../types/SocketTypes";
-import { accountType } from "../../types/accountTypes";
 
 export interface IPropsNewGroupModal {
   open: boolean;
@@ -32,7 +30,6 @@ const NewGroupModal = ({ open, setOpen, roomMode }: IPropsNewGroupModal) => {
   const { socket } = useSocket();
 
   const dispatch = useDispatch<AppDispatch>();
-  const accountStore: accountType = useSelector(getAccount);
   const myInfoStore: IMyInfo = useSelector(getMyInfo);
   const rsaStore: IRsa = useSelector(getRsa);
   const [newGroupMode, setNewGroupMode] = useState<string>("public");
@@ -62,7 +59,7 @@ const NewGroupModal = ({ open, setOpen, roomMode }: IPropsNewGroupModal) => {
 
             const data_1: ISocketParamsJoinMessageGroup = {
               room_id: newChatroom._id,
-              joined_user_id: accountStore.uid,
+              joined_user_id: myInfoStore?._id,
             };
             socket.current.emit("join-message-group", JSON.stringify(data_1));
             console.log("socket.current.emit > join-message-group", data_1);
@@ -82,7 +79,7 @@ const NewGroupModal = ({ open, setOpen, roomMode }: IPropsNewGroupModal) => {
     } else {
       console.error("Failed to handleCreateClick: socket not connected!");
     }
-  }, [myInfoStore, newGroupName, newGroupMode, rsaStore, accountStore, socket.current]);
+  }, [myInfoStore, newGroupName, newGroupMode, rsaStore, socket.current]);
 
   return (
     <>

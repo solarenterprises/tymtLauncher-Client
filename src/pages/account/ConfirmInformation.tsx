@@ -16,10 +16,10 @@ import WalletList from "../../components/account/WalletList";
 
 import { AppDispatch } from "../../store";
 import { addAccountList } from "../../features/account/AccountListSlice";
-import { setTempAccount } from "../../features/account/TempAccountSlice";
+import { getTempAccount, setTempAccount } from "../../features/account/TempAccountSlice";
 import { setWallet } from "../../features/wallet/WalletSlice";
 import { getMachineId } from "../../features/account/MachineIdSlice";
-import { getAccount, setAccount } from "../../features/account/AccountSlice";
+import { setAccount } from "../../features/account/AccountSlice";
 import { getSaltToken } from "../../features/account/SaltTokenSlice";
 
 import tymt2 from "../../assets/account/tymt2.png";
@@ -35,7 +35,7 @@ const ConfirmInformation = () => {
   const { t } = useTranslation();
   const { mode } = useParams();
 
-  const tempAccountStore: IAccount = useSelector(getAccount);
+  const tempAccountStore: IAccount = useSelector(getTempAccount);
   const tempWalletStore: IWallet = useSelector(getTempWallet);
 
   const saltTokenStore: ISaltToken = useSelector(getSaltToken);
@@ -60,6 +60,7 @@ const ConfirmInformation = () => {
   };
 
   const handleSignUp = useCallback(() => {
+    console.log(tempAccountStore);
     dispatch(setAccount(tempAccountStore));
     dispatch(addAccountList(tempAccountStore));
     dispatch(

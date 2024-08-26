@@ -16,14 +16,12 @@ import { Chatdecrypt } from "../../lib/api/ChatEncrypt";
 import { getChatHistory } from "../../features/chat/ChatHistorySlice";
 import { getCurrentChatroom } from "../../features/chat/CurrentChatroomSlice";
 import { getSKeyList, ISKeyList } from "../../features/chat/SKeyListSlice";
-import { getAccount } from "../../features/account/AccountSlice";
 import { getActiveUserList, IActiveUserList } from "../../features/chat/ActiveUserListSlice";
 import { getCurrentChatroomMembers, ICurrentChatroomMembers } from "../../features/chat/CurrentChatroomMembersSlice";
 import { selectNotification } from "../../features/settings/NotificationSlice";
 
 import { ChatHistoryType, ChatMessageType, IMyInfo } from "../../types/chatTypes";
 import { IChatroom } from "../../types/ChatroomAPITypes";
-import { accountType } from "../../types/accountTypes";
 import { notificationType } from "../../types/settingTypes";
 import { getAdminList, IAdminList } from "../../features/chat/AdminListSlice";
 import { isArray } from "lodash";
@@ -39,7 +37,6 @@ export interface IParamsBubble {
 }
 
 const Bubble = ({ roomMode, screenExpanded, message, index, isDM }: IParamsBubble) => {
-  const accountStore: accountType = useSelector(getAccount);
   const chatHistoryStore: ChatHistoryType = useSelector(getChatHistory);
   const currentChatroomStore: IChatroom = useSelector(getCurrentChatroom);
   const historicalChatroomMembersStore: ICurrentChatroomMembers = useSelector(getHistoricalChatroomMembers);
@@ -118,7 +115,7 @@ const Bubble = ({ roomMode, screenExpanded, message, index, isDM }: IParamsBubbl
 
   const timeline = isFirstMessageOfDay() ? formatDateDifference(message.createdAt) : null;
   const isLastMessageOfStack = detectLastMessageofStack();
-  const isSender = message.sender_id === accountStore.uid;
+  const isSender = message.sender_id === myInfoStore?._id;
   const decryptedMessage = useMemo(() => {
     try {
       const res = decryptMessage(message.message);
@@ -140,10 +137,10 @@ const Bubble = ({ roomMode, screenExpanded, message, index, isDM }: IParamsBubbl
         alignItems={"flex-end"}
         marginTop={"10px"}
         gap={"15px"}
-        justifyContent={!screenExpanded ? (message.sender_id === accountStore.uid ? "flex-end" : "flex-start") : "flex-start"}
+        justifyContent={!screenExpanded ? (message.sender_id === myInfoStore?._id ? "flex-end" : "flex-start") : "flex-start"}
       >
         {roomMode && screenExpanded && isLastMessageOfStack && isSender && (
-          <Avatar onlineStatus={true} url={accountStore.avatar} size={40} status={!notificationStore.alert ? "donotdisturb" : "online"} />
+          <Avatar onlineStatus={true} url={myInfoStore?.avatar} size={40} status={!notificationStore.alert ? "donotdisturb" : "online"} />
         )}
         {roomMode && screenExpanded && isLastMessageOfStack && !isSender && (
           <Avatar

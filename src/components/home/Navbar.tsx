@@ -2,32 +2,38 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useCallback, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import { Grid, Button, TextField, InputAdornment, Stack, Box, Tooltip } from "@mui/material";
+
 import Chatindex from "../../pages/chat";
-import newlogo from "../../assets/main/newlogo.png";
-import newlogohead from "../../assets/main/newlogohead.png";
-import searchlg from "../../assets/main/searchlg.svg";
 import Settings from "../../pages/settings";
-import Back from "./Back";
-import Avatar from "./Avatar";
-import { notificationType } from "../../types/settingTypes";
-import { PaginationType } from "../../types/homeTypes";
-import { TymtlogoType } from "../../types/homeTypes";
-import { accountType, custodialType, nonCustodialType, walletEnum } from "../../types/accountTypes";
-import { IChain } from "../../types/walletTypes";
-import { getAccount } from "../../features/account/AccountSlice";
-import { getNonCustodial } from "../../features/account/NonCustodialSlice";
-import { getCustodial } from "../../features/account/CustodialSlice";
-import { getCurrentLogo } from "../../features/home/Tymtlogo";
-import { getCurrentPage, setCurrentPage } from "../../features/home/Navigation";
-import { getChain } from "../../features/wallet/ChainSlice";
 import ComingModal from "../ComingModal";
 import CardModal from "../CardModal";
 import Alertindex from "../../pages/alert";
+
+import { getNonCustodial } from "../../features/account/NonCustodialSlice";
 import { selectNotification } from "../../features/settings/NotificationSlice";
+import { getChain } from "../../features/wallet/ChainSlice";
 import { getAlertList } from "../../features/alert/AlertListSlice";
+import { getMyInfo } from "../../features/account/MyInfoSlice";
+
+import { getCurrentLogo } from "../../features/home/Tymtlogo";
+import { getCurrentPage, setCurrentPage } from "../../features/home/Navigation";
+
 import { IAlertList } from "../../types/alertTypes";
+import { IMyInfo } from "../../types/chatTypes";
+import { notificationType } from "../../types/settingTypes";
+import { PaginationType } from "../../types/homeTypes";
+import { TymtlogoType } from "../../types/homeTypes";
+import { nonCustodialType } from "../../types/accountTypes";
+import { IChain } from "../../types/walletTypes";
+
+import Back from "./Back";
+import Avatar from "./Avatar";
+import newlogo from "../../assets/main/newlogo.png";
+import newlogohead from "../../assets/main/newlogohead.png";
+import searchlg from "../../assets/main/searchlg.svg";
 
 const theme = createTheme({
   palette: {
@@ -46,16 +52,17 @@ const Navbar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const { t } = useTranslation();
+
   const notification: notificationType = useSelector(selectNotification);
   const currentpage: PaginationType = useSelector(getCurrentPage);
   const currentlogo: TymtlogoType = useSelector(getCurrentLogo);
-  const account: accountType = useSelector(getAccount);
   const nonCustodialStore: nonCustodialType = useSelector(getNonCustodial);
-  const custodialStore: custodialType = useSelector(getCustodial);
   const chain: IChain = useSelector(getChain);
-  const userStore = account.wallet === walletEnum.noncustodial ? nonCustodialStore : custodialStore;
+  const userStore = nonCustodialStore;
   const alertListStore: IAlertList = useSelector(getAlertList);
-  const { t } = useTranslation();
+  const myInfoStore: IMyInfo = useSelector(getMyInfo);
+
   const [showSetting, setShowSetting] = useState(false);
   const [showChat, setShowChat] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
@@ -401,7 +408,7 @@ const Navbar = () => {
           </Tooltip>
           <Button className="button_navbar_profile" onClick={() => setShowSetting(!showSetting)}>
             <Stack direction={"row"} alignItems={"center"} marginLeft={"0px"} justifyContent={"left"} spacing={"8px"} height={"32px"}>
-              <Avatar url={account.avatar} size={32} ischain={true} onlineStatus={true} status={!notification.alert ? "donotdisturb" : "online"} />
+              <Avatar url={myInfoStore?.avatar} size={32} ischain={true} onlineStatus={true} status={!notification.alert ? "donotdisturb" : "online"} />
               <Stack direction={"column"} width={"110px"} alignItems={"flex-start"}>
                 <Box className={"fs-16-regular white"}>{userStore.nickname.length > 11 ? `${userStore.nickname.substring(0, 10)}...` : userStore.nickname}</Box>
                 <Box className={"fs-14-regular light"}>

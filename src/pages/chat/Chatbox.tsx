@@ -12,28 +12,28 @@ import { Box, Divider, Button, Stack } from "@mui/material";
 import { addChatHistory } from "../../lib/api/JSONHelper";
 
 import { AppDispatch } from "../../store";
-import { getAccount } from "../../features/account/AccountSlice";
 import { getChatHistory, setChatHistory, setChatHistoryAsync } from "../../features/chat/ChatHistorySlice";
 import { selectChat } from "../../features/settings/ChatSlice";
 import { setMountedFalse, setMountedTrue } from "../../features/chat/IntercomSupportSlice";
 import { getCurrentChatroom } from "../../features/chat/CurrentChatroomSlice";
 import { ICurrentChatroomMembers, getCurrentChatroomMembers } from "../../features/chat/CurrentChatroomMembersSlice";
+import { IActiveUserList, getActiveUserList } from "../../features/chat/ActiveUserListSlice";
+import { getMyInfo } from "../../features/account/MyInfoSlice";
 
 import { useSocket } from "../../providers/SocketProvider";
 import ChatInputField from "../../components/chat/Chatinputfield";
 import GroupAvatar from "../../components/chat/GroupAvatar";
 import Avatar from "../../components/home/Avatar";
 
-import { ChatHistoryType, propsType } from "../../types/chatTypes";
-import { accountType } from "../../types/accountTypes";
+import { ChatHistoryType, IMyInfo, propsType } from "../../types/chatTypes";
 import { chatType } from "../../types/settingTypes";
 import { IChatroom } from "../../types/ChatroomAPITypes";
+import Bubble from "../../components/chat/Bubble";
 
 import maximize from "../../assets/chat/maximize.svg";
 import backIcon from "../../assets/settings/back-icon.svg";
+
 import ChatStyle from "../../styles/ChatStyles";
-import { IActiveUserList, getActiveUserList } from "../../features/chat/ActiveUserListSlice";
-import Bubble from "../../components/chat/Bubble";
 
 const Chatbox = ({ view, setView }: propsType) => {
   const { t } = useTranslation();
@@ -50,7 +50,7 @@ const Chatbox = ({ view, setView }: propsType) => {
     valueRef.current = value;
   }, [value]);
 
-  const accountStore: accountType = useSelector(getAccount);
+  const myInfoStore: IMyInfo = useSelector(getMyInfo);
   const currentChatroomStore: IChatroom = useSelector(getCurrentChatroom);
   const chatHistoryStore: ChatHistoryType = useSelector(getChatHistory);
   const chatStore: chatType = useSelector(selectChat);
@@ -63,18 +63,18 @@ const Chatbox = ({ view, setView }: propsType) => {
   const isGlobal = useMemo(() => {
     return currentChatroomStore?.isGlobal;
   }, [currentChatroomStore]);
-  const currentPartner = isDM ? currentChatroomMembersStore?.members?.find((member) => member._id !== accountStore.uid) : null;
+  const currentPartner = isDM ? currentChatroomMembersStore?.members?.find((member) => member._id !== myInfoStore?._id) : null;
   const displayChatroomName = !isDM ? currentChatroomStore?.room_name : currentPartner?.nickName;
   const displayChatroomSubName = isGlobal ? "Public channel" : !isDM ? `${currentChatroomStore?.participants?.length ?? 0} Joined` : currentPartner?.sxpAddress;
 
-  const accountStoreRef = useRef(accountStore);
+  const myInfoStoreRef = useRef(myInfoStore);
   const currentChatroomStoreRef = useRef(currentChatroomStore);
   const chatHistoryStoreRef = useRef(chatHistoryStore);
   const chatStoreRef = useRef(chatStore);
 
   useEffect(() => {
-    accountStoreRef.current = accountStore;
-  }, [accountStore]);
+    myInfoStoreRef.current = myInfoStore;
+  }, [myInfoStore]);
   useEffect(() => {
     currentChatroomStoreRef.current = currentChatroomStore;
   }, [currentChatroomStore]);
@@ -87,7 +87,7 @@ const Chatbox = ({ view, setView }: propsType) => {
 
   const fetchMessages = async () => {
     try {
-      if (accountStoreRef.current.uid && currentChatroomStoreRef?.current._id) {
+      if (myInfoStoreRef.current._id && currentChatroomStoreRef?.current._id) {
         const query = {
           room_id: currentChatroomStoreRef.current?._id,
           pagination: { page: Math.floor(chatHistoryStoreRef.current.messages.length / 20) + 1, pageSize: 20 },

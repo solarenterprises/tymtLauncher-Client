@@ -1,16 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-// import { useSelector, useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useState } from "react";
 import { readText } from "@tauri-apps/api/clipboard";
-
-// import { AppDispatch } from "../../../store";
-// import { getNonCustodial } from "../../../features/account/NonCustodialSlice";
-// import { getTempNonCustodial, setTempNonCustodial } from "../../../features/account/TempNonCustodialSlice";
-// import { getTempAddressesFromMnemonicAsync } from "../../../features/wallet/TempMultiWalletSlice";
-// import { getAccount, setAccount } from "../../../features/account/AccountSlice";
-
-// import AuthAPI from "../../../lib/api/AuthAPI";
 
 import { useFormik } from "formik";
 import * as Yup from "yup";
@@ -23,24 +15,25 @@ import AccountHeader from "../../../components/account/AccountHeader";
 import InputText from "../../../components/account/InputText";
 import AccountNextButton from "../../../components/account/AccountNextButton";
 import Stepper from "../../../components/account/Stepper";
+import MnemonicRevealPad from "../../../components/account/MnemonicRevealPad";
+
+import { getTempAccount, setTempAccount } from "../../../features/account/TempAccountSlice";
+import { setTempWallet } from "../../../features/wallet/TempWalletSlice";
 
 import tymt2 from "../../../assets/account/tymt2.png";
 import "../../../global.css";
 
-// import { accountType, loginEnum, nonCustodialType } from "../../../types/accountTypes";
+import { checkMnemonic, getWalletAddressFromPassphrase } from "../../../lib/helper/WalletHelper";
 
-// import tymtCore from "../../../lib/core/tymtCore";
-import { checkMnemonic } from "../../../consts/mnemonics";
-import MnemonicRevealPad from "../../../components/account/MnemonicRevealPad";
+import { IAccount } from "../../../types/accountTypes";
 
 const NonCustodialLogIn2 = () => {
   const navigate = useNavigate();
-  // const nonCustodialStore: nonCustodialType = useSelector(getNonCustodial);
-  // const tempNonCustodialStore: nonCustodialType = useSelector(getTempNonCustodial);
-  // const dispatch = useDispatch<AppDispatch>();
-  // const accountStore: accountType = useSelector(getAccount);
   const { t } = useTranslation();
-  //@ts-ignore
+  const dispatch = useDispatch();
+
+  const tempAccountStore: IAccount = useSelector(getTempAccount);
+
   const [loading, setLoading] = useState<boolean>(false);
 
   const formik = useFormik({
@@ -63,41 +56,28 @@ const NonCustodialLogIn2 = () => {
           return checkMnemonic(value);
         }),
     }),
-    onSubmit: () => {
-      navigate("/non-custodial/import/1");
-      // dispatch(
-      //   setAccount({
-      //     ...accountStore,
-      //     mode: loginEnum.import,
-      //   })
-      // );
-      // dispatch(
-      //   setTempNonCustodial({
-      //     ...tempNonCustodialStore,
-      //     mnemonic: formik.values.mnemonic,
-      //   })
-      // );
-      // setLoading(true);
-      // dispatch(getTempAddressesFromMnemonicAsync({ mnemonic: formik.values.mnemonic })).then(async () => {
-      //   const res = await AuthAPI.getUserBySolarAddress(await tymtCore.Blockchains.solar.wallet.getAddress(formik.values.mnemonic));
-      //   if (res.data.users.length === 0) {
-      //     navigate("/non-custodial/import/1");
-      //   } else {
-      //     dispatch(
-      //       setTempNonCustodial({
-      //         ...tempNonCustodialStore,
-      //         mnemonic: formik.values.mnemonic,
-      //         nickname: res.data.users[0].nickName,
-      //       })
-      //     );
-      //     if (nonCustodialStore.password === "") {
-      //       navigate("/non-custodial/import/3");
-      //     } else {
-      //       navigate("/non-custodial/import/4");
-      //     }
-      //   }
-      //   setLoading(false);
-      // });
+    onSubmit: async () => {
+      try {
+        setLoading(true);
+
+        const newPassphrase = formik.values.mnemonic.trim();
+        const newWalletAddress = await getWalletAddressFromPassphrase(newPassphrase);
+
+        dispatch(setTempWallet(newWalletAddress));
+        dispatch(
+          setTempAccount({
+            ...tempAccountStore,
+            mnemonic: newPassphrase,
+            sxpAddress: newWalletAddress?.solar,
+          })
+        );
+
+        navigate("/non-custodial/import/1");
+        setLoading(false);
+      } catch (err) {
+        console.log("Failed at NonCustodialLogin2: ", err);
+        setLoading(false);
+      }
     },
   });
 

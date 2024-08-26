@@ -7,8 +7,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch } from "../store";
 import { selectNotification, setNotification } from "../features/settings/NotificationSlice";
 import { notificationType } from "../types/settingTypes";
-import { accountType } from "../types/accountTypes";
-import { getAccount } from "../features/account/AccountSlice";
 import { invoke } from "@tauri-apps/api/tauri";
 import { getInstallStatus, setInstallStatus } from "../features/home/InstallStatusSlice";
 import { IInstallStatus } from "../types/homeTypes";
@@ -27,18 +25,13 @@ export const TrayProvider: React.FC<TrayProviderProps> = ({ children }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
   const notificationStore: notificationType = useSelector(selectNotification);
-  const accountStore: accountType = useSelector(getAccount);
   const installStatusStore: IInstallStatus = useSelector(getInstallStatus);
 
   const notificationStoreRef = useRef(notificationStore);
-  const accountStoreRef = useRef(accountStore);
 
   useEffect(() => {
     notificationStoreRef.current = notificationStore;
   }, [notificationStore]);
-  useEffect(() => {
-    accountStoreRef.current = accountStore;
-  }, [accountStore]);
 
   const callSetTrayItemsEnabled = async (itemIds: String[], enabled: boolean) => {
     try {
@@ -49,7 +42,7 @@ export const TrayProvider: React.FC<TrayProviderProps> = ({ children }) => {
   };
 
   useEffect(() => {
-    if (!accountStoreRef.current.isLoggedIn) {
+    if (true) {
       const itemIds = ["signout"];
       const enabled = false;
       callSetTrayItemsEnabled(itemIds, enabled);
@@ -58,7 +51,7 @@ export const TrayProvider: React.FC<TrayProviderProps> = ({ children }) => {
       const enabled = true;
       callSetTrayItemsEnabled(itemIds, enabled);
     }
-  }, [accountStoreRef.current.isLoggedIn]);
+  }, []);
 
   useEffect(() => {
     const unlisten_wallet = listen("wallet", (event) => {

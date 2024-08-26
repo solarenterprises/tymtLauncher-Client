@@ -1,31 +1,38 @@
-import { Box, Button, Divider, Stack } from "@mui/material";
+import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
+
+import { Box, Button, Divider, Stack } from "@mui/material";
+
+import { useNotification } from "../../providers/NotificationProvider";
+import SwitchComp from "../../components/SwitchComp";
+
+import { AppDispatch } from "../../store";
+import { selectChat } from "../../features/settings/ChatSlice";
+import { getMyInfo } from "../../features/account/MyInfoSlice";
+
+import { propsType, chatType, notificationType } from "../../types/settingTypes";
+import { selectNotification, setNotification } from "../../features/settings/NotificationSlice";
+import { IMyInfo } from "../../types/chatTypes";
+
+import { updateUsernotificationStatus } from "../../features/chat/ContactListApi";
+
 import backIcon from "../../assets/settings/back-icon.svg";
 import arrowImg from "../../assets/settings/arrow-right.svg";
-import { selectChat } from "../../features/settings/ChatSlice";
-import SwitchComp from "../../components/SwitchComp";
-import { propsType, chatType, notificationType } from "../../types/settingTypes";
-import { accountType } from "../../types/accountTypes";
-import { getAccount } from "../../features/account/AccountSlice";
-import { useNotification } from "../../providers/NotificationProvider";
-import { selectNotification, setNotification } from "../../features/settings/NotificationSlice";
-import { updateUsernotificationStatus } from "../../features/chat/ContactListApi";
-import { useCallback } from "react";
-import { AppDispatch } from "../../store";
 
 const ChatSettinginRoom = ({ view, setView }: propsType) => {
   const { t } = useTranslation();
   const dispatch = useDispatch<AppDispatch>();
+
   const chatStore: chatType = useSelector(selectChat);
-  const accountStore: accountType = useSelector(getAccount);
   const notificationStore: notificationType = useSelector(selectNotification);
+  const myInfoStore: IMyInfo = useSelector(getMyInfo);
 
   const { setNotificationStatus, setNotificationTitle, setNotificationDetail, setNotificationOpen, setNotificationLink } = useNotification();
 
   const putUserStatus = useCallback(async () => {
     try {
-      await updateUsernotificationStatus(accountStore.uid, notificationStore.alert);
+      await updateUsernotificationStatus(myInfoStore?._id, notificationStore.alert);
       dispatch(
         setNotification({
           ...notificationStore,
@@ -35,7 +42,7 @@ const ChatSettinginRoom = ({ view, setView }: propsType) => {
     } catch (err) {
       console.error("Failed to putUserStatus: ", err);
     }
-  }, [accountStore, notificationStore]);
+  }, [myInfoStore, notificationStore]);
 
   return (
     <>

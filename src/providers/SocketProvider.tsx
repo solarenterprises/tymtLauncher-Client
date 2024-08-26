@@ -11,7 +11,6 @@ import { socket_backend_url, tymt_version } from "../configs";
 import { useNotification } from "./NotificationProvider";
 
 import { AppDispatch } from "../store";
-import { getAccount } from "../features/account/AccountSlice";
 import { getCurrentChatroom, setCurrentChatroom } from "../features/chat/CurrentChatroomSlice";
 import { createContactAsync, fetchContactListAsync, getContactList, updateOneInContactList } from "../features/chat/ContactListSlice";
 import { addOneToUnreadList, fetchAlertListAsync, updateFriendRequestInAlertList } from "../features/alert/AlertListSlice";
@@ -38,9 +37,9 @@ import {
   ISocketParamsPostMessage,
   ISocketParamsSyncEvent,
 } from "../types/SocketTypes";
-import { accountType, IMachineId } from "../types/accountTypes";
+import { IMachineId } from "../types/accountTypes";
 import { chatType, notificationType } from "../types/settingTypes";
-import { ChatHistoryType, ISocketHash, IAlert, IContactList, IRsa } from "../types/chatTypes";
+import { ChatHistoryType, ISocketHash, IAlert, IContactList, IRsa, IMyInfo } from "../types/chatTypes";
 
 import { Chatdecrypt } from "../lib/api/ChatEncrypt";
 import { SyncEventNames } from "../consts/SyncEventNames";
@@ -48,6 +47,7 @@ import { fetchUnreadMessageListAsync } from "../features/chat/UnreadMessageListS
 import { setRenderTime } from "../features/account/RenderTimeSlice";
 import { isArray } from "lodash";
 import { fetchHistoricalChatroomMembersAsync, setHistoricalChatroomMembers } from "../features/chat/HistoricalChatroomMembersSlice";
+import { getMyInfo } from "../features/account/MyInfoSlice";
 
 interface SocketContextType {
   socket: MutableRefObject<Socket>;
@@ -69,7 +69,6 @@ export const SocketProvider = () => {
   const { setNotificationStatus, setNotificationTitle, setNotificationDetail, setNotificationOpen, setNotificationLink } = useNotification();
 
   const dispatch = useDispatch<AppDispatch>();
-  const accountStore: accountType = useSelector(getAccount);
   const socketHashStore: ISocketHash = useSelector(getSocketHash);
   const contactListStore: IContactList = useSelector(getContactList);
   const friendListStore: IContactList = useSelector(getFriendList);
@@ -83,8 +82,8 @@ export const SocketProvider = () => {
   const sKeyListStore: ISKeyList = useSelector(getSKeyList);
   const mutedListStore: IChatroomList = useSelector(getMutedList);
   const machineIdStore: IMachineId = useSelector(getMachineId);
+  const myInfoStore: IMyInfo = useSelector(getMyInfo);
 
-  const accountStoreRef = useRef(accountStore);
   const socketHashStoreRef = useRef(socketHashStore);
   const contactListStoreRef = useRef(contactListStore);
   const friendListStoreRef = useRef(friendListStore);
@@ -98,10 +97,11 @@ export const SocketProvider = () => {
   const sKeyListStoreRef = useRef(sKeyListStore);
   const mutedListStoreRef = useRef(mutedListStore);
   const machineIdStoreRef = useRef(machineIdStore);
+  const myInfoStoreRef = useRef(myInfoStore);
 
   useEffect(() => {
-    accountStoreRef.current = accountStore;
-  }, [accountStore]);
+    myInfoStoreRef.current = myInfoStore;
+  }, [myInfoStore]);
   useEffect(() => {
     socketHashStoreRef.current = socketHashStore;
   }, [socketHashStore]);
@@ -145,12 +145,12 @@ export const SocketProvider = () => {
   const socket = useRef<Socket>(null);
 
   useEffect(() => {
-    if (accountStore.uid && socketHashStore.socketHash) {
+    if (myInfoStoreRef.current._id && socketHashStore.socketHash) {
       appWindow.title().then((res) => {
         if (res === `tymtLauncherDebug ${tymt_version}`) {
           socket.current = io(socket_backend_url as string, {
             auth: {
-              userId: accountStoreRef.current.uid,
+              userId: myInfoStoreRef.current._id,
               socketHash: socketHashStoreRef.current.socketHash,
               deviceId: machineIdStoreRef.current.machineId,
             },
@@ -268,9 +268,9 @@ export const SocketProvider = () => {
                 // if (alert.alertType === "friend-request") {
                 //   // Update the friend lists of both him and me
                 //   dispatch(fetchFriendListAsync());
-                //   if (alert.note.to === accountStoreRef.current.uid) {
+                //   if (alert.note.to === myInfoStoreRef.current._id) {
                 //     // If I accepted the friend request, synchronize the alert lists of all my other login sessions
-                //     dispatch(fetchAlertListAsync(accountStoreRef.current.uid));
+                //     dispatch(fetchAlertListAsync(myInfoStoreRef.current._id));
                 //     return;
                 //   }
                 //   setNotificationOpen(true);
@@ -285,7 +285,7 @@ export const SocketProvider = () => {
             if (!socket.current.hasListeners("friend-request-accepted")) {
               socket.current.on("friend-request-accepted", async (alert: IAlert) => {
                 console.log("socket.current.on > friend-request-accepted", alert);
-                dispatch(fetchAlertListAsync(accountStoreRef.current.uid));
+                dispatch(fetchAlertListAsync(myInfoStoreRef.current._id));
                 dispatch(fetchFriendListAsync());
               });
             }
@@ -293,7 +293,7 @@ export const SocketProvider = () => {
             if (!socket.current.hasListeners("friend-request-rejected")) {
               socket.current.on("friend-request-rejected", async (alert: IAlert) => {
                 console.log("socket.current.on > friend-request-rejected", alert);
-                dispatch(fetchAlertListAsync(accountStoreRef.current.uid));
+                dispatch(fetchAlertListAsync(myInfoStoreRef.current._id));
                 dispatch(fetchFriendListAsync());
               });
             }
@@ -308,11 +308,11 @@ export const SocketProvider = () => {
                     if (action.type.endsWith("/fulfilled")) {
                       const newAddedChatroom = action.payload as IChatroom;
 
-                      if (joined_user_id === accountStoreRef.current.uid) {
+                      if (joined_user_id === myInfoStoreRef.current._id) {
                         const newSkey: ISKey = {
                           roomId: newAddedChatroom._id,
                           sKey: rsaDecrypt(
-                            newAddedChatroom.participants.find((participant) => participant.userId === accountStoreRef.current.uid).userKey,
+                            newAddedChatroom.participants.find((participant) => participant.userId === myInfoStoreRef.current._id).userKey,
                             rsaStoreRef.current.privateKey
                           ),
                         };
@@ -320,7 +320,7 @@ export const SocketProvider = () => {
 
                         // Create the contact when invited to a new DM with a new partner
                         if (!newAddedChatroom.room_name) {
-                          const partner = newAddedChatroom.participants.find((participant) => participant.userId !== accountStoreRef.current.uid);
+                          const partner = newAddedChatroom.participants.find((participant) => participant.userId !== myInfoStoreRef.current._id);
                           if (!contactListStoreRef.current.contacts.some((contact) => contact._id === partner.userId)) {
                             dispatch(createContactAsync(partner.userId));
                           }
@@ -345,7 +345,7 @@ export const SocketProvider = () => {
                 console.log("socket.current.on > left-message-group", data);
                 try {
                   const { room_id, left_user_id } = data;
-                  if (left_user_id === accountStoreRef.current.uid) {
+                  if (left_user_id === myInfoStoreRef.current._id) {
                     dispatch(delOneFromChatroomList(room_id));
                     dispatch(delOneSkeyList(room_id));
                     if (currentChatroomStoreRef.current?._id === room_id) {
@@ -437,12 +437,12 @@ export const SocketProvider = () => {
                         dispatch(setRenderTime({ renderTime: Date.now() }));
                       } else if (instruction === SyncEventNames.UPDATE_CHATROOM_LIST) {
                         console.log(instruction);
-                        dispatch(fetchChatroomListAsync(accountStoreRef.current.uid)).then((action) => {
+                        dispatch(fetchChatroomListAsync(myInfoStoreRef.current._id)).then((action) => {
                           try {
                             if (action.type.endsWith("/fulfilled")) {
                               const newChatroomList = action.payload as IChatroom[];
                               const newSKeyArray = newChatroomList.map((chatroom) => {
-                                const mySelf: IParticipant = chatroom.participants.find((participant) => participant.userId === accountStore.uid);
+                                const mySelf: IParticipant = chatroom.participants.find((participant) => participant.userId === myInfoStore?._id);
                                 const sKey: ISKey = {
                                   roomId: chatroom._id,
                                   sKey: rsaDecrypt(mySelf.userKey, rsaStore.privateKey),
@@ -495,16 +495,16 @@ export const SocketProvider = () => {
                     } else if (instruction === SyncEventNames.UPDATE_BLOCK_LIST) {
                       dispatch(fetchBlockListAsync());
                     } else if (instruction === SyncEventNames.UPDATE_ALERT_LIST) {
-                      dispatch(fetchAlertListAsync(accountStoreRef.current.uid));
+                      dispatch(fetchAlertListAsync(myInfoStoreRef.current._id));
                     } else if (instruction === SyncEventNames.UPDATE_UNREAD_MESSAGE_LIST) {
-                      dispatch(fetchUnreadMessageListAsync(accountStoreRef.current.uid));
+                      dispatch(fetchUnreadMessageListAsync(myInfoStoreRef.current._id));
                     } else if (instruction === SyncEventNames.UPDATE_CHATROOM_LIST) {
-                      dispatch(fetchChatroomListAsync(accountStoreRef.current.uid)).then((action) => {
+                      dispatch(fetchChatroomListAsync(myInfoStoreRef.current._id)).then((action) => {
                         try {
                           if (action.type.endsWith("/fulfilled")) {
                             const newChatroomList = action.payload as IChatroom[];
                             const newSKeyArray = newChatroomList.map((chatroom) => {
-                              const mySelf: IParticipant = chatroom.participants.find((participant) => participant.userId === accountStore.uid);
+                              const mySelf: IParticipant = chatroom.participants.find((participant) => participant.userId === myInfoStore?._id);
                               const sKey: ISKey = {
                                 roomId: chatroom._id,
                                 sKey: rsaDecrypt(mySelf.userKey, rsaStore.privateKey),
@@ -570,7 +570,7 @@ export const SocketProvider = () => {
         socket.current.disconnect();
       }
     };
-  }, [accountStore.uid, socketHashStore.socketHash]);
+  }, [myInfoStore?._id, socketHashStore.socketHash]);
 
   const approveFriendRequest = useCallback(
     async (alert: IAlert) => {
@@ -597,7 +597,7 @@ export const SocketProvider = () => {
         console.error("Failed to approveFriendRequest: ", err);
       }
     },
-    [accountStore, socket.current]
+    [myInfoStore, socket.current]
   );
 
   const declineFriendRequest = useCallback(
@@ -625,7 +625,7 @@ export const SocketProvider = () => {
         console.error("Failed to declineFriendRequest: ", err);
       }
     },
-    [accountStore, socket.current]
+    [myInfoStore, socket.current]
   );
 
   return (

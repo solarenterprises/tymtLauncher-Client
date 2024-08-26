@@ -18,7 +18,7 @@ import PassphraseModal from "../../../components/account/PassphraseModal";
 
 import tymt3 from "../../../assets/account/tymt3.png";
 
-import { getMnemonic } from "../../../consts/mnemonics";
+import { getMnemonic } from "../../../lib/helper/WalletHelper";
 import { getTempAccount, setTempAccount } from "../../../features/account/TempAccountSlice";
 import { IAccount } from "../../../types/accountTypes";
 

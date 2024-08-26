@@ -3,13 +3,15 @@ import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import { emit } from "@tauri-apps/api/event";
 
+import { SyncEventNames } from "../../consts/SyncEventNames";
+import { TauriEventNames } from "../../consts/TauriEventNames";
+
 import { Box, Button, Divider, Stack, Tooltip } from "@mui/material";
 
 import InputText from "../../components/account/InputText";
 import GroupAvatar from "../../components/chat/GroupAvatar";
 
 import { AppDispatch } from "../../store";
-import { getAccount } from "../../features/account/AccountSlice";
 import { getCurrentChatroom, setCurrentChatroom } from "../../features/chat/CurrentChatroomSlice";
 import { updateGroupAvatarAsync, updateGroupNameAsync } from "../../features/chat/ChatroomListSlice";
 
@@ -21,18 +23,19 @@ import { propsType } from "../../types/settingTypes";
 import { IChatroom, IReqChatroomUpdateGroupName } from "../../types/ChatroomAPITypes";
 import { useSocket } from "../../providers/SocketProvider";
 import { ISocketParamsSyncEventsAll } from "../../types/SocketTypes";
-import { accountType } from "../../types/accountTypes";
-import { SyncEventNames } from "../../consts/SyncEventNames";
 import { INotificationParams } from "../../types/NotificationTypes";
-import { TauriEventNames } from "../../consts/TauriEventNames";
+import { IMyInfo } from "../../types/chatTypes";
+import { getMyInfo } from "../../features/account/MyInfoSlice";
 
 const ChatGroupEditRoom = ({ view, setView }: propsType) => {
   const classname = SettingStyle();
   const { socket } = useSocket();
   const { t } = useTranslation();
   const dispatch = useDispatch<AppDispatch>();
-  const accountStore: accountType = useSelector(getAccount);
+
   const currentChatroomStore: IChatroom = useSelector(getCurrentChatroom);
+  const myInfoStore: IMyInfo = useSelector(getMyInfo);
+
   const [groupName, setGroupName] = useState<string>("");
 
   const handleBrowseClick = () => {
@@ -81,7 +84,7 @@ const ChatGroupEditRoom = ({ view, setView }: propsType) => {
 
           if (socket.current && socket.current.connected) {
             const data: ISocketParamsSyncEventsAll = {
-              sender_id: accountStore?.uid,
+              sender_id: myInfoStore?._id,
               instructions: [SyncEventNames.UPDATE_IMAGE_RENDER_TIME],
               is_to_self: true,
             };
@@ -102,7 +105,7 @@ const ChatGroupEditRoom = ({ view, setView }: propsType) => {
       };
       emit(TauriEventNames.NOTIFICATION, data);
     }
-  }, [socket.current, currentChatroomStore, accountStore]);
+  }, [socket.current, currentChatroomStore, myInfoStore]);
 
   const handleSaveClick = useCallback(() => {
     try {
@@ -141,7 +144,7 @@ const ChatGroupEditRoom = ({ view, setView }: propsType) => {
 
           if (socket.current && socket.current.connected) {
             const data: ISocketParamsSyncEventsAll = {
-              sender_id: accountStore?.uid,
+              sender_id: myInfoStore?._id,
               instructions: [SyncEventNames.UPDATE_CHATROOM_LIST],
               is_to_self: true,
             };

@@ -3,39 +3,45 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { useCallback } from "react";
-import { notificationType, propsType } from "../../types/settingTypes";
-import { accountType, walletEnum } from "../../types/accountTypes";
-import { IChain, ICurrency, multiWalletType } from "../../types/walletTypes";
-import { getAccount } from "../../features/account/AccountSlice";
+import numeral from "numeral";
+
+import { currencySymbols } from "../../consts/currency";
+
+import Avatar from "../../components/home/Avatar";
+
 import { getNonCustodial } from "../../features/account/NonCustodialSlice";
-import { getCustodial } from "../../features/account/CustodialSlice";
 import { getChain } from "../../features/wallet/ChainSlice";
 import { selectNotification } from "../../features/settings/NotificationSlice";
+import { getMultiWallet } from "../../features/wallet/MultiWalletSlice";
+import { getMyInfo } from "../../features/account/MyInfoSlice";
+import { getCurrency } from "../../features/wallet/CurrencySlice";
+
 import { getExplorerUrl } from "../../lib/helper";
 import { openLink } from "../../lib/api/Downloads";
-import { getMultiWallet } from "../../features/wallet/MultiWalletSlice";
+
 import SettingStyle from "../../styles/SettingStyle";
+
 import settingImg from "../../assets/settings/setting-icon1.svg";
 import walletImg from "../../assets/settings/wallet-icon.svg";
 import arrowImg from "../../assets/settings/arrow-right.svg";
 import copyIcon from "../../assets/settings/copy-icon.svg";
 import searchIcon from "../../assets/settings/search-icon.svg";
 import exitIcon from "../../assets/settings/exit-icon.svg";
-import Avatar from "../../components/home/Avatar";
-import numeral from "numeral";
-import { getCurrency } from "../../features/wallet/CurrencySlice";
-import { currencySymbols } from "../../consts/currency";
+
+import { IMyInfo } from "../../types/chatTypes";
+import { notificationType, propsType } from "../../types/settingTypes";
+import { IChain, ICurrency, multiWalletType } from "../../types/walletTypes";
 
 const Main = ({ view, setView }: propsType) => {
   const classname = SettingStyle();
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const account: accountType = useSelector(getAccount);
   const chainStore: IChain = useSelector(getChain);
   const notificationStore: notificationType = useSelector(selectNotification);
-  const userStore = account.wallet === walletEnum.noncustodial ? useSelector(getNonCustodial) : useSelector(getCustodial);
+  const userStore = useSelector(getNonCustodial);
   const multiWalletStore: multiWalletType = useSelector(getMultiWallet);
   const currencyStore: ICurrency = useSelector(getCurrency);
+  const myInfoStore: IMyInfo = useSelector(getMyInfo);
 
   const symbol: string = currencySymbols[currencyStore.current];
   const reserve = currencyStore.data[currencyStore.current];
@@ -66,7 +72,7 @@ const Main = ({ view, setView }: propsType) => {
           <Box className={classname.user_pad} sx={{}}>
             <Box sx={{ display: "flex", gap: "10px" }}>
               <Box className="center-align">
-                <Avatar onlineStatus={true} url={account.avatar} size={60} status={!notificationStore.alert ? "donotdisturb" : "online"} />
+                <Avatar onlineStatus={true} url={myInfoStore?.avatar} size={60} status={!notificationStore.alert ? "donotdisturb" : "online"} />
               </Box>
               <Box className="center-align" sx={{ flexDirection: "column", alignItems: "flex-start" }}>
                 <Box className="fs-14-light white">{t("set-1_welcome")}</Box>
@@ -110,8 +116,7 @@ const Main = ({ view, setView }: propsType) => {
                   }}
                 >
                   <Box className="fs-14-light gray">{t("set-3_connected-method")}:</Box>
-                  {account.wallet === walletEnum.noncustodial && <Box className="fs-14-light white">{t("wc-12_non-custodial-wallet")}</Box>}
-                  {account.wallet !== walletEnum.noncustodial && <Box className="fs-14-light white">{t("wc-13_custodial-wallet")}</Box>}
+                  <Box className="fs-14-light white">{t("wc-12_non-custodial-wallet")}</Box>
                 </Box>
               </Box>
               <Box>

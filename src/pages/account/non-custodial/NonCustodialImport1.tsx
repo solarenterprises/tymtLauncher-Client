@@ -1,20 +1,31 @@
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { useDispatch, useSelector } from "react-redux";
+import { motion } from "framer-motion";
 import { useFormik } from "formik";
 import * as Yup from "yup";
+
 import { Grid, Box, Stack } from "@mui/material";
+
 import Back from "../../../components/account/Back";
 import AccountHeader from "../../../components/account/AccountHeader";
 import InputText from "../../../components/account/InputText";
 import AccountNextButton from "../../../components/account/AccountNextButton";
 import Stepper from "../../../components/account/Stepper";
 import tymt3 from "../../../assets/account/tymt3.png";
+
+import { getTempAccount, setTempAccount } from "../../../features/account/TempAccountSlice";
+
 import "../../../global.css";
-import { motion } from "framer-motion";
+
+import { IAccount } from "../../../types/accountTypes";
 
 const NonCustodialImport1 = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const dispatch = useDispatch();
+
+  const tempAccountStore: IAccount = useSelector(getTempAccount);
 
   const formik = useFormik({
     initialValues: {
@@ -47,12 +58,13 @@ const NonCustodialImport1 = () => {
         .oneOf([Yup.ref("password")], t("cca-64_password-must-match")),
     }),
     onSubmit: () => {
-      // dispatch(
-      //   setTempNonCustodial({
-      //     ...tempNonCustodialStore,
-      //     password: formik.values.password,
-      //   })
-      // );
+      const newPassword = formik.values.password;
+      dispatch(
+        setTempAccount({
+          ...tempAccountStore,
+          password: newPassword,
+        })
+      );
       navigate("/non-custodial/signup/4");
     },
   });
@@ -108,7 +120,17 @@ const NonCustodialImport1 = () => {
                       {/* <Grid item xs={12} mt={"16px"}>
                         <SecurityLevel password={formik.values.password} />
                       </Grid> */}
-                      <Grid item xs={12} mt={"40px"}>
+                      <Grid
+                        item
+                        xs={12}
+                        sx={{
+                          height: "20px",
+                          padding: "0px 6px",
+                        }}
+                      >
+                        {formik.touched.password && formik.errors.password && <Box className={"fs-16-regular red"}>{formik.errors.password}</Box>}
+                      </Grid>
+                      <Grid item xs={12} mt={"48px"}>
                         <InputText
                           id="non-custodial-repeat-password"
                           name="passwordMatch"

@@ -1,31 +1,14 @@
 import { useSelector, useDispatch } from "react-redux";
-import { useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import InfiniteScroll from "react-infinite-scroll-component";
 import _ from "lodash";
-
-import Bubble from "../../components/chat/Bubble";
-
-import { Box, Grid, Divider, Button, Stack } from "@mui/material";
-import { ThemeProvider, createTheme } from "@mui/material/styles";
-
-import ChatStyle from "../../styles/ChatStyles";
-import x from "../../assets/chat/x.svg";
-import Avatar from "../../components/home/Avatar";
-
-import { AppDispatch } from "../../store";
-import { selectNotification } from "../../features/settings/NotificationSlice";
-import { selectChat } from "../../features/settings/ChatSlice";
-import { setMountedFalse, setMountedTrue } from "../../features/chat/IntercomSupportSlice";
-import { getAccount } from "../../features/account/AccountSlice";
-import { getChatHistory, setChatHistory } from "../../features/chat/ChatHistorySlice";
-import { getContactList } from "../../features/chat/ContactListSlice";
-import { fetchCurrentChatroomAsync, getCurrentChatroom } from "../../features/chat/CurrentChatroomSlice";
-import { ICurrentChatroomMembers, fetchCurrentChatroomMembersAsync, getCurrentChatroomMembers } from "../../features/chat/CurrentChatroomMembersSlice";
+import { listen } from "@tauri-apps/api/event";
 
 import { useSocket } from "../../providers/SocketProvider";
+import Bubble from "../../components/chat/Bubble";
 import GroupAvatar from "../../components/chat/GroupAvatar";
 import ChatGroupMemberListRoom from "./ChatGroupMemberListRoom";
 import ChatSettinginRoom from "./ChatsettinginRoom";
@@ -33,17 +16,32 @@ import ChatMainRoom from "./ChatMainRoom";
 import ChatMsginRoom from "./Chatsetting-MsginRoom";
 import ChatInputField from "../../components/chat/Chatinputfield";
 import ChatGroupEditRoom from "./ChatGroupEditRoom";
+import Avatar from "../../components/home/Avatar";
+
+import { Box, Grid, Divider, Button, Stack } from "@mui/material";
+import { ThemeProvider, createTheme } from "@mui/material/styles";
 import EditIcon from "@mui/icons-material/Edit";
+
+import ChatStyle from "../../styles/ChatStyles";
+import x from "../../assets/chat/x.svg";
+
+import { AppDispatch } from "../../store";
+import { selectNotification } from "../../features/settings/NotificationSlice";
+import { selectChat } from "../../features/settings/ChatSlice";
+import { setMountedFalse, setMountedTrue } from "../../features/chat/IntercomSupportSlice";
+import { getChatHistory, setChatHistory } from "../../features/chat/ChatHistorySlice";
+import { getContactList } from "../../features/chat/ContactListSlice";
+import { fetchCurrentChatroomAsync, getCurrentChatroom } from "../../features/chat/CurrentChatroomSlice";
+import { ICurrentChatroomMembers, fetchCurrentChatroomMembersAsync, getCurrentChatroomMembers } from "../../features/chat/CurrentChatroomMembersSlice";
+import { fetchHistoricalChatroomMembersAsync } from "../../features/chat/HistoricalChatroomMembersSlice";
+import { getMyInfo } from "../../features/account/MyInfoSlice";
+import { IActiveUserList, getActiveUserList } from "../../features/chat/ActiveUserListSlice";
 
 import { addChatHistory } from "../../lib/api/JSONHelper";
 
-import { ChatHistoryType, IContactList } from "../../types/chatTypes";
+import { ChatHistoryType, IContactList, IMyInfo } from "../../types/chatTypes";
 import { chatType, notificationType } from "../../types/settingTypes";
-import { accountType } from "../../types/accountTypes";
-import { IActiveUserList, getActiveUserList } from "../../features/chat/ActiveUserListSlice";
 import { IChatroom } from "../../types/ChatroomAPITypes";
-import { fetchHistoricalChatroomMembersAsync } from "../../features/chat/HistoricalChatroomMembersSlice";
-import { listen } from "@tauri-apps/api/event";
 
 const theme = createTheme({
   palette: {
@@ -78,12 +76,12 @@ const Chatroom = () => {
 
   const activeUserListStore: IActiveUserList = useSelector(getActiveUserList);
   const chatStore: chatType = useSelector(selectChat);
-  const accountStore: accountType = useSelector(getAccount);
   const chatHistoryStore: ChatHistoryType = useSelector(getChatHistory);
   const contactListStore: IContactList = useSelector(getContactList);
   const notificationStore: notificationType = useSelector(selectNotification);
   const currentChatroomStore: IChatroom = useSelector(getCurrentChatroom);
   const currentChatroomMembersStore: ICurrentChatroomMembers = useSelector(getCurrentChatroomMembers);
+  const myInfoStore: IMyInfo = useSelector(getMyInfo);
 
   const isDM = useMemo(() => {
     return currentChatroomStore?.room_name ? false : true;
@@ -91,12 +89,12 @@ const Chatroom = () => {
   const isGlobal = useMemo(() => {
     return currentChatroomStore?.isGlobal;
   }, [currentChatroomStore]);
-  const currentPartner = isDM ? currentChatroomMembersStore?.members?.find((member) => member._id !== accountStore.uid) : null;
+
+  const currentPartner = isDM ? currentChatroomMembersStore?.members?.find((member) => member._id !== myInfoStore?._id) : null;
   const displayChatroomName = !isDM ? currentChatroomStore?.room_name : currentPartner?.nickName;
   const displayChatroomSubName = isGlobal ? "Public channel" : !isDM ? `${currentChatroomStore?.participants?.length ?? 0} Joined` : currentPartner?.sxpAddress;
 
   const chatStoreRef = useRef(chatStore);
-  const accountStoreRef = useRef(accountStore);
   const chatHistoryStoreRef = useRef(chatHistoryStore);
   const contactListStoreRef = useRef(contactListStore);
   const notificationStoreRef = useRef(notificationStore);
@@ -105,9 +103,6 @@ const Chatroom = () => {
   useEffect(() => {
     chatStoreRef.current = chatStore;
   }, [chatStore]);
-  useEffect(() => {
-    accountStoreRef.current = accountStore;
-  }, [accountStore]);
   useEffect(() => {
     chatHistoryStoreRef.current = chatHistoryStore;
   }, [chatHistoryStore]);
@@ -137,9 +132,9 @@ const Chatroom = () => {
     }
   }, [chatroomId]);
 
-  const fetchMessages = async () => {
+  const fetchMessages = useCallback(async () => {
     try {
-      if (accountStoreRef.current.uid && currentChatroomStoreRef?.current._id) {
+      if (myInfoStore?._id && currentChatroomStoreRef?.current._id) {
         const query = {
           room_id: currentChatroomStoreRef?.current._id,
           pagination: { page: Math.floor(chatHistoryStoreRef.current.messages.length / 20) + 1, pageSize: 20 },
@@ -151,7 +146,7 @@ const Chatroom = () => {
     } catch (err) {
       console.error("Failed to fetchMessages: ", err);
     }
-  };
+  }, [myInfoStore]);
 
   // Fetch chat history of the first page
   useEffect(() => {

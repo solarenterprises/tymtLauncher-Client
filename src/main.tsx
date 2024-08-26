@@ -7,7 +7,6 @@ import Layoutchat from "./pages/main/Layoutchat";
 
 import Splash from "./pages/welcome/Splash";
 import GetStarted from "./pages/welcome/GetStarted";
-import Start from "./pages/welcome/Start";
 import Welcome from "./pages/account/Welcome";
 
 import CustodialSignUp1 from "./pages/account/custodial/CustodialSignUp1";
@@ -83,7 +82,6 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
                   <Route path="/" element={<TransactionProvider />}>
                     <Route path="/" element={<Splash />} />
                     <Route path="/get-started" element={<GetStarted />} />
-                    <Route path="/start" element={<Start />} />
                     <Route path="/welcome" element={<Welcome />} />
                     <Route path="/non-custodial/signup/2" element={<NonCustodialSignUp2 />} />
                     <Route path="/non-custodial/signup/3" element={<NonCustodialSignUp3 />} />

@@ -7,12 +7,10 @@ import MemberRemoveButton from "./MemberRemoveButton";
 import MemberInviteButton from "./MemberInviteButton";
 
 import { ICurrentChatroomMember } from "../../features/chat/CurrentChatroomMembersSlice";
-import { getAccount } from "../../features/account/AccountSlice";
 import { IActiveUserList, getActiveUserList } from "../../features/chat/ActiveUserListSlice";
 import { getCurrentChatroom } from "../../features/chat/CurrentChatroomSlice";
 import { getMyInfo } from "../../features/account/MyInfoSlice";
 
-import { accountType } from "../../types/accountTypes";
 import { IMyInfo } from "../../types/chatTypes";
 import { IChatroom } from "../../types/ChatroomAPITypes";
 
@@ -23,7 +21,6 @@ export interface IPropsGroupMemberListItem {
 }
 
 const GroupMemberListItem = ({ member, index, invited }: IPropsGroupMemberListItem) => {
-  const accountStore: accountType = useSelector(getAccount);
   const activeUserListStore: IActiveUserList = useSelector(getActiveUserList);
   const myInfoStore: IMyInfo = useSelector(getMyInfo);
   const currentChatroomStore: IChatroom = useSelector(getCurrentChatroom);
@@ -62,8 +59,10 @@ const GroupMemberListItem = ({ member, index, invited }: IPropsGroupMemberListIt
             </Stack>
           </Box>
 
-          {invited && accountStore?.uid !== member._id && !(!myInfoStore?.isAdmin && !currentChatroomStore?.isPrivate) && <MemberRemoveButton member={member} />}
-          {!invited && accountStore?.uid !== member._id && !(!myInfoStore?.isAdmin && !currentChatroomStore?.isPrivate) && <MemberInviteButton member={member} />}
+          {invited && myInfoStore?._id !== member._id && !(!myInfoStore?.isAdmin && !currentChatroomStore?.isPrivate) && <MemberRemoveButton member={member} />}
+          {!invited && myInfoStore?._id !== member._id && !(!myInfoStore?.isAdmin && !currentChatroomStore?.isPrivate) && (
+            <MemberInviteButton member={member} />
+          )}
           {/* <Box
             className={"unread-dot fs-10-light"}
             sx={{

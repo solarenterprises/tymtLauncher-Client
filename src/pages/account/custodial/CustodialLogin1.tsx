@@ -1,10 +1,9 @@
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { useDispatch, useSelector } from "react-redux";
-import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
+import { useState } from "react";
 import createKeccakHash from "keccak";
 import { getCustodial } from "../../../features/account/CustodialSlice";
-import { getAccount, setAccount } from "../../../features/account/AccountSlice";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { Grid, Box, Stack } from "@mui/material";
@@ -18,16 +17,14 @@ import DontHaveAccount from "../../../components/account/DontHaveAccount";
 import BenefitModal from "../../../components/account/BenefitModal";
 import tymt7 from "../../../assets/account/tymt2.png";
 import "../../../global.css";
-import { accountType, custodialType, loginEnum } from "../../../types/accountTypes";
+import { custodialType } from "../../../types/accountTypes";
 
 const CustodialLogIn1 = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const dispatch = useDispatch();
   const [open, setOpen] = useState(false);
   const [path, setPath] = useState("");
   const custodialStore: custodialType = useSelector(getCustodial);
-  const accountStore: accountType = useSelector(getAccount);
 
   const formik = useFormik({
     initialValues: {
@@ -52,10 +49,6 @@ const CustodialLogIn1 = () => {
   const handleBackClick = () => {
     navigate("/welcome");
   };
-
-  useEffect(() => {
-    dispatch(setAccount({ ...accountStore, mode: loginEnum.login }));
-  }, []);
 
   return (
     <>

@@ -10,14 +10,12 @@ import { useSocket } from "../../providers/SocketProvider";
 
 import { AppDispatch } from "../../store";
 import { leaveGroupAsync, removeChatroomAsync } from "../../features/chat/ChatroomListSlice";
-import { getAccount } from "../../features/account/AccountSlice";
 import { delOneSkeyList } from "../../features/chat/SKeyListSlice";
 import { createMutedListAsync, deleteMutedListAsync, getMutedList } from "../../features/chat/MutedListSlice";
 
 import { ISocketParamsLeaveMessageGroup, ISocketParamsSyncEvents } from "../../types/SocketTypes";
 import { IChatroom, IChatroomList, IParamsLeaveGroup } from "../../types/ChatroomAPITypes";
 import { IPoint } from "../../types/homeTypes";
-import { accountType } from "../../types/accountTypes";
 import { IReqCreateMutedList, IReqDeleteMutedList } from "../../types/UserAPITypes";
 import { IMyInfo } from "../../types/chatTypes";
 import { getMyInfo } from "../../features/account/MyInfoSlice";
@@ -35,7 +33,6 @@ const GroupListItemContextMenu = ({ view, setView, group, contextMenuPosition }:
 
   const { t } = useTranslation();
   const dispatch = useDispatch<AppDispatch>();
-  const accountStore: accountType = useSelector(getAccount);
   const mutedListStore: IChatroomList = useSelector(getMutedList);
   const myInfoStore: IMyInfo = useSelector(getMyInfo);
 
@@ -75,7 +72,7 @@ const GroupListItemContextMenu = ({ view, setView, group, contextMenuPosition }:
     try {
       const data: IParamsLeaveGroup = {
         _groupId: group._id,
-        _userId: accountStore.uid,
+        _userId: myInfoStore?._id,
       };
       dispatch(leaveGroupAsync(data)).then(() => {
         dispatch(delOneSkeyList(group._id));
@@ -83,7 +80,7 @@ const GroupListItemContextMenu = ({ view, setView, group, contextMenuPosition }:
         if (socket.current && socket.current.connected) {
           const data: ISocketParamsLeaveMessageGroup = {
             room_id: group._id,
-            joined_user_id: accountStore.uid,
+            joined_user_id: myInfoStore?._id,
           };
           socket.current.emit("leave-message-group", JSON.stringify(data));
           console.log("socket.current.emit > leave-message-group", data);
@@ -95,7 +92,7 @@ const GroupListItemContextMenu = ({ view, setView, group, contextMenuPosition }:
     } catch (err) {
       console.error("Failed to handleLeaveGroupClick: ", err);
     }
-  }, [accountStore, socket.current]);
+  }, [myInfoStore, socket.current]);
 
   const handleRemoveGroupClick = useCallback(async () => {
     try {
@@ -106,7 +103,7 @@ const GroupListItemContextMenu = ({ view, setView, group, contextMenuPosition }:
       if (socket.current && socket.current.connected) {
         const memberIds = group.participants.map((participant) => participant.userId);
         const data_1: ISocketParamsSyncEvents = {
-          sender_id: accountStore.uid,
+          sender_id: myInfoStore?._id,
           recipient_ids: memberIds,
           instructions: [SyncEventNames.UPDATE_CHATROOM_LIST],
           is_to_self: true,
@@ -117,7 +114,7 @@ const GroupListItemContextMenu = ({ view, setView, group, contextMenuPosition }:
     } catch (err) {
       console.error("Failed to handleRemoveGroupClick: ", err);
     }
-  }, [socket.current, accountStore]);
+  }, [socket.current, myInfoStore]);
 
   const handleExportClick = () => {
     setView(false);

@@ -14,7 +14,6 @@ import TextareaAutosize from "@mui/material/TextareaAutosize";
 import { useSocket } from "../../providers/SocketProvider";
 
 import { AppDispatch } from "../../store";
-import { getAccount } from "../../features/account/AccountSlice";
 import { getCurrentChatroom } from "../../features/chat/CurrentChatroomSlice";
 import { ISKeyList, getSKeyList } from "../../features/chat/SKeyListSlice";
 import { getChatHistory, setChatHistory } from "../../features/chat/ChatHistorySlice";
@@ -27,7 +26,6 @@ import emotion from "../../assets/chat/emotion.svg";
 import send from "../../assets/chat/chatframe.svg";
 
 import { ChatHistoryType, IMyInfo, propsChatInputFieldType } from "../../types/chatTypes";
-import { accountType } from "../../types/accountTypes";
 import { IChatroom } from "../../types/ChatroomAPITypes";
 
 import MessageAPI from "../../lib/api/MessageAPI";
@@ -54,7 +52,6 @@ const ChatInputField = ({ value, setValue }: propsChatInputFieldType) => {
   const classes = ChatStyle();
 
   const dispatch = useDispatch<AppDispatch>();
-  const accountStore: accountType = useSelector(getAccount);
   const chatHistoryStore: ChatHistoryType = useSelector(getChatHistory);
   const currentChatroomStore: IChatroom = useSelector(getCurrentChatroom);
   const sKeyListStore: ISKeyList = useSelector(getSKeyList);
@@ -109,7 +106,7 @@ const ChatInputField = ({ value, setValue }: propsChatInputFieldType) => {
 
             const formData = new FormData();
             formData.append("type", type);
-            formData.append("sender_id", accountStore?.uid);
+            formData.append("sender_id", myInfoStore?._id);
             formData.append("room_id", currentChatroomStore?._id);
             formData.append("message", storeName);
             formData.append("file", file);
@@ -120,7 +117,7 @@ const ChatInputField = ({ value, setValue }: propsChatInputFieldType) => {
             }
 
             const message = {
-              sender_id: accountStore?.uid,
+              sender_id: myInfoStore?._id,
               room_id: currentChatroomStore?._id,
               message: storeName,
               createdAt: Date.now(),
@@ -133,12 +130,12 @@ const ChatInputField = ({ value, setValue }: propsChatInputFieldType) => {
             const data = {
               alertType: "chat",
               note: {
-                sender: accountStore?.uid,
+                sender: myInfoStore?._id,
                 nickName: myInfoStore?.nickName,
                 room_id: currentChatroomStore?._id,
                 message: fullName,
               },
-              receivers: currentChatroomStore?.participants?.filter((element) => element.userId !== accountStore.uid)?.map((element_2) => element_2.userId),
+              receivers: currentChatroomStore?.participants?.filter((element) => element.userId !== myInfoStore?._id)?.map((element_2) => element_2.userId),
             };
             socket.current.emit("post-alert", JSON.stringify(data));
             console.log("socket.current.emit > post-alert");
@@ -150,7 +147,7 @@ const ChatInputField = ({ value, setValue }: propsChatInputFieldType) => {
               })
             );
 
-            console.log("handleFileInputChange", type, accountStore?.uid, currentChatroomStore?._id, message, file);
+            console.log("handleFileInputChange", type, myInfoStore?._id, currentChatroomStore?._id, message, file);
 
             setLoading(false);
           }
@@ -160,7 +157,7 @@ const ChatInputField = ({ value, setValue }: propsChatInputFieldType) => {
         }
       }
     },
-    [myInfoStore, accountStore, currentChatroomStore, chatHistoryStore, socket.current]
+    [myInfoStore, myInfoStore, currentChatroomStore, chatHistoryStore, socket.current]
   );
 
   const handleUploadClick = () => {
@@ -195,7 +192,7 @@ const ChatInputField = ({ value, setValue }: propsChatInputFieldType) => {
 
             const formData = new FormData();
             formData.append("type", type);
-            formData.append("sender_id", accountStore?.uid);
+            formData.append("sender_id", myInfoStore?._id);
             formData.append("room_id", currentChatroomStore?._id);
             formData.append("message", storeName);
             formData.append("file", file);
@@ -206,7 +203,7 @@ const ChatInputField = ({ value, setValue }: propsChatInputFieldType) => {
             }
 
             const message = {
-              sender_id: accountStore?.uid,
+              sender_id: myInfoStore?._id,
               room_id: currentChatroomStore?._id,
               message: storeName,
               createdAt: Date.now(),
@@ -219,12 +216,12 @@ const ChatInputField = ({ value, setValue }: propsChatInputFieldType) => {
             const data = {
               alertType: "chat",
               note: {
-                sender: accountStore?.uid,
+                sender: myInfoStore?._id,
                 nickName: myInfoStore?.nickName,
                 room_id: currentChatroomStore?._id,
                 message: fullName,
               },
-              receivers: currentChatroomStore?.participants?.filter((element) => element.userId !== accountStore.uid)?.map((element_2) => element_2.userId),
+              receivers: currentChatroomStore?.participants?.filter((element) => element.userId !== myInfoStore?._id)?.map((element_2) => element_2.userId),
             };
             socket.current.emit("post-alert", JSON.stringify(data));
             console.log("socket.current.emit > post-alert");
@@ -236,7 +233,7 @@ const ChatInputField = ({ value, setValue }: propsChatInputFieldType) => {
               })
             );
 
-            console.log("handleFileInputChange", type, accountStore?.uid, currentChatroomStore?._id, message, file);
+            console.log("handleFileInputChange", type, myInfoStore?._id, currentChatroomStore?._id, message, file);
 
             setLoading(false);
           }
@@ -246,7 +243,7 @@ const ChatInputField = ({ value, setValue }: propsChatInputFieldType) => {
         }
       }
     },
-    [myInfoStore, accountStore, currentChatroomStore, chatHistoryStore, socket.current]
+    [myInfoStore, myInfoStore, currentChatroomStore, chatHistoryStore, socket.current]
   );
 
   const handleEmojiClick = (event: any) => {
@@ -269,7 +266,7 @@ const ChatInputField = ({ value, setValue }: propsChatInputFieldType) => {
           // Encrypt & send the message
           const encryptedMessage = currentChatroomStore?.isPrivate ? await encrypt(value, currentSKey) : value;
           const message = {
-            sender_id: accountStore?.uid,
+            sender_id: myInfoStore?._id,
             room_id: currentChatroomStore?._id,
             message: encryptedMessage,
             createdAt: Date.now(),
@@ -281,12 +278,12 @@ const ChatInputField = ({ value, setValue }: propsChatInputFieldType) => {
           const data = {
             alertType: "chat",
             note: {
-              sender: accountStore?.uid,
+              sender: myInfoStore?._id,
               nickName: myInfoStore?.nickName,
               room_id: currentChatroomStore?._id,
               message: encryptedMessage,
             },
-            receivers: currentChatroomStore?.participants?.filter((element) => element.userId !== accountStore.uid)?.map((element_2) => element_2.userId),
+            receivers: currentChatroomStore?.participants?.filter((element) => element.userId !== myInfoStore?._id)?.map((element_2) => element_2.userId),
           };
           socket.current.emit("post-alert", JSON.stringify(data));
           console.log("socket.current.emit > post-alert");
@@ -306,7 +303,7 @@ const ChatInputField = ({ value, setValue }: propsChatInputFieldType) => {
         console.error("Failed to sendMessage: ", err);
       }
     }
-  }, [socket.current, accountStore, currentChatroomStore, sKeyListStore, myInfoStore, value]);
+  }, [socket.current, myInfoStore, currentChatroomStore, sKeyListStore, myInfoStore, value]);
 
   const handleEnter = useCallback(
     async (e: any) => {

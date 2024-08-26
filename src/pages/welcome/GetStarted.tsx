@@ -15,8 +15,7 @@ import AccountIconBar from "../../components/account/AccountIconBar";
 import { selectLanguage } from "../../features/settings/LanguageSlice";
 import { languageType } from "../../types/settingTypes";
 import { AppDispatch } from "../../store";
-import { getAccount, setAccount } from "../../features/account/AccountSlice";
-import { IMachineId, accountType, loginEnum } from "../../types/accountTypes";
+import { IMachineId } from "../../types/accountTypes";
 import { getMachineId, setMachineId } from "../../features/account/MachineIdSlice";
 import { invoke } from "@tauri-apps/api/tauri";
 import { setMnemonic } from "../../features/account/MnemonicSlice";
@@ -25,7 +24,6 @@ import { motion } from "framer-motion";
 const GetStarted = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
-  const accountStore: accountType = useSelector(getAccount);
   const machineIdStore: IMachineId = useSelector(getMachineId);
 
   const {
@@ -68,13 +66,6 @@ const GetStarted = () => {
       .catch((error) => {
         console.error("Error getting Machine ID:", error);
       });
-    dispatch(
-      setAccount({
-        ...accountStore,
-        mode: loginEnum.login,
-        isLoggedIn: false,
-      })
-    );
     dispatch(setMnemonic({ mnemonic: "" }));
   }, []);
 

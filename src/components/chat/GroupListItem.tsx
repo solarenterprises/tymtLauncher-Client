@@ -14,23 +14,22 @@ import GroupListItemContextMenu from "./GroupListItemContextMenu";
 import PublicBadge from "./PublicBadge";
 
 import { AppDispatch } from "../../store";
-import { getAccount } from "../../features/account/AccountSlice";
 import { fetchCurrentChatroomAsync, setCurrentChatroom } from "../../features/chat/CurrentChatroomSlice";
 import { fetchCurrentChatroomMembersAsync, setCurrentChatroomMembers } from "../../features/chat/CurrentChatroomMembersSlice";
 import { getChatroomList, joinPublicGroupAsync } from "../../features/chat/ChatroomListSlice";
 import { fetchAlertListAsync, getAlertList } from "../../features/alert/AlertListSlice";
 
-import { accountType } from "../../types/accountTypes";
 import { IChatroom, IChatroomList } from "../../types/ChatroomAPITypes";
 import { IPoint } from "../../types/homeTypes";
 import { ISocketParamsJoinMessageGroup, ISocketParamsSyncEvent } from "../../types/SocketTypes";
 import { IAlertList } from "../../types/alertTypes";
-import { IAlert } from "../../types/chatTypes";
+import { IAlert, IMyInfo } from "../../types/chatTypes";
 import AlertAPI from "../../lib/api/AlertAPI";
 import { SyncEventNames } from "../../consts/SyncEventNames";
 import { fetchUnreadMessageListAsync } from "../../features/chat/UnreadMessageListSlice";
 import { translateString } from "../../lib/api/Translate";
 import { fetchHistoricalChatroomMembersAsync } from "../../features/chat/HistoricalChatroomMembersSlice";
+import { getMyInfo } from "../../features/account/MyInfoSlice";
 
 export interface IPropsGroupListItem {
   group: IChatroom;
@@ -47,9 +46,9 @@ const GroupListItem = ({ group, index, roomMode, setView, gray }: IPropsGroupLis
   const navigate = useNavigate();
 
   const dispatch = useDispatch<AppDispatch>();
-  const accountStore: accountType = useSelector(getAccount);
   const chatroomListStore: IChatroomList = useSelector(getChatroomList);
   const alertListStore: IAlertList = useSelector(getAlertList);
+  const myInfoStore: IMyInfo = useSelector(getMyInfo);
 
   const [showContextMenu, setShowContextMenu] = useState<boolean>(false);
   const [contextMenuPosition, setContextMenuPosition] = useState<IPoint>({
@@ -80,7 +79,7 @@ const GroupListItem = ({ group, index, roomMode, setView, gray }: IPropsGroupLis
       if (!isGroupInvited && !group.isPrivate) {
         dispatch(
           joinPublicGroupAsync({
-            _userId: accountStore.uid,
+            _userId: myInfoStore?._id,
             _groupId: group._id,
           })
         ).then(async (action) => {
@@ -97,7 +96,7 @@ const GroupListItem = ({ group, index, roomMode, setView, gray }: IPropsGroupLis
             if (socket.current && socket.current.connected) {
               const data: ISocketParamsJoinMessageGroup = {
                 room_id: group._id,
-                joined_user_id: accountStore.uid,
+                joined_user_id: myInfoStore?._id,
               };
               socket.current.emit("join-message-group", JSON.stringify(data));
               console.log("socket.current.emit > join-message-group", data);
@@ -127,8 +126,8 @@ const GroupListItem = ({ group, index, roomMode, setView, gray }: IPropsGroupLis
 
         if (socket.current && socket.current.connected) {
           const data_2: ISocketParamsSyncEvent = {
-            sender_id: accountStore.uid,
-            recipient_id: accountStore.uid,
+            sender_id: myInfoStore?._id,
+            recipient_id: myInfoStore?._id,
             instructions: [SyncEventNames.UPDATE_ALERT_LIST, SyncEventNames.UPDATE_UNREAD_MESSAGE_LIST],
             is_to_self: true,
           };
@@ -136,9 +135,9 @@ const GroupListItem = ({ group, index, roomMode, setView, gray }: IPropsGroupLis
           console.log("socket.current.emit > sync-event", data_2);
         }
 
-        await AlertAPI.readAllUnreadAlertsForChatroom({ userId: accountStore.uid, roomId: group._id });
-        await dispatch(fetchUnreadMessageListAsync(accountStore.uid));
-        await dispatch(fetchAlertListAsync(accountStore.uid));
+        await AlertAPI.readAllUnreadAlertsForChatroom({ userId: myInfoStore?._id, roomId: group._id });
+        await dispatch(fetchUnreadMessageListAsync(myInfoStore?._id));
+        await dispatch(fetchAlertListAsync(myInfoStore?._id));
       }
 
       console.log("handleGroupListItemClick");
@@ -151,7 +150,7 @@ const GroupListItem = ({ group, index, roomMode, setView, gray }: IPropsGroupLis
       setNotificationOpen(true);
       setNotificationLink(null);
     }
-  }, [accountStore, unreadAlertsForThisGroup, socket.current]);
+  }, [myInfoStore, unreadAlertsForThisGroup, socket.current]);
 
   const handleGroupListItemRightClick = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     e.preventDefault();

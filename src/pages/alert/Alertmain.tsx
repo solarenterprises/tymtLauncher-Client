@@ -1,11 +1,15 @@
-import { Box, Button, Stack } from "@mui/material";
 import { useCallback, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
-import unreaddot from "../../assets/alert/unreaddot.svg";
-import readdot from "../../assets/alert/readdot.svg";
+import InfiniteScroll from "react-infinite-scroll-component";
+
+import { Box, Button, Stack } from "@mui/material";
+
+import { AppDispatch } from "../../store";
+import { getMyInfo } from "../../features/account/MyInfoSlice";
+
 import AlertList from "../../components/alert/AlertList";
-import { IAlertList, IFetchAlertListParam } from "../../types/alertTypes";
+
 import {
   fetchAlertListAsync,
   fetchReadAlertListAsync,
@@ -13,10 +17,12 @@ import {
   getAlertList,
   updateAllAlertReadStatusAsync,
 } from "../../features/alert/AlertListSlice";
-import { AppDispatch } from "../../store";
-import InfiniteScroll from "react-infinite-scroll-component";
-import { accountType } from "../../types/accountTypes";
-import { getAccount } from "../../features/account/AccountSlice";
+
+import { IMyInfo } from "../../types/chatTypes";
+import { IAlertList, IFetchAlertListParam } from "../../types/alertTypes";
+
+import unreaddot from "../../assets/alert/unreaddot.svg";
+import readdot from "../../assets/alert/readdot.svg";
 
 const Alertmain = () => {
   const { t } = useTranslation();
@@ -24,7 +30,7 @@ const Alertmain = () => {
   const dispatch = useDispatch<AppDispatch>();
 
   const alertListStore: IAlertList = useSelector(getAlertList);
-  const accountStore: accountType = useSelector(getAccount);
+  const myInfoStore: IMyInfo = useSelector(getMyInfo);
 
   const [alertStatus, setAlertStatus] = useState<string>("unread");
   const [page, setPage] = useState<number>(1);
@@ -33,14 +39,14 @@ const Alertmain = () => {
     try {
       if (alertStatus === "read") {
         const param: IFetchAlertListParam = {
-          userId: accountStore.uid,
+          userId: myInfoStore?._id,
           page: Math.floor(alertListStore.read.length / 20) + 1,
           limit: 20,
         };
         dispatch(fetchReadAlertListAsync(param));
       } else {
         const param: IFetchAlertListParam = {
-          userId: accountStore.uid,
+          userId: myInfoStore?._id,
           page: Math.floor(alertListStore.unread.length / 20) + 1,
           limit: 20,
         };
@@ -50,17 +56,17 @@ const Alertmain = () => {
     } catch (err) {
       console.error("Failed to fetchMoreAlert: ", err);
     }
-  }, [page, alertStatus, accountStore, alertListStore]);
+  }, [page, alertStatus, myInfoStore, alertListStore]);
 
   useEffect(() => {
     setPage(1);
-    dispatch(fetchAlertListAsync(accountStore.uid));
-  }, [alertStatus, accountStore]);
+    dispatch(fetchAlertListAsync(myInfoStore?._id));
+  }, [alertStatus, myInfoStore]);
 
   const handleMarkAllAsReadClick = () => {
     dispatch(updateAllAlertReadStatusAsync()).then(() => {
       setPage(1);
-      dispatch(fetchAlertListAsync(accountStore.uid));
+      dispatch(fetchAlertListAsync(myInfoStore?._id));
     });
   };
 

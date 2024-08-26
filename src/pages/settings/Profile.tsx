@@ -13,13 +13,12 @@ import InputText from "../../components/account/InputText";
 
 import { AppDispatch } from "../../store";
 import { getNonCustodial, setNonCustodial } from "../../features/account/NonCustodialSlice";
-import { getCustodial, setCustodial } from "../../features/account/CustodialSlice";
+import { getCustodial } from "../../features/account/CustodialSlice";
 import { selectNotification } from "../../features/settings/NotificationSlice";
-import { setAccount, getAccount } from "../../features/account/AccountSlice";
 import { fileUpload, updateUserNickname } from "../../features/account/AccountApi";
 
 import { notificationType, propsType } from "../../types/settingTypes";
-import { accountType, custodialType, nonCustodialType, walletEnum } from "../../types/accountTypes";
+import { custodialType, nonCustodialType } from "../../types/accountTypes";
 
 import SettingStyle from "../../styles/SettingStyle";
 
@@ -27,17 +26,20 @@ import backIcon from "../../assets/settings/back-icon.svg";
 import editIcon from "../../assets/settings/edit-icon.svg";
 import { ISocketParamsSyncEventsAll } from "../../types/SocketTypes";
 import { SyncEventNames } from "../../consts/SyncEventNames";
+import { IMyInfo } from "../../types/chatTypes";
+import { getMyInfo, setMyInfo } from "../../features/account/MyInfoSlice";
 
 const Profile = ({ view, setView }: propsType) => {
   const classname = SettingStyle();
   const { t } = useTranslation();
   const { socket } = useSocket();
   const dispatch = useDispatch<AppDispatch>();
-  const account: accountType = useSelector(getAccount);
+
   const nonCustodial: nonCustodialType = useSelector(getNonCustodial);
   const custodial: custodialType = useSelector(getCustodial);
   const notificationStore: notificationType = useSelector(selectNotification);
-  const userStore = account.wallet === walletEnum.noncustodial ? nonCustodial : custodial;
+  const userStore = nonCustodial;
+  const myInfoStore: IMyInfo = useSelector(getMyInfo);
 
   const [nickname, setNickname] = useState(userStore.nickname);
   const [error, setError] = useState<string>("");
@@ -55,11 +57,9 @@ const Profile = ({ view, setView }: propsType) => {
       await validationSchema.validate(nickname);
       setError("");
 
-      account.wallet === walletEnum.noncustodial
-        ? dispatch(setNonCustodial({ ...nonCustodial, nickname: nickname }))
-        : dispatch(setCustodial({ ...custodial, nickname: nickname }));
+      dispatch(setNonCustodial({ ...nonCustodial, nickname: nickname }));
 
-      const res = await updateUserNickname(account.uid, nickname);
+      const res = await updateUserNickname(myInfoStore?._id, nickname);
       console.log(res.data, "updateUserNickName");
 
       setNotificationStatus("success");
@@ -79,7 +79,7 @@ const Profile = ({ view, setView }: propsType) => {
       setNotificationOpen(true);
       setNotificationLink(null);
     }
-  }, [nickname, nonCustodial, custodial, account]);
+  }, [nickname, nonCustodial, custodial, myInfoStore]);
 
   const UploadFile = () => {
     const fileInput = document.getElementById("file-input");
@@ -96,21 +96,15 @@ const Profile = ({ view, setView }: propsType) => {
     fileUpload(formData)
       .then((res) => {
         dispatch(
-          setAccount({
-            ...account,
-            avatar: res.data.avatar,
-          })
-        );
-        dispatch(
-          setNonCustodial({
-            ...nonCustodial,
+          setMyInfo({
+            ...myInfoStore,
             avatar: res.data.avatar,
           })
         );
 
         if (socket.current && socket.current.connected) {
           const data: ISocketParamsSyncEventsAll = {
-            sender_id: account.uid,
+            sender_id: myInfoStore?._id,
             instructions: [SyncEventNames.UPDATE_IMAGE_RENDER_TIME],
             is_to_self: true,
           };
@@ -132,7 +126,7 @@ const Profile = ({ view, setView }: propsType) => {
         setNotificationOpen(true);
         setNotificationLink(null);
       });
-  }, [socket.current, account]);
+  }, [socket.current, myInfoStore]);
 
   return (
     <>
@@ -151,7 +145,7 @@ const Profile = ({ view, setView }: propsType) => {
               <Stack direction={"row"} justifyContent={"center"} textAlign={"right"} alignItems={"center"} gap={"10px"}>
                 <Box className="center-align">
                   {/* <img src={avatar} /> */}
-                  <Avatar onlineStatus={true} url={account.avatar} size={92} status={!notificationStore.alert ? "donotdisturb" : "online"} />
+                  <Avatar onlineStatus={true} url={myInfoStore?.avatar} size={92} status={!notificationStore.alert ? "donotdisturb" : "online"} />
                 </Box>
                 <Box className="fs-h5 white">{t("set-68_change-avatar")}</Box>
               </Stack>

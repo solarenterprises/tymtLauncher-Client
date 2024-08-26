@@ -1,26 +1,20 @@
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
+import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { Outlet } from "react-router-dom";
-
-import { accountType } from "../types/accountTypes";
-import { useSelector } from "react-redux";
-import { getAccount } from "../features/account/AccountSlice";
+import { getMyInfo } from "../features/account/MyInfoSlice";
+import { IMyInfo } from "../types/chatTypes";
 
 export const AuthProvider = () => {
   const navigate = useNavigate();
-  const accountStore: accountType = useSelector(getAccount);
 
-  const accountStoreRef = useRef(accountStore);
-
-  useEffect(() => {
-    accountStoreRef.current = accountStore;
-  }, [accountStore]);
+  const myInfoStore: IMyInfo = useSelector(getMyInfo);
 
   useEffect(() => {
-    if (!accountStoreRef.current.isLoggedIn) {
+    if (true) {
       navigate("/welcome");
     }
-  }, [accountStoreRef.current.isLoggedIn]);
+  }, [myInfoStore]);
 
   return <Outlet />;
 };

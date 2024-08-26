@@ -22,15 +22,6 @@ export interface IAccountList {
   list: IAccount[];
 }
 
-export interface accountType {
-  mode: loginEnum;
-  wallet: walletEnum;
-  agreedTerms: boolean;
-  uid: string;
-  avatar: string;
-  isLoggedIn: boolean;
-}
-
 export interface nonCustodialType {
   mnemonic: string;
   mnemonicLength: number;

@@ -11,10 +11,11 @@ import { IRecipient } from "../../features/wallet/CryptoApi";
 
 import { decrypt } from "./Encrypt";
 
-import { IMnemonic, ISaltToken, accountType, nonCustodialType } from "../../types/accountTypes";
+import { IMnemonic, ISaltToken, nonCustodialType } from "../../types/accountTypes";
 import { IGetAccountReq, IGetBalanceReq, ISendContractReq, ISendTransactionReq, ISignMessageReq, IVerifyMessageReq } from "../../types/eventParamTypes";
 import { walletType } from "../../types/settingTypes";
 import { INative, IToken, chainEnum, chainIconMap, multiWalletType } from "../../types/walletTypes";
+import { IMyInfo } from "../../types/chatTypes";
 
 export default class TransactionProviderAPI {
   static getAccount = async (params: IGetAccountReq) => {
@@ -144,8 +145,8 @@ export default class TransactionProviderAPI {
 
   private static validateTymtAccount = async (json_data: ISendTransactionReq) => {
     const nonCustodialStore: nonCustodialType = JSON.parse(tymtStorage.get(`nonCustodial`));
-    const accountStore: accountType = JSON.parse(tymtStorage.get(`account`));
-    if (nonCustodialStore.mnemonic === "" || nonCustodialStore.password === "" || accountStore.uid !== json_data.requestUserId) {
+    const myInfoStore: IMyInfo = JSON.parse(tymtStorage.get(`myInfo`));
+    if (nonCustodialStore.mnemonic === "" || nonCustodialStore.password === "" || myInfoStore._id !== json_data.requestUserId) {
       return false;
     }
     return true;

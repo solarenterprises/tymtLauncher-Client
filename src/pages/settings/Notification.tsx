@@ -1,30 +1,36 @@
-import { Box, Button, Divider, Stack } from "@mui/material";
+import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
-import { selectNotification, setNotification } from "../../features/settings/NotificationSlice";
-import backIcon from "../../assets/settings/back-icon.svg";
+
+import { Box, Button, Divider, Stack } from "@mui/material";
+
 import SwitchComp from "../../components/SwitchComp";
-import arrowImg from "../../assets/settings/arrow-right.svg";
-import { useCallback } from "react";
-import { propsType, notificationType } from "../../types/settingTypes";
-import { accountType } from "../../types/accountTypes";
-import { getAccount } from "../../features/account/AccountSlice";
-import { updateUsernotificationStatus } from "../../features/chat/ContactListApi";
+
 import { AppDispatch } from "../../store";
+import { selectNotification, setNotification } from "../../features/settings/NotificationSlice";
+
+import { updateUsernotificationStatus } from "../../features/chat/ContactListApi";
+
+import { propsType, notificationType } from "../../types/settingTypes";
+
+import backIcon from "../../assets/settings/back-icon.svg";
+import arrowImg from "../../assets/settings/arrow-right.svg";
+import { IMyInfo } from "../../types/chatTypes";
+import { getMyInfo } from "../../features/account/MyInfoSlice";
 
 const Notification = ({ view, setView }: propsType) => {
   const { t } = useTranslation();
   const dispatch = useDispatch<AppDispatch>();
   const notificationStore: notificationType = useSelector(selectNotification);
-  const accountStore: accountType = useSelector(getAccount);
+  const myInfoStore: IMyInfo = useSelector(getMyInfo);
 
   const putUserStatus = useCallback(async () => {
     try {
-      await updateUsernotificationStatus(accountStore.uid, notificationStore.alert);
+      await updateUsernotificationStatus(myInfoStore?._id, notificationStore.alert);
     } catch (err) {
       console.log(err);
     }
-  }, [accountStore, notificationStore]);
+  }, [myInfoStore, notificationStore]);
 
   const updateNotification = useCallback(
     async (type: string) => {

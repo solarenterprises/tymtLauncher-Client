@@ -15,20 +15,19 @@ import { createContactAsync, getContactList } from "../../features/chat/ContactL
 import { getBlockList } from "../../features/chat/BlockListSlice";
 import { createDMAsync, getChatroomList } from "../../features/chat/ChatroomListSlice";
 import { addOneSKeyList } from "../../features/chat/SKeyListSlice";
-import { getAccount } from "../../features/account/AccountSlice";
 import { getRsa } from "../../features/chat/RsaSlice";
 import { IActiveUserList, getActiveUserList } from "../../features/chat/ActiveUserListSlice";
 import { setCurrentChatroom } from "../../features/chat/CurrentChatroomSlice";
 import { fetchCurrentChatroomMembersAsync } from "../../features/chat/CurrentChatroomMembersSlice";
 import { getFriendList } from "../../features/chat/FriendListSlice";
+import { fetchHistoricalChatroomMembersAsync } from "../../features/chat/HistoricalChatroomMembersSlice";
+import { getMyInfo } from "../../features/account/MyInfoSlice";
 import { rsaDecrypt } from "../../features/chat/RsaApi";
 
-import { IContactList, IRsa, userType } from "../../types/chatTypes";
+import { IContactList, IMyInfo, IRsa, userType } from "../../types/chatTypes";
 import { IChatroom, IChatroomList } from "../../types/ChatroomAPITypes";
 import { ISocketParamsJoinMessageGroup } from "../../types/SocketTypes";
-import { accountType } from "../../types/accountTypes";
 import { IPoint } from "../../types/homeTypes";
-import { fetchHistoricalChatroomMembersAsync } from "../../features/chat/HistoricalChatroomMembersSlice";
 
 export interface IPropsUserListItem {
   user: userType;
@@ -47,9 +46,9 @@ const UserListItem = ({ user, index, roomMode, setView, page }: IPropsUserListIt
   const blockListStore: IContactList = useSelector(getBlockList);
   const friendListStore: IContactList = useSelector(getFriendList);
   const chatroomListStore: IChatroomList = useSelector(getChatroomList);
-  const accountStore: accountType = useSelector(getAccount);
   const rsaStore: IRsa = useSelector(getRsa);
   const activeUserListStore: IActiveUserList = useSelector(getActiveUserList);
+  const myInfoStore: IMyInfo = useSelector(getMyInfo);
 
   const [showContextMenu, setShowContextMenu] = useState<boolean>(false);
   const [contextMenuPosition, setContextMenuPosition] = useState<IPoint>({
@@ -121,14 +120,14 @@ const UserListItem = ({ user, index, roomMode, setView, page }: IPropsUserListIt
                 };
                 const data_2: ISocketParamsJoinMessageGroup = {
                   room_id: newCurrentChatroom._id,
-                  joined_user_id: accountStore.uid,
+                  joined_user_id: myInfoStore?._id,
                 };
                 socket.current.emit("join-message-group", JSON.stringify(data_1));
                 socket.current.emit("join-message-group", JSON.stringify(data_2));
                 console.log("socket.current.emit > join-message-group", data_1);
                 console.log("socket.current.emit > join-message-group", data_2);
 
-                const myUserKey = newCurrentChatroom.participants.find((participant) => participant.userId === accountStore.uid)?.userKey;
+                const myUserKey = newCurrentChatroom.participants.find((participant) => participant.userId === myInfoStore?._id)?.userKey;
                 dispatch(
                   addOneSKeyList({
                     roomId: newCurrentChatroom._id,
@@ -165,14 +164,14 @@ const UserListItem = ({ user, index, roomMode, setView, page }: IPropsUserListIt
                 };
                 const data_2: ISocketParamsJoinMessageGroup = {
                   room_id: newCurrentChatroom._id,
-                  joined_user_id: accountStore.uid,
+                  joined_user_id: myInfoStore?._id,
                 };
                 socket.current.emit("join-message-group", JSON.stringify(data_1));
                 socket.current.emit("join-message-group", JSON.stringify(data_2));
                 console.log("socket.current.emit > join-message-group", data_1);
                 console.log("socket.current.emit > join-message-group", data_2);
 
-                const myUserKey = newCurrentChatroom.participants.find((participant) => participant.userId === accountStore.uid)?.userKey;
+                const myUserKey = newCurrentChatroom.participants.find((participant) => participant.userId === myInfoStore?._id)?.userKey;
                 dispatch(
                   addOneSKeyList({
                     roomId: newCurrentChatroom._id,
@@ -196,7 +195,7 @@ const UserListItem = ({ user, index, roomMode, setView, page }: IPropsUserListIt
     } else {
       console.error("Failed to handleUserListItemClick: socket not connected!");
     }
-  }, [user, contactListStore, blockListStore, friendListStore, chatroomListStore, accountStore, socket.current]);
+  }, [user, contactListStore, blockListStore, friendListStore, chatroomListStore, myInfoStore, socket.current]);
 
   return (
     <>

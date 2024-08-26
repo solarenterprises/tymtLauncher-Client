@@ -13,7 +13,7 @@ const init: IAccount = {
 
 const loadAccount: () => IAccount = () => {
   const data = tymtStorage.get(`account`);
-  if (!data || compareJSONStructure(JSON.parse(data), init)) {
+  if (!data || !compareJSONStructure(JSON.parse(data), init)) {
     tymtStorage.set(`account`, JSON.stringify(init));
     return init;
   }

@@ -10,13 +10,12 @@ import { AppDispatch } from "../../store";
 
 import { deleteFriendAsync } from "../../features/chat/FriendListSlice";
 import { createContactAsync, deleteContactAsync } from "../../features/chat/ContactListSlice";
-import { getAccount } from "../../features/account/AccountSlice";
 import { createBlockAsync, deleteBlockAsync } from "../../features/chat/BlockListSlice";
 
-import { accountType } from "../../types/accountTypes";
 import { IPoint } from "../../types/homeTypes";
-import { userType } from "../../types/chatTypes";
+import { IMyInfo, userType } from "../../types/chatTypes";
 import { ISocketParamsSyncEvent } from "../../types/SocketTypes";
+import { getMyInfo } from "../../features/account/MyInfoSlice";
 
 import { SyncEventNames } from "../../consts/SyncEventNames";
 
@@ -33,7 +32,7 @@ const UserListItemContextMenu = ({ user, view, setView, contextMenuPosition, pag
   const { socket } = useSocket();
   const dispatch = useDispatch<AppDispatch>();
 
-  const accountStore: accountType = useSelector(getAccount);
+  const myInfoStore: IMyInfo = useSelector(getMyInfo);
 
   const handleOnClose = () => {
     setView(false);
@@ -46,14 +45,14 @@ const UserListItemContextMenu = ({ user, view, setView, contextMenuPosition, pag
 
       if (socket.current && socket.current.connected) {
         const data_1: ISocketParamsSyncEvent = {
-          sender_id: accountStore.uid,
+          sender_id: myInfoStore?._id,
           recipient_id: user._id,
           instructions: [SyncEventNames.UPDATE_CONTACT_LIST, SyncEventNames.UPDATE_FRIEND_LIST],
           is_to_self: false,
         };
         const data_2: ISocketParamsSyncEvent = {
-          sender_id: accountStore.uid,
-          recipient_id: accountStore.uid,
+          sender_id: myInfoStore?._id,
+          recipient_id: myInfoStore?._id,
           instructions: [SyncEventNames.UPDATE_CONTACT_LIST, SyncEventNames.UPDATE_FRIEND_LIST],
           is_to_self: true,
         };
@@ -67,7 +66,7 @@ const UserListItemContextMenu = ({ user, view, setView, contextMenuPosition, pag
     } catch (err) {
       console.error("Failed to handleRemoveFriendClick: ", err);
     }
-  }, [socket.current, accountStore]);
+  }, [socket.current, myInfoStore]);
 
   const handleBlockClick = useCallback(async () => {
     try {
@@ -77,8 +76,8 @@ const UserListItemContextMenu = ({ user, view, setView, contextMenuPosition, pag
 
       if (socket.current && socket.current.connected) {
         const data: ISocketParamsSyncEvent = {
-          sender_id: accountStore.uid,
-          recipient_id: accountStore.uid,
+          sender_id: myInfoStore?._id,
+          recipient_id: myInfoStore?._id,
           instructions: [SyncEventNames.UPDATE_CONTACT_LIST, SyncEventNames.UPDATE_FRIEND_LIST, SyncEventNames.UPDATE_BLOCK_LIST],
           is_to_self: true,
         };
@@ -89,7 +88,7 @@ const UserListItemContextMenu = ({ user, view, setView, contextMenuPosition, pag
     } catch (err) {
       console.error("Failed to handleBlockClick: ", err);
     }
-  }, [socket.current, accountStore]);
+  }, [socket.current, myInfoStore]);
 
   const handleUnblockClick = useCallback(async () => {
     try {
@@ -98,8 +97,8 @@ const UserListItemContextMenu = ({ user, view, setView, contextMenuPosition, pag
 
       if (socket.current && socket.current.connected) {
         const data: ISocketParamsSyncEvent = {
-          sender_id: accountStore.uid,
-          recipient_id: accountStore.uid,
+          sender_id: myInfoStore?._id,
+          recipient_id: myInfoStore?._id,
           instructions: [SyncEventNames.UPDATE_CONTACT_LIST, SyncEventNames.UPDATE_BLOCK_LIST],
           is_to_self: true,
         };
@@ -110,7 +109,7 @@ const UserListItemContextMenu = ({ user, view, setView, contextMenuPosition, pag
     } catch (err) {
       console.error("Failed to handleUnblockClick: ", err);
     }
-  }, [socket.current, accountStore]);
+  }, [socket.current, myInfoStore]);
 
   return (
     <>

@@ -6,11 +6,10 @@ import SettingStyle from "../../styles/SettingStyle";
 import backIcon from "../../assets/settings/back-icon.svg";
 import InputText from "../../components/account/InputText";
 import SecurityLevel from "../../components/account/SecurityLevel";
-import { getAccount } from "../../features/account/AccountSlice";
 import { propsType } from "../../types/settingTypes";
-import { accountType, custodialType, nonCustodialType, walletEnum } from "../../types/accountTypes";
+import { custodialType, nonCustodialType } from "../../types/accountTypes";
 import { getNonCustodial, setNonCustodial } from "../../features/account/NonCustodialSlice";
-import { getCustodial, setCustodial } from "../../features/account/CustodialSlice";
+import { getCustodial } from "../../features/account/CustodialSlice";
 import { useNotification } from "../../providers/NotificationProvider";
 import createKeccakHash from "keccak";
 
@@ -18,10 +17,9 @@ const Password = ({ view, setView }: propsType) => {
   const classname = SettingStyle();
   const { t } = useTranslation();
   const dispatch = useDispatch();
-  const account: accountType = useSelector(getAccount);
   const nonCustodialStore: nonCustodialType = useSelector(getNonCustodial);
   const custodialStore: custodialType = useSelector(getCustodial);
-  const userStore = account.wallet === walletEnum.noncustodial ? nonCustodialStore : custodialStore;
+  const userStore = nonCustodialStore;
   const [newPwd, setNewPwd] = useState("");
   const [oldPwd, setOldPwd] = useState("");
   const [cfmPwd, setCfmPwd] = useState("");
@@ -67,13 +65,12 @@ const Password = ({ view, setView }: propsType) => {
     setNotificationDetail(t("alt-19_update-password-success"));
     setNotificationOpen(true);
     setNotificationLink(null);
-    account.wallet === walletEnum.noncustodial
-      ? dispatch(setNonCustodial({ ...nonCustodialStore, password: createKeccakHash("keccak256").update(newPwd).digest("hex") }))
-      : dispatch(setCustodial({ ...custodialStore, password: createKeccakHash("keccak256").update(newPwd).digest("hex") }));
+    dispatch(setNonCustodial({ ...nonCustodialStore, password: createKeccakHash("keccak256").update(newPwd).digest("hex") }));
     setNewPwd("");
     setOldPwd("");
     setCfmPwd("");
-  }, [account, nonCustodialStore, custodialStore, newPwd, oldPwd, cfmPwd]);
+  }, [userStore, nonCustodialStore, custodialStore, newPwd, oldPwd, cfmPwd]);
+
   return (
     <>
       {view === "password" && (

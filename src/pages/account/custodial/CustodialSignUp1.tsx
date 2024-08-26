@@ -21,10 +21,9 @@ import SecurityLevel from "../../../components/account/SecurityLevel";
 import tymt3 from "../../../assets/account/tymt3.png";
 
 import "../../../global.css";
-import { accountType, custodialType } from "../../../types/accountTypes";
+import { custodialType } from "../../../types/accountTypes";
 import { getTempCustodial, setTempCustodial } from "../../../features/account/TempCustodialSlice";
 import BenefitModal from "../../../components/account/BenefitModal";
-import { getAccount } from "../../../features/account/AccountSlice";
 import { useState } from "react";
 
 const CustodialSignUp1 = () => {
@@ -34,7 +33,6 @@ const CustodialSignUp1 = () => {
   const [open, setOpen] = useState(false);
   const [path, setPath] = useState("");
   const tempCustodialStore: custodialType = useSelector(getTempCustodial);
-  const accountStore: accountType = useSelector(getAccount);
 
   const formik = useFormik({
     initialValues: {
@@ -173,7 +171,7 @@ const CustodialSignUp1 = () => {
                     <Grid item xs={12} mt={"48px"}>
                       <AccountNextButton
                         isSubmit={true}
-                        disabled={formik.errors.email || formik.errors.password || formik.errors.passwordMatch || !accountStore.agreedTerms ? true : false}
+                        disabled={formik.errors.email || formik.errors.password || formik.errors.passwordMatch ? true : false}
                         text={t("ncca-1_create-account")}
                       />
                     </Grid>
