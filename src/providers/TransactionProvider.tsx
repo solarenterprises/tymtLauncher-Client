@@ -12,27 +12,29 @@ import TransactionProviderAPI from "../lib/api/TransactionProviderAPI";
 import { AppDispatch } from "../store";
 import { getNonCustodial } from "../features/account/NonCustodialSlice";
 import { getChain } from "../features/wallet/ChainSlice";
-import { selectWallet, setWallet } from "../features/settings/WalletSlice";
 import { getSaltToken } from "../features/account/SaltTokenSlice";
 import { getMultiWallet } from "../features/wallet/MultiWalletSlice";
 import { getMnemonic } from "../features/account/MnemonicSlice";
+import { setWallet } from "../features/wallet/WalletSlice";
+import { getAccount } from "../features/account/AccountSlice";
+import { getWalletList } from "../features/wallet/WalletListSlice";
 
-import { walletType } from "../types/settingTypes";
-import { IMnemonic, ISaltToken, nonCustodialType } from "../types/accountTypes";
+import { IAccount, IMnemonic, ISaltToken, nonCustodialType } from "../types/accountTypes";
 import { IGetAccountReq, IGetBalanceReq, ISendContractReq, ISignMessageReq, IVerifyMessageReq } from "../types/eventParamTypes";
-import { IChain, multiWalletType } from "../types/walletTypes";
+import { IChain, IWallet, IWalletList, multiWalletType } from "../types/walletTypes";
 
 const TransactionProvider = () => {
+  const dispatch = useDispatch<AppDispatch>();
+
   const nonCustodialStore: nonCustodialType = useSelector(getNonCustodial);
   const multiWalletStore: multiWalletType = useSelector(getMultiWallet);
   const chainStore: IChain = useSelector(getChain);
-  const walletStore: walletType = useSelector(selectWallet);
   const saltTokenStore: ISaltToken = useSelector(getSaltToken);
   const mnemonicStore: IMnemonic = useSelector(getMnemonic);
-  const dispatch = useDispatch<AppDispatch>();
+  const walletListStore: IWalletList = useSelector(getWalletList);
+  const accountStore: IAccount = useSelector(getAccount);
 
   const chainStoreRef = useRef(chainStore);
-  const walletStoreRef = useRef(walletStore);
   const nonCustodialStoreRef = useRef(nonCustodialStore);
   const saltTokenStoreRef = useRef(saltTokenStore);
   const mnemonicStoreRef = useRef(mnemonicStore);
@@ -41,9 +43,7 @@ const TransactionProvider = () => {
   useEffect(() => {
     chainStoreRef.current = chainStore;
   }, [chainStore]);
-  useEffect(() => {
-    walletStoreRef.current = walletStore;
-  }, [walletStore]);
+
   useEffect(() => {
     nonCustodialStoreRef.current = nonCustodialStore;
   }, [nonCustodialStore]);
@@ -58,24 +58,10 @@ const TransactionProvider = () => {
   }, [multiWalletStore]);
 
   useEffect(() => {
-    if (chainStoreRef.current.chain.symbol === "SXP") {
-      dispatch(
-        setWallet({
-          ...walletStoreRef.current,
-          status: "minimum",
-          fee: "0.0183",
-        })
-      );
-    } else if (chainStoreRef.current.chain.symbol === "BTC") {
-      dispatch(
-        setWallet({
-          ...walletStoreRef.current,
-          status: "minimum",
-          fee: "7.5",
-        })
-      );
-    }
-  }, [chainStoreRef.current]);
+    const newWallet: IWallet = walletListStore?.list?.find((one) => one?.solar === accountStore?.sxpAddress);
+    if (!newWallet) return;
+    dispatch(setWallet(newWallet));
+  }, [accountStore, walletListStore]);
 
   useEffect(() => {
     const unlisten_get_account = listen("POST-/get-account", async (event) => {

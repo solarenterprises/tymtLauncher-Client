@@ -8,19 +8,31 @@ import createKeccakHash from "keccak";
 
 import { Box, Stack } from "@mui/material";
 
+import { AppDispatch } from "../../store";
 import { getAccount } from "../../features/account/AccountSlice";
 import { setLogin } from "../../features/account/LoginSlice";
+import { getSaltToken, setSaltToken } from "../../features/account/SaltTokenSlice";
+import { setMnemonic } from "../../features/account/MnemonicSlice";
+import { getMachineId } from "../../features/account/MachineIdSlice";
+import { fetchMyInfoAsync } from "../../features/account/MyInfoSlice";
 
 import AccountNextButton from "./AccountNextButton";
 import InputText from "./InputText";
 
-import { IAccount } from "../../types/accountTypes";
+import tymtCore from "../../lib/core/tymtCore";
+import AuthAPI from "../../lib/api/AuthAPI";
+
+import { IAccount, IMachineId, ISaltToken } from "../../types/accountTypes";
+import { getReqBodyNonCustodyBeforeSignIn, getReqBodyNonCustodySignIn } from "../../lib/helper/AuthAPIHelper";
+import { decrypt } from "../../lib/api/Encrypt";
 
 const LoginAccountForm = () => {
   const { t } = useTranslation();
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
   const accountStore: IAccount = useSelector(getAccount);
+  const saltTokenStore: ISaltToken = useSelector(getSaltToken);
+  const machineIdStore: IMachineId = useSelector(getMachineId);
 
   const formik = useFormik({
     initialValues: {
@@ -49,8 +61,34 @@ const LoginAccountForm = () => {
         )
         .required(t("cca-63_required")),
     }),
-    onSubmit: () => {
+    onSubmit: async () => {
       try {
+        const decryptedMnemonic: string = await decrypt(accountStore?.mnemonic, formik.values.password);
+        dispatch(setMnemonic(decryptedMnemonic));
+
+        const body1 = getReqBodyNonCustodyBeforeSignIn(accountStore, decryptedMnemonic);
+        const res1 = await AuthAPI.nonCustodyBeforeSignin(body1);
+        const salt: string = res1?.data?.salt;
+
+        let token: string = "";
+        if (salt !== saltTokenStore?.salt) {
+          token = tymtCore.Blockchains.solar.wallet.signToken(salt, decryptedMnemonic);
+          dispatch(
+            setSaltToken({
+              salt: salt,
+              token: token,
+            })
+          );
+        } else {
+          token = saltTokenStore?.token;
+        }
+
+        const body2 = getReqBodyNonCustodySignIn(accountStore, machineIdStore, token);
+        const res2 = await AuthAPI.nonCustodySignin(body2);
+        const uid = res2?.data?._id;
+
+        await dispatch(fetchMyInfoAsync(uid));
+
         dispatch(setLogin(true));
         navigate("/home");
       } catch (err) {

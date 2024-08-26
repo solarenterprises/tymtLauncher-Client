@@ -15,7 +15,7 @@ const GameOverViewHeader = ({ game }: IPropsGameOverViewHeader) => {
       <Stack direction={"row"} alignItems={"center"} gap={"16px"}>
         <Box
           component={"img"}
-          src={game.imageUrl}
+          src={game?.imageUrl}
           width={"124px"}
           height={"82px"}
           sx={{

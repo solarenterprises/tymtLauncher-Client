@@ -63,7 +63,7 @@ const StoreGameCard = ({ game, isComing }: IPropsStoreGameCard) => {
           )}
           <Box
             component={"img"}
-            src={game.imageUrl}
+            src={game?.imageUrl}
             width={"100%"}
             height={"165px"}
             sx={{

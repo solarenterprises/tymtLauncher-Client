@@ -26,6 +26,7 @@ import "../../../global.css";
 import { checkMnemonic, getWalletAddressFromPassphrase } from "../../../lib/helper/WalletHelper";
 
 import { IAccount } from "../../../types/accountTypes";
+import { getRsaKeyPair } from "../../../features/chat/RsaApi";
 
 const NonCustodialLogIn2 = () => {
   const navigate = useNavigate();
@@ -62,6 +63,7 @@ const NonCustodialLogIn2 = () => {
 
         const newPassphrase = formik.values.mnemonic.trim();
         const newWalletAddress = await getWalletAddressFromPassphrase(newPassphrase);
+        const newRsaPubKey = (await getRsaKeyPair(newPassphrase))?.publicKey;
 
         dispatch(setTempWallet(newWalletAddress));
         dispatch(
@@ -69,6 +71,7 @@ const NonCustodialLogIn2 = () => {
             ...tempAccountStore,
             mnemonic: newPassphrase,
             sxpAddress: newWalletAddress?.solar,
+            rsaPubKey: newRsaPubKey,
           })
         );
 

@@ -21,6 +21,7 @@ import tymt3 from "../../../assets/account/tymt3.png";
 import { getMnemonic } from "../../../lib/helper/WalletHelper";
 import { getTempAccount, setTempAccount } from "../../../features/account/TempAccountSlice";
 import { IAccount } from "../../../types/accountTypes";
+import { getRsaKeyPair } from "../../../features/chat/RsaApi";
 
 const NonCustodialSignUp2 = () => {
   const navigate = useNavigate();
@@ -41,15 +42,21 @@ const NonCustodialSignUp2 = () => {
     navigate("/start");
   };
 
-  const handleNextClick = useCallback(() => {
-    if (!passphrase) return;
-    dispatch(
-      setTempAccount({
-        ...tempAccountStore,
-        mnemonic: passphrase,
-      })
-    );
-    setOpen(true);
+  const handleNextClick = useCallback(async () => {
+    try {
+      if (!passphrase) return;
+      const newRsaPubKey = (await getRsaKeyPair(passphrase))?.publicKey;
+      dispatch(
+        setTempAccount({
+          ...tempAccountStore,
+          mnemonic: passphrase,
+          rsaPubKey: newRsaPubKey,
+        })
+      );
+      setOpen(true);
+    } catch (err) {
+      console.log("Failed to handleNextClick: ", err);
+    }
   }, [passphrase, tempAccountStore]);
 
   return (

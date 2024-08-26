@@ -1,20 +1,27 @@
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import { useState } from "react";
-import { getChain } from "../../features/wallet/ChainSlice";
+
+import { Chains } from "../../consts/Chains";
+
 import { Box, Grid, Stack, IconButton, Button, Tooltip, Divider } from "@mui/material";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+
+import { getChain } from "../../features/wallet/ChainSlice";
+import { selectWallet } from "../../features/settings/WalletSlice";
+
 import InputText from "../../components/account/InputText";
-import walletIcon from "../../assets/wallet.svg";
-import gameIcon from "../../assets/wallet/game.png";
-import { IChain } from "../../types/walletTypes";
-import WalletStyle from "../../styles/WalletStyles";
-import { chains } from "../../consts/chains";
 import ChooseChainDrawer from "../../components/wallet/ChooseChainDrawer";
 import TransactionFeeDrawer from "../../components/wallet/TransactionFeeDrawer";
+
+import walletIcon from "../../assets/wallet.svg";
+import gameIcon from "../../assets/wallet/game.png";
+
+import WalletStyle from "../../styles/WalletStyles";
+
+import { IChain } from "../../types/walletTypes";
 import { walletType } from "../../types/settingTypes";
-import { selectWallet } from "../../features/settings/WalletSlice";
 
 const WalletBuyGame = () => {
   const { t } = useTranslation();
@@ -94,7 +101,7 @@ const WalletBuyGame = () => {
                   <Stack spacing={"8px"}>
                     <Box className="fs-20-regular white">Starlight Odyssey</Box>
                     <Box>
-                      {chains.map((item, index) => (
+                      {Chains.map((item, index) => (
                         <Tooltip title={<Box className="fs-18-regular">{item.name}</Box>} placement="top">
                           <img
                             src={item.icon}

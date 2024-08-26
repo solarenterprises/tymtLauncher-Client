@@ -12,7 +12,7 @@ const init: IAccountList = {
 
 const loadAccountList: () => IAccountList = () => {
   const data = tymtStorage.get(`accountList`);
-  if (!data || compareJSONStructure(JSON.parse(data), init)) {
+  if (!data || !compareJSONStructure(JSON.parse(data), init)) {
     tymtStorage.set(`accountList`, JSON.stringify(init));
     return init;
   }

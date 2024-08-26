@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
+import { invoke } from "@tauri-apps/api";
 
 import { motion } from "framer-motion";
 
@@ -12,9 +13,9 @@ import CreateAccountForm from "../../components/account/CreateAccountForm";
 import AuthIconButtons from "../../components/account/AuthIconButtons";
 import OrLine from "../../components/account/OrLine";
 
+import { setMachineId } from "../../features/account/MachineIdSlice";
 import { addAccountList } from "../../features/account/AccountListSlice";
 import { setAccount } from "../../features/account/AccountSlice";
-import { setLogin } from "../../features/account/LoginSlice";
 
 import { getMnemonic, getWalletAddressFromPassphrase } from "../../lib/helper/WalletHelper";
 import { encrypt, getKeccak256Hash } from "../../lib/api/Encrypt";
@@ -25,6 +26,7 @@ import { IAccount } from "../../types/accountTypes";
 import tymt1 from "../../assets/account/tymt1.png";
 import GuestIcon from "../../assets/account/Guest.svg";
 import ImportIcon from "../../assets/account/Import.svg";
+import { getRsaKeyPair } from "../../features/chat/RsaApi";
 
 const Welcome = () => {
   const navigate = useNavigate();
@@ -40,17 +42,20 @@ const Welcome = () => {
       const newPassword: string = "";
       const encryptedPassword: string = getKeccak256Hash(newPassword);
       const encryptedPassphrase: string = await encrypt(newPassphrase, newPassword);
+      const newRsaPubKey: string = (await getRsaKeyPair(newPassphrase))?.publicKey;
+
       const newAccount: IAccount = {
         avatar: "",
         nickName: "Guest",
         password: encryptedPassword,
         sxpAddress: newWalletAddress?.solar,
         mnemonic: encryptedPassphrase,
+        rsaPubKey: newRsaPubKey,
       };
+
       dispatch(setAccount(newAccount));
       dispatch(addAccountList(newAccount));
 
-      dispatch(setLogin(true));
       navigate("/home");
       setLoading(false);
     } catch (err) {
@@ -58,6 +63,21 @@ const Welcome = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    invoke("get_machine_id")
+      .then((hwid) => {
+        console.log("Unique Machine ID:", hwid);
+        dispatch(
+          setMachineId({
+            machineId: hwid,
+          })
+        );
+      })
+      .catch((err) => {
+        console.log("Error getting Machine ID:", err);
+      });
+  }, []);
 
   return (
     <>

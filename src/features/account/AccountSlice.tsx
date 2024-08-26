@@ -9,6 +9,7 @@ const init: IAccount = {
   password: "",
   sxpAddress: "",
   mnemonic: "",
+  rsaPubKey: "",
 };
 
 const loadAccount: () => IAccount = () => {

@@ -75,8 +75,8 @@ const ChooseProfileDrawer = ({ view, setView }: props) => {
         />
         <Stack direction={"column"} justifyContent={"space-between"} padding={"0px 16px"}>
           <Stack direction={"column"} gap={"16px"}>
-            {accountListStore?.list?.map((one) => (
-              <ProfileCard account={one} />
+            {accountListStore?.list?.map((one, index) => (
+              <ProfileCard account={one} key={index} />
             ))}
           </Stack>
         </Stack>

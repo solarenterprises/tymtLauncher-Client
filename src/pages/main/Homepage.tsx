@@ -36,7 +36,6 @@ const Homepage = () => {
   }, []);
 
   return (
-    // <AnimatePresence mode="wait">
     <>
       <AnimatedComponent>
         <Grid
@@ -51,7 +50,7 @@ const Homepage = () => {
           <District53intro setImage={setImage} />
         </Grid>
       </AnimatedComponent>
-      <Grid container xs={12} sx={{ marginTop: "80px" }}>
+      <Grid container sx={{ marginTop: "80px" }}>
         <AnimatedComponent>
           <RecentlyAddedD53 />
         </AnimatedComponent>
@@ -64,8 +63,6 @@ const Homepage = () => {
       </Grid>
       <UpdateModal open={updateModal} setOpen={setUpdateModal} />
     </>
-
-    // </AnimatePresence>
   );
 };
 

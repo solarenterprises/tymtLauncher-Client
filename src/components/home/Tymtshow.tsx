@@ -22,8 +22,8 @@ const Tymtshow = ({ image }: any) => {
         />
       </Grid>
       <Grid item xs={12} container spacing={"32px"} mt={"0px"}>
-        {Object.keys(Games).map((rowKey) => (
-          <Grid item>
+        {Object.keys(Games).map((rowKey, index) => (
+          <Grid item key={index}>
             <Button
               className="button_gamecontent"
               key={Games[rowKey].name}

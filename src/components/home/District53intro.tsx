@@ -3,9 +3,6 @@ import { useSelector } from "react-redux";
 import { ThreeDots } from "react-loader-spinner";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-// import { emit } from "@tauri-apps/api/event";
-
-// import { TauriEventNames } from "../../consts/TauriEventNames";
 
 import D53Modal from "./D53Modal";
 
@@ -29,7 +26,6 @@ import { getGameFileSize } from "../../lib/api/Downloads";
 import Games from "../../lib/game/Game";
 
 import { IDownloadStatus, IInstallStatus } from "../../types/homeTypes";
-// import { INotificationGameDownloadParams, INotificationParams } from "../../types/NotificationTypes";
 
 interface props {
   setImage?: (image: any) => void;
@@ -48,25 +44,6 @@ const District53intro = ({ setImage }: props) => {
   const downloadStatusStore: IDownloadStatus = useSelector(getDownloadStatus);
   const installStatusStore: IInstallStatus = useSelector(getInstallStatus);
 
-  // const checkInstalled = async () => {
-  //   setInstalled(await isInstalled("district53"));
-  // };
-
-  // const checkOnline = async (): Promise<boolean> => {
-  //   try {
-  //     await fetch("https://www.google.com", {
-  //       mode: "no-cors",
-  //     });
-  //     return true;
-  //   } catch (error) {
-  //     return false;
-  //   }
-  // };
-
-  // useEffect(() => {
-  //   checkInstalled();
-  // }, []);
-
   useEffect(() => {
     const init = async () => {
       const sizeMB = await getGameFileSize("district53");
@@ -79,13 +56,14 @@ const District53intro = ({ setImage }: props) => {
   return (
     <>
       <Grid
+        item
         xs={3}
         sx={{
           flexShrink: 1,
           zIndex: 1,
         }}
       >
-        <Grid className={homeclasses.district_content} xs={12}>
+        <Grid className={homeclasses.district_content} item xs={12}>
           <img
             src={districteffect}
             style={{
@@ -165,54 +143,10 @@ const District53intro = ({ setImage }: props) => {
           >
             {t("hom-6_intro")}
           </Box>
-          <Grid xs={12}>
+          <Grid item xs={12}>
             <Stack direction={"row"} alignItems={"start"} spacing={2} marginTop={"16px"}>
-              <Grid xs={12}>
-                <Button
-                  fullWidth
-                  className={"red-button-D53"}
-                  disabled={downloadStatusStore.isDownloading || installStatusStore.isInstalling}
-                  // onClick={async () => {
-                  //   const online = await checkOnline();
-                  //   if (!online) {
-                  //     const noti_0: INotificationParams = {
-                  //       status: "failed",
-                  //       title: t("alt-26_internet-error"),
-                  //       message: t("alt-27_you-not-connected"),
-                  //       link: null,
-                  //       translate: false,
-                  //     };
-                  //     emit(TauriEventNames.NOTIFICATION, noti_0);
-                  //   } else {
-                  //     if (!installed) {
-                  //       const noti_1: INotificationGameDownloadParams = {
-                  //         status: "started",
-                  //         id: "district53",
-                  //       };
-                  //       emit(TauriEventNames.GAME_DOWNLOAD, noti_1);
-
-                  //       const downloadable = await downloadGame("district53");
-
-                  //       if (!downloadable) {
-                  //         const noti_1: INotificationGameDownloadParams = {
-                  //           status: "failed",
-                  //           id: "district53",
-                  //         };
-                  //         emit(TauriEventNames.GAME_DOWNLOAD, noti_1);
-                  //       } else {
-                  //         const noti_3: INotificationGameDownloadParams = {
-                  //           status: "finished",
-                  //           id: "district53",
-                  //         };
-                  //         emit(TauriEventNames.GAME_DOWNLOAD, noti_3);
-                  //       }
-                  //       checkInstalled();
-                  //     } else {
-                  //       setD53Open(true);
-                  //     }
-                  //   }
-                  // }}
-                >
+              <Grid item xs={12}>
+                <Button fullWidth className={"red-button-D53"} disabled={downloadStatusStore.isDownloading || installStatusStore.isInstalling}>
                   {!downloadStatusStore.isDownloading && !installStatusStore.isInstalling && installed && t("hom-7_play-game")}
                   {!downloadStatusStore.isDownloading && !installStatusStore.isInstalling && !installed && t("hom-20_install-game")}
                   {downloadStatusStore.isDownloading && (
@@ -233,6 +167,7 @@ const District53intro = ({ setImage }: props) => {
           </Grid>
         </Grid>
         <Grid
+          item
           xs={12}
           sx={{
             marginTop: "12px",
@@ -243,7 +178,7 @@ const District53intro = ({ setImage }: props) => {
         >
           <Swiper spaceBetween={15} slidesPerView={"auto"} loop={true}>
             {Games["district53"].images.map((image, index) => (
-              <SwiperSlide style={{ width: "150px" }}>
+              <SwiperSlide style={{ width: "150px" }} key={index}>
                 <img
                   key={`district53-${index}`}
                   src={image}

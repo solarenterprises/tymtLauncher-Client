@@ -6,78 +6,79 @@ import bitcoinIcon from "../assets/chains/bitcoin.svg";
 import ethereumIcon from "../assets/chains/ethereum.svg";
 import optimismIcon from "../assets/chains/optimism.svg";
 import polygonIcon from "../assets/chains/polygon.svg";
-// import solanaIcon from "../assets/chains/solana.svg";send-iconsend-icon
-export const chains = [
+import solanaIcon from "../assets/chains/solana.svg";
+
+export class ChainIDs {
+  static ETHEREUM = 1;
+  static BINANCE = 56;
+  static POLYGON = 137;
+  static AVALANCHE = 43114;
+  static ARBITRUM = 42161;
+  static OPTIMISM = 10;
+  static BITCOIN = 0;
+  static SOLANA = 0;
+  static SOLAR = 0;
+}
+
+export class ChainIcons {
+  static ETHEREUM = ethereumIcon;
+  static BINANCE = binanceIcon;
+  static POLYGON = polygonIcon;
+  static AVALANCHE = avalancheIcon;
+  static ARBITRUM = arbitrumIcon;
+  static OPTIMISM = optimismIcon;
+  static BITCOIN = bitcoinIcon;
+  static SOLANA = solanaIcon;
+  static SOLAR = solarIcon;
+}
+
+export class ChainNames {
+  static ETHEREUM = "Ethereum";
+  static BINANCE = "Binance Smart Chain";
+  static POLYGON = "Polygon";
+  static AVALANCHE = "Avalanche C-Chain";
+  static ARBITRUM = "Arbitrum One";
+  static OPTIMISM = "Optimism";
+  static BITCOIN = "Bitcoin";
+  static SOLANA = "Solana";
+  static SOLAR = "Solar Blockchain";
+}
+
+export const Chains = [
   {
-    icon: solarIcon,
-    name: "Solar",
-    address: "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
-    count: "10,000.00",
-    value: "$3,382.21",
-    token: "SXP",
+    icon: ChainIcons.SOLAR,
+    name: ChainNames.SOLAR,
   },
   {
-    icon: binanceIcon,
-    name: "Binance",
-    address: "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
-    count: "12.00",
-    value: "$4168.92",
-    token: "BNB",
+    icon: ChainIcons.BITCOIN,
+    name: ChainNames.BITCOIN,
   },
   {
-    icon: ethereumIcon,
-    name: "Ethereum",
-    address: "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
-    count: "9.00",
-    value: "$25,345.21",
-    token: "ETH",
+    icon: ChainIcons.SOLANA,
+    name: ChainNames.SOLANA,
   },
   {
-    icon: bitcoinIcon,
-    name: "Bitcoin",
-    address: "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
-    count: "0.03",
-    value: "$1,800.00",
-    token: "BTC",
-  },
-  // {
-  //   icon: solanaIcon,
-  //   name: "Solana",
-  //   address: "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
-  //   count: "10,000.00",
-  //   value: "$3,382.21",
-  //   token: "SOL"
-  // },
-  {
-    icon: polygonIcon,
-    name: "Polygon",
-    address: "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
-    count: "10,000.00",
-    value: "$3,382.21",
-    token: "MATIC",
+    icon: ChainIcons.ETHEREUM,
+    name: ChainNames.ETHEREUM,
   },
   {
-    icon: avalancheIcon,
-    name: "Avalanche",
-    address: "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
-    count: "10,000.00",
-    value: "$3,382.21",
-    token: "AVAX",
+    icon: ChainIcons.BINANCE,
+    name: ChainNames.BINANCE,
   },
   {
-    icon: arbitrumIcon,
-    name: "Arbitrum One",
-    address: "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
-    count: "10,000.00",
-    value: "$3,382.21",
-    token: "ARB",
+    icon: ChainIcons.POLYGON,
+    name: ChainNames.POLYGON,
   },
   {
-    icon: optimismIcon,
-    name: "Optimism",
-    address: "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
-    count: "10,000.00",
-    value: "$3,382.21",
-    token: "OP",
+    icon: ChainIcons.ARBITRUM,
+    name: ChainNames.ARBITRUM,
+  },
+  {
+    icon: ChainIcons.AVALANCHE,
+    name: ChainNames.AVALANCHE,
+  },
+  {
+    icon: ChainIcons.OPTIMISM,
+    name: ChainNames.OPTIMISM,
   },
 ];

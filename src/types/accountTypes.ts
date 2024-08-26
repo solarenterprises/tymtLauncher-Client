@@ -20,6 +20,7 @@ export interface IAccount {
   password: string;
   sxpAddress: string;
   mnemonic: string;
+  rsaPubKey: string;
 }
 
 export interface IAccountList {
