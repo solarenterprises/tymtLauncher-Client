@@ -1,26 +1,24 @@
-import { useDispatch, useSelector } from "react-redux";
-import { getTempNonCustodial, setTempNonCustodial } from "../../features/account/TempNonCustodialSlice";
 import { IconButton, Tooltip, Box, Stack } from "@mui/material";
 import LoopIcon from "@mui/icons-material/Loop";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import MnemonicWord from "./MnemonicWord";
 import { getMnemonic } from "../../consts/mnemonics";
-import { nonCustodialType } from "../../types/accountTypes";
 import { useTranslation } from "react-i18next";
 
 interface props {
   editable: boolean;
+  length: number;
+  passphrase: string;
+  setPassphrase: (_: string) => void;
 }
 
-const MnemonicPad = ({ editable }: props) => {
+const MnemonicPad = ({ editable, length, passphrase, setPassphrase }: props) => {
   const { t } = useTranslation();
-  const dispatch = useDispatch();
-  const tempNonCustodialStore: nonCustodialType = useSelector(getTempNonCustodial);
-  const mnemonicString = tempNonCustodialStore.mnemonic;
-  const mnemonic = mnemonicString.toString().split(" ");
+
+  const mnemonic = passphrase.split(" ");
 
   const copyMnemonicToClipboard = () => {
-    navigator.clipboard.writeText(tempNonCustodialStore.mnemonic);
+    navigator.clipboard.writeText(passphrase);
   };
 
   return (
@@ -68,12 +66,7 @@ const MnemonicPad = ({ editable }: props) => {
             <IconButton
               className={"icon-button"}
               onClick={() => {
-                dispatch(
-                  setTempNonCustodial({
-                    ...tempNonCustodialStore,
-                    mnemonic: getMnemonic(tempNonCustodialStore.mnemonicLength),
-                  })
-                );
+                setPassphrase(getMnemonic(length));
               }}
             >
               <LoopIcon className={"icon-button"} />
@@ -175,7 +168,7 @@ const MnemonicPad = ({ editable }: props) => {
           <MnemonicWord number={"12"} word={mnemonic[11]} />
         </div>
       </div>
-      {tempNonCustodialStore.mnemonicLength === 24 && (
+      {length === 24 && (
         <>
           <div
             style={{

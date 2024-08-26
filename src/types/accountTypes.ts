@@ -10,6 +10,18 @@ export enum walletEnum {
   "custodial",
 }
 
+export interface IAccount {
+  avatar: string;
+  nickName: string;
+  password: string;
+  sxpAddress: string;
+  mnemonic: string;
+}
+
+export interface IAccountList {
+  list: IAccount[];
+}
+
 export interface accountType {
   mode: loginEnum;
   wallet: walletEnum;

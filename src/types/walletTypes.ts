@@ -116,6 +116,22 @@ export interface multiWalletType {
   Solar: IChain;
 }
 
+export interface IWallet {
+  arbitrum: string;
+  avalanche: string;
+  bitcoin: string;
+  binance: string;
+  ethereum: string;
+  optimism: string;
+  polygon: string;
+  solana: string;
+  solar: string;
+}
+
+export interface IWalletList {
+  list: IWallet[];
+}
+
 export interface qrModalType {
   data: IChain;
   open: boolean;

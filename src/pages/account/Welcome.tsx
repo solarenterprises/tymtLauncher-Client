@@ -4,7 +4,6 @@ import { motion } from "framer-motion";
 
 import { Grid, Box, Stack, Divider } from "@mui/material";
 
-import AccountNextButton from "../../components/account/AccountNextButton";
 import AccountHeader from "../../components/account/AccountHeader";
 import SignModeButton from "../../components/account/SignModeButton";
 
@@ -56,14 +55,6 @@ const Welcome = () => {
                     </Grid>
                     <Grid item xs={12} mt={"32px"}>
                       <CreateAccountForm />
-                    </Grid>
-                    <Grid item xs={12} mt={"24px"}>
-                      <AccountNextButton
-                        text={"Next"}
-                        onClick={() => {
-                          navigate("/non-custodial/signup/2");
-                        }}
-                      />
                     </Grid>
                     <Grid item xs={12} mt={"32px"}>
                       <OrLine />

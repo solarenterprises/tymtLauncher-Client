@@ -1,20 +1,31 @@
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { motion } from "framer-motion";
+
 import { useFormik } from "formik";
 import * as Yup from "yup";
+
+import "../../../global.css";
+
 import { Grid, Box, Stack } from "@mui/material";
+
 import Back from "../../../components/account/Back";
 import AccountHeader from "../../../components/account/AccountHeader";
 import InputText from "../../../components/account/InputText";
 import AccountNextButton from "../../../components/account/AccountNextButton";
 import Stepper from "../../../components/account/Stepper";
+
 import tymt3 from "../../../assets/account/tymt3.png";
-import "../../../global.css";
-import { motion } from "framer-motion";
+import { IAccount } from "../../../types/accountTypes";
+import { useDispatch, useSelector } from "react-redux";
+import { getTempAccount, setTempAccount } from "../../../features/account/TempAccountSlice";
 
 const NonCustodialSignUp4 = () => {
-  const navigate = useNavigate();
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  const tempAccountStore: IAccount = useSelector(getTempAccount);
 
   const formik = useFormik({
     initialValues: {
@@ -28,13 +39,14 @@ const NonCustodialSignUp4 = () => {
         .matches(/^[a-zA-Z0-9_ !@#$%^&*()\-+=,.?]+$/, t("ncca-61_invalid-characters")),
     }),
     onSubmit: async () => {
-      // dispatch(
-      //   setTempNonCustodial({
-      //     ...tempNonCustodialStore,
-      //     nickname: formik.values.nickname,
-      //   })
-      // );
-      navigate("/confirm-information");
+      const newNickName = formik.values.nickname;
+      dispatch(
+        setTempAccount({
+          ...tempAccountStore,
+          nickName: newNickName,
+        })
+      );
+      navigate("/confirm-information/signup");
     },
   });
 

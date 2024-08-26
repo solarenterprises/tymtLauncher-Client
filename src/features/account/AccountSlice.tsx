@@ -1,33 +1,23 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { createSlice } from "@reduxjs/toolkit";
 import tymtStorage from "../../lib/Storage";
-import { loginEnum, walletEnum, accountType } from "../../types/accountTypes";
-import { updateUser } from "./AccountApi";
+import { IAccount } from "../../types/accountTypes";
 import { compareJSONStructure } from "../../lib/api/JSONHelper";
 
-export const updateUserAsync = createAsyncThunk("update/user", updateUser);
-
-const init: accountType = {
-  mode: loginEnum.login,
-  wallet: walletEnum.noncustodial,
-  agreedTerms: false,
-  uid: "",
+const init: IAccount = {
   avatar: "",
-  isLoggedIn: false,
+  nickName: "",
+  password: "",
+  sxpAddress: "",
+  mnemonic: "",
 };
 
-const loadAccount: () => accountType = () => {
+const loadAccount: () => IAccount = () => {
   const data = tymtStorage.get(`account`);
-  if (data === null || data === "" || data === undefined) {
+  if (!data || compareJSONStructure(JSON.parse(data), init)) {
     tymtStorage.set(`account`, JSON.stringify(init));
     return init;
-  } else {
-    if (compareJSONStructure(JSON.parse(data), init)) {
-      return JSON.parse(data);
-    } else {
-      tymtStorage.set(`account`, JSON.stringify(init));
-      return init;
-    }
   }
+  return JSON.parse(data);
 };
 
 const initialState = {
@@ -36,25 +26,14 @@ const initialState = {
   msg: "",
 };
 
-// export const updateLanguageAsync = createAsyncThunk('update/language', updateLanguage);
 export const accountSlice = createSlice({
   name: "account",
   initialState,
   reducers: {
     setAccount: (state, action) => {
       state.data = action.payload;
-      tymtStorage.set(`account`, JSON.stringify(action.payload));
+      tymtStorage.set(`account`, JSON.stringify(state.data));
     },
-  },
-  extraReducers: (builder) => {
-    builder
-      .addCase(updateUserAsync.pending, (state) => {
-        state.status = "pending";
-      })
-      .addCase(updateUserAsync.fulfilled, (state, action) => {
-        state.data = action.payload.data;
-        state.msg = "We will contat you as soon as possible";
-      });
   },
 });
 

@@ -29,8 +29,8 @@ const AuthIconButtons = () => {
   return (
     <>
       <Stack direction="row" alignItems="center" justifyContent="space-between">
-        {list.map((one) => (
-          <AuthIconButton icon={one.icon} />
+        {list.map((one, index) => (
+          <AuthIconButton key={index} icon={one.icon} />
         ))}
       </Stack>
     </>

@@ -1,30 +1,56 @@
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { motion } from "framer-motion";
+
+import "../../../global.css";
+
 import { Grid, Box, Stack } from "@mui/material";
+
 import Back from "../../../components/account/Back";
 import AccountHeader from "../../../components/account/AccountHeader";
 import AccountNextButton from "../../../components/account/AccountNextButton";
 import Stepper from "../../../components/account/Stepper";
 import MnemonicComboBox from "../../../components/account/MnemonicComboBox";
 import MnemonicPad from "../../../components/account/MnemonicPad";
-import tymt3 from "../../../assets/account/tymt3.png";
-import "../../../global.css";
 import PassphraseModal from "../../../components/account/PassphraseModal";
-import { motion } from "framer-motion";
+
+import tymt3 from "../../../assets/account/tymt3.png";
+
+import { getMnemonic } from "../../../consts/mnemonics";
+import { getTempAccount, setTempAccount } from "../../../features/account/TempAccountSlice";
+import { IAccount } from "../../../types/accountTypes";
 
 const NonCustodialSignUp2 = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const dispatch = useDispatch();
+
+  const tempAccountStore: IAccount = useSelector(getTempAccount);
+
   const [open, setOpen] = useState(false);
+  const [length, setLength] = useState<number>(12);
+  const [passphrase, setPassphrase] = useState<string>(getMnemonic(12));
+
+  useEffect(() => {
+    setPassphrase(getMnemonic(length));
+  }, [length]);
 
   const handleBackClick = () => {
     navigate("/welcome");
   };
 
-  const handleNextClick = () => {
+  const handleNextClick = useCallback(() => {
+    if (!passphrase) return;
+    dispatch(
+      setTempAccount({
+        ...tempAccountStore,
+        mnemonic: passphrase,
+      })
+    );
     setOpen(true);
-  };
+  }, [passphrase, tempAccountStore]);
 
   return (
     <>
@@ -53,15 +79,14 @@ const NonCustodialSignUp2 = () => {
                       <Back onClick={handleBackClick} />
                       <Stepper all={4} now={2} texts={["", t("ncca-12_secure-wallet"), "", ""]} />
                     </Grid>
-
                     <Grid item xs={12} mt={"80px"}>
                       <AccountHeader title={t("ncca-13_secure-passphrase")} text={t("ncca-14_here-your-mnemonic")} />
                     </Grid>
                     <Grid item xs={12} mt={"48px"}>
-                      <MnemonicComboBox text="want" />
+                      <MnemonicComboBox text="want" length={length} setLength={setLength} />
                     </Grid>
                     <Grid item xs={12} mt={"24px"}>
-                      <MnemonicPad editable={true} />
+                      <MnemonicPad editable={true} length={length} passphrase={passphrase} setPassphrase={setPassphrase} />
                     </Grid>
                     <Grid item xs={12} mt={"48px"}>
                       <AccountNextButton text={t("ncl-6_next")} onClick={handleNextClick} />

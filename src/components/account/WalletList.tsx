@@ -9,99 +9,41 @@ import polygon from "../../assets/chains/polygon.png";
 import avalanche from "../../assets/chains/avalanche.png";
 import arbitrumOne from "../../assets/chains/arbitrumOne.png";
 import optimism from "../../assets/chains/optimism.png";
-import { multiWalletType } from "../../types/walletTypes";
-import { useSelector } from "react-redux";
-import { getTempMultiWallet } from "../../features/wallet/TempMultiWalletSlice";
-import { getMultiWallet } from "../../features/wallet/MultiWalletSlice";
-import { accountType, walletEnum } from "../../types/accountTypes";
-import { getAccount } from "../../features/account/AccountSlice";
+import { IWallet } from "../../types/walletTypes";
 
-const addresses = {
-  Solar: {
-    chain: {
-      wallet: "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
-    },
-  },
-  Binance: {
-    chain: {
-      wallet: "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
-    },
-  },
-  Ethereum: {
-    chain: {
-      wallet: "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
-    },
-  },
-  Bitcoin: {
-    chain: {
-      wallet: "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
-    },
-  },
-  Solana: {
-    chain: {
-      wallet: "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
-    },
-  },
-  Polygon: {
-    chain: {
-      wallet: "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
-    },
-  },
-  Avalanche: {
-    chain: {
-      wallet: "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
-    },
-  },
-  Arbitrum: {
-    chain: {
-      wallet: "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
-    },
-  },
-  Optimism: {
-    chain: {
-      wallet: "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
-    },
-  },
-};
-
-interface props {
-  mode: "login" | "signup";
+export interface IPropsWalletList {
+  wallet: IWallet;
 }
 
-const WalletList = ({ mode }: props) => {
-  const tempMultiWalletStore: multiWalletType = useSelector(getTempMultiWallet);
-  const multiWalletStore: multiWalletType = useSelector(getMultiWallet);
-  const accountStore: accountType = useSelector(getAccount);
-  const displayData = accountStore.wallet === walletEnum.custodial ? addresses : mode === "login" ? multiWalletStore : tempMultiWalletStore;
-
+const WalletList = ({ wallet }: IPropsWalletList) => {
   return (
     <Grid container spacing={"12px"}>
       <Grid item xs={12}>
-        <WalletBar icon={solar} chain={"Solar"} address={displayData.Solar.chain.wallet} />
+        <WalletBar icon={solar} chain={"Solar"} address={wallet?.solar} />
       </Grid>
       <Grid item xs={12}>
-        <WalletBar icon={binance} chain={"Binance"} address={displayData.Binance.chain.wallet} />
+        <WalletBar icon={binance} chain={"Binance"} address={wallet?.binance} />
       </Grid>
       <Grid item xs={12}>
-        <WalletBar icon={ethereum} chain={"Ethereum"} address={displayData.Ethereum.chain.wallet} />
+        <WalletBar icon={ethereum} chain={"Ethereum"} address={wallet?.ethereum} />
       </Grid>
       <Grid item xs={12}>
-        <WalletBar icon={bitcoin} chain={"Bitcoin"} address={displayData.Bitcoin.chain.wallet} />
+        <WalletBar icon={bitcoin} chain={"Bitcoin"} address={wallet?.bitcoin} />
       </Grid>
       <Grid item xs={12}>
-        <WalletBar icon={solana} chain={"Solana"} address={displayData.Solana.chain.wallet} />
+        <WalletBar icon={solana} chain={"Solana"} address={wallet?.solana} />
       </Grid>
       <Grid item xs={12}>
-        <WalletBar icon={polygon} chain={"Polygon"} address={displayData.Polygon.chain.wallet} />
+        <WalletBar icon={polygon} chain={"Polygon"} address={wallet?.polygon} />
       </Grid>
       <Grid item xs={12}>
-        <WalletBar icon={avalanche} chain={"Avalanche"} address={displayData.Avalanche.chain.wallet} />
+        <WalletBar icon={avalanche} chain={"Avalanche"} address={wallet?.avalanche} />
       </Grid>
       <Grid item xs={12}>
-        <WalletBar icon={arbitrumOne} chain={"Arbitrum One"} address={displayData.Arbitrum.chain.wallet} />
+        <WalletBar icon={arbitrumOne} chain={"Arbitrum One"} address={wallet?.arbitrum} />
       </Grid>
       <Grid item xs={12}>
-        <WalletBar icon={optimism} chain={"Optimism"} address={displayData.Optimism.chain.wallet} />
+        <WalletBar icon={optimism} chain={"Optimism"} address={wallet?.optimism} />
       </Grid>
     </Grid>
   );

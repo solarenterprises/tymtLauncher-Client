@@ -100,7 +100,7 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
                     <Route path="/custodial/reset/1/reset-link" element={<CustodialReset1ResetLink />} />
                     <Route path="/custodial/reset/2" element={<CustodialReset2 />} />
                     <Route path="/custodial/reset/3" element={<CustodialReset3 />} />
-                    <Route path="/confirm-information" element={<ConfirmInformation />} />
+                    <Route path="/confirm-information/:mode" element={<ConfirmInformation />} />
                     <Route path="/" element={<SocketProvider />}>
                       <Route path="/" element={<ChatProvider />}>
                         <Route path="/" element={<AlertProvider />}>

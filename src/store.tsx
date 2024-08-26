@@ -4,8 +4,15 @@ import { createStateSyncMiddleware, initMessageListener } from "redux-state-sync
 import languageReducer from "./features/settings/LanguageSlice";
 import notificationReducer from "./features/settings/NotificationSlice";
 import addressReducer from "./features/settings/AddressSlice";
-import walletReducer from "./features/settings/WalletSlice";
+
 import accountReducer from "./features/account/AccountSlice";
+import accountListReducer from "./features/account/AccountListSlice";
+import TempAccountReducer from "./features/account/TempAccountSlice";
+
+import walletReducer from "./features/wallet/WalletSlice";
+import walletListReducer from "./features/wallet/WalletListSlice";
+import tempWalletReducer from "./features/wallet/TempWalletSlice";
+
 import nonCustodialReducer from "./features/account/NonCustodialSlice";
 import custodialReducer from "./features/account/CustodialSlice";
 import tempNonCustodialReducer from "./features/account/TempNonCustodialSlice";
@@ -70,13 +77,20 @@ const store = configureStore({
     notification: notificationReducer,
     address: addressReducer,
     chat: chatReducer,
+
     account: accountReducer,
+    accountList: accountListReducer,
+    tempAccount: TempAccountReducer,
+
+    wallet: walletReducer,
+    walletList: walletListReducer,
+    tempWallet: tempWalletReducer,
+
     custodial: custodialReducer,
     nonCustodial: nonCustodialReducer,
     tempNonCustodial: tempNonCustodialReducer,
     tempCustodial: tempCustodialReducer,
     threeConfirm: threeConfirmReducer,
-    wallet: walletReducer,
     chatHistory: chatHistoryReducer,
     contactList: contactListReducer,
     chain: chainReducer,

@@ -16,7 +16,7 @@ import AccountNextButton from "../../../components/account/AccountNextButton";
 import Stepper from "../../../components/account/Stepper";
 import HaveAccount from "../../../components/account/HaveAccount";
 import SecurityLevel from "../../../components/account/SecurityLevel";
-import IAgreeTerms from "../../../components/account/IAgreeTerms";
+// import IAgreeTerms from "../../../components/account/IAgreeTerms";
 
 import tymt3 from "../../../assets/account/tymt3.png";
 
@@ -168,7 +168,7 @@ const CustodialSignUp1 = () => {
                       {formik.touched.passwordMatch && formik.errors.passwordMatch && <Box className={"fs-16-regular red"}>{formik.errors.passwordMatch}</Box>}
                     </Grid>
                     <Grid item xs={12} mt={"40px"}>
-                      <IAgreeTerms />
+                      {/* <IAgreeTerms /> */}
                     </Grid>
                     <Grid item xs={12} mt={"48px"}>
                       <AccountNextButton
