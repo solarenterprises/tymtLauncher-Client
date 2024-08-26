@@ -28,6 +28,7 @@ import { IWallet } from "../../types/walletTypes";
 import { ISaltToken, IMachineId, IAccount } from "../../types/accountTypes";
 import { addWalletList } from "../../features/wallet/WalletListSlice";
 import { getTempWallet, setTempWallet } from "../../features/wallet/TempWalletSlice";
+import { encrypt, getKeccak256Hash } from "../../lib/api/Encrypt";
 
 const ConfirmInformation = () => {
   const navigate = useNavigate();
@@ -59,10 +60,15 @@ const ConfirmInformation = () => {
     navigate("/welcome");
   };
 
-  const handleSignUp = useCallback(() => {
-    console.log(tempAccountStore);
-    dispatch(setAccount(tempAccountStore));
-    dispatch(addAccountList(tempAccountStore));
+  const handleSignUp = useCallback(async () => {
+    const newAccount: IAccount = {
+      ...tempAccountStore,
+      password: getKeccak256Hash(tempAccountStore?.password),
+      mnemonic: await encrypt(tempAccountStore?.mnemonic, tempAccountStore?.password),
+    };
+
+    dispatch(setAccount(newAccount));
+    dispatch(addAccountList(newAccount));
     dispatch(
       setTempAccount({
         avatar: "",
@@ -72,6 +78,7 @@ const ConfirmInformation = () => {
         mnemonic: "",
       })
     );
+
     dispatch(setWallet(tempWalletStore));
     dispatch(addWalletList(tempWalletStore));
     dispatch(
@@ -89,10 +96,14 @@ const ConfirmInformation = () => {
     );
   }, [tempAccountStore, tempWalletStore]);
 
-  const handleConfirmClick = useCallback(() => {
-    setLoading(true);
-    if (mode === "signup") handleSignUp();
+  const handleLogin = useCallback(async () => {
     navigate("/home");
+  }, []);
+
+  const handleConfirmClick = useCallback(async () => {
+    setLoading(true);
+    if (mode === "signup") await handleSignUp();
+    await handleLogin();
     setLoading(false);
   }, [handleSignUp]);
 

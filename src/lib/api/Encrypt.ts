@@ -1,5 +1,5 @@
 import * as crypto from "crypto";
-// import { translateString } from "./Translate";
+import createKeccakHash from "keccak";
 
 export const encrypt = async (_mnemonic: string, _password: string) => {
   const key = crypto.createHash("sha512").update(_password.normalize("NFD")).digest("hex").substring(0, 32);
@@ -17,9 +17,8 @@ export const decrypt = async (_encryptedMnemonic: string, _password: string) => 
     const decipher = crypto.createDecipheriv("aes-256-cbc", key, encryptionIV);
     return decipher.update(buff.toString("utf8"), "hex", "utf8") + decipher.final("utf8");
   } catch (e) {
-    // console.log(e);
+    console.log(e);
     return undefined;
-    // return <ThreeDots height="100%" width={100} radius={3} color={`#EF4444`} />;
   }
 };
 
@@ -33,4 +32,13 @@ export const generateRandomString = (length: number) => {
     counter += 1;
   }
   return result;
+};
+
+export const getKeccak256Hash = (plain: string) => {
+  try {
+    const res = createKeccakHash("keccak256").update(plain).digest("hex");
+    return res;
+  } catch (err) {
+    console.log("Failed to getKeccak256Hash: ", err);
+  }
 };

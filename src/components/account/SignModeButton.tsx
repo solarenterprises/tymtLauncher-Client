@@ -1,16 +1,18 @@
-import { Box, Stack, Button } from "@mui/material";
+import { Box, Stack, Button, CircularProgress } from "@mui/material";
 
 import RightArrow from "../../assets/chevronright.svg";
 
 export interface IPropsSignModeButton {
   icon: string;
   text: string;
+  loading?: boolean;
   onClick: () => void;
 }
 
-const SignModeButton = ({ icon, text, onClick }: IPropsSignModeButton) => {
+const SignModeButton = ({ icon, text, loading, onClick }: IPropsSignModeButton) => {
   return (
     <Button
+      disabled={loading}
       onClick={onClick}
       sx={{
         textTransform: "none",
@@ -31,7 +33,16 @@ const SignModeButton = ({ icon, text, onClick }: IPropsSignModeButton) => {
           <Box component={"img"} src={icon} />
           <Box className={"fs-18-regular white"}>{text}</Box>
         </Stack>
-        <Box component={"img"} src={RightArrow} width={"24px"} height={"24px"} />
+        {loading ? (
+          <CircularProgress
+            sx={{
+              width: "24px",
+              height: "24px",
+            }}
+          />
+        ) : (
+          <Box component={"img"} src={RightArrow} width={"24px"} height={"24px"} />
+        )}
       </Stack>
     </Button>
   );
