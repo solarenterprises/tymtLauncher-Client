@@ -22,7 +22,7 @@ const CustodialSignUp2 = () => {
   const [error, setError] = useState<boolean>(false);
 
   const handleBackClick = () => {
-    navigate("/welcome");
+    navigate("/start");
   };
 
   const handleSetValue = (_value: string) => {

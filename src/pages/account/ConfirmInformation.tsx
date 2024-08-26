@@ -29,6 +29,7 @@ import { ISaltToken, IMachineId, IAccount } from "../../types/accountTypes";
 import { addWalletList } from "../../features/wallet/WalletListSlice";
 import { getTempWallet, setTempWallet } from "../../features/wallet/TempWalletSlice";
 import { encrypt, getKeccak256Hash } from "../../lib/api/Encrypt";
+import { setLogin } from "../../features/account/LoginSlice";
 
 const ConfirmInformation = () => {
   const navigate = useNavigate();
@@ -57,7 +58,7 @@ const ConfirmInformation = () => {
   }, [machineIdStore]);
 
   const handleBackClick = () => {
-    navigate("/welcome");
+    navigate("/start");
   };
 
   const handleSignUp = useCallback(async () => {
@@ -97,6 +98,7 @@ const ConfirmInformation = () => {
   }, [tempAccountStore, tempWalletStore]);
 
   const handleLogin = useCallback(async () => {
+    dispatch(setLogin(true));
     navigate("/home");
   }, []);
 

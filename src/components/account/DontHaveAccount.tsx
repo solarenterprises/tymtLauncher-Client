@@ -12,7 +12,7 @@ const DontHaveAccount = () => {
       <Box className={"fs-16-regular white t-center"}>{t("ncl-9_dont-have-account")}</Box>
       <Box
         onClick={() => {
-          navigate("/non-custodial/signup/1");
+          navigate("/welcome");
         }}
         sx={{
           cursor: "pointer",

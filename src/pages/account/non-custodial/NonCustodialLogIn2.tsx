@@ -82,7 +82,7 @@ const NonCustodialLogIn2 = () => {
   });
 
   const handleBackClick = () => {
-    navigate("/welcome");
+    navigate("/start");
   };
 
   const handlePasteClick = async () => {

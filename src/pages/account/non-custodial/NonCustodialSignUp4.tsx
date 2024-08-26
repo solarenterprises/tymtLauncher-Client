@@ -51,7 +51,7 @@ const NonCustodialSignUp4 = () => {
   });
 
   const handleBackClick = () => {
-    navigate("/welcome");
+    navigate("/start");
   };
 
   return (

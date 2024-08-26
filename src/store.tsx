@@ -5,6 +5,9 @@ import languageReducer from "./features/settings/LanguageSlice";
 import notificationReducer from "./features/settings/NotificationSlice";
 import addressReducer from "./features/settings/AddressSlice";
 
+// Account
+import loginReducer from "./features/account/LoginSlice";
+
 import accountReducer from "./features/account/AccountSlice";
 import accountListReducer from "./features/account/AccountListSlice";
 import TempAccountReducer from "./features/account/TempAccountSlice";
@@ -12,6 +15,9 @@ import TempAccountReducer from "./features/account/TempAccountSlice";
 import walletReducer from "./features/wallet/WalletSlice";
 import walletListReducer from "./features/wallet/WalletListSlice";
 import tempWalletReducer from "./features/wallet/TempWalletSlice";
+
+import myInfoReducer from "./features/account/MyInfoSlice";
+// ~ Account
 
 import nonCustodialReducer from "./features/account/NonCustodialSlice";
 import custodialReducer from "./features/account/CustodialSlice";
@@ -36,7 +42,7 @@ import saltTokenReducer from "./features/account/SaltTokenSlice";
 import downloadStatusReducer from "./features/home/DownloadStatusSlice";
 import installStatusReducer from "./features/home/InstallStatusSlice";
 
-// chat
+// Chat
 import socketHashReducer from "./features/chat/SocketHashSlice";
 import chatmountedReducer from "./features/chat/IntercomSupportSlice";
 import friendListReducer from "./features/chat/FriendListSlice";
@@ -54,14 +60,17 @@ import currentChatroomMembersReducer from "./features/chat/CurrentChatroomMember
 import sKeyListReducer from "./features/chat/SKeyListSlice";
 import activeUserListReducer from "./features/chat/ActiveUserListSlice";
 import mutedListReducer from "./features/chat/MutedListSlice";
-import myInfoReducer from "./features/account/MyInfoSlice";
 import unreadMessageListReducer from "./features/chat/UnreadMessageListSlice";
 import renderTimeReducer from "./features/account/RenderTimeSlice";
 import adminListReducer from "./features/chat/AdminListSlice";
 import historicalChatroomMembersReducer from "./features/chat/HistoricalChatroomMembersSlice";
+// ~ Chat
+
+// SDK
 import gameListReducer from "./features/store/GameListSlice";
 import comingGameListReducer from "./features/store/ComingGameListSlice";
 import removeStatusReducer from "./features/home/RemoveStatusSlice";
+// ~ SDK
 
 const blacklistActionTypes = ["intercomsupport/setChatMounted", "intercomsupport/setMountedTrue", "intercomsupport/setMountedFalse"];
 
@@ -77,6 +86,8 @@ const store = configureStore({
     notification: notificationReducer,
     address: addressReducer,
     chat: chatReducer,
+
+    login: loginReducer,
 
     account: accountReducer,
     accountList: accountListReducer,

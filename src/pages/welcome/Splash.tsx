@@ -14,7 +14,7 @@ const Splash = () => {
       setProgress((oldProgress) => {
         if (oldProgress >= 100) {
           // navigate("/get-started");
-          navigate("/welcome");
+          navigate("/start");
         }
         const diff = Math.random() * 10;
         return Math.min(oldProgress + diff, 100);

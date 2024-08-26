@@ -38,7 +38,7 @@ const NonCustodialSignUp3 = () => {
   }, [mnemonic, threeConfirmStore]);
 
   const handleBackClick = () => {
-    navigate("/welcome");
+    navigate("/start");
   };
 
   const handleNextClick = useCallback(async () => {

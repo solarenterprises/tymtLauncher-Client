@@ -10,6 +10,10 @@ export enum walletEnum {
   "custodial",
 }
 
+export interface ILogin {
+  isLoggedIn: boolean;
+}
+
 export interface IAccount {
   avatar: string;
   nickName: string;

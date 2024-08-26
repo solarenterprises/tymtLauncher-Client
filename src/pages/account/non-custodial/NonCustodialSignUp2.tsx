@@ -38,7 +38,7 @@ const NonCustodialSignUp2 = () => {
   }, [length]);
 
   const handleBackClick = () => {
-    navigate("/welcome");
+    navigate("/start");
   };
 
   const handleNextClick = useCallback(() => {

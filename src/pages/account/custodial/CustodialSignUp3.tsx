@@ -46,7 +46,7 @@ const CustodialSignUp3 = () => {
   });
 
   const handleBackClick = () => {
-    navigate("/welcome");
+    navigate("/start");
   };
 
   return (

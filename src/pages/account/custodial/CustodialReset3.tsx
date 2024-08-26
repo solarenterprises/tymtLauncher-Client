@@ -73,7 +73,7 @@ const CustodialReset3 = () => {
   });
 
   const handleBackClick = () => {
-    navigate("/welcome");
+    navigate("/start");
   };
 
   return (

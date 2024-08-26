@@ -14,8 +14,10 @@ import OrLine from "../../components/account/OrLine";
 
 import { addAccountList } from "../../features/account/AccountListSlice";
 import { setAccount } from "../../features/account/AccountSlice";
+import { setLogin } from "../../features/account/LoginSlice";
 
 import { getMnemonic, getWalletAddressFromPassphrase } from "../../lib/helper/WalletHelper";
+import { encrypt, getKeccak256Hash } from "../../lib/api/Encrypt";
 
 import { IWallet } from "../../types/walletTypes";
 import { IAccount } from "../../types/accountTypes";
@@ -23,7 +25,6 @@ import { IAccount } from "../../types/accountTypes";
 import tymt1 from "../../assets/account/tymt1.png";
 import GuestIcon from "../../assets/account/Guest.svg";
 import ImportIcon from "../../assets/account/Import.svg";
-import { encrypt, getKeccak256Hash } from "../../lib/api/Encrypt";
 
 const Welcome = () => {
   const navigate = useNavigate();
@@ -48,6 +49,8 @@ const Welcome = () => {
       };
       dispatch(setAccount(newAccount));
       dispatch(addAccountList(newAccount));
+
+      dispatch(setLogin(true));
       navigate("/home");
       setLoading(false);
     } catch (err) {

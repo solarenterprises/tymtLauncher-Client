@@ -47,7 +47,7 @@ const CustodialLogIn1 = () => {
   });
 
   const handleBackClick = () => {
-    navigate("/welcome");
+    navigate("/start");
   };
 
   return (
