@@ -64,7 +64,7 @@ const ComingSoonD53 = () => {
             zIndex: -1,
           }}
         />
-        <Grid xs={12} container sx={{ justifyContent: "space-between", alignItems: "center" }}>
+        <Grid container sx={{ justifyContent: "space-between", alignItems: "center" }}>
           <Box className={"fs-40-bold"} color={"white"} textTransform={"none"}>
             {t("hom-11_coming-soon")}
           </Box>
@@ -89,8 +89,8 @@ const ComingSoonD53 = () => {
                 marginTop: "32px",
               }}
             >
-              {comingGameList.games.map((game) => (
-                <SwiperSlide style={{ width: "300px" }}>
+              {comingGameList.games.map((game, index) => (
+                <SwiperSlide style={{ width: "300px" }} key={index}>
                   <ComingGameCard key={game._id} game={game} />
                 </SwiperSlide>
               ))}

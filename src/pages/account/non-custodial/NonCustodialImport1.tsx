@@ -1,9 +1,12 @@
+import { useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import { motion } from "framer-motion";
 import { useFormik } from "formik";
 import * as Yup from "yup";
+
+import "../../../global.css";
 
 import { Grid, Box, Stack } from "@mui/material";
 
@@ -12,20 +15,92 @@ import AccountHeader from "../../../components/account/AccountHeader";
 import InputText from "../../../components/account/InputText";
 import AccountNextButton from "../../../components/account/AccountNextButton";
 import Stepper from "../../../components/account/Stepper";
+
+import { AppDispatch } from "../../../store";
+import { getTempAccount, setTempAccount } from "../../../features/account/TempAccountSlice";
+import { setAccount } from "../../../features/account/AccountSlice";
+import { addAccountList } from "../../../features/account/AccountListSlice";
+import { getWallet, setWallet } from "../../../features/wallet/WalletSlice";
+import { addWalletList } from "../../../features/wallet/WalletListSlice";
+import { getSaltToken, setSaltToken } from "../../../features/account/SaltTokenSlice";
+import { getMachineId } from "../../../features/account/MachineIdSlice";
+import { fetchMyInfoAsync } from "../../../features/account/MyInfoSlice";
+import { setLogin } from "../../../features/account/LoginSlice";
+
+import tymtCore from "../../../lib/core/tymtCore";
+import AuthAPI from "../../../lib/api/AuthAPI";
+
+import { getReqBodyNonCustodyBeforeSignIn, getReqBodyNonCustodySignIn } from "../../../lib/helper/AuthAPIHelper";
+import { encrypt, getKeccak256Hash } from "../../../lib/api/Encrypt";
+
 import tymt3 from "../../../assets/account/tymt3.png";
 
-import { getTempAccount, setTempAccount } from "../../../features/account/TempAccountSlice";
-
-import "../../../global.css";
-
-import { IAccount } from "../../../types/accountTypes";
+import { IAccount, IMachineId, ISaltToken } from "../../../types/accountTypes";
+import { IWallet } from "../../../types/walletTypes";
 
 const NonCustodialImport1 = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
 
   const tempAccountStore: IAccount = useSelector(getTempAccount);
+  const tempWalletStore: IWallet = useSelector(getWallet);
+  const saltTokenStore: ISaltToken = useSelector(getSaltToken);
+  const machineIdStore: IMachineId = useSelector(getMachineId);
+
+  const handleImport = useCallback(
+    async (newNickName: string) => {
+      try {
+        const newAccount: IAccount = {
+          ...tempAccountStore,
+          password: getKeccak256Hash(tempAccountStore?.password),
+          mnemonic: await encrypt(tempAccountStore?.mnemonic, tempAccountStore?.password),
+          nickName: newNickName,
+        };
+
+        dispatch(setAccount(newAccount));
+        dispatch(addAccountList(newAccount));
+
+        dispatch(setWallet(tempWalletStore));
+        dispatch(addWalletList(tempWalletStore));
+      } catch (err) {
+        console.log("Failed to handleSignUp: ", err);
+      }
+    },
+    [tempAccountStore, tempWalletStore]
+  );
+
+  const handleLogin = useCallback(async () => {
+    try {
+      const body1 = getReqBodyNonCustodyBeforeSignIn(tempAccountStore, tempAccountStore?.mnemonic);
+      const res1 = await AuthAPI.nonCustodyBeforeSignin(body1);
+      const salt: string = res1?.data?.salt;
+
+      let token: string = "";
+      if (salt !== saltTokenStore?.salt) {
+        token = tymtCore.Blockchains.solar.wallet.signToken(salt, tempAccountStore?.mnemonic);
+        dispatch(
+          setSaltToken({
+            salt: salt,
+            token: token,
+          })
+        );
+      } else {
+        token = saltTokenStore?.token;
+      }
+
+      const body2 = getReqBodyNonCustodySignIn(tempAccountStore, machineIdStore, token);
+      const res2 = await AuthAPI.nonCustodySignin(body2);
+      const uid = res2?.data?._id;
+
+      await dispatch(fetchMyInfoAsync(uid));
+
+      dispatch(setLogin(true));
+      navigate("/home");
+    } catch (err) {
+      console.log("Failed to handleLogin: ", err);
+    }
+  }, [tempAccountStore, saltTokenStore]);
 
   const formik = useFormik({
     initialValues: {
@@ -57,15 +132,29 @@ const NonCustodialImport1 = () => {
         .required(t("cca-63_required"))
         .oneOf([Yup.ref("password")], t("cca-64_password-must-match")),
     }),
-    onSubmit: () => {
-      const newPassword = formik.values.password;
-      dispatch(
-        setTempAccount({
-          ...tempAccountStore,
-          password: newPassword,
-        })
-      );
-      navigate("/non-custodial/signup/4");
+    onSubmit: async () => {
+      try {
+        const newPassword = formik.values.password;
+        dispatch(
+          setTempAccount({
+            ...tempAccountStore,
+            password: newPassword,
+          })
+        );
+
+        const newSXPAddress = tempAccountStore?.sxpAddress;
+        const res = await AuthAPI.getUserBySolarAddress(newSXPAddress);
+
+        if (res?.data?.users?.length === 0) {
+          navigate("/non-custodial/signup/4");
+        } else {
+          const newNickName: string = res?.data?.users[0]?.nickName;
+          await handleImport(newNickName);
+          await handleLogin();
+        }
+      } catch (err) {
+        console.log("Failed at NonCustodialImport1: ", err);
+      }
     },
   });
 

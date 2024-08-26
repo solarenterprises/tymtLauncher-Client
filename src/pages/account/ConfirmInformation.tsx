@@ -99,6 +99,9 @@ const ConfirmInformation = () => {
       // );
     } catch (err) {
       console.log("Failed to handleSignUp: ", err);
+      if (err?.response?.data?.msg === "User already exists with same sxpAddress!") {
+       
+      }
     }
   }, [tempAccountStore, tempWalletStore]);
 

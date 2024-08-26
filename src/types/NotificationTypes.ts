@@ -1,7 +1,7 @@
 import { IGame } from "./GameTypes";
 
 export interface INotificationParams {
-  status: string; // failed, success
+  status: string; // failed, success, warning, alert, message
   title: string;
   message: string;
   link: string;

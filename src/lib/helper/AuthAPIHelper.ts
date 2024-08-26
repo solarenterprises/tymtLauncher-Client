@@ -1,6 +1,6 @@
 import tymtCore from "../core/tymtCore";
 
-import { ChainIDs, ChainNames } from "../../consts/Chains";
+import { ChainIDs, ChainNames } from "../../consts/chainss";
 
 import { IAccount, IMachineId } from "../../types/accountTypes";
 import { INonCustodyBeforeSignInReq, INonCustodySignInReq, INonCustodySignUpReq } from "../../types/AuthAPITypes";

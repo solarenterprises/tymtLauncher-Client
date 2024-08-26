@@ -3,10 +3,14 @@ import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import { useState } from "react";
 import { readText } from "@tauri-apps/api/clipboard";
-
+import { emit } from "@tauri-apps/api/event";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { motion } from "framer-motion";
+
+import "../../../global.css";
+
+import { TauriEventNames } from "../../../consts/TauriEventNames";
 
 import { Grid, Box, Stack } from "@mui/material";
 
@@ -19,14 +23,15 @@ import MnemonicRevealPad from "../../../components/account/MnemonicRevealPad";
 
 import { getTempAccount, setTempAccount } from "../../../features/account/TempAccountSlice";
 import { setTempWallet } from "../../../features/wallet/TempWalletSlice";
+import { getAccountList } from "../../../features/account/AccountListSlice";
 
 import tymt2 from "../../../assets/account/tymt2.png";
-import "../../../global.css";
 
 import { checkMnemonic, getWalletAddressFromPassphrase } from "../../../lib/helper/WalletHelper";
-
-import { IAccount } from "../../../types/accountTypes";
 import { getRsaKeyPair } from "../../../features/chat/RsaApi";
+
+import { IAccount, IAccountList } from "../../../types/accountTypes";
+import { INotificationParams } from "../../../types/NotificationTypes";
 
 const NonCustodialLogIn2 = () => {
   const navigate = useNavigate();
@@ -34,6 +39,7 @@ const NonCustodialLogIn2 = () => {
   const dispatch = useDispatch();
 
   const tempAccountStore: IAccount = useSelector(getTempAccount);
+  const accountListStore: IAccountList = useSelector(getAccountList);
 
   const [loading, setLoading] = useState<boolean>(false);
 
@@ -64,6 +70,19 @@ const NonCustodialLogIn2 = () => {
         const newPassphrase = formik.values.mnemonic.trim();
         const newWalletAddress = await getWalletAddressFromPassphrase(newPassphrase);
         const newRsaPubKey = (await getRsaKeyPair(newPassphrase))?.publicKey;
+
+        if (accountListStore?.list?.some((one) => one?.sxpAddress === newWalletAddress?.solar)) {
+          navigate("/start");
+          const noti: INotificationParams = {
+            status: "warning",
+            title: "Warning",
+            message: "That wallet was already imported in tymt!",
+            link: null,
+            translate: true,
+          };
+          emit(TauriEventNames.NOTIFICATION, noti);
+          return;
+        }
 
         dispatch(setTempWallet(newWalletAddress));
         dispatch(
