@@ -2,7 +2,7 @@ import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import { useState } from "react";
 
-import { Chains } from "../../consts/chainss";
+import { Chains } from "../../consts/Chains";
 
 import { Box, Grid, Stack, IconButton, Button, Tooltip, Divider } from "@mui/material";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
