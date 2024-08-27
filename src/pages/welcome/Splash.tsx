@@ -60,20 +60,20 @@ const Splash = () => {
                 fill="url(#paint0_linear_6609_59505)"
               />
               <path
-                fill-rule="evenodd"
-                clip-rule="evenodd"
+                fillRule="evenodd"
+                clipRule="evenodd"
                 d="M7.26343 0.929199L8.81873 1.82289C8.82092 1.82426 8.82285 1.82536 8.82505 1.82673L33.3855 15.9398L47.0501 81.4252C46.9647 81.4799 46.8839 81.545 46.8098 81.6205L45.9323 82.5115L12.8214 38.6873L7.26343 0.929199ZM47.2355 84.5603L47.7897 84.9698L47.7878 84.9613L47.2355 84.5603ZM35.5038 59.6799C36.1657 59.2915 37.0168 59.5134 37.4052 60.1756L40.5207 65.4875C40.9091 66.1496 40.6874 67.0013 40.0255 67.3897C39.3637 67.778 38.5123 67.5564 38.1239 66.8942L35.0084 61.5821C34.62 60.9199 34.8417 60.0685 35.5038 59.6799Z"
                 fill="url(#paint1_linear_6609_59505)"
               />
               <path
-                fill-rule="evenodd"
-                clip-rule="evenodd"
+                fillRule="evenodd"
+                clipRule="evenodd"
                 d="M47.0457 81.4252L33.3811 15.9398H62.1895L48.5274 81.4139C48.0745 81.1327 47.495 81.1366 47.0457 81.4252ZM47.7833 84.9612L47.7853 84.9697L47.7866 84.9634L47.7833 84.9612Z"
                 fill="url(#paint2_linear_6609_59505)"
               />
               <path
-                fill-rule="evenodd"
-                clip-rule="evenodd"
+                fillRule="evenodd"
+                clipRule="evenodd"
                 d="M48.5281 81.414L62.1902 15.9398L86.7507 1.82673L88.3123 0.929199L88.0511 2.70339C88.0508 2.70613 88.0503 2.70888 88.05 2.71163L82.7543 38.6873L49.6519 82.4999L48.786 81.6205C48.7066 81.5398 48.6201 81.4708 48.5281 81.414ZM47.7896 84.9651L47.791 84.9662L47.786 84.9698L47.7874 84.9635L47.7896 84.9651ZM57.758 60.1756C58.1464 59.5134 58.9977 59.2915 59.6596 59.6799C60.3215 60.0685 60.5434 60.9199 60.1551 61.5821L57.0395 66.8942C56.6512 67.5564 55.7998 67.778 55.1379 67.3897C54.476 67.0013 54.2544 66.1496 54.6425 65.4875L57.758 60.1756Z"
                 fill="url(#paint3_linear_6609_59505)"
               />
@@ -84,24 +84,24 @@ const Splash = () => {
             </g>
             <defs>
               <linearGradient id="paint0_linear_6609_59505" x1="47.7877" y1="14.8729" x2="35.0512" y2="81.2155" gradientUnits="userSpaceOnUse">
-                <stop stop-color="#942121" />
-                <stop offset="1" stop-color="#892727" />
+                <stop stopColor="#942121" />
+                <stop offset="1" stopColor="#892727" />
               </linearGradient>
               <linearGradient id="paint1_linear_6609_59505" x1="47.7897" y1="14.8728" x2="35.0532" y2="81.2154" gradientUnits="userSpaceOnUse">
-                <stop stop-color="#D03232" />
-                <stop offset="1" stop-color="#892727" />
+                <stop stopColor="#D03232" />
+                <stop offset="1" stopColor="#892727" />
               </linearGradient>
               <linearGradient id="paint2_linear_6609_59505" x1="33.5105" y1="12.7858" x2="78.2711" y2="150.92" gradientUnits="userSpaceOnUse">
-                <stop stop-color="#EF4444" />
-                <stop offset="1" stop-color="#892727" />
+                <stop stopColor="#EF4444" />
+                <stop offset="1" stopColor="#892727" />
               </linearGradient>
               <linearGradient id="paint3_linear_6609_59505" x1="47.786" y1="14.8728" x2="35.0495" y2="81.2154" gradientUnits="userSpaceOnUse">
-                <stop stop-color="#D03232" />
-                <stop offset="1" stop-color="#892727" />
+                <stop stopColor="#D03232" />
+                <stop offset="1" stopColor="#892727" />
               </linearGradient>
               <linearGradient id="paint4_linear_6609_59505" x1="47.7892" y1="14.8729" x2="35.0527" y2="81.2155" gradientUnits="userSpaceOnUse">
-                <stop stop-color="#942121" />
-                <stop offset="1" stop-color="#892727" />
+                <stop stopColor="#942121" />
+                <stop offset="1" stopColor="#892727" />
               </linearGradient>
               <clipPath id="clip0_6609_59505">
                 <rect width="300" height="85.7944" fill="white" transform="translate(0 0.929199)" />

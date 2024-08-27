@@ -15,10 +15,14 @@ import Stepper from "../../components/account/Stepper";
 import WalletList from "../../components/account/WalletList";
 
 import AuthAPI from "../../lib/api/AuthAPI";
-import tymtCore from "../../lib/core/tymtCore";
 
 import { encrypt, getKeccak256Hash } from "../../lib/api/Encrypt";
-import { getReqBodyNonCustodyBeforeSignIn, getReqBodyNonCustodySignIn, getReqBodyNonCustodySignUp } from "../../lib/helper/AuthAPIHelper";
+import {
+  getNonCustodySignInToken,
+  getReqBodyNonCustodyBeforeSignIn,
+  getReqBodyNonCustodySignIn,
+  getReqBodyNonCustodySignUp,
+} from "../../lib/helper/AuthAPIHelper";
 
 import { AppDispatch } from "../../store";
 import { addAccountList } from "../../features/account/AccountListSlice";
@@ -102,25 +106,20 @@ const ConfirmInformation = () => {
     try {
       const body1 = getReqBodyNonCustodyBeforeSignIn(tempAccountStoreRef.current, tempAccountStoreRef.current?.mnemonic);
       const res1 = await AuthAPI.nonCustodyBeforeSignin(body1);
-      const salt: string = res1?.data?.salt;
 
-      let token: string = "";
-      if (salt !== saltTokenStoreRef.current?.salt) {
-        token = tymtCore.Blockchains.solar.wallet.signToken(salt, tempAccountStoreRef.current?.mnemonic);
-        dispatch(
-          setSaltToken({
-            salt: salt,
-            token: token,
-          })
-        );
-      } else {
-        token = saltTokenStoreRef.current?.token;
-      }
+      const salt: string = res1?.data?.salt;
+      const token: string = getNonCustodySignInToken(salt, saltTokenStoreRef.current, tempAccountStoreRef.current?.mnemonic);
+      dispatch(
+        setSaltToken({
+          salt: salt,
+          token: token,
+        })
+      );
 
       const body2 = getReqBodyNonCustodySignIn(tempAccountStoreRef.current, machineIdStoreRef.current, token);
       const res2 = await AuthAPI.nonCustodySignin(body2);
-      const uid = res2?.data?._id;
 
+      const uid = res2?.data?._id;
       await dispatch(fetchMyInfoAsync(uid));
 
       dispatch(setLogin(true));

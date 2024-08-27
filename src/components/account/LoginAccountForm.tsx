@@ -1,3 +1,4 @@
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -18,18 +19,18 @@ import { fetchMyInfoAsync } from "../../features/account/MyInfoSlice";
 import AccountNextButton from "./AccountNextButton";
 import InputText from "./InputText";
 
-import tymtCore from "../../lib/core/tymtCore";
 import AuthAPI from "../../lib/api/AuthAPI";
 
-import { IAccount, IMachineId, ISaltToken } from "../../types/accountTypes";
-import { getReqBodyNonCustodyBeforeSignIn, getReqBodyNonCustodySignIn } from "../../lib/helper/AuthAPIHelper";
 import { decrypt, getKeccak256Hash } from "../../lib/api/Encrypt";
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { getNonCustodySignInToken, getReqBodyNonCustodyBeforeSignIn, getReqBodyNonCustodySignIn } from "../../lib/helper/AuthAPIHelper";
+
+import { IAccount, IMachineId, ISaltToken } from "../../types/accountTypes";
 
 const LoginAccountForm = () => {
   const { t } = useTranslation();
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
+  
   const accountStore: IAccount = useSelector(getAccount);
   const saltTokenStore: ISaltToken = useSelector(getSaltToken);
   const machineIdStore: IMachineId = useSelector(getMachineId);
@@ -58,33 +59,28 @@ const LoginAccountForm = () => {
       const decryptedMnemonic: string = await decrypt(accountStore?.mnemonic, "");
       dispatch(setMnemonic(decryptedMnemonic));
 
-      // const body1 = getReqBodyNonCustodyBeforeSignIn(accountStore, decryptedMnemonic);
-      // const res1 = await AuthAPI.nonCustodyBeforeSignin(body1);
-      // const salt: string = res1?.data?.salt;
+      const body1 = getReqBodyNonCustodyBeforeSignIn(accountStore, decryptedMnemonic);
+      const res1 = await AuthAPI.nonCustodyBeforeSignin(body1);
 
-      // let token: string = "";
-      // if (salt !== saltTokenStore?.salt) {
-      //   token = tymtCore.Blockchains.solar.wallet.signToken(salt, decryptedMnemonic);
-      //   dispatch(
-      //     setSaltToken({
-      //       salt: salt,
-      //       token: token,
-      //     })
-      //   );
-      // } else {
-      //   token = saltTokenStore?.token;
-      // }
+      const salt: string = res1?.data?.salt;
+      const token: string = getNonCustodySignInToken(salt, saltTokenStore, decryptedMnemonic);
+      dispatch(
+        setSaltToken({
+          salt: salt,
+          token: token,
+        })
+      );
 
-      // const body2 = getReqBodyNonCustodySignIn(accountStore, machineIdStore, token);
-      // const res2 = await AuthAPI.nonCustodySignin(body2);
-      // const uid = res2?.data?._id;
+      const body2 = getReqBodyNonCustodySignIn(accountStore, machineIdStore, token);
+      const res2 = await AuthAPI.nonCustodySignin(body2);
 
-      // await dispatch(fetchMyInfoAsync(uid));
+      const uid = res2?.data?._id;
+      await dispatch(fetchMyInfoAsync(uid));
 
       dispatch(setLogin(true));
       navigate("/home");
     } catch (err) {
-      console.log("Failed at LoginAccountForm: ", err);
+      console.log("Failed at handleGuestLogin: ", err);
     }
   }, [accountStore, saltTokenStore, machineIdStore]);
 
@@ -125,20 +121,15 @@ const LoginAccountForm = () => {
 
         const body1 = getReqBodyNonCustodyBeforeSignIn(accountStoreRef?.current, decryptedMnemonic);
         const res1 = await AuthAPI.nonCustodyBeforeSignin(body1);
-        const salt: string = res1?.data?.salt;
 
-        let token: string = "";
-        if (salt !== saltTokenStoreRef?.current?.salt) {
-          token = tymtCore.Blockchains.solar.wallet.signToken(salt, decryptedMnemonic);
-          dispatch(
-            setSaltToken({
-              salt: salt,
-              token: token,
-            })
-          );
-        } else {
-          token = saltTokenStoreRef?.current?.token;
-        }
+        const salt: string = res1?.data?.salt;
+        const token: string = getNonCustodySignInToken(salt, saltTokenStoreRef?.current, decryptedMnemonic);
+        dispatch(
+          setSaltToken({
+            salt: salt,
+            token: token,
+          })
+        );
 
         const body2 = getReqBodyNonCustodySignIn(accountStoreRef?.current, machineIdStoreRef?.current, token);
         const res2 = await AuthAPI.nonCustodySignin(body2);

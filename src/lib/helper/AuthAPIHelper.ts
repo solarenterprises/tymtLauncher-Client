@@ -2,7 +2,7 @@ import tymtCore from "../core/tymtCore";
 
 import { ChainIDs, ChainNames } from "../../consts/Chains";
 
-import { IAccount, IMachineId } from "../../types/accountTypes";
+import { IAccount, IMachineId, ISaltToken } from "../../types/accountTypes";
 import { INonCustodyBeforeSignInReq, INonCustodySignInReq, INonCustodySignUpReq } from "../../types/AuthAPITypes";
 import { IWallet } from "../../types/walletTypes";
 
@@ -91,5 +91,19 @@ export const getReqBodyNonCustodyBeforeSignIn = (account: IAccount, mnemonic: st
     return data;
   } catch (err) {
     console.log("Failed to getReqBodyNonCustodyBeforeSignIn: ", err);
+  }
+};
+
+export const getNonCustodySignInToken = (salt: string, saltTokenStore: ISaltToken, passphrase: string) => {
+  try {
+    let token: string = "";
+    if (salt !== saltTokenStore?.salt) {
+      token = tymtCore.Blockchains.solar.wallet.signToken(salt, passphrase);
+    } else {
+      token = saltTokenStore?.token;
+    }
+    return token;
+  } catch (err) {
+    console.log("Failed to getNonCustodySignInToken: ", err);
   }
 };

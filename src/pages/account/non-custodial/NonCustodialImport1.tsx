@@ -27,10 +27,9 @@ import { getMachineId } from "../../../features/account/MachineIdSlice";
 import { fetchMyInfoAsync } from "../../../features/account/MyInfoSlice";
 import { setLogin } from "../../../features/account/LoginSlice";
 
-import tymtCore from "../../../lib/core/tymtCore";
 import AuthAPI from "../../../lib/api/AuthAPI";
 
-import { getReqBodyNonCustodyBeforeSignIn, getReqBodyNonCustodySignIn } from "../../../lib/helper/AuthAPIHelper";
+import { getNonCustodySignInToken, getReqBodyNonCustodyBeforeSignIn, getReqBodyNonCustodySignIn } from "../../../lib/helper/AuthAPIHelper";
 import { encrypt, getKeccak256Hash } from "../../../lib/api/Encrypt";
 
 import tymt3 from "../../../assets/account/tymt3.png";
@@ -74,20 +73,15 @@ const NonCustodialImport1 = () => {
     try {
       const body1 = getReqBodyNonCustodyBeforeSignIn(tempAccountStore, tempAccountStore?.mnemonic);
       const res1 = await AuthAPI.nonCustodyBeforeSignin(body1);
-      const salt: string = res1?.data?.salt;
 
-      let token: string = "";
-      if (salt !== saltTokenStore?.salt) {
-        token = tymtCore.Blockchains.solar.wallet.signToken(salt, tempAccountStore?.mnemonic);
-        dispatch(
-          setSaltToken({
-            salt: salt,
-            token: token,
-          })
-        );
-      } else {
-        token = saltTokenStore?.token;
-      }
+      const salt: string = res1?.data?.salt;
+      const token: string = getNonCustodySignInToken(salt, saltTokenStore, tempAccountStore?.mnemonic);
+      dispatch(
+        setSaltToken({
+          salt: salt,
+          token: token,
+        })
+      );
 
       const body2 = getReqBodyNonCustodySignIn(tempAccountStore, machineIdStore, token);
       const res2 = await AuthAPI.nonCustodySignin(body2);

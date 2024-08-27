@@ -50,7 +50,6 @@ const Bottom = () => {
         }}
       /> */}
       <Grid
-        xs={12}
         container
         justifyContent={"center"}
         flexDirection={"column"}

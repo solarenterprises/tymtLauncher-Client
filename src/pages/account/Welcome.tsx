@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { invoke } from "@tauri-apps/api";
 
 import { motion } from "framer-motion";
@@ -13,28 +13,40 @@ import CreateAccountForm from "../../components/account/CreateAccountForm";
 import AuthIconButtons from "../../components/account/AuthIconButtons";
 import OrLine from "../../components/account/OrLine";
 
-import { setMachineId } from "../../features/account/MachineIdSlice";
+import { AppDispatch } from "../../store";
+import { getMachineId, setMachineId } from "../../features/account/MachineIdSlice";
 import { addAccountList } from "../../features/account/AccountListSlice";
 import { setAccount } from "../../features/account/AccountSlice";
+import { getSaltToken, setSaltToken } from "../../features/account/SaltTokenSlice";
+import { fetchMyInfoAsync } from "../../features/account/MyInfoSlice";
+import { setMnemonic } from "../../features/account/MnemonicSlice";
+import { setLogin } from "../../features/account/LoginSlice";
 
-import { getMnemonic, getWalletAddressFromPassphrase } from "../../lib/helper/WalletHelper";
+import AuthAPI from "../../lib/api/AuthAPI";
+
+import { getRsaKeyPair } from "../../features/chat/RsaApi";
 import { encrypt, getKeccak256Hash } from "../../lib/api/Encrypt";
+import { getMnemonic, getWalletAddressFromPassphrase } from "../../lib/helper/WalletHelper";
+import { getNonCustodySignInToken, getReqBodyNonCustodyBeforeSignIn, getReqBodyNonCustodySignIn } from "../../lib/helper/AuthAPIHelper";
 
 import { IWallet } from "../../types/walletTypes";
-import { IAccount } from "../../types/accountTypes";
+import { IAccount, IMachineId, ISaltToken } from "../../types/accountTypes";
+import { INonCustodyBeforeSignInReq } from "../../types/AuthAPITypes";
 
 import tymt1 from "../../assets/account/tymt1.png";
 import GuestIcon from "../../assets/account/Guest.svg";
 import ImportIcon from "../../assets/account/Import.svg";
-import { getRsaKeyPair } from "../../features/chat/RsaApi";
 
 const Welcome = () => {
   const navigate = useNavigate();
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
+
+  const saltTokenStore: ISaltToken = useSelector(getSaltToken);
+  const machineIdStore: IMachineId = useSelector(getMachineId);
 
   const [loading, setLoading] = useState<boolean>(false);
 
-  const handlePlayGuest = async () => {
+  const handlePlayGuest = useCallback(async () => {
     try {
       setLoading(true);
       const newPassphrase: string = getMnemonic(12);
@@ -55,14 +67,34 @@ const Welcome = () => {
 
       dispatch(setAccount(newAccount));
       dispatch(addAccountList(newAccount));
+      dispatch(setMnemonic(newPassphrase));
 
+      const body1: INonCustodyBeforeSignInReq = getReqBodyNonCustodyBeforeSignIn(newAccount, newPassphrase);
+      const res1 = await AuthAPI.nonCustodyBeforeSignin(body1);
+
+      const salt: string = res1?.data?.salt;
+      const token: string = getNonCustodySignInToken(salt, saltTokenStore, newPassphrase);
+      dispatch(
+        setSaltToken({
+          salt: salt,
+          token: token,
+        })
+      );
+
+      const body2 = getReqBodyNonCustodySignIn(newAccount, machineIdStore, token);
+      const res2 = await AuthAPI.nonCustodySignin(body2);
+
+      const uid = res2?.data?._id;
+      await dispatch(fetchMyInfoAsync(uid));
+
+      dispatch(setLogin(true));
       navigate("/home");
       setLoading(false);
     } catch (err) {
       console.log("Failed to handlePlayGuest: ", err);
       setLoading(false);
     }
-  };
+  }, [saltTokenStore, machineIdStore]);
 
   useEffect(() => {
     invoke("get_machine_id")
