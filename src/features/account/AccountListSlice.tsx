@@ -1,10 +1,7 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { createSlice } from "@reduxjs/toolkit";
 import tymtStorage from "../../lib/Storage";
 import { IAccount, IAccountList } from "../../types/accountTypes";
-import { updateUser } from "./AccountApi";
 import { compareJSONStructure } from "../../lib/api/JSONHelper";
-
-export const updateUserAsync = createAsyncThunk("update/user", updateUser);
 
 const init: IAccountList = {
   list: [],

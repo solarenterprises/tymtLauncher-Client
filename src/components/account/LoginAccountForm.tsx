@@ -30,7 +30,7 @@ const LoginAccountForm = () => {
   const { t } = useTranslation();
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
-  
+
   const accountStore: IAccount = useSelector(getAccount);
   const saltTokenStore: ISaltToken = useSelector(getSaltToken);
   const machineIdStore: IMachineId = useSelector(getMachineId);
@@ -40,13 +40,13 @@ const LoginAccountForm = () => {
   const machineIdStoreRef = useRef(machineIdStore);
 
   useEffect(() => {
-    accountStoreRef.current === accountStore;
+    accountStoreRef.current = accountStore;
   }, [accountStore]);
   useEffect(() => {
-    saltTokenStoreRef.current === saltTokenStore;
+    saltTokenStoreRef.current = saltTokenStore;
   }, [saltTokenStore]);
   useEffect(() => {
-    machineIdStoreRef.current === machineIdStore;
+    machineIdStoreRef.current = machineIdStore;
   }, [machineIdStore]);
 
   const isGuest: boolean = useMemo(() => {

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { invoke } from "@tauri-apps/api";
@@ -15,7 +15,7 @@ import OrLine from "../../components/account/OrLine";
 
 import { AppDispatch } from "../../store";
 import { getMachineId, setMachineId } from "../../features/account/MachineIdSlice";
-import { addAccountList } from "../../features/account/AccountListSlice";
+import { addAccountList, getAccountList } from "../../features/account/AccountListSlice";
 import { setAccount } from "../../features/account/AccountSlice";
 import { getSaltToken, setSaltToken } from "../../features/account/SaltTokenSlice";
 import { fetchMyInfoAsync } from "../../features/account/MyInfoSlice";
@@ -27,15 +27,23 @@ import AuthAPI from "../../lib/api/AuthAPI";
 import { getRsaKeyPair } from "../../features/chat/RsaApi";
 import { encrypt, getKeccak256Hash } from "../../lib/api/Encrypt";
 import { getMnemonic, getWalletAddressFromPassphrase } from "../../lib/helper/WalletHelper";
-import { getNonCustodySignInToken, getReqBodyNonCustodyBeforeSignIn, getReqBodyNonCustodySignIn } from "../../lib/helper/AuthAPIHelper";
+import {
+  getNonCustodySignInToken,
+  getReqBodyNonCustodyBeforeSignIn,
+  getReqBodyNonCustodySignIn,
+  getReqBodyNonCustodySignUp,
+} from "../../lib/helper/AuthAPIHelper";
 
 import { IWallet } from "../../types/walletTypes";
-import { IAccount, IMachineId, ISaltToken } from "../../types/accountTypes";
-import { INonCustodyBeforeSignInReq } from "../../types/AuthAPITypes";
+import { IAccount, IAccountList, IMachineId, ISaltToken } from "../../types/accountTypes";
+import { INonCustodyBeforeSignInReq, INonCustodySignUpReq } from "../../types/AuthAPITypes";
 
 import tymt1 from "../../assets/account/tymt1.png";
 import GuestIcon from "../../assets/account/Guest.svg";
 import ImportIcon from "../../assets/account/Import.svg";
+import { INotificationParams } from "../../types/NotificationTypes";
+import { emit } from "@tauri-apps/api/event";
+import { TauriEventNames } from "../../consts/TauriEventNames";
 
 const Welcome = () => {
   const navigate = useNavigate();
@@ -43,11 +51,30 @@ const Welcome = () => {
 
   const saltTokenStore: ISaltToken = useSelector(getSaltToken);
   const machineIdStore: IMachineId = useSelector(getMachineId);
+  const accountListStore: IAccountList = useSelector(getAccountList);
+
+  const hasGuest: boolean = useMemo(
+    () => accountListStore?.list?.some((one) => one?.nickName === "Guest" && one?.password === getKeccak256Hash("")),
+    [accountListStore]
+  );
 
   const [loading, setLoading] = useState<boolean>(false);
 
   const handlePlayGuest = useCallback(async () => {
     try {
+      if (hasGuest) {
+        const noti: INotificationParams = {
+          status: "warning",
+          title: "Warning",
+          message: "You already have a Guest account!",
+          link: null,
+          translate: true,
+        };
+        emit(TauriEventNames.NOTIFICATION, noti);
+        navigate("/start");
+        return;
+      }
+
       setLoading(true);
       const newPassphrase: string = getMnemonic(12);
       const newWalletAddress: IWallet = await getWalletAddressFromPassphrase(newPassphrase);
@@ -64,6 +91,9 @@ const Welcome = () => {
         mnemonic: encryptedPassphrase,
         rsaPubKey: newRsaPubKey,
       };
+
+      const body0: INonCustodySignUpReq = getReqBodyNonCustodySignUp(newAccount, newWalletAddress, newPassphrase);
+      await AuthAPI.nonCustodySignUp(body0);
 
       dispatch(setAccount(newAccount));
       dispatch(addAccountList(newAccount));
@@ -94,7 +124,7 @@ const Welcome = () => {
       console.log("Failed to handlePlayGuest: ", err);
       setLoading(false);
     }
-  }, [saltTokenStore, machineIdStore]);
+  }, [saltTokenStore, machineIdStore, hasGuest]);
 
   useEffect(() => {
     invoke("get_machine_id")
