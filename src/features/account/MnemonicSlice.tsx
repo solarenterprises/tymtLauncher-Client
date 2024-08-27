@@ -25,7 +25,7 @@ export const mnemonicSlice = createSlice({
   reducers: {
     setMnemonic: (state, action) => {
       state.data.mnemonic = action.payload;
-      sessionStorage.setItem("mnemonic", JSON.stringify(action.payload));
+      sessionStorage.setItem("mnemonic", JSON.stringify(state.data));
     },
   },
 });

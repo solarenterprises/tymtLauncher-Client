@@ -25,6 +25,7 @@ export interface INonCustodySignUpReq {
   nickName: string;
   password: string;
   sxpAddress: string;
-  wallet: INonCustodySignUpReqWallet[];
   rsa_pub_key: string;
+  publicKey: string;
+  wallet: INonCustodySignUpReqWallet[];
 }

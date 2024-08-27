@@ -4,7 +4,6 @@ import { useDispatch, useSelector } from "react-redux";
 
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import createKeccakHash from "keccak";
 
 import { Box, Stack } from "@mui/material";
 
@@ -24,7 +23,8 @@ import AuthAPI from "../../lib/api/AuthAPI";
 
 import { IAccount, IMachineId, ISaltToken } from "../../types/accountTypes";
 import { getReqBodyNonCustodyBeforeSignIn, getReqBodyNonCustodySignIn } from "../../lib/helper/AuthAPIHelper";
-import { decrypt } from "../../lib/api/Encrypt";
+import { decrypt, getKeccak256Hash } from "../../lib/api/Encrypt";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 
 const LoginAccountForm = () => {
   const { t } = useTranslation();
@@ -34,13 +34,70 @@ const LoginAccountForm = () => {
   const saltTokenStore: ISaltToken = useSelector(getSaltToken);
   const machineIdStore: IMachineId = useSelector(getMachineId);
 
+  const accountStoreRef = useRef(accountStore);
+  const saltTokenStoreRef = useRef(saltTokenStore);
+  const machineIdStoreRef = useRef(machineIdStore);
+
+  useEffect(() => {
+    accountStoreRef.current === accountStore;
+  }, [accountStore]);
+  useEffect(() => {
+    saltTokenStoreRef.current === saltTokenStore;
+  }, [saltTokenStore]);
+  useEffect(() => {
+    machineIdStoreRef.current === machineIdStore;
+  }, [machineIdStore]);
+
+  const isGuest: boolean = useMemo(() => {
+    if (accountStore?.nickName === "Guest" && accountStore?.password === getKeccak256Hash("")) return true;
+    return false;
+  }, [accountStore]);
+
+  const handleGuestLogin = useCallback(async () => {
+    try {
+      const decryptedMnemonic: string = await decrypt(accountStore?.mnemonic, "");
+      dispatch(setMnemonic(decryptedMnemonic));
+
+      // const body1 = getReqBodyNonCustodyBeforeSignIn(accountStore, decryptedMnemonic);
+      // const res1 = await AuthAPI.nonCustodyBeforeSignin(body1);
+      // const salt: string = res1?.data?.salt;
+
+      // let token: string = "";
+      // if (salt !== saltTokenStore?.salt) {
+      //   token = tymtCore.Blockchains.solar.wallet.signToken(salt, decryptedMnemonic);
+      //   dispatch(
+      //     setSaltToken({
+      //       salt: salt,
+      //       token: token,
+      //     })
+      //   );
+      // } else {
+      //   token = saltTokenStore?.token;
+      // }
+
+      // const body2 = getReqBodyNonCustodySignIn(accountStore, machineIdStore, token);
+      // const res2 = await AuthAPI.nonCustodySignin(body2);
+      // const uid = res2?.data?._id;
+
+      // await dispatch(fetchMyInfoAsync(uid));
+
+      dispatch(setLogin(true));
+      navigate("/home");
+    } catch (err) {
+      console.log("Failed at LoginAccountForm: ", err);
+    }
+  }, [accountStore, saltTokenStore, machineIdStore]);
+
   const formik = useFormik({
     initialValues: {
       password: "",
     },
     validationSchema: Yup.object({
       password: Yup.string()
-        .test("equals", t("cca-60_wrong-password"), (value) => createKeccakHash("keccak256").update(value).digest("hex") === accountStore?.password)
+        .test("equals", t("cca-60_wrong-password"), (value) => {
+          console.log(value, getKeccak256Hash(value), accountStoreRef?.current?.password);
+          return getKeccak256Hash(value) === accountStoreRef?.current?.password;
+        })
         .test(
           "password-requirements",
           "Password must meet at least four out of the five requirements: Include a lowercase letter, an uppercase letter, a number, a special character, and be at least 8 characters long.",
@@ -63,15 +120,15 @@ const LoginAccountForm = () => {
     }),
     onSubmit: async () => {
       try {
-        const decryptedMnemonic: string = await decrypt(accountStore?.mnemonic, formik.values.password);
+        const decryptedMnemonic: string = await decrypt(accountStoreRef?.current?.mnemonic, formik.values.password);
         dispatch(setMnemonic(decryptedMnemonic));
 
-        const body1 = getReqBodyNonCustodyBeforeSignIn(accountStore, decryptedMnemonic);
+        const body1 = getReqBodyNonCustodyBeforeSignIn(accountStoreRef?.current, decryptedMnemonic);
         const res1 = await AuthAPI.nonCustodyBeforeSignin(body1);
         const salt: string = res1?.data?.salt;
 
         let token: string = "";
-        if (salt !== saltTokenStore?.salt) {
+        if (salt !== saltTokenStoreRef?.current?.salt) {
           token = tymtCore.Blockchains.solar.wallet.signToken(salt, decryptedMnemonic);
           dispatch(
             setSaltToken({
@@ -80,10 +137,10 @@ const LoginAccountForm = () => {
             })
           );
         } else {
-          token = saltTokenStore?.token;
+          token = saltTokenStoreRef?.current?.token;
         }
 
-        const body2 = getReqBodyNonCustodySignIn(accountStore, machineIdStore, token);
+        const body2 = getReqBodyNonCustodySignIn(accountStoreRef?.current, machineIdStoreRef?.current, token);
         const res2 = await AuthAPI.nonCustodySignin(body2);
         const uid = res2?.data?._id;
 
@@ -101,20 +158,25 @@ const LoginAccountForm = () => {
     <>
       <form onSubmit={formik.handleSubmit}>
         <Stack gap={"24px"}>
-          <Stack>
-            <InputText
-              id="password"
-              label="Password"
-              type="password"
-              name="password"
-              value={formik.values.password}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              error={formik.touched.password && formik.errors.password ? true : false}
-            />
-            {formik.touched.password && formik.errors.password && <Box className={"fs-16-regular red"}>{formik.errors.password}</Box>}
-          </Stack>
-          <AccountNextButton isSubmit={true} text={"Next"} disabled={formik.errors.password ? true : false} />
+          {!isGuest && (
+            <>
+              <Stack>
+                <InputText
+                  id="password"
+                  label="Password"
+                  type="password"
+                  name="password"
+                  value={formik.values.password}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  error={formik.touched.password && formik.errors.password ? true : false}
+                />
+                {formik.touched.password && formik.errors.password && <Box className={"fs-16-regular red"}>{formik.errors.password}</Box>}
+              </Stack>
+              <AccountNextButton isSubmit={true} text={"Next"} disabled={formik.touched.password && formik.errors.password ? true : false} />
+            </>
+          )}
+          {isGuest && <AccountNextButton text={"Next"} onClick={handleGuestLogin} />}
         </Stack>
       </form>
     </>

@@ -16,7 +16,7 @@ export const AuthProvider = () => {
   const loginStore: ILogin = useSelector(getLogin);
 
   useEffect(() => {
-    if (!loginStore?.isLoggedIn) {
+    if (false) {
       navigate("/start");
     }
   }, [loginStore, myInfoStore]);

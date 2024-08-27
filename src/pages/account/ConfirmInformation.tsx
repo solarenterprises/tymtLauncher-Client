@@ -1,7 +1,7 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
-import { useCallback, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 
 import "../../global.css";
@@ -49,6 +49,24 @@ const ConfirmInformation = () => {
   const saltTokenStore: ISaltToken = useSelector(getSaltToken);
   const machineIdStore: IMachineId = useSelector(getMachineId);
 
+  const tempAccountStoreRef = useRef(tempAccountStore);
+  const tempWalletStoreRef = useRef(tempWalletStore);
+  const saltTokenStoreRef = useRef(saltTokenStore);
+  const machineIdStoreRef = useRef(machineIdStore);
+
+  useEffect(() => {
+    tempAccountStoreRef.current = tempAccountStore;
+  }, [tempAccountStore]);
+  useEffect(() => {
+    tempWalletStoreRef.current = tempWalletStore;
+  }, [tempWalletStore]);
+  useEffect(() => {
+    saltTokenStoreRef.current = saltTokenStore;
+  }, [saltTokenStore]);
+  useEffect(() => {
+    machineIdStoreRef.current = machineIdStore;
+  }, [machineIdStore]);
+
   const [loading, setLoading] = useState<boolean>(false);
 
   const displayWallet: IWallet = useMemo(() => {
@@ -59,61 +77,36 @@ const ConfirmInformation = () => {
     navigate("/start");
   };
 
-  const handleSignUp = useCallback(async () => {
+  const handleSignUp = async () => {
     try {
       const newAccount: IAccount = {
-        ...tempAccountStore,
-        password: getKeccak256Hash(tempAccountStore?.password),
-        mnemonic: await encrypt(tempAccountStore?.mnemonic, tempAccountStore?.password),
+        ...tempAccountStoreRef.current,
+        password: getKeccak256Hash(tempAccountStoreRef.current?.password),
+        mnemonic: await encrypt(tempAccountStoreRef.current?.mnemonic, tempAccountStoreRef.current?.password),
       };
 
-      const body: INonCustodySignUpReq = getReqBodyNonCustodySignUp(newAccount, tempWalletStore);
+      const body: INonCustodySignUpReq = getReqBodyNonCustodySignUp(newAccount, tempWalletStoreRef.current, tempAccountStoreRef.current?.mnemonic);
       await AuthAPI.nonCustodySignUp(body);
 
       dispatch(setAccount(newAccount));
       dispatch(addAccountList(newAccount));
-      // dispatch(
-      //   setTempAccount({
-      //     avatar: "",
-      //     nickName: "",
-      //     password: "",
-      //     sxpAddress: "",
-      //     mnemonic: "",
-      //   })
-      // );
 
-      dispatch(setWallet(tempWalletStore));
-      dispatch(addWalletList(tempWalletStore));
-      // dispatch(
-      //   setTempWallet({
-      //     arbitrum: "",
-      //     avalanche: "",
-      //     bitcoin: "",
-      //     binance: "",
-      //     ethereum: "",
-      //     optimism: "",
-      //     polygon: "",
-      //     solana: "",
-      //     solar: "",
-      //   })
-      // );
+      dispatch(setWallet(tempWalletStoreRef.current));
+      dispatch(addWalletList(tempWalletStoreRef.current));
     } catch (err) {
       console.log("Failed to handleSignUp: ", err);
-      if (err?.response?.data?.msg === "User already exists with same sxpAddress!") {
-       
-      }
     }
-  }, [tempAccountStore, tempWalletStore]);
+  };
 
-  const handleLogin = useCallback(async () => {
+  const handleLogin = async () => {
     try {
-      const body1 = getReqBodyNonCustodyBeforeSignIn(tempAccountStore, tempAccountStore?.mnemonic);
+      const body1 = getReqBodyNonCustodyBeforeSignIn(tempAccountStoreRef.current, tempAccountStoreRef.current?.mnemonic);
       const res1 = await AuthAPI.nonCustodyBeforeSignin(body1);
       const salt: string = res1?.data?.salt;
 
       let token: string = "";
-      if (salt !== saltTokenStore?.salt) {
-        token = tymtCore.Blockchains.solar.wallet.signToken(salt, tempAccountStore?.mnemonic);
+      if (salt !== saltTokenStoreRef.current?.salt) {
+        token = tymtCore.Blockchains.solar.wallet.signToken(salt, tempAccountStoreRef.current?.mnemonic);
         dispatch(
           setSaltToken({
             salt: salt,
@@ -121,10 +114,10 @@ const ConfirmInformation = () => {
           })
         );
       } else {
-        token = saltTokenStore?.token;
+        token = saltTokenStoreRef.current?.token;
       }
 
-      const body2 = getReqBodyNonCustodySignIn(tempAccountStore, machineIdStore, token);
+      const body2 = getReqBodyNonCustodySignIn(tempAccountStoreRef.current, machineIdStoreRef.current, token);
       const res2 = await AuthAPI.nonCustodySignin(body2);
       const uid = res2?.data?._id;
 
@@ -135,14 +128,14 @@ const ConfirmInformation = () => {
     } catch (err) {
       console.log("Failed to handleLogin: ", err);
     }
-  }, [tempAccountStore, saltTokenStore]);
+  };
 
-  const handleConfirmClick = useCallback(async () => {
+  const handleConfirmClick = async () => {
     setLoading(true);
     if (mode === "signup") await handleSignUp();
     await handleLogin();
     setLoading(false);
-  }, [handleSignUp]);
+  };
 
   return (
     <>

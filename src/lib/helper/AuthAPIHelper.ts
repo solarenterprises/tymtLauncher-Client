@@ -6,12 +6,15 @@ import { IAccount, IMachineId } from "../../types/accountTypes";
 import { INonCustodyBeforeSignInReq, INonCustodySignInReq, INonCustodySignUpReq } from "../../types/AuthAPITypes";
 import { IWallet } from "../../types/walletTypes";
 
-export const getReqBodyNonCustodySignUp = (account: IAccount, wallet: IWallet) => {
+export const getReqBodyNonCustodySignUp = (account: IAccount, wallet: IWallet, mnemonic: string) => {
   try {
+    const newPublicKey: string = tymtCore.Blockchains.solar.wallet.getPublicKey(mnemonic);
     const data: INonCustodySignUpReq = {
       nickName: account?.nickName,
       password: account?.password,
       sxpAddress: account?.sxpAddress,
+      rsa_pub_key: account?.rsaPubKey,
+      publicKey: newPublicKey,
       wallet: [
         {
           chainId: ChainIDs.ETHEREUM,
@@ -54,7 +57,6 @@ export const getReqBodyNonCustodySignUp = (account: IAccount, wallet: IWallet) =
           address: wallet?.solar,
         },
       ],
-      rsa_pub_key: account?.rsaPubKey,
     };
     return data;
   } catch (err) {
