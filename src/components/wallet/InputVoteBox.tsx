@@ -1,8 +1,15 @@
-import { Box, FormControl, InputLabel, OutlinedInput } from "@mui/material";
-import { IVotingData, multiWalletType } from "../../types/walletTypes";
-import numeral from "numeral";
+import { useMemo } from "react";
 import { useSelector } from "react-redux";
-import { getMultiWallet } from "../../features/wallet/MultiWalletSlice";
+import numeral from "numeral";
+
+import { supportChains } from "../../consts/SupportTokens";
+import { ChainNames } from "../../consts/Chains";
+
+import { Box, FormControl, InputLabel, OutlinedInput } from "@mui/material";
+
+import { getBalanceList } from "../../features/wallet/BalanceListSlice";
+
+import { IBalanceList, IVotingData } from "../../types/walletTypes";
 
 interface props {
   id: string;
@@ -15,17 +22,13 @@ interface props {
   error?: boolean;
 }
 
-const InputVoteBox = ({
-  id,
-  label,
-  placeholder,
-  name,
-  onChange,
-  value,
-  align,
-  error,
-}: props) => {
-  const multiWalletStore: multiWalletType = useSelector(getMultiWallet);
+const InputVoteBox = ({ id, label, placeholder, name, onChange, value, align, error }: props) => {
+  const balanceListStore: IBalanceList = useSelector(getBalanceList);
+
+  const solarBalance = useMemo(
+    () => balanceListStore?.list?.find((one) => one?.symbol === supportChains?.find((chain) => chain?.chain?.name === ChainNames?.SOLAR)?.chain?.symbol),
+    [balanceListStore]
+  );
 
   const handleInputChange = (event) => {
     const newVal = event.target.value;
@@ -66,11 +69,7 @@ const InputVoteBox = ({
           left: "8px",
         }}
       >
-        {numeral(
-          Number(value[id]) *
-            Number(multiWalletStore.Solar.chain.balance) *
-            0.01
-        ).format("0,0.0000") + " SXP"}
+        {numeral(Number(value[id]) * Number(solarBalance) * 0.01).format("0,0.0000") + " SXP"}
       </Box>
       <OutlinedInput
         id={id}

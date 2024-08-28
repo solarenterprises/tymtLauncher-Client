@@ -2,22 +2,28 @@ import { Box, Button, Divider, Stack, Tooltip } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import numeral from "numeral";
 
-import { currencySymbols } from "../../consts/currency";
+import { currencySymbols } from "../../consts/SupportCurrency";
+import { supportChains } from "../../consts/SupportTokens";
 
 import Avatar from "../../components/home/Avatar";
 
 import { getNonCustodial } from "../../features/account/NonCustodialSlice";
 import { getChain } from "../../features/wallet/ChainSlice";
 import { selectNotification } from "../../features/settings/NotificationSlice";
-import { getMultiWallet } from "../../features/wallet/MultiWalletSlice";
 import { getMyInfo } from "../../features/account/MyInfoSlice";
-import { getCurrency } from "../../features/wallet/CurrencySlice";
+import { getCurrencyList } from "../../features/wallet/CurrencyListSlice";
+import { getCurrentCurrency } from "../../features/wallet/CurrentCurrencySlice";
+import { getCurrentChain } from "../../features/wallet/CurrentChainSlice";
+import { getBalanceList } from "../../features/wallet/BalanceListSlice";
+import { getPriceList } from "../../features/wallet/PriceListSlice";
+import { getWallet } from "../../features/wallet/WalletSlice";
 
 import { getExplorerUrl } from "../../lib/helper";
 import { openLink } from "../../lib/api/Downloads";
+import { getCurrentChainWalletAddress } from "../../lib/helper/WalletHelper";
 
 import SettingStyle from "../../styles/SettingStyle";
 
@@ -30,35 +36,54 @@ import exitIcon from "../../assets/settings/exit-icon.svg";
 
 import { IMyInfo } from "../../types/chatTypes";
 import { notificationType, propsType } from "../../types/settingTypes";
-import { IChain, ICurrency, multiWalletType } from "../../types/walletTypes";
+import { IBalanceList, IChain, ICurrencyList, ICurrentChain, ICurrentCurrency, IPriceList, ISupportChain, IWallet } from "../../types/walletTypes";
 
 const Main = ({ view, setView }: propsType) => {
   const classname = SettingStyle();
   const { t } = useTranslation();
   const navigate = useNavigate();
+
+  const currencyListStore: ICurrencyList = useSelector(getCurrencyList);
+  const currentCurrencyStore: ICurrentCurrency = useSelector(getCurrentCurrency);
+  const currentChainStore: ICurrentChain = useSelector(getCurrentChain);
   const chainStore: IChain = useSelector(getChain);
   const notificationStore: notificationType = useSelector(selectNotification);
   const userStore = useSelector(getNonCustodial);
-  const multiWalletStore: multiWalletType = useSelector(getMultiWallet);
-  const currencyStore: ICurrency = useSelector(getCurrency);
   const myInfoStore: IMyInfo = useSelector(getMyInfo);
+  const walletStore: IWallet = useSelector(getWallet);
+  const balanceListStore: IBalanceList = useSelector(getBalanceList);
+  const priceListStore: IPriceList = useSelector(getPriceList);
 
-  const symbol: string = currencySymbols[currencyStore.current];
-  const reserve = currencyStore.data[currencyStore.current];
-  const currentChain: IChain =
-    multiWalletStore[Object.keys(multiWalletStore).find((rowKey) => multiWalletStore[rowKey].chain.name === chainStore.chain.name) ?? "Solar"];
-  const currentChainNativeBalance: number = (currentChain?.chain?.balance as number) * (currentChain?.chain?.price as number) * (reserve as number);
-  const totalBalance: number =
-    Object.keys(multiWalletStore).reduce((acc, rowKey) => {
-      acc = acc + (multiWalletStore[rowKey]?.chain?.balance ?? 0) * (multiWalletStore[rowKey]?.chain?.price ?? 0);
+  const reserve: number = useMemo(
+    () => currencyListStore?.list?.find((one) => one?.name === currentCurrencyStore?.currency)?.reserve,
+    [currencyListStore, currentCurrencyStore]
+  );
+  const symbol: string = useMemo(() => currencySymbols[currentCurrencyStore?.currency], [currentCurrencyStore]);
+  const currentChainInfo: ISupportChain = useMemo(() => supportChains?.find((one) => one?.chain?.name === currentChainStore?.chain), [currentChainStore]);
+  const currentChainWalletAddress: string = useMemo(
+    () => getCurrentChainWalletAddress(walletStore, currentChainStore?.chain),
+    [walletStore, currentChainStore]
+  );
+  const currentChainNativeBalance = useMemo(
+    () => balanceListStore?.list?.find((one) => one?.symbol === currentChainInfo?.chain?.symbol),
+    [balanceListStore, currentChainInfo]
+  );
+  const totalBalance = useMemo(() => {
+    supportChains?.reduce((acc, supportChain) => {
+      const nativeBalance = balanceListStore?.list?.find((one) => one?.symbol === supportChain?.chain?.symbol)?.balance;
+      const nativePrice = priceListStore?.list?.find((one) => one?.cmc === supportChain?.chain?.cmc)?.price;
+      acc = acc + (nativeBalance ?? 0) * (nativePrice ?? 0);
       acc =
         acc +
-        multiWalletStore[rowKey].tokens.reduce((sub, token) => {
-          sub = sub + (token?.balance ?? 0) * (token?.price ?? 0);
+        supportChain?.tokens?.reduce((sub, token) => {
+          const tokenBalance = balanceListStore?.list?.find((one) => one?.symbol === token?.symbol)?.balance;
+          const tokenPrice = priceListStore?.list?.find((one) => one?.cmc === token?.cmc)?.price;
+          sub = sub + (tokenBalance ?? 0) * (tokenPrice ?? 0);
           return sub;
         }, 0);
       return acc;
     }, 0) * (reserve as number);
+  }, [balanceListStore, priceListStore, reserve]);
 
   const handleExplorer = useCallback(() => {
     const url = getExplorerUrl(chainStore);
@@ -98,7 +123,7 @@ const Main = ({ view, setView }: propsType) => {
                 <Box className="center-align" sx={{ position: "relative" }}>
                   <img src={walletImg} />
                   <img
-                    src={currentChain?.chain?.logo ?? ""}
+                    src={currentChainInfo?.chain?.logo}
                     style={{
                       position: "absolute",
                       right: "-5px",
@@ -136,9 +161,9 @@ const Main = ({ view, setView }: propsType) => {
                 }}
               >
                 <Box className="fs-14-light gray">{t("set-2_connected-wallet-address")}:</Box>
-                <Box className="fs-14-light blue">{currentChain?.chain?.wallet ?? ""}</Box>
+                <Box className="fs-14-light blue">{currentChainWalletAddress ?? ""}</Box>
                 <Box className="fs-14-light gray">
-                  {`${t("set-4_balance")} ${numeral(currentChain?.chain?.balance ?? 0).format("0,0.0000")} ${currentChain?.chain?.symbol} (${numeral(
+                  {`${t("set-4_balance")} ${numeral(currentChainNativeBalance ?? 0).format("0,0.0000")} ${currentChainInfo?.chain?.symbol} (${numeral(
                     currentChainNativeBalance
                   ).format("0,0.00")} ${symbol})`}
                 </Box>
@@ -150,7 +175,7 @@ const Main = ({ view, setView }: propsType) => {
             </Box>
             <Divider variant="middle" sx={{ backgroundColor: "#FFFFFF1A" }} />
             <Box className={classname.icon_pad}>
-              <Button className="tooltip-btn" onClick={() => navigator.clipboard.writeText(currentChain?.chain?.wallet ?? "")}>
+              <Button className="tooltip-btn" onClick={() => navigator.clipboard.writeText(currentChainWalletAddress ?? "")}>
                 <Tooltip title={t("set-79_copy-address")} classes={{ tooltip: classname.tooltip }}>
                   <Box className="center-align">
                     <img src={copyIcon} data-tooltip-id="copy-tooltip" />

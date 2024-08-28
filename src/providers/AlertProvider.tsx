@@ -4,17 +4,20 @@ import { Outlet } from "react-router-dom";
 
 import { AppDispatch } from "../store";
 
+import { fetchGlobalChatroomListAsync } from "../features/chat/GlobalChatroomListSlice";
+import { fetchPublicChatroomListAsync } from "../features/chat/PublicChatroomListSlice";
+import { fetchBalanceListAsync } from "../features/wallet/BalanceListSlice";
+import { fetchPriceListAsync } from "../features/wallet/PriceListSlice";
+import { fetchCurrencyListAsync } from "../features/wallet/CurrencyListSlice";
 import { getChain } from "../features/wallet/ChainSlice";
-import { getMultiWallet, refreshChainBalanceAsync } from "../features/wallet/MultiWalletSlice";
 import { fetchContactListAsync } from "../features/chat/ContactListSlice";
 import { fetchFriendListAsync } from "../features/chat/FriendListSlice";
 import { fetchBlockListAsync } from "../features/chat/BlockListSlice";
 import { fetchChatroomListAsync } from "../features/chat/ChatroomListSlice";
-import { refreshCurrencyAsync } from "../features/wallet/CurrencySlice";
 import { ISKey, setSKeyList } from "../features/chat/SKeyListSlice";
 import { fetchMutedListAsync } from "../features/chat/MutedListSlice";
 import { getRsa } from "../features/chat/RsaSlice";
-import { fetchMyInfoAsync, getMyInfo } from "../features/account/MyInfoSlice";
+import { getMyInfo } from "../features/account/MyInfoSlice";
 import { fetchUnreadMessageListAsync } from "../features/chat/UnreadMessageListSlice";
 import { fetchAlertListAsync } from "../features/alert/AlertListSlice";
 import { fetchAdminListAsync } from "../features/chat/AdminListSlice";
@@ -22,28 +25,24 @@ import { fetchGameListAsync } from "../features/store/GameListSlice";
 import { fetchComingGameListAsync } from "../features/store/ComingGameListSlice";
 import { rsaDecrypt } from "../features/chat/RsaApi";
 
-import { IChain, multiWalletType } from "../types/walletTypes";
+import { IChain } from "../types/walletTypes";
 import { IChatroom, IParticipant } from "../types/ChatroomAPITypes";
 import { IMyInfo, IRsa } from "../types/chatTypes";
-import { fetchGlobalChatroomListAsync } from "../features/chat/GlobalChatroomListSlice";
-import { fetchPublicChatroomListAsync } from "../features/chat/PublicChatroomListSlice";
 
 const AlertProvider = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const walletStore: multiWalletType = useSelector(getMultiWallet);
   const chainStore: IChain = useSelector(getChain);
   const rsaStore: IRsa = useSelector(getRsa);
   const myInfoStore: IMyInfo = useSelector(getMyInfo);
 
-  const walletStoreRef = useRef(walletStore);
   const chainStoreRef = useRef(chainStore);
 
+  //@ts-ignore
   const initAction = useCallback(async () => {
     try {
       console.log("initAction");
 
       // Fetch all data
-      dispatch(fetchMyInfoAsync(myInfoStore?._id));
       dispatch(fetchGameListAsync());
       dispatch(fetchComingGameListAsync());
       dispatch(fetchAdminListAsync(["admin"]));
@@ -86,48 +85,14 @@ const AlertProvider = () => {
   }, [myInfoStore]);
 
   useEffect(() => {
-    walletStoreRef.current = walletStore;
-  }, [walletStore]);
-
-  useEffect(() => {
     chainStoreRef.current = chainStore;
   }, [chainStore]);
 
   useEffect(() => {
-    let id: NodeJS.Timeout;
-    if (false) {
-      initAction();
-
-      if (!id) {
-        id = setInterval(async () => {
-          dispatch(
-            refreshChainBalanceAsync({
-              _multiWalletStore: walletStoreRef.current,
-              _chain: chainStoreRef.current.chain.name,
-            })
-          )
-            .then(() =>
-              dispatch(refreshCurrencyAsync()).catch((err) => {
-                console.error("Failed to refreshCurrencyAsync: ", err);
-              })
-            )
-            .catch((err) => {
-              console.error("Failed to refreshChainBalanceAsync: ", err);
-            });
-        }, 60 * 1e3);
-      }
-    } else {
-      if (id) {
-        clearInterval(id);
-      }
-    }
-
-    return () => {
-      if (id) {
-        clearInterval(id);
-      }
-    };
-  }, [myInfoStore]);
+    dispatch(fetchBalanceListAsync());
+    dispatch(fetchPriceListAsync());
+    dispatch(fetchCurrencyListAsync());
+  }, []);
 
   return (
     <>

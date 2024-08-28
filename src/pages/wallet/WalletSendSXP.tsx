@@ -1,37 +1,45 @@
 import { useTranslation } from "react-i18next";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import createKeccakHash from "keccak";
-import { Grid, Box, Stack, IconButton, Button, Menu, MenuItem } from "@mui/material";
-import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
-import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+
+import { currencySymbols } from "../../consts/SupportCurrency";
+
+import tymtCore from "../../lib/core/tymtCore";
+
+import { useNotification } from "../../providers/NotificationProvider";
+
+import AnimatedComponent from "../../components/AnimatedComponent";
 import InputText from "../../components/account/InputText";
 import InputBox from "../../components/wallet/InputBox";
 import AddressBookDrawer from "../../components/wallet/AddressBookDrawer";
 import TransactionFeeDrawer from "../../components/wallet/TransactionFeeDrawer";
 import ChooseChainDrawer from "../../components/wallet/ChooseChainDrawer";
-import SettingStyle from "../../styles/SettingStyle";
-import walletIcon from "../../assets/wallet.svg";
+
+import { Grid, Box, Stack, IconButton, Button, Menu, MenuItem } from "@mui/material";
+import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+
 import { AppDispatch } from "../../store";
-import { getNonCustodial } from "../../features/account/NonCustodialSlice";
 import { getAccount } from "../../features/account/AccountSlice";
 import { getChain, setChainAsync } from "../../features/wallet/ChainSlice";
-import { selectWallet, setWallet } from "../../features/settings/WalletSlice";
 import { INotification, selectPending, sendCoinAsync } from "../../features/wallet/CryptoSlice";
-import { walletType } from "../../types/settingTypes";
-import { IChain, multiWalletType } from "../../types/walletTypes";
-import { nonCustodialType, walletEnum } from "../../types/accountTypes";
+import { getNonCustodial } from "../../features/account/NonCustodialSlice";
+import { getCurrencyList } from "../../features/wallet/CurrencyListSlice";
+import { getCurrentCurrency } from "../../features/wallet/CurrentCurrencySlice";
+import { getWalletSetting } from "../../features/settings/WalletSettingSlice";
+
+import SettingStyle from "../../styles/SettingStyle";
+
+import walletIcon from "../../assets/wallet.svg";
+
 import { IRecipient, ISendCoin, ISendCoinData } from "../../features/wallet/CryptoApi";
-import tymtCore from "../../lib/core/tymtCore";
-import { getMultiWallet, refreshBalancesAsync } from "../../features/wallet/MultiWalletSlice";
-import { formatBalance } from "../../lib/helper";
 import { getPriceData } from "../../features/wallet/ChainApi";
-import { refreshCurrencyAsync } from "../../features/wallet/CurrencySlice";
-import { ICurrency } from "../../types/walletTypes";
-import { getCurrency } from "../../features/wallet/CurrencySlice";
-import { currencySymbols } from "../../consts/currency";
-import { useNotification } from "../../providers/NotificationProvider";
-import AnimatedComponent from "../../components/AnimatedComponent";
+import { formatBalance } from "../../lib/helper";
+
+import { IChain, ICurrencyList, ICurrentCurrency } from "../../types/walletTypes";
+import { nonCustodialType, walletEnum } from "../../types/accountTypes";
+import { IWalletSetting } from "../../types/settingTypes";
 
 interface IPriceData {
   price: string;
@@ -44,12 +52,14 @@ const WalletSendSXP = () => {
   const { t } = useTranslation();
   const classname = SettingStyle();
   const dispatch = useDispatch<AppDispatch>();
-  const data: walletType = useSelector(selectWallet);
+
   const pending = useSelector(selectPending);
   const accountStore = useSelector(getAccount);
   const nonCustodialStore: nonCustodialType = useSelector(getNonCustodial);
-  const multiWalletStore: multiWalletType = useSelector(getMultiWallet);
   const chainStore: IChain = useSelector(getChain);
+  const currencyListStore: ICurrencyList = useSelector(getCurrencyList);
+  const currentCurrencyStore: ICurrentCurrency = useSelector(getCurrentCurrency);
+  const walletSettingStore: IWalletSetting = useSelector(getWalletSetting);
 
   const [addressBookView, setAddressBookView] = useState<boolean>(false);
   const [transactionFeeView, setTransactionFeeView] = useState<boolean>(false);
@@ -59,9 +69,11 @@ const WalletSendSXP = () => {
   const [draft, setDraft] = useState<IRecipient[]>([]);
   const [password, setPassword] = useState("");
 
-  const currencyStore: ICurrency = useSelector(getCurrency);
-  const reserve: number = currencyStore.data[currencyStore.current] as number;
-  const symbol: string = currencySymbols[currencyStore.current];
+  const reserve: number = useMemo(
+    () => currencyListStore?.list?.find((one) => one?.name === currentCurrencyStore?.currency)?.reserve,
+    [currencyListStore, currentCurrencyStore]
+  );
+  const symbol: string = useMemo(() => currencySymbols[currentCurrencyStore?.currency], [currentCurrencyStore]);
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [priceData, setPriceData] = useState<IPriceData>();
@@ -139,7 +151,7 @@ const WalletSendSXP = () => {
     if (accountStore.wallet === walletEnum.noncustodial) {
       let params: ISendCoinData = {
         passphrase: password,
-        fee: data.fee,
+        fee: walletSettingStore?.fee,
         recipients: draft,
       };
       if (draft.length > 0) {
@@ -192,15 +204,6 @@ const WalletSendSXP = () => {
           setNotificationOpen(true);
           setNotificationLink(null);
           if ((action.payload as INotification).status === "success") {
-            dispatch(
-              refreshBalancesAsync({
-                _multiWalletStore: multiWalletStore,
-              })
-            ).then(() => {
-              dispatch(refreshCurrencyAsync()).then(() => {
-                dispatch(setChainAsync(chainStore));
-              });
-            });
             setDraft([]);
             setAmount("");
             setAddress("");
@@ -209,7 +212,7 @@ const WalletSendSXP = () => {
         }
       });
     }
-  }, [data, draft, address, dispatch, password]);
+  }, [walletSettingStore, draft, address, dispatch, password]);
 
   const removeDraft = useCallback(
     (deleteId: number) => {
@@ -263,26 +266,6 @@ const WalletSendSXP = () => {
     },
     [chainStore]
   );
-
-  useEffect(() => {
-    if (chainStore.chain.symbol === "SXP") {
-      dispatch(
-        setWallet({
-          ...data,
-          status: "minimum",
-          fee: "0.0183",
-        })
-      );
-    } else if (chainStore.chain.symbol === "BTC") {
-      dispatch(
-        setWallet({
-          ...data,
-          status: "minimum",
-          fee: "7.5",
-        })
-      );
-    }
-  }, [chainStore]);
 
   return (
     <AnimatedComponent threshold={0}>
@@ -393,7 +376,7 @@ const WalletSendSXP = () => {
                     }}
                     onAddressButtonClick={() => setAddressBookView(true)}
                   />
-                  {Number(amount) > 0 && address !== "" && (Number(data.fee) > 0 || chainStore.chain.symbol !== "SXP") && (
+                  {Number(amount) > 0 && address !== "" && (Number(walletSettingStore?.fee) > 0 || chainStore.chain.symbol !== "SXP") && (
                     <Button
                       fullWidth
                       className={classname.action_button}
@@ -410,7 +393,7 @@ const WalletSendSXP = () => {
                     <Stack direction={"row"} alignItems={"center"} justifyContent={"space-between"}>
                       <Box className={"fs-16-regular light"}>{t("wal-13_trans-fee")}</Box>
                       <Stack direction={"row"} alignItems={"center"} spacing={"8px"}>
-                        <Box className={"fs-16-regular white"}>{data.fee} USD</Box>
+                        <Box className={"fs-16-regular white"}>{walletSettingStore?.fee} USD</Box>
                         <IconButton className="icon-button">
                           <EditOutlinedIcon className="icon-button" onClick={() => setTransactionFeeView(true)} />
                         </IconButton>
@@ -426,7 +409,7 @@ const WalletSendSXP = () => {
                     pending ||
                     Number(amount) === 0 ||
                     address === "" ||
-                    (Number(data.fee) === 0 && chainStore.chain.symbol === "SXP") ||
+                    (Number(walletSettingStore?.fee) === 0 && chainStore.chain.symbol === "SXP") ||
                     createKeccakHash("keccak256").update(password).digest("hex") !== nonCustodialStore.password
                   }
                   className={"red-button fw"}

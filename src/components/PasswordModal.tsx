@@ -1,27 +1,37 @@
-import { useState } from "react";
+import { useCallback, useMemo, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useTranslation } from "react-i18next";
+import numeral from "numeral";
+
+import tymtCore from "../lib/core/tymtCore";
+
+import { currencySymbols } from "../consts/SupportCurrency";
+
 import { Box, Stack, Modal, Button, TextField, InputAdornment, CircularProgress, Fade } from "@mui/material";
-import createKeccakHash from "keccak";
+
+import { useNotification } from "../providers/NotificationProvider";
+
+import InputText from "./account/InputText";
+import FeeSwitchButton from "./FeeSwitchButton";
+
+import { getCurrentCurrency } from "../features/wallet/CurrentCurrencySlice";
+import { getCurrencyList } from "../features/wallet/CurrencyListSlice";
+import { getWalletSetting, setWalletSetting } from "../features/settings/WalletSettingSlice";
+import { getWallet } from "../features/wallet/WalletSlice";
+import { getAccount } from "../features/account/AccountSlice";
+
+import { translateString } from "../lib/api/Translate";
+import { decrypt, getKeccak256Hash } from "../lib/api/Encrypt";
+
+import { ICurrencyList, ICurrentCurrency, IVotingData, IWallet } from "../types/walletTypes";
+import { IAccount } from "../types/accountTypes";
+import { IWalletSetting } from "../types/settingTypes";
+
+import SettingStyle from "../styles/SettingStyle";
+
 import closeIcon from "../assets/settings/x-icon.svg";
 import logo from "../assets/main/foxhead-comingsoon.png";
 import solarBlockchainIcon from "../assets/main/solarblockchain.png";
-import InputText from "./account/InputText";
-import { nonCustodialType } from "../types/accountTypes";
-import { useDispatch, useSelector } from "react-redux";
-import { getNonCustodial } from "../features/account/NonCustodialSlice";
-import { useTranslation } from "react-i18next";
-import { decrypt } from "../lib/api/Encrypt";
-import tymtCore from "../lib/core/tymtCore";
-import { ICurrency, IVotingData, multiWalletType } from "../types/walletTypes";
-import { getMultiWallet } from "../features/wallet/MultiWalletSlice";
-import FeeSwitchButton from "./FeeSwitchButton";
-import SettingStyle from "../styles/SettingStyle";
-import { selectWallet, setWallet } from "../features/settings/WalletSlice";
-import { walletType } from "../types/settingTypes";
-import { getCurrency } from "../features/wallet/CurrencySlice";
-import numeral from "numeral";
-import { currencySymbols } from "../consts/currency";
-import { useNotification } from "../providers/NotificationProvider";
-import { translateString } from "../lib/api/Translate";
 
 interface props {
   open: boolean;
@@ -30,18 +40,25 @@ interface props {
 }
 
 const PasswordModal = ({ open, setOpen, voteAsset }: props) => {
+  const classname = SettingStyle();
+
   const { t } = useTranslation();
-  const nonCustodialStore: nonCustodialType = useSelector(getNonCustodial);
-  const multiWalletStore: multiWalletType = useSelector(getMultiWallet);
-  const walletStore: walletType = useSelector(selectWallet);
-  const currencyStore: ICurrency = useSelector(getCurrency);
-  const reserve = currencyStore.data[currencyStore.current];
-  const symbol: string = currencySymbols[currencyStore.current];
+  const dispatch = useDispatch();
+
+  const walletSettingStore: IWalletSetting = useSelector(getWalletSetting);
+  const walletStore: IWallet = useSelector(getWallet);
+  const currencyListStore: ICurrencyList = useSelector(getCurrencyList);
+  const currentCurrencyStore: ICurrentCurrency = useSelector(getCurrentCurrency);
+  const accountStore: IAccount = useSelector(getAccount);
 
   const [password, setPassword] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
-  const classname = SettingStyle();
-  const dispatch = useDispatch();
+
+  const reserve: number = useMemo(
+    () => currencyListStore?.list?.find((one) => one?.name === currentCurrencyStore?.currency)?.reserve,
+    [currencyListStore, currentCurrencyStore]
+  );
+  const symbol: string = useMemo(() => currencySymbols[currentCurrencyStore?.currency], [currentCurrencyStore]);
 
   const { setNotificationStatus, setNotificationTitle, setNotificationDetail, setNotificationOpen, setNotificationLink } = useNotification();
 
@@ -51,15 +68,15 @@ const PasswordModal = ({ open, setOpen, voteAsset }: props) => {
     justifyContent: "center",
   };
 
-  const validatePassword = () => {
-    return createKeccakHash("keccak256").update(password).digest("hex") === nonCustodialStore.password;
-  };
+  const validatePassword = useCallback(() => {
+    return getKeccak256Hash(password) === accountStore?.password;
+  }, [password, accountStore]);
 
-  const handleVoteClick = async () => {
+  const handleVoteClick = useCallback(async () => {
     try {
       setLoading(true);
-      const passphrase: string = await decrypt(nonCustodialStore.mnemonic, password);
-      const res = await tymtCore.Blockchains.solar.wallet.vote(passphrase.normalize("NFD"), multiWalletStore.Solar.chain.wallet, voteAsset, walletStore.fee);
+      const passphrase: string = await decrypt(accountStore?.mnemonic, password);
+      const res = await tymtCore.Blockchains.solar.wallet.vote(passphrase.normalize("NFD"), walletStore?.solar, voteAsset, walletSettingStore?.fee);
       if (res.data.data.invalid[0]) {
         const temp = res.data.data.invalid[0];
         const err = res.data.errors[temp].message;
@@ -91,7 +108,7 @@ const PasswordModal = ({ open, setOpen, voteAsset }: props) => {
       setNotificationOpen(true);
       setNotificationLink(null);
     }
-  };
+  }, [walletStore, accountStore, walletSettingStore, password]);
 
   return (
     <Modal
@@ -135,7 +152,7 @@ const PasswordModal = ({ open, setOpen, voteAsset }: props) => {
                       input: classname.input,
                     },
                   }}
-                  value={numeral(Number(walletStore.fee) * Number(reserve)).format("0,0.0000")}
+                  value={numeral(Number(walletSettingStore?.fee) * Number(reserve)).format("0,0.0000")}
                   // onBlur={(e) => {
                   //   dispatch(
                   //     setWallet({
@@ -147,8 +164,8 @@ const PasswordModal = ({ open, setOpen, voteAsset }: props) => {
                   // }}
                   onChange={(e) => {
                     dispatch(
-                      setWallet({
-                        ...walletStore,
+                      setWalletSetting({
+                        ...walletSettingStore,
                         status: "input",
                         fee: Number(e.target.value) / Number(reserve),
                       })

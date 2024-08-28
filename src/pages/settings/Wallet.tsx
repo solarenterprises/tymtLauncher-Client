@@ -1,25 +1,35 @@
-import { Box, Button, Divider, Stack } from "@mui/material";
+import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
-import { useCallback } from "react";
+
+import { Box, Button, Divider, Stack } from "@mui/material";
+
+import SwitchComp from "../../components/SwitchComp";
+
+import { getWalletSetting, setWalletSetting } from "../../features/settings/WalletSettingSlice";
+import { getCurrentCurrency } from "../../features/wallet/CurrentCurrencySlice";
+
 import backIcon from "../../assets/settings/back-icon.svg";
 import arrowImg from "../../assets/settings/arrow-right.svg";
-import { selectWallet, setWallet } from "../../features/settings/WalletSlice";
-import SwitchComp from "../../components/SwitchComp";
-import { propsType, walletType } from "../../types/settingTypes";
-import { ICurrency } from "../../types/walletTypes";
-import { getCurrency } from "../../features/wallet/CurrencySlice";
+
+import { IWalletSetting, propsType } from "../../types/settingTypes";
+import { ICurrentCurrency } from "../../types/walletTypes";
 
 const Wallet = ({ view, setView }: propsType) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
-  const data: walletType = useSelector(selectWallet);
-  const currencyStore: ICurrency = useSelector(getCurrency);
+
+  const walletSettingStore: IWalletSetting = useSelector(getWalletSetting);
+  const currentCurrencyStore: ICurrentCurrency = useSelector(getCurrentCurrency);
 
   const updateWallet = useCallback(() => {
-    const updateData = { ...data, hidde: !data.hidde };
-    dispatch(setWallet(updateData));
-  }, [data]);
+    dispatch(
+      setWalletSetting({
+        ...walletSettingStore,
+        hidde: !walletSettingStore?.hidde,
+      })
+    );
+  }, [walletSettingStore]);
 
   return (
     <>
@@ -40,7 +50,7 @@ const Wallet = ({ view, setView }: propsType) => {
               </Stack>
               <Stack direction={"row"} justifyContent={"flex-end"} textAlign={"center"} gap={1}>
                 <SwitchComp
-                  checked={data.hidde}
+                  checked={walletSettingStore?.hidde}
                   onClick={() => {
                     updateWallet();
                   }}
@@ -59,7 +69,7 @@ const Wallet = ({ view, setView }: propsType) => {
                 <Stack direction={"row"} justifyContent={"space-between"} textAlign={"center"}>
                   <Box className="fs-h4 white center-align">{t("set-30_currency-in-wallet")}</Box>
                   <Stack direction={"row"} justifyContent={"flex-end"} textAlign={"right"} gap={"5px"}>
-                    <Box className="fs-16-regular gray center-align">{currencyStore.current}</Box>
+                    <Box className="fs-16-regular gray center-align">{currentCurrencyStore?.currency}</Box>
                     <Box className="center-align">
                       <img src={arrowImg} />
                     </Box>

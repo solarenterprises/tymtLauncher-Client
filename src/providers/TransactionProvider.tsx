@@ -13,32 +13,31 @@ import { AppDispatch } from "../store";
 import { getNonCustodial } from "../features/account/NonCustodialSlice";
 import { getChain } from "../features/wallet/ChainSlice";
 import { getSaltToken } from "../features/account/SaltTokenSlice";
-import { getMultiWallet } from "../features/wallet/MultiWalletSlice";
 import { getMnemonic } from "../features/account/MnemonicSlice";
 import { setWallet } from "../features/wallet/WalletSlice";
 import { getAccount } from "../features/account/AccountSlice";
 import { getWalletList } from "../features/wallet/WalletListSlice";
+import { getCurrentChain } from "../features/wallet/CurrentChainSlice";
 
 import { IAccount, IMnemonic, ISaltToken, nonCustodialType } from "../types/accountTypes";
 import { IGetAccountReq, IGetBalanceReq, ISendContractReq, ISignMessageReq, IVerifyMessageReq } from "../types/eventParamTypes";
-import { IChain, IWallet, IWalletList, multiWalletType } from "../types/walletTypes";
+import { IChain, ICurrentChain, IWallet, IWalletList } from "../types/walletTypes";
 
 const TransactionProvider = () => {
   const dispatch = useDispatch<AppDispatch>();
 
   const nonCustodialStore: nonCustodialType = useSelector(getNonCustodial);
-  const multiWalletStore: multiWalletType = useSelector(getMultiWallet);
   const chainStore: IChain = useSelector(getChain);
   const saltTokenStore: ISaltToken = useSelector(getSaltToken);
   const mnemonicStore: IMnemonic = useSelector(getMnemonic);
   const walletListStore: IWalletList = useSelector(getWalletList);
   const accountStore: IAccount = useSelector(getAccount);
+  const currentChainStore: ICurrentChain = useSelector(getCurrentChain);
 
   const chainStoreRef = useRef(chainStore);
   const nonCustodialStoreRef = useRef(nonCustodialStore);
   const saltTokenStoreRef = useRef(saltTokenStore);
   const mnemonicStoreRef = useRef(mnemonicStore);
-  const multiWalletStoreRef = useRef(multiWalletStore);
 
   useEffect(() => {
     chainStoreRef.current = chainStore;
@@ -53,15 +52,18 @@ const TransactionProvider = () => {
   useEffect(() => {
     mnemonicStoreRef.current = mnemonicStore;
   }, [mnemonicStore]);
-  useEffect(() => {
-    multiWalletStoreRef.current = multiWalletStore;
-  }, [multiWalletStore]);
 
   useEffect(() => {
     const newWallet: IWallet = walletListStore?.list?.find((one) => one?.solar === accountStore?.sxpAddress);
     if (!newWallet) return;
     dispatch(setWallet(newWallet));
   }, [accountStore, walletListStore]);
+
+  useEffect(() => {
+    // set chainStore
+    // set balanceStore
+    console.log("currentChainStore has been changed!");
+  }, [currentChainStore]);
 
   useEffect(() => {
     const unlisten_get_account = listen("POST-/get-account", async (event) => {

@@ -5,19 +5,25 @@ import languageReducer from "./features/settings/LanguageSlice";
 import notificationReducer from "./features/settings/NotificationSlice";
 import addressReducer from "./features/settings/AddressSlice";
 
-// Account
+// Auth
 import loginReducer from "./features/account/LoginSlice";
-
 import accountReducer from "./features/account/AccountSlice";
 import accountListReducer from "./features/account/AccountListSlice";
 import TempAccountReducer from "./features/account/TempAccountSlice";
-
 import walletReducer from "./features/wallet/WalletSlice";
 import walletListReducer from "./features/wallet/WalletListSlice";
 import tempWalletReducer from "./features/wallet/TempWalletSlice";
-
 import myInfoReducer from "./features/account/MyInfoSlice";
-// ~ Account
+// ~ Auth
+
+// Wallet
+import currentChainReducer from "./features/wallet/CurrentChainSlice";
+import currentTokenReducer from "./features/wallet/CurrentTokenSlice";
+import currentCurrencyReducer from "./features/wallet/CurrentCurrencySlice";
+import currencyListReducer from "./features/wallet/CurrencyListSlice";
+import priceListReducer from "./features/wallet/PriceListSlice";
+import balanceListReducer from "./features/wallet/BalanceListSlice";
+// ~ Wallet
 
 import nonCustodialReducer from "./features/account/NonCustodialSlice";
 import custodialReducer from "./features/account/CustodialSlice";
@@ -25,8 +31,6 @@ import tempNonCustodialReducer from "./features/account/TempNonCustodialSlice";
 import tempCustodialReducer from "./features/account/TempCustodialSlice";
 import threeConfirmReducer from "./features/account/ThreeConfirmSlice";
 import chainReducer from "./features/wallet/ChainSlice";
-import multiWalletReducer from "./features/wallet/MultiWalletSlice";
-import tempMultiWalletReducer from "./features/wallet/TempMultiWalletSlice";
 import navigationReducer from "./features/home/Navigation";
 import tymtlogoReducer from "./features/home/Tymtlogo";
 import librarymodeReducer from "./features/library/Librarymode";
@@ -35,7 +39,7 @@ import gameoverviewReducer from "./features/store/Gameview";
 import tymtReducer from "./features/account/TymtSlice";
 import d53PasswordReducer from "./features/wallet/D53PasswordSlice";
 import tempD53PasswordReducer from "./features/wallet/TempD53PasswordSlice";
-import currencyReducer from "./features/wallet/CurrencySlice";
+import currencyReducer from "./features/wallet/CurrencyListSlice";
 import machineIdReducer from "./features/account/MachineIdSlice";
 import mnemonicReducer from "./features/account/MnemonicSlice";
 import saltTokenReducer from "./features/account/SaltTokenSlice";
@@ -87,15 +91,24 @@ const store = configureStore({
     address: addressReducer,
     chat: chatReducer,
 
+    // Auth
     login: loginReducer,
-
     account: accountReducer,
     accountList: accountListReducer,
     tempAccount: TempAccountReducer,
-
     wallet: walletReducer,
     walletList: walletListReducer,
     tempWallet: tempWalletReducer,
+    // ~ Auth
+
+    // Wallet
+    currentChain: currentChainReducer,
+    currentToken: currentTokenReducer,
+    currentCurrency: currentCurrencyReducer,
+    priceList: priceListReducer,
+    balanceList: balanceListReducer,
+    currencyList: currencyListReducer,
+    // ~ Wallet
 
     custodial: custodialReducer,
     nonCustodial: nonCustodialReducer,
@@ -105,8 +118,6 @@ const store = configureStore({
     chatHistory: chatHistoryReducer,
     contactList: contactListReducer,
     chain: chainReducer,
-    multiWallet: multiWalletReducer,
-    tempMultiWallet: tempMultiWalletReducer,
     navigation: navigationReducer,
     tymtlogo: tymtlogoReducer,
     librarymode: librarymodeReducer,

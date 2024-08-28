@@ -1,20 +1,22 @@
-import { Box, Button, Divider, Stack } from "@mui/material";
-import { useTranslation } from "react-i18next";
 import { useCallback, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
+
+import { Box, Button, Divider, Stack } from "@mui/material";
+
+import { AppDispatch } from "../../store";
+import { selectLanguage, setLanguage } from "../../features/settings/LanguageSlice";
+
 import backIcon from "../../assets/settings/back-icon.svg";
 import checkImg from "../../assets/settings/check-icon.svg";
-import { selectLanguage, setLanguage } from "../../features/settings/LanguageSlice";
+
 import { propsType } from "../../types/settingTypes";
 import { languageType } from "../../types/settingTypes";
-import { getCurrency, setCurrency } from "../../features/wallet/CurrencySlice";
-import { ICurrency } from "../../types/walletTypes";
-import { AppDispatch } from "../../store";
+import { setCurrentCurrency } from "../../features/wallet/CurrentCurrencySlice";
 
 const Language = ({ view, setView }: propsType) => {
   const dispatch = useDispatch<AppDispatch>();
   const language: languageType = useSelector(selectLanguage);
-  const currencyStore: ICurrency = useSelector(getCurrency);
 
   const {
     t,
@@ -48,12 +50,7 @@ const Language = ({ view, setView }: propsType) => {
               sx={{ padding: "20px" }}
               onClick={() => {
                 setLang("en");
-                dispatch(
-                  setCurrency({
-                    ...currencyStore,
-                    current: "USD",
-                  })
-                );
+                dispatch(setCurrentCurrency("USD"));
               }}
             >
               <Stack direction={"row"} justifyContent={"space-between"} textAlign={"center"}>
@@ -67,12 +64,7 @@ const Language = ({ view, setView }: propsType) => {
               sx={{ padding: "20px" }}
               onClick={() => {
                 setLang("jp");
-                dispatch(
-                  setCurrency({
-                    ...currencyStore,
-                    current: "JPY",
-                  })
-                );
+                dispatch(setCurrentCurrency("JPY"));
               }}
             >
               <Stack direction={"row"} justifyContent={"space-between"} textAlign={"center"}>

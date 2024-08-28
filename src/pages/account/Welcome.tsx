@@ -2,8 +2,10 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { invoke } from "@tauri-apps/api";
-
+import { emit } from "@tauri-apps/api/event";
 import { motion } from "framer-motion";
+
+import { TauriEventNames } from "../../consts/TauriEventNames";
 
 import { Grid, Box, Stack, Divider } from "@mui/material";
 
@@ -21,6 +23,8 @@ import { getSaltToken, setSaltToken } from "../../features/account/SaltTokenSlic
 import { fetchMyInfoAsync } from "../../features/account/MyInfoSlice";
 import { setMnemonic } from "../../features/account/MnemonicSlice";
 import { setLogin } from "../../features/account/LoginSlice";
+import { setWallet } from "../../features/wallet/WalletSlice";
+import { addWalletList } from "../../features/wallet/WalletListSlice";
 
 import AuthAPI from "../../lib/api/AuthAPI";
 
@@ -37,13 +41,11 @@ import {
 import { IWallet } from "../../types/walletTypes";
 import { IAccount, IAccountList, IMachineId, ISaltToken } from "../../types/accountTypes";
 import { INonCustodyBeforeSignInReq, INonCustodySignUpReq } from "../../types/AuthAPITypes";
+import { INotificationParams } from "../../types/NotificationTypes";
 
 import tymt1 from "../../assets/account/tymt1.png";
 import GuestIcon from "../../assets/account/Guest.svg";
 import ImportIcon from "../../assets/account/Import.svg";
-import { INotificationParams } from "../../types/NotificationTypes";
-import { emit } from "@tauri-apps/api/event";
-import { TauriEventNames } from "../../consts/TauriEventNames";
 
 const Welcome = () => {
   const navigate = useNavigate();
@@ -97,6 +99,8 @@ const Welcome = () => {
 
       dispatch(setAccount(newAccount));
       dispatch(addAccountList(newAccount));
+      dispatch(setWallet(newWalletAddress));
+      dispatch(addWalletList(newWalletAddress));
       dispatch(setMnemonic(newPassphrase));
 
       const body1: INonCustodyBeforeSignInReq = getReqBodyNonCustodyBeforeSignIn(newAccount, newPassphrase);

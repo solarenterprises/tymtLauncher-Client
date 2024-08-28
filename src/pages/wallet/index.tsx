@@ -1,133 +1,82 @@
 import { useTranslation } from "react-i18next";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
+import numeral from "numeral";
+
+import { currencySymbols } from "../../consts/SupportCurrency";
+import { supportChains } from "../../consts/SupportTokens";
+
 import { Grid, Stack, Box, Tooltip, IconButton, Button } from "@mui/material";
-import WalletStyle from "../../styles/WalletStyles";
+
+import SwitchComp from "../../components/SwitchComp";
+import WalletCard from "../../components/wallet/WalletCard";
+import TransCard from "../../components/wallet/TransCard";
+import Loading from "../../components/Loading";
+import ComingModal from "../../components/ComingModal";
+import AnimatedComponent from "../../components/AnimatedComponent";
+
+import { AppDispatch } from "../../store";
+import { getChain, setChainAsync } from "../../features/wallet/ChainSlice";
+import { getCurrencyList } from "../../features/wallet/CurrencyListSlice";
+import { getCurrentCurrency } from "../../features/wallet/CurrentCurrencySlice";
+import { getBalanceList } from "../../features/wallet/BalanceListSlice";
+import { getPriceList } from "../../features/wallet/PriceListSlice";
+import { getWalletSetting, setWalletSetting } from "../../features/settings/WalletSettingSlice";
+
 import sendIcon from "../../assets/wallet/send-icon.svg";
 import receiveIcon from "../../assets/wallet/receive-icon.svg";
 import percentIcon from "../../assets/wallet/percent-icon.svg";
 import refreshIcon from "../../assets/wallet/refresh-icon.svg";
-import SwitchComp from "../../components/SwitchComp";
-import WalletCard from "../../components/wallet/WalletCard";
-import TransCard from "../../components/wallet/TransCard";
-import { getMultiWallet, refreshBalancesAsync } from "../../features/wallet/MultiWalletSlice";
-import { IChain, ICurrency, multiWalletType } from "../../types/walletTypes";
-import SettingStyle from "../../styles/SettingStyle";
-import { getChain, setChainAsync } from "../../features/wallet/ChainSlice";
-import { AppDispatch } from "../../store";
-import Loading from "../../components/Loading";
-import ComingModal from "../../components/ComingModal";
-import { getCurrency, refreshCurrencyAsync } from "../../features/wallet/CurrencySlice";
-import { currencySymbols } from "../../consts/currency";
-import { useNotification } from "../../providers/NotificationProvider";
-import { walletType } from "../../types/settingTypes";
-import { selectWallet, setWallet } from "../../features/settings/WalletSlice";
-import { getTransactionsAsync, setTransasctions } from "../../features/wallet/CryptoSlice";
-import numeral from "numeral";
-import AnimatedComponent from "../../components/AnimatedComponent";
 
-const order = ["Solar", "Binance", "Ethereum", "Bitcoin", "Solana", "Polygon", "Avalanche", "Arbitrum", "Optimism"];
+import { IBalanceList, IChain, ICurrencyList, ICurrentCurrency, IPriceList } from "../../types/walletTypes";
+import { IWalletSetting } from "../../types/settingTypes";
+
+import WalletStyle from "../../styles/WalletStyles";
+import SettingStyle from "../../styles/SettingStyle";
+import { getTokenBalanceBySymbol } from "../../lib/helper/WalletHelper";
+
+// const order = ["Solar", "Binance", "Ethereum", "Bitcoin", "Solana", "Polygon", "Avalanche", "Arbitrum", "Optimism"];
 
 const Wallet = () => {
+  const classname = WalletStyle();
+  const tooltip = SettingStyle();
   const navigate = useNavigate();
   const { t } = useTranslation();
   const dispatch = useDispatch<AppDispatch>();
-  const classname = WalletStyle();
-  const tooltip = SettingStyle();
-  const wallets: multiWalletType = useSelector(getMultiWallet);
-  const walletStore: walletType = useSelector(selectWallet);
+
   const chain: IChain = useSelector(getChain);
-  const currencyStore: ICurrency = useSelector(getCurrency);
+  const currencyListStore: ICurrencyList = useSelector(getCurrencyList);
+  const currentCurrencyStore: ICurrentCurrency = useSelector(getCurrentCurrency);
+  const balanceListStore: IBalanceList = useSelector(getBalanceList);
+  const priceListStore: IPriceList = useSelector(getPriceList);
+  const walletSettingStore: IWalletSetting = useSelector(getWalletSetting);
+
   const [currentChain, setCurrentChain] = useState(chain.currentToken);
   const [loading, setLoading] = useState<boolean>(false);
   const [comingSoon, setComingSoon] = useState<boolean>(false);
-  const reserve = currencyStore.data[currencyStore.current];
-  const symbol: string = currencySymbols[currencyStore.current];
-  const totalBalance: number =
-    Object.keys(wallets).reduce((acc, rowKey) => {
-      acc = acc + (wallets[rowKey]?.chain?.balance ?? 0) * (wallets[rowKey]?.chain?.price ?? 0);
+
+  const reserve: number = useMemo(
+    () => currencyListStore?.list?.find((one) => one?.name === currentCurrencyStore?.currency)?.reserve,
+    [currencyListStore, currentCurrencyStore]
+  );
+  const symbol: string = useMemo(() => currencySymbols[currentCurrencyStore?.currency], [currentCurrencyStore]);
+  const totalBalance = useMemo(() => {
+    supportChains?.reduce((acc, supportChain) => {
+      const nativeBalance = balanceListStore?.list?.find((one) => one?.symbol === supportChain?.chain?.symbol)?.balance;
+      const nativePrice = priceListStore?.list?.find((one) => one?.cmc === supportChain?.chain?.cmc)?.price;
+      acc = acc + (nativeBalance ?? 0) * (nativePrice ?? 0);
       acc =
         acc +
-        wallets[rowKey].tokens.reduce((sub, token) => {
-          sub = sub + (token?.balance ?? 0) * (token?.price ?? 0);
+        supportChain?.tokens?.reduce((sub, token) => {
+          const tokenBalance = balanceListStore?.list?.find((one) => one?.symbol === token?.symbol)?.balance;
+          const tokenPrice = priceListStore?.list?.find((one) => one?.cmc === token?.cmc)?.price;
+          sub = sub + (tokenBalance ?? 0) * (tokenPrice ?? 0);
           return sub;
         }, 0);
       return acc;
     }, 0) * (reserve as number);
-
-  const { setNotificationStatus, setNotificationTitle, setNotificationDetail, setNotificationOpen, setNotificationLink } = useNotification();
-
-  useEffect(() => {
-    if (!walletStore.refreshed) {
-      setLoading(true);
-      dispatch(
-        refreshBalancesAsync({
-          _multiWalletStore: wallets,
-        })
-      ).then(() => {
-        dispatch(refreshCurrencyAsync()).then(() => {
-          dispatch(
-            setWallet({
-              ...walletStore,
-              refreshed: true,
-            })
-          );
-          setLoading(false);
-          setNotificationOpen(true);
-          setNotificationTitle(t("alt-20_balances-refresh"));
-          setNotificationDetail(t("alt-21_balances-refresh-success"));
-          setNotificationStatus("success");
-          setNotificationLink(null);
-        });
-      });
-    } else {
-      handleRefreshClickInBackground();
-    }
-  }, []);
-
-  const handleRefreshClick = () => {
-    dispatch(setTransasctions());
-    setLoading(true);
-    dispatch(
-      refreshBalancesAsync({
-        _multiWalletStore: wallets,
-      })
-    ).then(() => {
-      dispatch(refreshCurrencyAsync()).then(() => {
-        dispatch(
-          getTransactionsAsync({
-            chain: chain,
-            page: 1,
-          })
-        ).then(() => {
-          dispatch(
-            setWallet({
-              ...walletStore,
-              refreshed: true,
-            })
-          );
-          setLoading(false);
-          setNotificationOpen(true);
-          setNotificationTitle(t("alt-20_balances-refresh"));
-          setNotificationDetail(t("alt-21_balances-refresh-success"));
-          setNotificationStatus("success");
-          setNotificationLink(null);
-        });
-      });
-    });
-  };
-
-  const handleRefreshClickInBackground = () => {
-    dispatch(setTransasctions());
-    dispatch(
-      refreshBalancesAsync({
-        _multiWalletStore: wallets,
-      })
-    ).then(() => {
-      dispatch(refreshCurrencyAsync()).then(() => {});
-    });
-  };
+  }, [balanceListStore, priceListStore, reserve]);
 
   const selectToken = useCallback(
     (token: string) => {
@@ -158,10 +107,10 @@ const Wallet = () => {
                         <Box className="fs-18-regular gray">{t("set-4_balance")}</Box>
 
                         <Box>
-                          {Object.keys(wallets).map((rowKey, index) => (
-                            <Tooltip title={wallets[rowKey].name} placement="top" key={index} classes={{ tooltip: tooltip.tooltip }}>
+                          {supportChains?.map((supportChain, index) => (
+                            <Tooltip title={supportChain?.chain?.name} placement="top" key={index} classes={{ tooltip: tooltip.tooltip }}>
                               <img
-                                src={wallets[rowKey].icon}
+                                src={supportChain?.chain?.logo}
                                 key={index}
                                 className={classname.wrap_imgs}
                                 style={{
@@ -202,12 +151,7 @@ const Wallet = () => {
                         <Box className="fs-14-regular t-center fw blue">{t("wal-3_vote")}</Box>
                       </Stack>
                       <Stack spacing={"8px"}>
-                        <IconButton
-                          className={"wallet-icon-button"}
-                          onClick={() => {
-                            handleRefreshClick();
-                          }}
-                        >
+                        <IconButton className={"wallet-icon-button"} onClick={() => {}}>
                           <img src={refreshIcon} className="wallet-icon-button-icon" />
                         </IconButton>
                         <Box className="fs-14-regular center fw blue">{t("sto-35_refresh")}</Box>
@@ -222,12 +166,12 @@ const Wallet = () => {
                     <Box className={"fs-18-regular white"}>{t("wal-5_hide-0-balance")}</Box>
                     <Box>
                       <SwitchComp
-                        checked={walletStore.hidde}
+                        checked={walletSettingStore?.hidde}
                         onClick={() => {
                           dispatch(
-                            setWallet({
-                              ...walletStore,
-                              hidde: !walletStore.hidde,
+                            setWalletSetting({
+                              ...walletSettingStore,
+                              hidde: !walletSettingStore?.hidde,
                             })
                           );
                         }}
@@ -235,19 +179,19 @@ const Wallet = () => {
                     </Box>
                   </Stack>
                   <Grid container spacing={"32px"}>
-                    {order.map((chainName, index) => {
-                      if (walletStore.hidde) {
-                        if (Number(wallets[chainName]?.chain.balance) !== 0) {
+                    {supportChains?.map((supportChain, index) => {
+                      if (walletSettingStore?.hidde) {
+                        if (Number(getTokenBalanceBySymbol(balanceListStore, supportChain?.chain?.symbol)) !== 0) {
                           return (
                             <Grid item xs={6} key={index}>
-                              <WalletCard data={wallets[chainName]} index={index} setLoading={setLoading} />
+                              <WalletCard supportChain={supportChain} index={index} setLoading={setLoading} />
                             </Grid>
                           );
                         }
                       } else {
                         return (
                           <Grid item xs={6} key={index}>
-                            <WalletCard data={wallets[chainName]} index={index} setLoading={setLoading} />
+                            <WalletCard supportChain={supportChain} index={index} setLoading={setLoading} />
                           </Grid>
                         );
                       }

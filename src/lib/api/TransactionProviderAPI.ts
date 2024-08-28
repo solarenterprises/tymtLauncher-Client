@@ -13,7 +13,7 @@ import { decrypt } from "./Encrypt";
 
 import { IMnemonic, ISaltToken, nonCustodialType } from "../../types/accountTypes";
 import { IGetAccountReq, IGetBalanceReq, ISendContractReq, ISendTransactionReq, ISignMessageReq, IVerifyMessageReq } from "../../types/eventParamTypes";
-import { walletType } from "../../types/settingTypes";
+import { IWalletSetting } from "../../types/settingTypes";
 import { INative, IToken, chainEnum, chainIconMap, multiWalletType } from "../../types/walletTypes";
 import { IMyInfo } from "../../types/chatTypes";
 
@@ -182,7 +182,7 @@ export default class TransactionProviderAPI {
   // check if balance >= amount-to-be-sent + gas fee
   private static validateTransactionAmount = async (json_data: ISendTransactionReq) => {
     const multiWalletStore: multiWalletType = JSON.parse(tymtStorage.get(`multiWallet`));
-    const walletStore: walletType = JSON.parse(tymtStorage.get(`wallet`));
+    const walletStore: IWalletSetting = JSON.parse(tymtStorage.get(`wallet`));
     const feeInUSD = Number(walletStore.fee) as number;
     const currentToken = await this.getToken(json_data);
     const isNativeToken = await this.isNativeToken(json_data);

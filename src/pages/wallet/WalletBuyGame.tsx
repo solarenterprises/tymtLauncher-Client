@@ -9,7 +9,7 @@ import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 
 import { getChain } from "../../features/wallet/ChainSlice";
-import { selectWallet } from "../../features/settings/WalletSlice";
+import { getWalletSetting } from "../../features/settings/WalletSettingSlice";
 
 import InputText from "../../components/account/InputText";
 import ChooseChainDrawer from "../../components/wallet/ChooseChainDrawer";
@@ -21,14 +21,14 @@ import gameIcon from "../../assets/wallet/game.png";
 import WalletStyle from "../../styles/WalletStyles";
 
 import { IChain } from "../../types/walletTypes";
-import { walletType } from "../../types/settingTypes";
+import { IWalletSetting } from "../../types/settingTypes";
 
 const WalletBuyGame = () => {
   const { t } = useTranslation();
   const classname = WalletStyle();
 
   const chainStore: IChain = useSelector(getChain);
-  const data: walletType = useSelector(selectWallet);
+  const walletSettingStore: IWalletSetting = useSelector(getWalletSetting);
 
   const [chooseChainView, setChooseChainView] = useState<boolean>(false);
   const [transactionFeeView, setTransactionFeeView] = useState<boolean>(false);
@@ -69,7 +69,7 @@ const WalletBuyGame = () => {
                 <Stack direction={"row"} alignItems={"center"} justifyContent={"space-between"}>
                   <Box className={"fs-16-regular light"}>{t("wal-13_trans-fee")}</Box>
                   <Stack direction={"row"} alignItems={"center"} spacing={"8px"}>
-                    <Box className={"fs-16-regular white"}>{data.fee}</Box>
+                    <Box className={"fs-16-regular white"}>{walletSettingStore?.fee}</Box>
                     <IconButton className="icon-button">
                       <EditOutlinedIcon className="icon-button" onClick={() => setTransactionFeeView(true)} />
                     </IconButton>

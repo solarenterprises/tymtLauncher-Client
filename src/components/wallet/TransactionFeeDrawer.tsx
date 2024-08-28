@@ -1,31 +1,25 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useSelector, useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import numeral from "numeral";
 
-import {
-  SwipeableDrawer,
-  Box,
-  Stack,
-  IconButton,
-  Divider,
-  TextField,
-  InputAdornment,
-} from "@mui/material";
+import { currencySymbols } from "../../consts/SupportCurrency";
 
+import { SwipeableDrawer, Box, Stack, IconButton, Divider, TextField, InputAdornment } from "@mui/material";
 import ArrowBackOutlinedIcon from "@mui/icons-material/ArrowBackOutlined";
 
 import FeeSwitchButton from "../FeeSwitchButton";
 
-import closeImg from "../../assets/settings/collaps-close-btn.svg";
+import { getWalletSetting, setWalletSetting } from "../../features/settings/WalletSettingSlice";
+import { getCurrencyList } from "../../features/wallet/CurrencyListSlice";
+import { getCurrentCurrency } from "../../features/wallet/CurrentCurrencySlice";
 
 import SettingStyle from "../../styles/SettingStyle";
 
-import { walletType } from "../../types/settingTypes";
-import { selectWallet, setWallet } from "../../features/settings/WalletSlice";
-import { ICurrency } from "../../types/walletTypes";
-import { currencySymbols } from "../../consts/currency";
-import { getCurrency } from "../../features/wallet/CurrencySlice";
+import closeImg from "../../assets/settings/collaps-close-btn.svg";
+
+import { IWalletSetting } from "../../types/settingTypes";
+import { ICurrencyList, ICurrentCurrency } from "../../types/walletTypes";
 
 type Anchor = "right";
 
@@ -36,29 +30,29 @@ interface props {
 
 const TransactionFeeDrawer = ({ view, setView }: props) => {
   const classname = SettingStyle();
-  const dispatch = useDispatch();
+
   const { t } = useTranslation();
-  const walletStore: walletType = useSelector(selectWallet);
-  const currencyStore: ICurrency = useSelector(getCurrency);
-  const reserve = currencyStore.data[currencyStore.current];
-  const symbol: string = currencySymbols[currencyStore.current];
+  const dispatch = useDispatch();
+
+  const walletSettingStore: IWalletSetting = useSelector(getWalletSetting);
+  const currencyListStore: ICurrencyList = useSelector(getCurrencyList);
+  const currentCurrencyStore: ICurrentCurrency = useSelector(getCurrentCurrency);
+
+  const reserve: number = useMemo(
+    () => currencyListStore?.list?.find((one) => one?.name === currentCurrencyStore?.currency)?.reserve,
+    [currencyListStore, currentCurrencyStore]
+  );
+  const symbol: string = useMemo(() => currencySymbols[currentCurrencyStore?.currency], [currentCurrencyStore]);
 
   const [state, setState] = useState({ right: false });
 
-  const toggleDrawer =
-    (anchor: Anchor, open: boolean) =>
-    (event: React.KeyboardEvent | React.MouseEvent) => {
-      if (
-        event &&
-        event.type === "keydown" &&
-        ((event as React.KeyboardEvent).key === "Tab" ||
-          (event as React.KeyboardEvent).key === "Shift")
-      ) {
-        return;
-      }
+  const toggleDrawer = (anchor: Anchor, open: boolean) => (event: React.KeyboardEvent | React.MouseEvent) => {
+    if (event && event.type === "keydown" && ((event as React.KeyboardEvent).key === "Tab" || (event as React.KeyboardEvent).key === "Shift")) {
+      return;
+    }
 
-      setState({ ...state, [anchor]: open });
-    };
+    setState({ ...state, [anchor]: open });
+  };
 
   return (
     <SwipeableDrawer
@@ -74,19 +68,10 @@ const TransactionFeeDrawer = ({ view, setView }: props) => {
       }}
     >
       <Box className={classname.collaps_pan}>
-        <img
-          src={closeImg}
-          className={classname.close_icon}
-          onClick={() => setView(false)}
-        />
+        <img src={closeImg} className={classname.close_icon} onClick={() => setView(false)} />
       </Box>
       <Box className={classname.setting_pan}>
-        <Stack
-          direction={"row"}
-          alignItems={"center"}
-          spacing={"16px"}
-          padding={"18px 16px"}
-        >
+        <Stack direction={"row"} alignItems={"center"} spacing={"16px"} padding={"18px 16px"}>
           <IconButton
             className="icon-button"
             sx={{
@@ -119,10 +104,7 @@ const TransactionFeeDrawer = ({ view, setView }: props) => {
                 InputProps={{
                   inputMode: "numeric",
                   endAdornment: (
-                    <InputAdornment
-                      position="end"
-                      classes={{ root: classname.adornment }}
-                    >
+                    <InputAdornment position="end" classes={{ root: classname.adornment }}>
                       {symbol}
                     </InputAdornment>
                   ),
@@ -130,13 +112,11 @@ const TransactionFeeDrawer = ({ view, setView }: props) => {
                     input: classname.input,
                   },
                 }}
-                value={numeral(
-                  Number(walletStore.fee) * Number(reserve)
-                ).format("0,0.0000")}
+                value={numeral(Number(walletSettingStore?.fee) * Number(reserve)).format("0,0.0000")}
                 onChange={(e) => {
                   dispatch(
-                    setWallet({
-                      ...walletStore,
+                    setWalletSetting({
+                      ...walletSettingStore,
                       status: "input",
                       fee: Number(e.target.value) / Number(reserve),
                     })

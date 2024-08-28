@@ -94,7 +94,6 @@ const ConfirmInformation = () => {
 
       dispatch(setAccount(newAccount));
       dispatch(addAccountList(newAccount));
-
       dispatch(setWallet(tempWalletStoreRef.current));
       dispatch(addWalletList(tempWalletStoreRef.current));
     } catch (err) {

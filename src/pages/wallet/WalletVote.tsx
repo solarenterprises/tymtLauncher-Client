@@ -1,32 +1,57 @@
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useSelector } from "react-redux";
 import numeral from "numeral";
-import { Grid, Box, Divider, Stack, Button, Pagination, IconButton, Tooltip } from "@mui/material";
-import accountIcon from "../../assets/wallet/account.svg";
-import { useEffect, useState } from "react";
-import Solar from "../../lib/wallet/Solar";
-import { formatDecimal } from "../../lib/helper";
-import PasswordModal from "../../components/PasswordModal";
-import { openLink } from "../../lib/api/Downloads";
-import refreshIcon from "../../assets/wallet/refresh-icon.svg";
-import SolarAPI from "../../lib/api/SolarAPI";
-import { ICurrency, IVotingData, multiWalletType } from "../../types/walletTypes";
-import { useDispatch, useSelector } from "react-redux";
-import { getMultiWallet } from "../../features/wallet/MultiWalletSlice";
-import InputVoteBox from "../../components/wallet/InputVoteBox";
-import { getCurrency } from "../../features/wallet/CurrencySlice";
-import { currencySymbols } from "../../consts/currency";
-import solarIcon from "../../assets/chains/solar.svg";
+
+import { currencySymbols } from "../../consts/SupportCurrency";
+import { ChainNames } from "../../consts/Chains";
+
 import { useNotification } from "../../providers/NotificationProvider";
-import { AppDispatch } from "../../store";
-import { setChainAsync } from "../../features/wallet/ChainSlice";
-import { selectWallet, setWallet } from "../../features/settings/WalletSlice";
-import { walletType } from "../../types/settingTypes";
-import { translateString } from "../../lib/api/Translate";
+
+import PasswordModal from "../../components/PasswordModal";
+import InputVoteBox from "../../components/wallet/InputVoteBox";
 import AnimatedComponent from "../../components/AnimatedComponent";
 
+import { Grid, Box, Divider, Stack, Button, Pagination, IconButton, Tooltip } from "@mui/material";
+
+import { getWallet } from "../../features/wallet/WalletSlice";
+import { getCurrencyList } from "../../features/wallet/CurrencyListSlice";
+import { getCurrentCurrency } from "../../features/wallet/CurrentCurrencySlice";
+import { getPriceList } from "../../features/wallet/PriceListSlice";
+import { getBalanceList } from "../../features/wallet/BalanceListSlice";
+
+import SolarAPI from "../../lib/api/SolarAPI";
+import Solar from "../../lib/wallet/Solar";
+
+import { formatDecimal } from "../../lib/helper";
+import { translateString } from "../../lib/api/Translate";
+import { openLink } from "../../lib/api/Downloads";
+import { getNativeTokenBalanceByChainName, getNativeTokenPriceByChainName } from "../../lib/helper/WalletHelper";
+
+import accountIcon from "../../assets/wallet/account.svg";
+import solarIcon from "../../assets/chains/solar.svg";
+import refreshIcon from "../../assets/wallet/refresh-icon.svg";
+
+import { IBalanceList, ICurrencyList, ICurrentCurrency, IPriceList, IVotingData, IWallet } from "../../types/walletTypes";
+
 const WalletVote = () => {
-  const [data, setData] = useState<any[]>([]);
   const { t } = useTranslation();
+
+  const currencyListStore: ICurrencyList = useSelector(getCurrencyList);
+  const currentCurrencyStore: ICurrentCurrency = useSelector(getCurrentCurrency);
+  const walletStore: IWallet = useSelector(getWallet);
+  const priceListStore: IPriceList = useSelector(getPriceList);
+  const balanceListStore: IBalanceList = useSelector(getBalanceList);
+
+  const reserve: number = useMemo(
+    () => currencyListStore?.list?.find((one) => one?.name === currentCurrencyStore?.currency)?.reserve,
+    [currencyListStore, currentCurrencyStore]
+  );
+  const symbol: string = useMemo(() => currencySymbols[currentCurrencyStore?.currency], [currentCurrencyStore]);
+  const sxpPrice = useMemo(() => getNativeTokenPriceByChainName(priceListStore, ChainNames?.SOLAR), [priceListStore]);
+  const sxpBalance = useMemo(() => getNativeTokenBalanceByChainName(balanceListStore, ChainNames?.SOLAR), [balanceListStore]);
+
+  const [data, setData] = useState<any[]>([]);
   const [open, setOpen] = useState(false);
   const [originalVotingData, setOriginalVotingData] = useState<IVotingData>({});
   const [votingData, setVotingData] = useState<IVotingData>({});
@@ -37,13 +62,6 @@ const WalletVote = () => {
   const [latestBlock, setLatestBlock] = useState<number>(0);
   const [totalVoted, setTotalVoted] = useState<number>(0);
   const [totalRewards, setTotalRewards] = useState<number>(0);
-  const multiWalletStore: multiWalletType = useSelector(getMultiWallet);
-  const walletStore: walletType = useSelector(selectWallet);
-  const currencyStore: ICurrency = useSelector(getCurrency);
-  const reserve = currencyStore.data[currencyStore.current];
-  const symbol: string = currencySymbols[currencyStore.current];
-  const sxpPrice = multiWalletStore.Solar.chain.price;
-  const dispatch = useDispatch<AppDispatch>();
 
   const { setNotificationStatus, setNotificationTitle, setNotificationDetail, setNotificationOpen, setNotificationLink } = useNotification();
 
@@ -57,13 +75,13 @@ const WalletVote = () => {
     return Solar.getDelegates(query1, "delegates");
   };
 
-  const SolarGetMyVotingData = () => {
+  const SolarGetMyVotingData = useCallback(() => {
     const query2 = {
       page: 1,
       limit: 1,
     };
-    return SolarAPI.getData(query2, `wallets/${multiWalletStore.Solar.chain.wallet}/votes`);
-  };
+    return SolarAPI.getData(query2, `wallets/${walletStore?.solar}/votes`);
+  }, [walletStore]);
 
   const SolarGetAllDelegates = async () => {
     const query1 = {
@@ -159,18 +177,6 @@ const WalletVote = () => {
   };
 
   useEffect(() => {
-    dispatch(setChainAsync(multiWalletStore.Solar)).then(() =>
-      dispatch(
-        setWallet({
-          ...walletStore,
-          status: "minimum",
-          fee: "0.0183",
-        })
-      )
-    );
-  }, []);
-
-  useEffect(() => {
     const valuesArray = Object.values(votingData);
     const sumOfValues = valuesArray.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
     setSumVoting(sumOfValues);
@@ -244,7 +250,7 @@ const WalletVote = () => {
                 <Box className="fs-18-regular light">{t("set-4_balance")}</Box>
                 <Stack direction={"row"} spacing={"4px"} alignItems={"center"}>
                   <Box component={"img"} src={solarIcon} width={"24px"} height={"24px"} />
-                  <Box className="fs-32-italic white">{numeral(multiWalletStore.Solar.chain.balance).format("0,0.0000")}</Box>
+                  <Box className="fs-32-italic white">{numeral(sxpBalance).format("0,0.0000")}</Box>
                 </Stack>
               </Stack>
             </Stack>

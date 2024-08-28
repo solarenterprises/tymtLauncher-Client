@@ -76,6 +76,46 @@ export interface IChain {
   currentToken: string;
 }
 
+export interface ISupportChains {
+  Arbitrum: ISupportChain;
+  Avalanche: ISupportChain;
+  Bitcoin: ISupportChain;
+  Binance: ISupportChain;
+  Ethereum: ISupportChain;
+  Optimism: ISupportChain;
+  Polygon: ISupportChain;
+  Solana: ISupportChain;
+  Solar: ISupportChain;
+}
+
+export interface ISupportChain {
+  chain: ISupportNative;
+  tokens: ISupportToken[];
+}
+
+export interface ISupportNative {
+  address: string;
+  symbol: string;
+  name: string;
+  key: string;
+  decimals: Number;
+  logo: string;
+  website: string;
+  chainId: Number;
+  cmc: string;
+}
+
+export interface ISupportToken {
+  address: string;
+  decimals: Number;
+  displaySymbol: string;
+  logo: string;
+  name: string;
+  symbol: string;
+  website: string;
+  cmc: string;
+}
+
 export interface INative {
   address: string;
   symbol: string;
@@ -142,11 +182,55 @@ export interface ID53Password {
   password: string;
 }
 
+// export interface ICurrency {
+//   data: { [key: string]: Number };
+// }
+
+export interface ISupportCurrency {
+  name: string;
+  icon: string;
+  symbol: string;
+}
+
 export interface ICurrency {
-  current: string;
-  data: { [key: string]: Number };
+  name: string;
+  reserve: number;
+}
+
+export interface ICurrencyList {
+  list: ICurrency[];
 }
 
 export interface IVotingData {
   [key: string]: number;
+}
+
+export interface ICurrentChain {
+  chain: string;
+}
+
+export interface ICurrentToken {
+  token: string;
+}
+
+export interface ICurrentCurrency {
+  currency: string;
+}
+
+export interface IBalanceList {
+  list: IBalance[];
+}
+
+export interface IBalance {
+  symbol: string;
+  balance: number;
+}
+
+export interface IPrice {
+  cmc: string;
+  price: number;
+}
+
+export interface IPriceList {
+  list: IPrice[];
 }

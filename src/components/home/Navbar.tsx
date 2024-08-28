@@ -12,9 +12,7 @@ import ComingModal from "../ComingModal";
 import CardModal from "../CardModal";
 import Alertindex from "../../pages/alert";
 
-import { getNonCustodial } from "../../features/account/NonCustodialSlice";
 import { selectNotification } from "../../features/settings/NotificationSlice";
-import { getChain } from "../../features/wallet/ChainSlice";
 import { getAlertList } from "../../features/alert/AlertListSlice";
 import { getMyInfo } from "../../features/account/MyInfoSlice";
 
@@ -26,14 +24,14 @@ import { IMyInfo } from "../../types/chatTypes";
 import { notificationType } from "../../types/settingTypes";
 import { PaginationType } from "../../types/homeTypes";
 import { TymtlogoType } from "../../types/homeTypes";
-import { nonCustodialType } from "../../types/accountTypes";
-import { IChain } from "../../types/walletTypes";
+import { IWallet } from "../../types/walletTypes";
 
 import Back from "./Back";
 import Avatar from "./Avatar";
 import newlogo from "../../assets/main/newlogo.png";
 import newlogohead from "../../assets/main/newlogohead.png";
 import searchlg from "../../assets/main/searchlg.svg";
+import { getWallet } from "../../features/wallet/WalletSlice";
 
 const theme = createTheme({
   palette: {
@@ -57,11 +55,9 @@ const Navbar = () => {
   const notification: notificationType = useSelector(selectNotification);
   const currentpage: PaginationType = useSelector(getCurrentPage);
   const currentlogo: TymtlogoType = useSelector(getCurrentLogo);
-  const nonCustodialStore: nonCustodialType = useSelector(getNonCustodial);
-  const chain: IChain = useSelector(getChain);
-  const userStore = nonCustodialStore;
   const alertListStore: IAlertList = useSelector(getAlertList);
   const myInfoStore: IMyInfo = useSelector(getMyInfo);
+  const walletStore: IWallet = useSelector(getWallet);
 
   const [showSetting, setShowSetting] = useState(false);
   const [showChat, setShowChat] = useState(false);
@@ -408,11 +404,13 @@ const Navbar = () => {
           </Tooltip>
           <Button className="button_navbar_profile" onClick={() => setShowSetting(!showSetting)}>
             <Stack direction={"row"} alignItems={"center"} marginLeft={"0px"} justifyContent={"left"} spacing={"8px"} height={"32px"}>
-              <Avatar url={myInfoStore?.avatar} size={32} ischain={true} onlineStatus={true} status={!notification.alert ? "donotdisturb" : "online"} />
+              <Avatar url={myInfoStore?.avatar} size={32} ischain={true} onlineStatus={true} status={!notification?.alert ? "donotdisturb" : "online"} />
               <Stack direction={"column"} width={"110px"} alignItems={"flex-start"}>
-                <Box className={"fs-16-regular white"}>{userStore.nickname.length > 11 ? `${userStore.nickname.substring(0, 10)}...` : userStore.nickname}</Box>
+                <Box className={"fs-16-regular white"}>
+                  {myInfoStore?.nickName?.length > 11 ? `${myInfoStore?.nickName?.substring(0, 10)}...` : myInfoStore?.nickName}
+                </Box>
                 <Box className={"fs-14-regular light"}>
-                  {`${chain?.chain.wallet.substring(0, 5)}...${chain?.chain.wallet.substring(chain?.chain.wallet.length - 4)}`}
+                  {`${walletStore?.solar?.substring(0, 5)}...${walletStore?.solar?.substring(walletStore?.solar?.length - 4)}`}
                 </Box>
               </Stack>
             </Stack>

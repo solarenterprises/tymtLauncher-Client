@@ -1,9 +1,9 @@
 import { createSlice } from "@reduxjs/toolkit";
 import tymtStorage from "../../lib/Storage";
-import { walletType } from "../../types/settingTypes";
+import { IWalletSetting } from "../../types/settingTypes";
 import { compareJSONStructure } from "../../lib/api/JSONHelper";
 
-const init: walletType = {
+const init: IWalletSetting = {
   refreshed: false,
   hidde: false,
   currency: "USD",
@@ -11,8 +11,8 @@ const init: walletType = {
   fee: "0.0183",
 };
 
-const loadData: () => walletType = () => {
-  const data = tymtStorage.get(`wallet`);
+const loadWalletSetting: () => IWalletSetting = () => {
+  const data = tymtStorage.get(`walletSetting`);
   if (data === null || data === "" || data === undefined) {
     tymtStorage.set(`wallet`, JSON.stringify(init));
     return init;
@@ -25,24 +25,25 @@ const loadData: () => walletType = () => {
     }
   }
 };
+
 const initialState = {
-  data: loadData(),
-  status: "wallet",
+  data: loadWalletSetting(),
+  status: "walletSetting",
   msg: "",
 };
 
-export const walletSlice = createSlice({
-  name: "wallet",
+export const walletSettingSlice = createSlice({
+  name: "walletSetting",
   initialState,
   reducers: {
-    setWallet: (state, action) => {
+    setWalletSetting: (state, action) => {
       state.data = action.payload;
-      tymtStorage.set(`wallet`, JSON.stringify(action.payload));
+      tymtStorage.set(`walletSetting`, JSON.stringify(state.data));
     },
   },
 });
 
-export const selectWallet = (state: any) => state.wallet.data;
-export const { setWallet } = walletSlice.actions;
+export const getWalletSetting = (state: any) => state.walletSetting.data;
+export const { setWalletSetting } = walletSettingSlice.actions;
 
-export default walletSlice.reducer;
+export default walletSettingSlice.reducer;

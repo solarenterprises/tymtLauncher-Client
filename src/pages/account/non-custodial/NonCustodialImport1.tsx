@@ -59,7 +59,6 @@ const NonCustodialImport1 = () => {
 
         dispatch(setAccount(newAccount));
         dispatch(addAccountList(newAccount));
-
         dispatch(setWallet(tempWalletStore));
         dispatch(addWalletList(tempWalletStore));
       } catch (err) {

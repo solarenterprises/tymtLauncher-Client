@@ -1,24 +1,39 @@
-import { Box, Button, Divider, Stack, InputAdornment, TextField } from "@mui/material";
-import { useTranslation } from "react-i18next";
+import { useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useTranslation } from "react-i18next";
 import numeral from "numeral";
-import SettingStyle from "../../styles/SettingStyle";
-import backIcon from "../../assets/settings/back-icon.svg";
+
+import { currencySymbols } from "../../consts/SupportCurrency";
+
+import { Box, Button, Divider, Stack, InputAdornment, TextField } from "@mui/material";
+
 import FeeSwitchButton from "../../components/FeeSwitchButton";
-import { selectWallet, setWallet } from "../../features/settings/WalletSlice";
-import { propsType, walletType } from "../../types/settingTypes";
-import { ICurrency } from "../../types/walletTypes";
-import { getCurrency } from "../../features/wallet/CurrencySlice";
-import { currencySymbols } from "../../consts/currency";
+
+import { getWalletSetting, setWalletSetting } from "../../features/settings/WalletSettingSlice";
+import { getCurrencyList } from "../../features/wallet/CurrencyListSlice";
+import { getCurrentCurrency } from "../../features/wallet/CurrentCurrencySlice";
+
+import SettingStyle from "../../styles/SettingStyle";
+
+import backIcon from "../../assets/settings/back-icon.svg";
+
+import { IWalletSetting, propsType } from "../../types/settingTypes";
+import { ICurrencyList, ICurrentCurrency } from "../../types/walletTypes";
 
 const Fee = ({ view, setView }: propsType) => {
   const classname = SettingStyle();
   const { t } = useTranslation();
   const dispatch = useDispatch();
-  const walletStore: walletType = useSelector(selectWallet);
-  const currencyStore: ICurrency = useSelector(getCurrency);
-  const reserve = currencyStore.data[currencyStore.current];
-  const symbol: string = currencySymbols[currencyStore.current];
+
+  const walletSettingStore: IWalletSetting = useSelector(getWalletSetting);
+  const currencyListStore: ICurrencyList = useSelector(getCurrencyList);
+  const currentCurrencyStore: ICurrentCurrency = useSelector(getCurrentCurrency);
+
+  const reserve: number = useMemo(
+    () => currencyListStore?.list?.find((one) => one?.name === currentCurrencyStore?.currency)?.reserve,
+    [currencyListStore, currentCurrencyStore]
+  );
+  const symbol: string = useMemo(() => currencySymbols[currentCurrencyStore?.currency], [currentCurrencyStore]);
 
   return (
     <>
@@ -50,11 +65,11 @@ const Fee = ({ view, setView }: propsType) => {
                       input: classname.input,
                     },
                   }}
-                  value={numeral(Number(walletStore.fee) * Number(reserve)).format("0,0.0000")}
+                  value={numeral(Number(walletSettingStore?.fee) * Number(reserve)).format("0,0.0000")}
                   onChange={(e) => {
                     dispatch(
-                      setWallet({
-                        ...walletStore,
+                      setWalletSetting({
+                        ...walletSettingStore,
                         status: "input",
                         fee: Number(e.target.value) / Number(reserve),
                       })

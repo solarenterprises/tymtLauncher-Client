@@ -1,53 +1,69 @@
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useTranslation } from "react-i18next";
+import { emit, listen } from "@tauri-apps/api/event";
+import { invoke } from "@tauri-apps/api/tauri";
+import { appWindow, LogicalSize } from "@tauri-apps/api/window";
+import { useFormik } from "formik";
+import * as Yup from "yup";
+import numeral from "numeral";
+
+import { currencySymbols } from "../../consts/SupportCurrency";
+
 import { Box, Button, CircularProgress, InputAdornment, Stack, TextField, Tooltip } from "@mui/material";
+
+import InputPasswordNoTooltip from "../../components/account/InputPasswordNoTooltip";
+import SwitchChainModal from "../../components/wallet/SwitchChainModal";
+import Loading from "../../components/Loading";
+
+import { AppDispatch } from "../../store";
+import { setMountedFalse, setMountedTrue } from "../../features/chat/IntercomSupportSlice";
+import { selectLanguage } from "../../features/settings/LanguageSlice";
+//@ts-ignore
+import { getChain, setChainAsync } from "../../features/wallet/ChainSlice";
+import { INotification, sendCoinAPIAsync } from "../../features/wallet/CryptoSlice";
+import { getCurrencyList } from "../../features/wallet/CurrencyListSlice";
+import { getCurrentCurrency } from "../../features/wallet/CurrentCurrencySlice";
+import { getAccount } from "../../features/account/AccountSlice";
+import { getWalletSetting, setWalletSetting } from "../../features/settings/WalletSettingSlice";
+
+import { IRecipient, ISendCoin } from "../../features/wallet/CryptoApi";
+import TransactionProviderAPI from "../../lib/api/TransactionProviderAPI";
+import { getKeccak256Hash } from "../../lib/api/Encrypt";
+
+import SettingStyle from "../../styles/SettingStyle";
+
 import tymt from "../../assets/main/newlogohead.png";
 import close from "../../assets/settings/x-icon.svg";
 import d53 from "../../lib/game/district 53/logo.png";
-import { useEffect, useRef, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { AppDispatch } from "../../store";
-import { setMountedFalse, setMountedTrue } from "../../features/chat/IntercomSupportSlice";
-import { languageType, walletType } from "../../types/settingTypes";
-import { IChain, ICurrency, INative, IToken, chainEnum, chainIconMap, multiWalletType } from "../../types/walletTypes";
-import { getMultiWallet, refreshBalancesAsync } from "../../features/wallet/MultiWalletSlice";
-import { invoke } from "@tauri-apps/api/tauri";
-import { useTranslation } from "react-i18next";
-import { useFormik } from "formik";
-import * as Yup from "yup";
-import { nonCustodialType } from "../../types/accountTypes";
-import { getNonCustodial } from "../../features/account/NonCustodialSlice";
-import createKeccakHash from "keccak";
-import { getCurrency, refreshCurrencyAsync } from "../../features/wallet/CurrencySlice";
-import { currencySymbols } from "../../consts/currency";
-import numeral from "numeral";
-import { selectWallet, setWallet } from "../../features/settings/WalletSlice";
-import SettingStyle from "../../styles/SettingStyle";
+
+import { IWalletSetting, languageType } from "../../types/settingTypes";
 import { ISendTransactionReq } from "../../types/eventParamTypes";
-import { emit, listen } from "@tauri-apps/api/event";
-import TransactionProviderAPI from "../../lib/api/TransactionProviderAPI";
-import { selectLanguage } from "../../features/settings/LanguageSlice";
-import InputPasswordNoTooltip from "../../components/account/InputPasswordNoTooltip";
-import { getChain, setChainAsync } from "../../features/wallet/ChainSlice";
-import { INotification, sendCoinAPIAsync } from "../../features/wallet/CryptoSlice";
-import { IRecipient, ISendCoin } from "../../features/wallet/CryptoApi";
-import Loading from "../../components/Loading";
-import SwitchChainModal from "../../components/wallet/SwitchChainModal";
-import { appWindow, LogicalSize } from "@tauri-apps/api/window";
+//@ts-ignore
+import { IChain, ICurrencyList, ICurrentCurrency, INative, IToken, chainEnum, chainIconMap } from "../../types/walletTypes";
+import { IAccount } from "../../types/accountTypes";
 
 const WalletD53Transaction = () => {
   const {
     t,
     i18n: { changeLanguage },
   } = useTranslation();
+  const classname = SettingStyle();
   const dispatch = useDispatch<AppDispatch>();
-  const multiWalletStore: multiWalletType = useSelector(getMultiWallet);
-  const nonCustodialStore: nonCustodialType = useSelector(getNonCustodial);
-  const currencyStore: ICurrency = useSelector(getCurrency);
-  const walletStore: walletType = useSelector(selectWallet);
+
   const langStore: languageType = useSelector(selectLanguage);
   const chainStore: IChain = useSelector(getChain);
-  const reserve: number = currencyStore.data[currencyStore.current] as number;
-  const symbol: string = currencySymbols[currencyStore.current];
-  const classname = SettingStyle();
+  const currencyListStore: ICurrencyList = useSelector(getCurrencyList);
+  const currentCurrencyStore: ICurrentCurrency = useSelector(getCurrentCurrency);
+  const accountStore: IAccount = useSelector(getAccount);
+  const walletSettingStore: IWalletSetting = useSelector(getWalletSetting);
+
+  const reserve: number = useMemo(
+    () => currencyListStore?.list?.find((one) => one?.name === currentCurrencyStore?.currency)?.reserve,
+    [currencyListStore, currentCurrencyStore]
+  );
+  const symbol: string = useMemo(() => currencySymbols[currentCurrencyStore?.currency], [currentCurrencyStore]);
+
   const [copied, setCopied] = useState<boolean>(false);
   const [chain, setChain] = useState<string>("");
   const [to, setTo] = useState<string>("");
@@ -59,12 +75,13 @@ const WalletD53Transaction = () => {
   const [blur, setBlur] = useState<boolean>(false);
   const [expired, setExpired] = useState<boolean>(true);
   const [timeLeft, setTimeLeft] = useState<number>(0);
+  //@ts-ignore
   const [icon, setIcon] = useState<string>("");
   const [jsonData, setJsonData] = useState<ISendTransactionReq>();
-  const multiWalletRef = useRef(multiWalletStore);
-  const chainStoreRef = useRef(chainStore);
   const [switchChainModalOpen, setSwitchChainModalOpen] = useState<boolean>(false);
+
   const componentRef = useRef<HTMLDivElement>(null);
+  const chainStoreRef = useRef(chainStore);
 
   useEffect(() => {
     if (componentRef.current) {
@@ -72,10 +89,6 @@ const WalletD53Transaction = () => {
       appWindow.setSize(new LogicalSize(445, height));
     }
   }, [note, memo, icon, amount, to, chain]);
-
-  useEffect(() => {
-    multiWalletRef.current = multiWalletStore;
-  }, [multiWalletStore]);
 
   useEffect(() => {
     chainStoreRef.current = chainStore;
@@ -88,8 +101,8 @@ const WalletD53Transaction = () => {
     validationSchema: Yup.object({
       password: Yup.string()
         .required(t("cca-63_required"))
-        .test("checks", t("cca-65_please-signup-import"), (_value) => nonCustodialStore.password !== "" && nonCustodialStore.mnemonic !== "")
-        .test("equals", t("cca-60_wrong-password"), (value) => createKeccakHash("keccak256").update(value).digest("hex") === nonCustodialStore.password),
+        .test("checks", t("cca-65_please-signup-import"), (_value) => accountStore?.password !== "" && accountStore?.mnemonic !== "")
+        .test("equals", t("cca-60_wrong-password"), (value) => getKeccak256Hash(value) === accountStore?.password),
     }),
     onSubmit: () => {
       handleApproveClick();
@@ -101,7 +114,7 @@ const WalletD53Transaction = () => {
     let res: INotification;
     try {
       if (chain === "solar" || chain === "bitcoin" || chain === "solana") {
-        res = await TransactionProviderAPI.sendTransaction(jsonData, formik.values.password, walletStore.fee);
+        res = await TransactionProviderAPI.sendTransaction(jsonData, formik.values.password, walletSettingStore?.fee);
         emit("res-POST-/send-transaction", res);
       } else {
         // EVM chains
@@ -114,7 +127,7 @@ const WalletD53Transaction = () => {
         const tx = {
           passphrase: formik.values.password,
           recipients: recipients,
-          fee: walletStore.fee,
+          fee: walletSettingStore?.fee,
           vendorField: memo,
         };
         const temp: ISendCoin = {
@@ -126,9 +139,6 @@ const WalletD53Transaction = () => {
             res = action.payload as INotification;
             res.title = `Send ${chainStore.currentToken}`;
             emit("res-POST-/send-transaction", res);
-            dispatch(refreshBalancesAsync({ _multiWalletStore: multiWalletStore })).then(() => {
-              dispatch(refreshCurrencyAsync());
-            });
           }
         });
       }
@@ -182,94 +192,94 @@ const WalletD53Transaction = () => {
     return _wallet.substring(0, 10) + "..." + _wallet.substring(_wallet.length - 10);
   };
 
-  const switchChain = async (json_data: ISendTransactionReq) => {
-    const newCurrentToken = await TransactionProviderAPI.getToken(json_data);
-    const isNativeToken = await TransactionProviderAPI.isNativeToken(json_data);
-    const currentMultiWalletStore = multiWalletRef.current;
-    switch (json_data.chain) {
-      case "solar":
-        dispatch(
-          setChainAsync({
-            ...currentMultiWalletStore.Solar,
-            currentToken: isNativeToken ? "chain" : newCurrentToken.symbol,
-          })
-        );
-        setIcon(chainIconMap.get(chainEnum.solar));
-        break;
-      case "bitcoin":
-        dispatch(
-          setChainAsync({
-            ...currentMultiWalletStore.Bitcoin,
-            currentToken: isNativeToken ? "chain" : newCurrentToken.symbol,
-          })
-        );
-        setIcon(chainIconMap.get(chainEnum.bitcoin));
-        break;
-      case "solana":
-        dispatch(
-          setChainAsync({
-            ...currentMultiWalletStore.Solana,
-            currentToken: isNativeToken ? "chain" : newCurrentToken.symbol,
-          })
-        );
-        setIcon(chainIconMap.get(chainEnum.solana));
-        break;
-      case "ethereum":
-        dispatch(
-          setChainAsync({
-            ...currentMultiWalletStore.Ethereum,
-            currentToken: isNativeToken ? "chain" : newCurrentToken.symbol,
-          })
-        );
-        setIcon(chainIconMap.get(chainEnum.ethereum));
-        break;
-      case "binance":
-        dispatch(
-          setChainAsync({
-            ...currentMultiWalletStore.Binance,
-            currentToken: isNativeToken ? "chain" : newCurrentToken.symbol,
-          })
-        );
-        setIcon(chainIconMap.get(chainEnum.binance));
-        break;
-      case "polygon":
-        dispatch(
-          setChainAsync({
-            ...currentMultiWalletStore.Polygon,
-            currentToken: isNativeToken ? "chain" : newCurrentToken.symbol,
-          })
-        );
-        setIcon(chainIconMap.get(chainEnum.polygon));
-        break;
-      case "arbitrum":
-        dispatch(
-          setChainAsync({
-            ...currentMultiWalletStore.Arbitrum,
-            currentToken: isNativeToken ? "chain" : newCurrentToken.symbol,
-          })
-        );
-        setIcon(chainIconMap.get(chainEnum.arbitrumone));
-        break;
-      case "avalanche":
-        dispatch(
-          setChainAsync({
-            ...currentMultiWalletStore.Avalanche,
-            currentToken: isNativeToken ? "chain" : newCurrentToken.symbol,
-          })
-        );
-        setIcon(chainIconMap.get(chainEnum.avalanche));
-        break;
-      case "optimism":
-        dispatch(
-          setChainAsync({
-            ...currentMultiWalletStore.Optimism,
-            currentToken: isNativeToken ? "chain" : newCurrentToken.symbol,
-          })
-        );
-        setIcon(chainIconMap.get(chainEnum.optimism));
-        break;
-    }
-  };
+  // const switchChain = async (json_data: ISendTransactionReq) => {
+  //   const newCurrentToken = await TransactionProviderAPI.getToken(json_data);
+  //   const isNativeToken = await TransactionProviderAPI.isNativeToken(json_data);
+  //   const currentMultiWalletStore = multiWalletRef.current;
+  //   switch (json_data.chain) {
+  //     case "solar":
+  //       dispatch(
+  //         setChainAsync({
+  //           ...currentMultiWalletStore.Solar,
+  //           currentToken: isNativeToken ? "chain" : newCurrentToken.symbol,
+  //         })
+  //       );
+  //       setIcon(chainIconMap.get(chainEnum.solar));
+  //       break;
+  //     case "bitcoin":
+  //       dispatch(
+  //         setChainAsync({
+  //           ...currentMultiWalletStore.Bitcoin,
+  //           currentToken: isNativeToken ? "chain" : newCurrentToken.symbol,
+  //         })
+  //       );
+  //       setIcon(chainIconMap.get(chainEnum.bitcoin));
+  //       break;
+  //     case "solana":
+  //       dispatch(
+  //         setChainAsync({
+  //           ...currentMultiWalletStore.Solana,
+  //           currentToken: isNativeToken ? "chain" : newCurrentToken.symbol,
+  //         })
+  //       );
+  //       setIcon(chainIconMap.get(chainEnum.solana));
+  //       break;
+  //     case "ethereum":
+  //       dispatch(
+  //         setChainAsync({
+  //           ...currentMultiWalletStore.Ethereum,
+  //           currentToken: isNativeToken ? "chain" : newCurrentToken.symbol,
+  //         })
+  //       );
+  //       setIcon(chainIconMap.get(chainEnum.ethereum));
+  //       break;
+  //     case "binance":
+  //       dispatch(
+  //         setChainAsync({
+  //           ...currentMultiWalletStore.Binance,
+  //           currentToken: isNativeToken ? "chain" : newCurrentToken.symbol,
+  //         })
+  //       );
+  //       setIcon(chainIconMap.get(chainEnum.binance));
+  //       break;
+  //     case "polygon":
+  //       dispatch(
+  //         setChainAsync({
+  //           ...currentMultiWalletStore.Polygon,
+  //           currentToken: isNativeToken ? "chain" : newCurrentToken.symbol,
+  //         })
+  //       );
+  //       setIcon(chainIconMap.get(chainEnum.polygon));
+  //       break;
+  //     case "arbitrum":
+  //       dispatch(
+  //         setChainAsync({
+  //           ...currentMultiWalletStore.Arbitrum,
+  //           currentToken: isNativeToken ? "chain" : newCurrentToken.symbol,
+  //         })
+  //       );
+  //       setIcon(chainIconMap.get(chainEnum.arbitrumone));
+  //       break;
+  //     case "avalanche":
+  //       dispatch(
+  //         setChainAsync({
+  //           ...currentMultiWalletStore.Avalanche,
+  //           currentToken: isNativeToken ? "chain" : newCurrentToken.symbol,
+  //         })
+  //       );
+  //       setIcon(chainIconMap.get(chainEnum.avalanche));
+  //       break;
+  //     case "optimism":
+  //       dispatch(
+  //         setChainAsync({
+  //           ...currentMultiWalletStore.Optimism,
+  //           currentToken: isNativeToken ? "chain" : newCurrentToken.symbol,
+  //         })
+  //       );
+  //       setIcon(chainIconMap.get(chainEnum.optimism));
+  //       break;
+  //   }
+  // };
 
   useEffect(() => {
     changeLanguage(langStore.language);
@@ -308,42 +318,42 @@ const WalletD53Transaction = () => {
         return;
       }
       // Refresh the balance
-      dispatch(
-        refreshBalancesAsync({
-          _multiWalletStore: multiWalletRef.current,
-        })
-      )
-        .then(() =>
-          dispatch(refreshCurrencyAsync())
-            .then(async () => {
-              if (chainStoreRef.current.chain.name !== TransactionProviderAPI.getChainName(json_data.chain)) {
-                console.log(chainStore.chain.name, TransactionProviderAPI.getChainName(json_data.chain));
-                setSwitchChainModalOpen(true);
-              } else {
-                switchChain(json_data);
-              }
-              setChain(json_data.chain);
-              setTo(json_data.transfers[0].to);
-              const totalAmount: number = json_data.transfers.reduce((sum, transfer) => {
-                return (sum + Number(transfer.amount)) as number;
-              }, 0);
-              setAmount(numeral(totalAmount).format("0,0.00"));
-              setNote(json_data.note);
-              setMemo(json_data.memo ?? "");
-              setToken(await TransactionProviderAPI.getToken(json_data));
-              setExpired(false);
-              setTimeLeft(120);
-              setBlur(false);
-            })
-            .catch((err) => {
-              console.error("Failed to refreshCurrencyAsync: ", err);
-              setBlur(false);
-            })
-        )
-        .catch((err) => {
-          console.error("Failed to refreshBalancesAsync: ", err);
-          setBlur(false);
-        });
+      // dispatch(
+      //   refreshBalancesAsync({
+      //     _multiWalletStore: multiWalletRef.current,
+      //   })
+      // )
+      //   .then(() =>
+      //     dispatch(refreshCurrencyAsync())
+      //       .then(async () => {
+      //         if (chainStoreRef.current.chain.name !== TransactionProviderAPI.getChainName(json_data.chain)) {
+      //           console.log(chainStore.chain.name, TransactionProviderAPI.getChainName(json_data.chain));
+      //           setSwitchChainModalOpen(true);
+      //         } else {
+      //           switchChain(json_data);
+      //         }
+      //         setChain(json_data.chain);
+      //         setTo(json_data.transfers[0].to);
+      //         const totalAmount: number = json_data.transfers.reduce((sum, transfer) => {
+      //           return (sum + Number(transfer.amount)) as number;
+      //         }, 0);
+      //         setAmount(numeral(totalAmount).format("0,0.00"));
+      //         setNote(json_data.note);
+      //         setMemo(json_data.memo ?? "");
+      //         setToken(await TransactionProviderAPI.getToken(json_data));
+      //         setExpired(false);
+      //         setTimeLeft(120);
+      //         setBlur(false);
+      //       })
+      //       .catch((err) => {
+      //         console.error("Failed to refreshCurrencyAsync: ", err);
+      //         setBlur(false);
+      //       })
+      //   )
+      //   .catch((err) => {
+      //     console.error("Failed to refreshBalancesAsync: ", err);
+      //     setBlur(false);
+      //   });
     });
 
     return () => {
@@ -562,11 +572,11 @@ const WalletD53Transaction = () => {
                     input: classname.input,
                   },
                 }}
-                value={numeral(Number(walletStore.fee) * Number(reserve)).format("0,0.0000")}
+                value={numeral(Number(walletSettingStore?.fee) * Number(reserve)).format("0,0.0000")}
                 onChange={(e) => {
                   dispatch(
-                    setWallet({
-                      ...walletStore,
+                    setWalletSetting({
+                      ...walletSettingStore,
                       status: "input",
                       fee: Number(e.target.value) / Number(reserve),
                     })
@@ -580,7 +590,7 @@ const WalletD53Transaction = () => {
             <Box className={"fs-16-regular light"}>{t("wal-67_total-spend")}</Box>
             <Stack>
               <Box className={"fs-16-regular white t-right"}>{`${numeral(
-                (Number(amount) as number) + (Number(walletStore.fee) as number) / (Number(token?.price ?? 0) as number)
+                (Number(amount) as number) + (Number(walletSettingStore?.fee) as number) / (Number(token?.price ?? 0) as number)
               ).format("0,0.0000")} ${token?.symbol ?? ""}`}</Box>
             </Stack>
           </Stack>
@@ -592,14 +602,14 @@ const WalletD53Transaction = () => {
                 sx={{
                   color:
                     (Number(token?.balance ?? 0) as number) -
-                      ((Number(amount) as number) + (Number(walletStore.fee) as number) / (Number(token?.price ?? 0) as number)) <
+                      ((Number(amount) as number) + (Number(walletSettingStore?.fee) as number) / (Number(token?.price ?? 0) as number)) <
                     0
                       ? "#EF4444"
                       : "#FFFFFF",
                 }}
               >{`${numeral(Number(token?.balance ?? 0) as number).format("0,0.0000")} ${token?.symbol ?? ""} -> ${numeral(
                 (Number(token?.balance ?? 0) as number) -
-                  ((Number(amount) as number) + (Number(walletStore.fee) as number) / (Number(token?.price ?? 0) as number))
+                  ((Number(amount) as number) + (Number(walletSettingStore?.fee) as number) / (Number(token?.price ?? 0) as number))
               ).format("0,0.0000")} ${token?.symbol ?? ""}`}</Box>
             </Stack>
           </Stack>
@@ -618,11 +628,11 @@ const WalletD53Transaction = () => {
               type="submit"
               disabled={
                 formik.errors.password ||
-                Number(walletStore.fee) < 0 ||
+                Number(walletSettingStore?.fee) < 0 ||
                 loading ||
                 !formik.touched.password ||
                 (Number(token?.balance ?? 0) as number) -
-                  ((Number(amount) as number) + (Number(walletStore.fee) as number) / (Number(token?.price ?? 0) as number)) <
+                  ((Number(amount) as number) + (Number(walletSettingStore?.fee) as number) / (Number(token?.price ?? 0) as number)) <
                   0
                   ? true
                   : false
@@ -643,11 +653,11 @@ const WalletD53Transaction = () => {
               onClick={handleRejectClick}
               disabled={
                 formik.errors.password ||
-                Number(walletStore.fee) < 0 ||
+                Number(walletSettingStore?.fee) < 0 ||
                 loading ||
                 !formik.touched.password ||
                 (Number(token?.balance ?? 0) as number) -
-                  ((Number(amount) as number) + (Number(walletStore.fee) as number) / (Number(token?.price ?? 0) as number)) <
+                  ((Number(amount) as number) + (Number(walletSettingStore?.fee) as number) / (Number(token?.price ?? 0) as number)) <
                   0
                   ? true
                   : false
@@ -664,7 +674,7 @@ const WalletD53Transaction = () => {
         open={switchChainModalOpen}
         setOpen={setSwitchChainModalOpen}
         handleRejectClick={handleRejectClick}
-        switchChain={() => switchChain(jsonData)}
+        switchChain={async () => {}}
         chain={chain}
       />
     </Stack>
