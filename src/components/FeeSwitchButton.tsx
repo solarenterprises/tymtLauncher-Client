@@ -4,28 +4,32 @@ import { useTranslation } from "react-i18next";
 import { Stack, Box, Button } from "@mui/material";
 
 import { AppDispatch } from "../store";
-import { getChain } from "../features/wallet/ChainSlice";
 import { getWalletSetting, setWalletSetting } from "../features/settings/WalletSettingSlice";
+import { getCurrentChain } from "../features/wallet/CurrentChainSlice";
 
 import SettingStyle from "../styles/SettingStyle";
 
 import { IWalletSetting } from "../types/settingTypes";
-import { IChain } from "../types/walletTypes";
+import { ICurrentChain, ISupportChain } from "../types/walletTypes";
+import { useMemo } from "react";
+import { getSupportChainByName } from "../lib/helper/WalletHelper";
 
 const FeeSwitchButton = () => {
   const { t } = useTranslation();
   const classname = SettingStyle();
   const dispatch = useDispatch<AppDispatch>();
 
-  const chainStore: IChain = useSelector(getChain);
   const walletSettingStore: IWalletSetting = useSelector(getWalletSetting);
+  const currentChainStore: ICurrentChain = useSelector(getCurrentChain);
+
+  const currentSupportChain: ISupportChain = useMemo(() => getSupportChainByName(currentChainStore?.chain), [currentChainStore]);
 
   return (
     <Stack direction={"row"} alignItems={"center"} spacing={"6px"} className={classname.fee_switch_container}>
       <Button
         className={classname.fee_switch_button}
         onClick={() => {
-          if (chainStore.chain.symbol === "BTC") {
+          if (currentSupportChain?.chain?.symbol === "BTC") {
             dispatch(
               setWalletSetting({
                 ...walletSettingStore,
@@ -57,7 +61,7 @@ const FeeSwitchButton = () => {
       <Button
         className={classname.fee_switch_button}
         onClick={() => {
-          if (chainStore.chain.symbol === "BTC") {
+          if (currentSupportChain?.chain?.symbol === "BTC") {
             dispatch(
               setWalletSetting({
                 ...walletSettingStore,
@@ -89,7 +93,7 @@ const FeeSwitchButton = () => {
       <Button
         className={classname.fee_switch_button}
         onClick={() => {
-          if (chainStore.chain.symbol === "BTC") {
+          if (currentSupportChain?.chain?.symbol === "BTC") {
             dispatch(
               setWalletSetting({
                 ...walletSettingStore,

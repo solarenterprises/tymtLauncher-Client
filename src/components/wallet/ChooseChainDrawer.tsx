@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 
 import { supportChains } from "../../consts/SupportTokens";
 import { currencySymbols } from "../../consts/SupportCurrency";
@@ -8,16 +8,11 @@ import { currencySymbols } from "../../consts/SupportCurrency";
 import { SwipeableDrawer, Box, Stack, Divider, IconButton, Button } from "@mui/material";
 import ArrowBackOutlinedIcon from "@mui/icons-material/ArrowBackOutlined";
 
-import { useNotification } from "../../providers/NotificationProvider";
-
 import Loading from "../../components/Loading";
 
 import SettingStyle from "../../styles/SettingStyle";
 
-import { AppDispatch } from "../../store";
-import { setChainAsync } from "../../features/wallet/ChainSlice";
 import { getWallet } from "../../features/wallet/WalletSlice";
-import { setTransasctions } from "../../features/wallet/CryptoSlice";
 import { getBalanceList } from "../../features/wallet/BalanceListSlice";
 import { getPriceList } from "../../features/wallet/PriceListSlice";
 import { getCurrencyList } from "../../features/wallet/CurrencyListSlice";
@@ -41,7 +36,6 @@ const ChooseChainDrawer = ({ view, setView }: props) => {
   const classname = SettingStyle();
   const { t } = useTranslation();
   const [state, setState] = useState({ right: false });
-  const dispatch = useDispatch<AppDispatch>();
 
   const walletStore: IWallet = useSelector(getWallet);
   const balanceListStore: IBalanceList = useSelector(getBalanceList);
@@ -55,24 +49,11 @@ const ChooseChainDrawer = ({ view, setView }: props) => {
   );
   const symbol: string = useMemo(() => currencySymbols[currentCurrencyStore?.currency], [currentCurrencyStore]);
 
+  //@ts-ignore
   const [loading, setLoading] = useState<boolean>(false);
 
-  const { setNotificationStatus, setNotificationTitle, setNotificationDetail, setNotificationOpen, setNotificationLink } = useNotification();
-
   //@ts-ignore
-  const selectChain = useCallback((data: IChain) => {
-    const udpateData = { ...data, currentToken: "chain" };
-    setLoading(true);
-    dispatch(setTransasctions());
-    dispatch(setChainAsync(udpateData)).then(() => {
-      setNotificationOpen(true);
-      setNotificationTitle(`${t("alt-11_switched-network")} ${data?.chain?.name}`);
-      setNotificationDetail(`${t("alt-12_switched-network-intro")} ${data?.chain?.name}`);
-      setNotificationStatus("success");
-      setNotificationLink(null);
-      setLoading(false);
-    });
-  }, []);
+  const selectChain = useCallback((data: IChain) => {}, []);
 
   const toggleDrawer = (anchor: Anchor, open: boolean) => (event: React.KeyboardEvent | React.MouseEvent) => {
     if (event && event.type === "keydown" && ((event as React.KeyboardEvent).key === "Tab" || (event as React.KeyboardEvent).key === "Shift")) {

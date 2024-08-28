@@ -30,7 +30,6 @@ import custodialReducer from "./features/account/CustodialSlice";
 import tempNonCustodialReducer from "./features/account/TempNonCustodialSlice";
 import tempCustodialReducer from "./features/account/TempCustodialSlice";
 import threeConfirmReducer from "./features/account/ThreeConfirmSlice";
-import chainReducer from "./features/wallet/ChainSlice";
 import navigationReducer from "./features/home/Navigation";
 import tymtlogoReducer from "./features/home/Tymtlogo";
 import librarymodeReducer from "./features/library/Librarymode";
@@ -117,7 +116,6 @@ const store = configureStore({
     threeConfirm: threeConfirmReducer,
     chatHistory: chatHistoryReducer,
     contactList: contactListReducer,
-    chain: chainReducer,
     navigation: navigationReducer,
     tymtlogo: tymtlogoReducer,
     librarymode: librarymodeReducer,

@@ -83,18 +83,33 @@ export const getTokenBalanceBySymbol = (balanceListStore: IBalanceList, symbol: 
   }
 };
 
-export const getSupportChainByName = (name: string) => {
+export const getSupportNativeOrTokenBySymbol = (tokenSymbol: string) => {
   try {
-    const res = supportChains?.find((one) => one?.chain?.name === name);
+    const res_1 = supportChains?.find((chain) => chain?.chain?.symbol === tokenSymbol)?.chain;
+    if (res_1) return res_1;
+    for (const chain of supportChains) {
+      const token = chain?.tokens?.find((token) => token?.symbol === tokenSymbol);
+      if (token) {
+        return token;
+      }
+    }
+  } catch (err) {
+    console.log("Failed to getSupportTokenBySymbol: ", err);
+  }
+};
+
+export const getSupportChainByName = (chainName: string) => {
+  try {
+    const res = supportChains?.find((one) => one?.chain?.name === chainName);
     return res;
   } catch (err) {
     console.log("Failed to getSupportChainByName: ", err);
   }
 };
 
-export const getNativeCmcByChainName = (name: string) => {
+export const getNativeCmcByChainName = (chainName: string) => {
   try {
-    const supportChain = supportChains?.find((one) => one?.chain?.name === name);
+    const supportChain = getSupportChainByName(chainName);
     const res = supportChain?.chain?.cmc;
     return res;
   } catch (err) {
@@ -102,9 +117,9 @@ export const getNativeCmcByChainName = (name: string) => {
   }
 };
 
-export const getNativeSymbolByChainName = (name: string) => {
+export const getNativeSymbolByChainName = (chainName: string) => {
   try {
-    const supportChain = supportChains?.find((one) => one?.chain?.name === name);
+    const supportChain = getSupportChainByName(chainName);
     const res = supportChain?.chain?.symbol;
     return res;
   } catch (err) {
@@ -114,7 +129,7 @@ export const getNativeSymbolByChainName = (name: string) => {
 
 export const getNativeTokenPriceByChainName = (priceListStore: IPriceList, chainName: string) => {
   try {
-    const supportChain = supportChains?.find((one) => one?.chain?.name === chainName);
+    const supportChain = getSupportChainByName(chainName);
     const cmc = supportChain?.chain?.cmc;
     const res = getTokenPriceByCmc(priceListStore, cmc);
     return res;
@@ -125,7 +140,7 @@ export const getNativeTokenPriceByChainName = (priceListStore: IPriceList, chain
 
 export const getNativeTokenBalanceByChainName = (balanceListStore: IBalanceList, chainName: string) => {
   try {
-    const supportChain = supportChains?.find((one) => one?.chain?.name === chainName);
+    const supportChain = getSupportChainByName(chainName);
     const symbol = supportChain?.chain?.symbol;
     const res = getTokenBalanceBySymbol(balanceListStore, symbol);
     return res;

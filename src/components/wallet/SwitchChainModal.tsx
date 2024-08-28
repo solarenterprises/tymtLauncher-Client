@@ -1,12 +1,19 @@
+import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { useSelector } from "react-redux";
+
 import { Box, Stack, Modal, CircularProgress, Button, Tooltip, Fade } from "@mui/material";
+
+import { getCurrentChain } from "../../features/wallet/CurrentChainSlice";
+
+import TransactionProviderAPI from "../../lib/api/TransactionProviderAPI";
+
+import { getSupportChainByName } from "../../lib/helper/WalletHelper";
+
 import arrowIcon from "../../assets/account/blue-arrow-right.svg";
 import closeIcon from "../../assets/settings/x-icon.svg";
-import { IChain } from "../../types/walletTypes";
-import { useState } from "react";
-import { useSelector } from "react-redux";
-import { getChain } from "../../features/wallet/ChainSlice";
-import TransactionProviderAPI from "../../lib/api/TransactionProviderAPI";
-import { useTranslation } from "react-i18next";
+
+import { ICurrentChain, ISupportChain } from "../../types/walletTypes";
 
 interface props {
   open: boolean;
@@ -17,8 +24,12 @@ interface props {
 }
 const SwitchChainModal = ({ open, setOpen, handleRejectClick, switchChain, chain }: props) => {
   const { t } = useTranslation();
+
+  const currentChainStore: ICurrentChain = useSelector(getCurrentChain);
+
+  const currentSupportChain: ISupportChain = useMemo(() => getSupportChainByName(currentChainStore?.chain), [currentChainStore]);
+
   const [loading, setLoading] = useState<boolean>(false);
-  const chainStore: IChain = useSelector(getChain);
 
   const modalStyle = {
     display: "flex",
@@ -65,7 +76,7 @@ const SwitchChainModal = ({ open, setOpen, handleRejectClick, switchChain, chain
                       border: "1px solid rgb(71, 76, 76)",
                     }}
                   >
-                    <Box className="fs-12-regular white">{chainStore.chain.name}</Box>
+                    <Box className="fs-12-regular white">{currentSupportChain?.chain?.name}</Box>
                   </Stack>
                 }
                 PopperProps={{
@@ -78,7 +89,7 @@ const SwitchChainModal = ({ open, setOpen, handleRejectClick, switchChain, chain
                 }}
               >
                 <Box className="center-align">
-                  <img width={48} src={chainStore.chain.logo} />
+                  <img width={48} src={currentSupportChain?.chain?.logo} />
                 </Box>
               </Tooltip>
               <Box className="center-align">

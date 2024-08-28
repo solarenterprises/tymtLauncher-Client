@@ -1,6 +1,6 @@
 import numeral from "numeral";
 import { formatUnits } from "ethers";
-import { IChain } from "../types/walletTypes";
+import { IChain, ISupportChain, IWallet } from "../types/walletTypes";
 import {
   sol_scan_path,
   btc_scan_path,
@@ -30,6 +30,7 @@ import {
   op_rpc_url,
   matic_rpc_url,
 } from "../configs";
+import { getCurrentChainWalletAddress } from "./helper/WalletHelper";
 
 export const formatDate = (unixTimestamp: number) => {
   const date = new Date(unixTimestamp * 1000);
@@ -54,54 +55,57 @@ export const formatBalance = (number, count = 2) => {
   });
   return numeral(cryptoAmount)?.format("0,0.0[0000]");
 };
-export const getExplorerUrl = (chain: IChain): string => {
+export const getExplorerUrl = (chain: ISupportChain, walletStore: IWallet): string => {
   let url = "";
+  const currentChainWallet = getCurrentChainWalletAddress(walletStore, chain?.chain?.name);
   switch (chain.chain.symbol) {
     case "SXP": {
-      url = solar_scan_path + "wallet/" + chain.chain.wallet;
+      url = solar_scan_path + "wallet/" + currentChainWallet;
       break;
     }
     case "BNB": {
-      url = bsc_scan_path + "address/" + chain.chain.wallet;
+      url = bsc_scan_path + "address/" + currentChainWallet;
       break;
     }
     case "Ethereum": {
-      url = eth_scan_path + "address/" + chain.chain.wallet;
+      url = eth_scan_path + "address/" + currentChainWallet;
       break;
     }
     case "Bitcoin": {
-      url = btc_scan_path + "address/" + chain.chain.wallet;
+      url = btc_scan_path + "address/" + currentChainWallet;
       break;
     }
     case "Solana": {
       if (net_name == "testnet") {
-        url = sol_scan_path + "account/" + chain.chain.wallet + "?cluster=testnet";
+        url = sol_scan_path + "account/" + currentChainWallet + "?cluster=testnet";
       } else {
-        url = sol_scan_path + "account/" + chain.chain.wallet;
+        url = sol_scan_path + "account/" + currentChainWallet;
       }
 
       break;
     }
     case "MATIC": {
-      url = pol_scan_path + "address/" + chain.chain.wallet;
+      url = pol_scan_path + "address/" + currentChainWallet;
       break;
     }
     case "AVAX": {
-      url = avax_scan_path + "address/" + chain.chain.wallet;
+      url = avax_scan_path + "address/" + currentChainWallet;
       break;
     }
     case "ARBETH": {
-      url = arb_scan_path + "address/" + chain.chain.wallet;
+      url = arb_scan_path + "address/" + currentChainWallet;
       break;
     }
     case "OETH": {
-      url = opt_scan_path + "address/" + chain.chain.wallet;
+      url = opt_scan_path + "address/" + currentChainWallet;
       break;
     }
   }
   return url;
 };
-export const formatTransaction = (chain: IChain, data: any) => {
+export const formatTransaction = (walletStore: IWallet, chain: ISupportChain, currentTokenSymbol: string, data: any) => {
+  const currentChainWallet = getCurrentChainWalletAddress(walletStore, chain?.chain?.name);
+
   let direction = 0;
   let address = "";
   let time = "";
@@ -109,13 +113,13 @@ export const formatTransaction = (chain: IChain, data: any) => {
   let amount = "";
   let logo = "";
   let symbol = "";
-  if (chain.currentToken == "chain" || chain.currentToken == "") {
+  if (currentTokenSymbol == "chain" || currentTokenSymbol == "") {
     logo = chain.chain.logo;
     symbol = chain.chain.symbol;
     if (chain.chain.symbol == "SXP") {
       if (data?.type === 6) {
         // transfer
-        if (chain.chain.wallet?.toLowerCase() == data?.sender?.toLowerCase()) {
+        if (currentChainWallet?.toLowerCase() == data?.sender?.toLowerCase()) {
           //send
           direction = 1;
           address = data?.asset.transfers[0].recipientId;
@@ -125,7 +129,7 @@ export const formatTransaction = (chain: IChain, data: any) => {
           direction = 0;
           address = data?.sender;
           amount = formatDecimal(
-            data?.asset?.transfers.find((element: any) => element?.recipientId?.toLowerCase() === chain.chain.wallet?.toLocaleLowerCase())?.amount ?? 0,
+            data?.asset?.transfers.find((element: any) => element?.recipientId?.toLowerCase() === currentChainWallet?.toLocaleLowerCase())?.amount ?? 0,
             8
           );
         }
@@ -161,7 +165,7 @@ export const formatTransaction = (chain: IChain, data: any) => {
       }
     } else if (chain.chain.symbol === "SOL") {
       const amountSOL = data?.result?.meta?.postBalances[1] - data?.result?.meta?.preBalances[1];
-      if (chain.chain.wallet === data?.result?.transaction.message.instructions[0].parsed.info.source) {
+      if (currentChainWallet === data?.result?.transaction.message.instructions[0].parsed.info.source) {
         direction = 1;
         address = data?.result?.transaction.message.instructions[0].parsed.info.destination;
       } else {
@@ -172,7 +176,7 @@ export const formatTransaction = (chain: IChain, data: any) => {
       time = formatDate(data?.result?.blockTime);
       url = sol_scan_path + "tx/" + data?.result?.transaction.signatures[0];
     } else if (chain.chain.symbol == "ETH") {
-      if (chain.chain.wallet?.toLowerCase() == data?.from?.toLowerCase()) {
+      if (currentChainWallet?.toLowerCase() == data?.from?.toLowerCase()) {
         direction = 1;
         address = data?.to;
       } else {
@@ -183,7 +187,7 @@ export const formatTransaction = (chain: IChain, data: any) => {
       url = eth_scan_path + "tx/" + data?.hash;
       amount = formatDecimal(data?.value ?? 0, 18);
     } else if (chain.chain.symbol == "ARBETH") {
-      if (chain.chain.wallet?.toLowerCase() == data?.from?.toLowerCase()) {
+      if (currentChainWallet?.toLowerCase() == data?.from?.toLowerCase()) {
         direction = 1;
         address = data?.to;
       } else {
@@ -194,7 +198,7 @@ export const formatTransaction = (chain: IChain, data: any) => {
       url = arb_scan_path + "tx/" + data?.hash;
       amount = formatDecimal(data?.value ?? 0, 18);
     } else if (chain.chain.symbol == "AVAX") {
-      if (chain.chain.wallet?.toLowerCase() == data?.from?.toLowerCase()) {
+      if (currentChainWallet?.toLowerCase() == data?.from?.toLowerCase()) {
         direction = 1;
         address = data?.to;
       } else {
@@ -211,7 +215,7 @@ export const formatTransaction = (chain: IChain, data: any) => {
         amount = formatDecimal(data?.value ?? 0, 18);
       }
     } else if (chain.chain.symbol == "BNB") {
-      if (chain.chain.wallet?.toLowerCase() == data?.from?.toLowerCase()) {
+      if (currentChainWallet?.toLowerCase() == data?.from?.toLowerCase()) {
         direction = 1;
         address = data?.to;
       } else {
@@ -222,7 +226,7 @@ export const formatTransaction = (chain: IChain, data: any) => {
       url = bsc_scan_path + "tx/" + data?.hash;
       amount = formatDecimal(data?.value ?? 0, 18);
     } else if (chain.chain.symbol == "OETH") {
-      if (chain.chain.wallet?.toLowerCase() == data?.from?.toLowerCase()) {
+      if (currentChainWallet?.toLowerCase() == data?.from?.toLowerCase()) {
         direction = 1;
         address = data?.to;
       } else {
@@ -233,7 +237,7 @@ export const formatTransaction = (chain: IChain, data: any) => {
       url = opt_scan_path + "tx/" + data?.hash;
       amount = formatDecimal(data?.value ?? 0, 18);
     } else if (chain.chain.symbol == "MATIC") {
-      if (chain.chain.wallet?.toLowerCase() == data?.from?.toLowerCase()) {
+      if (currentChainWallet?.toLowerCase() == data?.from?.toLowerCase()) {
         direction = 1;
         address = data?.to;
       } else {
@@ -246,10 +250,10 @@ export const formatTransaction = (chain: IChain, data: any) => {
     }
   } else {
     chain.tokens.map((token) => {
-      if (token.symbol == chain.currentToken) {
+      if (token.symbol == currentTokenSymbol) {
         logo = token.logo;
         symbol = token.displaySymbol;
-        if (chain.chain.wallet?.toLowerCase() == data?.from?.toLowerCase()) {
+        if (currentChainWallet?.toLowerCase() == data?.from?.toLowerCase()) {
           direction = 1;
           address = data?.to;
         } else {

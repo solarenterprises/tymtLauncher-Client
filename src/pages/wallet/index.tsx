@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { useCallback, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import numeral from "numeral";
@@ -17,7 +17,6 @@ import ComingModal from "../../components/ComingModal";
 import AnimatedComponent from "../../components/AnimatedComponent";
 
 import { AppDispatch } from "../../store";
-import { getChain, setChainAsync } from "../../features/wallet/ChainSlice";
 import { getCurrencyList } from "../../features/wallet/CurrencyListSlice";
 import { getCurrentCurrency } from "../../features/wallet/CurrentCurrencySlice";
 import { getBalanceList } from "../../features/wallet/BalanceListSlice";
@@ -29,12 +28,14 @@ import receiveIcon from "../../assets/wallet/receive-icon.svg";
 import percentIcon from "../../assets/wallet/percent-icon.svg";
 import refreshIcon from "../../assets/wallet/refresh-icon.svg";
 
-import { IBalanceList, IChain, ICurrencyList, ICurrentCurrency, IPriceList } from "../../types/walletTypes";
+import { IBalanceList, ICurrencyList, ICurrentChain, ICurrentCurrency, ICurrentToken, IPriceList } from "../../types/walletTypes";
 import { IWalletSetting } from "../../types/settingTypes";
 
 import WalletStyle from "../../styles/WalletStyles";
 import SettingStyle from "../../styles/SettingStyle";
-import { getTokenBalanceBySymbol } from "../../lib/helper/WalletHelper";
+import { getSupportChainByName, getTokenBalanceBySymbol } from "../../lib/helper/WalletHelper";
+import { getCurrentToken } from "../../features/wallet/CurrentTokenSlice";
+import { getCurrentChain } from "../../features/wallet/CurrentChainSlice";
 
 // const order = ["Solar", "Binance", "Ethereum", "Bitcoin", "Solana", "Polygon", "Avalanche", "Arbitrum", "Optimism"];
 
@@ -45,17 +46,18 @@ const Wallet = () => {
   const { t } = useTranslation();
   const dispatch = useDispatch<AppDispatch>();
 
-  const chain: IChain = useSelector(getChain);
   const currencyListStore: ICurrencyList = useSelector(getCurrencyList);
   const currentCurrencyStore: ICurrentCurrency = useSelector(getCurrentCurrency);
+  const currentTokenStore: ICurrentToken = useSelector(getCurrentToken);
+  const currentChainStore: ICurrentChain = useSelector(getCurrentChain);
   const balanceListStore: IBalanceList = useSelector(getBalanceList);
   const priceListStore: IPriceList = useSelector(getPriceList);
   const walletSettingStore: IWalletSetting = useSelector(getWalletSetting);
 
-  const [currentChain, setCurrentChain] = useState(chain.currentToken);
   const [loading, setLoading] = useState<boolean>(false);
   const [comingSoon, setComingSoon] = useState<boolean>(false);
 
+  const currentSupportChain = useMemo(() => getSupportChainByName(currentChainStore?.chain), [currentChainStore]);
   const reserve: number = useMemo(
     () => currencyListStore?.list?.find((one) => one?.name === currentCurrencyStore?.currency)?.reserve,
     [currencyListStore, currentCurrencyStore]
@@ -77,18 +79,6 @@ const Wallet = () => {
       return acc;
     }, 0) * (reserve as number);
   }, [balanceListStore, priceListStore, reserve]);
-
-  const selectToken = useCallback(
-    (token: string) => {
-      const updateData = { ...chain, currentToken: token };
-      setCurrentChain(token);
-      setLoading(true);
-      dispatch(setChainAsync(updateData)).then(() => {
-        setLoading(false);
-      });
-    },
-    [dispatch, currentChain, setCurrentChain, chain]
-  );
 
   return (
     <>
@@ -202,18 +192,18 @@ const Wallet = () => {
               <Grid item xl={5} sm={12}>
                 <Stack padding={"25px"}>
                   <Box className={"fs-20-regular white"}>{t("wal-4_last-trans")}</Box>
-                  {chain.tokens.length != 0 && (
+                  {currentSupportChain?.tokens?.length != 0 && (
                     <Stack direction={"row"} gap={2} className="m-tb-10">
-                      <Button className={`common-btn ${currentChain == "chain" ? "active" : ""}`} onClick={() => selectToken("chain")}>
+                      <Button className={`common-btn ${currentTokenStore?.token === "chain" ? "active" : ""}`} onClick={() => {}}>
                         <Stack direction={"row"} justifyContent={"center"} textAlign={"center"} alignItems={"center"} gap={1}>
                           <Box className="center-align">
-                            <img src={chain.chain.logo} width={20} />
+                            <img src={currentSupportChain?.chain?.logo} width={20} />
                           </Box>
-                          <Box className="fs-14-regular white">{chain.chain.symbol}</Box>
+                          <Box className="fs-14-regular white">{currentSupportChain?.chain?.symbol}</Box>
                         </Stack>
                       </Button>
-                      {chain.tokens.map((token, index) => (
-                        <Button className={`common-btn ${currentChain == token.symbol ? "active" : ""}`} key={index} onClick={() => selectToken(token.symbol)}>
+                      {currentSupportChain?.tokens.map((token, index) => (
+                        <Button className={`common-btn ${currentTokenStore?.token === token.symbol ? "active" : ""}`} key={index} onClick={() => {}}>
                           <Stack direction={"row"} justifyContent={"center"} textAlign={"center"} alignItems={"center"} gap={1}>
                             <Box className="center-align">
                               <img src={token.logo} width={20} />

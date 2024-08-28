@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 
@@ -6,13 +6,13 @@ import { tymt_avatar_url } from "../../configs";
 
 import { Tooltip, Stack, Box } from "@mui/material";
 
-import { getChain } from "../../features/wallet/ChainSlice";
 import { ICurrentChatroomMember } from "../../features/chat/CurrentChatroomMembersSlice";
 import { getRenderTime, IRenderTime } from "../../features/account/RenderTimeSlice";
+import { getCurrentChain } from "../../features/wallet/CurrentChainSlice";
 
 import UserAPI from "../../lib/api/UserAPI";
 
-import { IChain } from "../../types/walletTypes";
+import { getSupportChainByName } from "../../lib/helper/WalletHelper";
 
 import onlineframe from "../../assets/chat/onlineframe.svg";
 import offlineframe from "../../assets/chat/offlineframe.svg";
@@ -20,12 +20,17 @@ import donotdisturbframe from "../../assets/chat/donotdisturbframe.svg";
 import mask from "../../assets/account/mask.png";
 import accountIcon from "../../assets/wallet/account.svg";
 
+import { ICurrentChain, ISupportChain } from "../../types/walletTypes";
+
 const Avatar = ({ size, url, userid, onlineStatus, ischain, status }: any) => {
   const { t } = useTranslation();
-  const chain: IChain = useSelector(getChain);
-  const [user, setUser] = useState<ICurrentChatroomMember>();
 
   const renderTimeStore: IRenderTime = useSelector(getRenderTime);
+  const currentChainStore: ICurrentChain = useSelector(getCurrentChain);
+
+  const currentSupportChain: ISupportChain = useMemo(() => getSupportChainByName(currentChainStore?.chain), [currentChainStore]);
+
+  const [user, setUser] = useState<ICurrentChatroomMember>();
 
   useEffect(() => {
     if (userid) {
@@ -124,7 +129,7 @@ const Avatar = ({ size, url, userid, onlineStatus, ischain, status }: any) => {
           )}
           {ischain && (
             <img
-              src={chain.chain.logo}
+              src={currentSupportChain?.chain?.logo}
               style={{
                 position: "absolute",
                 width: "18px",

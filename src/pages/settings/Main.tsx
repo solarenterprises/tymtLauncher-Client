@@ -11,7 +11,6 @@ import { supportChains } from "../../consts/SupportTokens";
 import Avatar from "../../components/home/Avatar";
 
 import { getNonCustodial } from "../../features/account/NonCustodialSlice";
-import { getChain } from "../../features/wallet/ChainSlice";
 import { selectNotification } from "../../features/settings/NotificationSlice";
 import { getMyInfo } from "../../features/account/MyInfoSlice";
 import { getCurrencyList } from "../../features/wallet/CurrencyListSlice";
@@ -36,7 +35,7 @@ import exitIcon from "../../assets/settings/exit-icon.svg";
 
 import { IMyInfo } from "../../types/chatTypes";
 import { notificationType, propsType } from "../../types/settingTypes";
-import { IBalanceList, IChain, ICurrencyList, ICurrentChain, ICurrentCurrency, IPriceList, ISupportChain, IWallet } from "../../types/walletTypes";
+import { IBalanceList, ICurrencyList, ICurrentChain, ICurrentCurrency, IPriceList, ISupportChain, IWallet } from "../../types/walletTypes";
 
 const Main = ({ view, setView }: propsType) => {
   const classname = SettingStyle();
@@ -46,7 +45,6 @@ const Main = ({ view, setView }: propsType) => {
   const currencyListStore: ICurrencyList = useSelector(getCurrencyList);
   const currentCurrencyStore: ICurrentCurrency = useSelector(getCurrentCurrency);
   const currentChainStore: ICurrentChain = useSelector(getCurrentChain);
-  const chainStore: IChain = useSelector(getChain);
   const notificationStore: notificationType = useSelector(selectNotification);
   const userStore = useSelector(getNonCustodial);
   const myInfoStore: IMyInfo = useSelector(getMyInfo);
@@ -86,9 +84,9 @@ const Main = ({ view, setView }: propsType) => {
   }, [balanceListStore, priceListStore, reserve]);
 
   const handleExplorer = useCallback(() => {
-    const url = getExplorerUrl(chainStore);
+    const url = getExplorerUrl(currentChainInfo, walletStore);
     openLink(url);
-  }, [chainStore]);
+  }, [currentChainInfo]);
 
   return (
     <>

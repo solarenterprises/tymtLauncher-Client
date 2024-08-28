@@ -22,8 +22,7 @@ import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 
 import { AppDispatch } from "../../store";
 import { getAccount } from "../../features/account/AccountSlice";
-import { getChain, setChainAsync } from "../../features/wallet/ChainSlice";
-import { INotification, selectPending, sendCoinAsync } from "../../features/wallet/CryptoSlice";
+import { selectPending } from "../../features/wallet/CryptoSlice";
 import { getNonCustodial } from "../../features/account/NonCustodialSlice";
 import { getCurrencyList } from "../../features/wallet/CurrencyListSlice";
 import { getCurrentCurrency } from "../../features/wallet/CurrentCurrencySlice";
@@ -33,13 +32,23 @@ import SettingStyle from "../../styles/SettingStyle";
 
 import walletIcon from "../../assets/wallet.svg";
 
-import { IRecipient, ISendCoin, ISendCoinData } from "../../features/wallet/CryptoApi";
-import { getPriceData } from "../../features/wallet/ChainApi";
+import { IRecipient, ISendCoinData } from "../../features/wallet/CryptoApi";
 import { formatBalance } from "../../lib/helper";
 
-import { IChain, ICurrencyList, ICurrentCurrency } from "../../types/walletTypes";
+import { IBalanceList, ICurrencyList, ICurrentChain, ICurrentCurrency, ICurrentToken, IWallet } from "../../types/walletTypes";
 import { nonCustodialType, walletEnum } from "../../types/accountTypes";
 import { IWalletSetting } from "../../types/settingTypes";
+import { getCurrentToken } from "../../features/wallet/CurrentTokenSlice";
+import {
+  getCurrentChainWalletAddress,
+  getNativeTokenBalanceByChainName,
+  getSupportChainByName,
+  getSupportNativeOrTokenBySymbol,
+} from "../../lib/helper/WalletHelper";
+import { getCurrentChain } from "../../features/wallet/CurrentChainSlice";
+import { ChainNames } from "../../consts/Chains";
+import { getWallet } from "../../features/wallet/WalletSlice";
+import { getBalanceList } from "../../features/wallet/BalanceListSlice";
 
 interface IPriceData {
   price: string;
@@ -56,10 +65,13 @@ const WalletSendSXP = () => {
   const pending = useSelector(selectPending);
   const accountStore = useSelector(getAccount);
   const nonCustodialStore: nonCustodialType = useSelector(getNonCustodial);
-  const chainStore: IChain = useSelector(getChain);
   const currencyListStore: ICurrencyList = useSelector(getCurrencyList);
   const currentCurrencyStore: ICurrentCurrency = useSelector(getCurrentCurrency);
   const walletSettingStore: IWalletSetting = useSelector(getWalletSetting);
+  const currentTokenStore: ICurrentToken = useSelector(getCurrentToken);
+  const currentChainStore: ICurrentChain = useSelector(getCurrentChain);
+  const walletStore: IWallet = useSelector(getWallet);
+  const balanceListStore: IBalanceList = useSelector(getBalanceList);
 
   const [addressBookView, setAddressBookView] = useState<boolean>(false);
   const [transactionFeeView, setTransactionFeeView] = useState<boolean>(false);
@@ -68,17 +80,22 @@ const WalletSendSXP = () => {
   const [address, setAddress] = useState("");
   const [draft, setDraft] = useState<IRecipient[]>([]);
   const [password, setPassword] = useState("");
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  //@ts-ignore
+  const [priceData, setPriceData] = useState<IPriceData>();
+  //@ts-ignore
+  const [options, setOptions] = useState([]);
+  const open = Boolean(anchorEl);
 
   const reserve: number = useMemo(
     () => currencyListStore?.list?.find((one) => one?.name === currentCurrencyStore?.currency)?.reserve,
     [currencyListStore, currentCurrencyStore]
   );
   const symbol: string = useMemo(() => currencySymbols[currentCurrencyStore?.currency], [currentCurrencyStore]);
-
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [priceData, setPriceData] = useState<IPriceData>();
-  const [options, setOptions] = useState([]);
-  const open = Boolean(anchorEl);
+  const currentNativeOrToken = useMemo(() => getSupportNativeOrTokenBySymbol(currentTokenStore?.token), [currentTokenStore]);
+  const currentSupportChain = useMemo(() => getSupportChainByName(currentChainStore?.chain), [currentChainStore]);
+  const currentWallet = useMemo(() => getCurrentChainWalletAddress(walletStore, currentChainStore?.chain), [currentChainStore, walletStore]);
+  const currentNativeBalance = useMemo(() => getNativeTokenBalanceByChainName(balanceListStore, currentChainStore?.chain), [currentChainStore]);
 
   const { setNotificationStatus, setNotificationTitle, setNotificationDetail, setNotificationOpen, setNotificationLink } = useNotification();
 
@@ -98,27 +115,17 @@ const WalletSendSXP = () => {
       symbol: string;
       logo: string;
       decimals: Number;
+    } = {
+      address: currentNativeOrToken?.address,
+      symbol: currentNativeOrToken?.symbol,
+      logo: currentNativeOrToken?.logo,
+      decimals: currentNativeOrToken?.decimals,
     };
-    if (chainStore.currentToken === "chain") {
-      currentToken = {
-        address: chainStore.chain.address,
-        symbol: chainStore.chain.symbol,
-        logo: chainStore.chain.logo,
-        decimals: chainStore.chain.decimals,
-      };
-    } else {
-      const temp = chainStore.tokens.find((element) => element.symbol === chainStore.currentToken);
-      currentToken = {
-        address: temp.address,
-        symbol: temp.symbol,
-        logo: temp.logo,
-        decimals: temp.decimals,
-      };
-    }
+
     const newItem: IRecipient = {
       address: address,
       amount: amount,
-      chainSymbol: chainStore.chain.symbol,
+      chainSymbol: currentSupportChain?.chain?.symbol,
       tokenSymbol: currentToken.symbol,
       tokenAddr: currentToken.address,
       tokenDecimals: currentToken.decimals,
@@ -126,11 +133,11 @@ const WalletSendSXP = () => {
     };
 
     let recipientAddrIsValid: boolean = false;
-    if (chainStore.chain.name === tymtCore.Blockchains.solar.name) {
+    if (currentSupportChain?.chain?.name === ChainNames.SOLAR) {
       recipientAddrIsValid = tymtCore.Blockchains.solar.wallet.validateAddress(newItem.address);
-    } else if (chainStore.chain.name === tymtCore.Blockchains.btc.name) {
+    } else if (currentSupportChain?.chain?.name === ChainNames.BITCOIN) {
       recipientAddrIsValid = tymtCore.Blockchains.btc.wallet.validateAddress(newItem.address);
-    } else if (chainStore.chain.name === tymtCore.Blockchains.solana.name) {
+    } else if (currentSupportChain?.chain?.name === ChainNames.SOLANA) {
       recipientAddrIsValid = tymtCore.Blockchains.solana.wallet.validateAddress(newItem.address);
     } else {
       recipientAddrIsValid = tymtCore.Blockchains.eth.wallet.validateAddress(newItem.address);
@@ -145,7 +152,7 @@ const WalletSendSXP = () => {
     }
 
     setDraft([...draft, newItem]);
-  }, [draft, setDraft, address, amount, chainStore]);
+  }, [draft, setDraft, address, amount, currentSupportChain, currentNativeOrToken]);
 
   const handleTransfer = useCallback(async () => {
     if (accountStore.wallet === walletEnum.noncustodial) {
@@ -162,28 +169,17 @@ const WalletSendSXP = () => {
           symbol: string;
           logo: string;
           decimals: Number;
+        } = {
+          address: currentNativeOrToken?.address,
+          symbol: currentNativeOrToken?.symbol,
+          logo: currentNativeOrToken?.logo,
+          decimals: currentNativeOrToken?.decimals,
         };
-        if (chainStore.currentToken === "chain") {
-          currentToken = {
-            address: chainStore.chain.address,
-            symbol: chainStore.chain.symbol,
-            logo: chainStore.chain.logo,
-            decimals: chainStore.chain.decimals,
-          };
-        } else {
-          const temp = chainStore.tokens.find((element) => element.symbol === chainStore.currentToken);
-          currentToken = {
-            address: temp.address,
-            symbol: temp.symbol,
-            logo: temp.logo,
-            decimals: temp.decimals,
-          };
-        }
         params.recipients = [
           {
             address: address,
             amount: amount,
-            chainSymbol: chainStore.chain.symbol,
+            chainSymbol: currentSupportChain?.chain?.symbol,
             tokenSymbol: currentToken.symbol,
             tokenAddr: currentToken.address,
             tokenDecimals: currentToken.decimals,
@@ -192,27 +188,27 @@ const WalletSendSXP = () => {
         ];
       }
 
-      const temp: ISendCoin = {
-        chain: chainStore,
-        data: params,
-      };
-      dispatch(sendCoinAsync(temp)).then((action) => {
-        if (action.type.endsWith("/fulfilled")) {
-          setNotificationStatus((action.payload as INotification).status);
-          setNotificationTitle((action.payload as INotification).title);
-          setNotificationDetail((action.payload as INotification).message);
-          setNotificationOpen(true);
-          setNotificationLink(null);
-          if ((action.payload as INotification).status === "success") {
-            setDraft([]);
-            setAmount("");
-            setAddress("");
-            setPassword("");
-          }
-        }
-      });
+      // const temp: ISendCoin = {
+      //   chain: chainStore,
+      //   data: params,
+      // };
+      // dispatch(sendCoinAsync(temp)).then((action) => {
+      //   if (action.type.endsWith("/fulfilled")) {
+      //     setNotificationStatus((action.payload as INotification).status);
+      //     setNotificationTitle((action.payload as INotification).title);
+      //     setNotificationDetail((action.payload as INotification).message);
+      //     setNotificationOpen(true);
+      //     setNotificationLink(null);
+      //     if ((action.payload as INotification).status === "success") {
+      //       setDraft([]);
+      //       setAmount("");
+      //       setAddress("");
+      //       setPassword("");
+      //     }
+      //   }
+      // });
     }
-  }, [walletSettingStore, draft, address, dispatch, password]);
+  }, [walletSettingStore, draft, address, dispatch, password, currentNativeOrToken, currentSupportChain]);
 
   const removeDraft = useCallback(
     (deleteId: number) => {
@@ -235,37 +231,7 @@ const WalletSendSXP = () => {
     setAmount("");
     setAddress("");
     setPassword("");
-  }, [chainStore]);
-
-  useEffect(() => {
-    let updateOption = [
-      {
-        label: chainStore.chain.symbol,
-        icon: chainStore.chain.logo,
-        value: "chain",
-      },
-    ];
-    chainStore.tokens.map((token) => {
-      updateOption.push({
-        label: token.displaySymbol,
-        icon: token.logo,
-        value: token.symbol,
-      });
-    });
-    setOptions(updateOption);
-    getPriceData(chainStore).then((res) => {
-      setPriceData(res);
-      setAnchorEl(null);
-    });
-  }, [chainStore]);
-
-  const switchCoin = useCallback(
-    (token: any) => {
-      const updateData = { ...chainStore, currentToken: token.value };
-      dispatch(setChainAsync(updateData));
-    },
-    [chainStore]
-  );
+  }, [currentChainStore]);
 
   return (
     <AnimatedComponent threshold={0}>
@@ -279,15 +245,15 @@ const WalletSendSXP = () => {
                 </Box>
                 <Box className={"wallet-form-card-hover p-24-16 br-16"} mb={"32px"} onClick={() => setChooseChainView(true)}>
                   <Stack direction="row" alignItems={"center"} spacing={"16px"}>
-                    <Box component={"img"} src={chainStore.chain.logo} width={"36px"} height={"36px"} />
+                    <Box component={"img"} src={currentSupportChain?.chain?.logo} width={"36px"} height={"36px"} />
                     <Stack>
                       <Stack direction={"row"} spacing={"10px"}>
                         <Box className={"fs-18-regular light"}>{t("wal-8_from")}</Box>
-                        <Box className={"fs-18-regular white"}>{chainStore.chain.name}</Box>
+                        <Box className={"fs-18-regular white"}>{currentSupportChain?.chain?.name}</Box>
                       </Stack>
                       <Stack direction={"row"} alignItems={"center"} spacing={"8px"}>
                         <Box component={"img"} src={walletIcon} width={"12px"} height={"12px"} />
-                        <Box className={"fs-14-regular light"}>{chainStore.chain.wallet}</Box>
+                        <Box className={"fs-14-regular light"}>{currentWallet}</Box>
                       </Stack>
                     </Stack>
                   </Stack>
@@ -301,8 +267,8 @@ const WalletSendSXP = () => {
                       <Box
                         className={"fs-14-bold blue"}
                         onClick={() => {
-                          setAmount(chainStore.chain.balance.toString());
-                          handleAmount(chainStore.chain.balance.toString());
+                          setAmount(currentNativeBalance?.toString());
+                          handleAmount(currentNativeBalance?.toString());
                         }}
                         sx={{
                           cursor: "pointer",
@@ -348,7 +314,7 @@ const WalletSendSXP = () => {
                         }}
                       >
                         {options.map((token, index) => (
-                          <MenuItem onClick={() => switchCoin(token)} key={index}>
+                          <MenuItem onClick={() => {}} key={index}>
                             <Stack direction={"row"} gap={1}>
                               <Box>
                                 <img src={token.icon} width={20} />
@@ -376,7 +342,7 @@ const WalletSendSXP = () => {
                     }}
                     onAddressButtonClick={() => setAddressBookView(true)}
                   />
-                  {Number(amount) > 0 && address !== "" && (Number(walletSettingStore?.fee) > 0 || chainStore.chain.symbol !== "SXP") && (
+                  {Number(amount) > 0 && address !== "" && (Number(walletSettingStore?.fee) > 0 || currentSupportChain?.chain?.symbol !== "SXP") && (
                     <Button
                       fullWidth
                       className={classname.action_button}
@@ -388,7 +354,7 @@ const WalletSendSXP = () => {
                     </Button>
                   )}
                 </Box>
-                {(chainStore.chain.symbol === "SXP" || chainStore.chain.symbol === "BTC") && (
+                {(currentSupportChain?.chain?.symbol === "SXP" || currentSupportChain?.chain?.symbol === "BTC") && (
                   <Box className={"wallet-form-card p-16-16 br-16"} mb={"32px"}>
                     <Stack direction={"row"} alignItems={"center"} justifyContent={"space-between"}>
                       <Box className={"fs-16-regular light"}>{t("wal-13_trans-fee")}</Box>
@@ -409,7 +375,7 @@ const WalletSendSXP = () => {
                     pending ||
                     Number(amount) === 0 ||
                     address === "" ||
-                    (Number(walletSettingStore?.fee) === 0 && chainStore.chain.symbol === "SXP") ||
+                    (Number(walletSettingStore?.fee) === 0 && currentSupportChain?.chain?.symbol === "SXP") ||
                     createKeccakHash("keccak256").update(password).digest("hex") !== nonCustodialStore.password
                   }
                   className={"red-button fw"}

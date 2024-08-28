@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Outlet } from "react-router-dom";
 
@@ -9,7 +9,6 @@ import { fetchPublicChatroomListAsync } from "../features/chat/PublicChatroomLis
 import { fetchBalanceListAsync } from "../features/wallet/BalanceListSlice";
 import { fetchPriceListAsync } from "../features/wallet/PriceListSlice";
 import { fetchCurrencyListAsync } from "../features/wallet/CurrencyListSlice";
-import { getChain } from "../features/wallet/ChainSlice";
 import { fetchContactListAsync } from "../features/chat/ContactListSlice";
 import { fetchFriendListAsync } from "../features/chat/FriendListSlice";
 import { fetchBlockListAsync } from "../features/chat/BlockListSlice";
@@ -25,17 +24,13 @@ import { fetchGameListAsync } from "../features/store/GameListSlice";
 import { fetchComingGameListAsync } from "../features/store/ComingGameListSlice";
 import { rsaDecrypt } from "../features/chat/RsaApi";
 
-import { IChain } from "../types/walletTypes";
 import { IChatroom, IParticipant } from "../types/ChatroomAPITypes";
 import { IMyInfo, IRsa } from "../types/chatTypes";
 
 const AlertProvider = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const chainStore: IChain = useSelector(getChain);
   const rsaStore: IRsa = useSelector(getRsa);
   const myInfoStore: IMyInfo = useSelector(getMyInfo);
-
-  const chainStoreRef = useRef(chainStore);
 
   //@ts-ignore
   const initAction = useCallback(async () => {
@@ -83,10 +78,6 @@ const AlertProvider = () => {
       console.error("Failed to initAction: ", err);
     }
   }, [myInfoStore]);
-
-  useEffect(() => {
-    chainStoreRef.current = chainStore;
-  }, [chainStore]);
 
   useEffect(() => {
     dispatch(fetchBalanceListAsync());

@@ -11,7 +11,6 @@ import TransactionProviderAPI from "../lib/api/TransactionProviderAPI";
 
 import { AppDispatch } from "../store";
 import { getNonCustodial } from "../features/account/NonCustodialSlice";
-import { getChain } from "../features/wallet/ChainSlice";
 import { getSaltToken } from "../features/account/SaltTokenSlice";
 import { getMnemonic } from "../features/account/MnemonicSlice";
 import { setWallet } from "../features/wallet/WalletSlice";
@@ -21,27 +20,21 @@ import { getCurrentChain } from "../features/wallet/CurrentChainSlice";
 
 import { IAccount, IMnemonic, ISaltToken, nonCustodialType } from "../types/accountTypes";
 import { IGetAccountReq, IGetBalanceReq, ISendContractReq, ISignMessageReq, IVerifyMessageReq } from "../types/eventParamTypes";
-import { IChain, ICurrentChain, IWallet, IWalletList } from "../types/walletTypes";
+import { ICurrentChain, IWallet, IWalletList } from "../types/walletTypes";
 
 const TransactionProvider = () => {
   const dispatch = useDispatch<AppDispatch>();
 
   const nonCustodialStore: nonCustodialType = useSelector(getNonCustodial);
-  const chainStore: IChain = useSelector(getChain);
   const saltTokenStore: ISaltToken = useSelector(getSaltToken);
   const mnemonicStore: IMnemonic = useSelector(getMnemonic);
   const walletListStore: IWalletList = useSelector(getWalletList);
   const accountStore: IAccount = useSelector(getAccount);
   const currentChainStore: ICurrentChain = useSelector(getCurrentChain);
 
-  const chainStoreRef = useRef(chainStore);
   const nonCustodialStoreRef = useRef(nonCustodialStore);
   const saltTokenStoreRef = useRef(saltTokenStore);
   const mnemonicStoreRef = useRef(mnemonicStore);
-
-  useEffect(() => {
-    chainStoreRef.current = chainStore;
-  }, [chainStore]);
 
   useEffect(() => {
     nonCustodialStoreRef.current = nonCustodialStore;

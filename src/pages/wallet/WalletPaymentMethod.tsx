@@ -1,21 +1,33 @@
+import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
+
 import { Grid, Box, Stack, Button } from "@mui/material";
+
 import PaymentButton from "../../components/wallet/PaymentButton";
+import ConnectModal from "../../components/wallet/ConnectModal";
+
+import { getCurrentChain } from "../../features/wallet/CurrentChainSlice";
+
 import cardIcon from "../../assets/wallet/card.svg";
 import biboxIcon from "../../assets/wallet/bibox.svg";
 import binanceIcon from "../../assets/wallet/binance.svg";
 import bitayIcon from "../../assets/wallet/bitay.svg";
 import bitgetIcon from "../../assets/wallet/bitget.svg";
-import ConnectModal from "../../components/wallet/ConnectModal";
-import { getChain } from "../../features/wallet/ChainSlice";
-import { useCallback, useState } from "react";
+
+import { getSupportChainByName } from "../../lib/helper/WalletHelper";
+
+import { ICurrentChain, ISupportChain } from "../../types/walletTypes";
 
 const WalletPaymentMethod = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const chain = useSelector(getChain);
+
+  const currentChainStore: ICurrentChain = useSelector(getCurrentChain);
+
+  const currentSupportChain: ISupportChain = useMemo(() => getSupportChainByName(currentChainStore?.chain), [currentChainStore]);
+
   const [icon, setIcon] = useState<any>();
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
@@ -78,7 +90,7 @@ const WalletPaymentMethod = () => {
           </Box>
         </Grid>
       </Grid>
-      <ConnectModal coin={chain.icon} src={icon} open={open} setOpen={setOpen} title={title} />
+      <ConnectModal coin={currentSupportChain?.chain?.logo} src={icon} open={open} setOpen={setOpen} title={title} />
     </>
   );
 };

@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import { Chains } from "../../consts/Chains";
 
@@ -8,27 +8,35 @@ import { Box, Grid, Stack, IconButton, Button, Tooltip, Divider } from "@mui/mat
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 
-import { getChain } from "../../features/wallet/ChainSlice";
 import { getWalletSetting } from "../../features/settings/WalletSettingSlice";
+import { getCurrentChain } from "../../features/wallet/CurrentChainSlice";
+import { getWallet } from "../../features/wallet/WalletSlice";
+import { getBalanceList } from "../../features/wallet/BalanceListSlice";
 
 import InputText from "../../components/account/InputText";
 import ChooseChainDrawer from "../../components/wallet/ChooseChainDrawer";
 import TransactionFeeDrawer from "../../components/wallet/TransactionFeeDrawer";
+
+import { getCurrentChainWalletAddress, getNativeTokenBalanceByChainName, getSupportChainByName } from "../../lib/helper/WalletHelper";
 
 import walletIcon from "../../assets/wallet.svg";
 import gameIcon from "../../assets/wallet/game.png";
 
 import WalletStyle from "../../styles/WalletStyles";
 
-import { IChain } from "../../types/walletTypes";
+import { IBalanceList, ICurrentChain, ISupportChain, IWallet } from "../../types/walletTypes";
 import { IWalletSetting } from "../../types/settingTypes";
 
 const WalletBuyGame = () => {
   const { t } = useTranslation();
   const classname = WalletStyle();
 
-  const chainStore: IChain = useSelector(getChain);
   const walletSettingStore: IWalletSetting = useSelector(getWalletSetting);
+  const currentChainStore: ICurrentChain = useSelector(getCurrentChain);
+  const walletStore: IWallet = useSelector(getWallet);
+  const balanceListStore: IBalanceList = useSelector(getBalanceList);
+
+  const currentSupportChain: ISupportChain = useMemo(() => getSupportChainByName(currentChainStore?.chain), [currentChainStore]);
 
   const [chooseChainView, setChooseChainView] = useState<boolean>(false);
   const [transactionFeeView, setTransactionFeeView] = useState<boolean>(false);
@@ -46,19 +54,19 @@ const WalletBuyGame = () => {
               <Stack height={"145px"}>
                 <Box className={"wallet-form-card-hover p-24-16 br-16"} mb={"32px"} onClick={() => setChooseChainView(true)}>
                   <Stack direction="row" alignItems={"center"} spacing={"16px"}>
-                    <Box component={"img"} src={chainStore.chain.logo} width={"36px"} height={"36px"} />
+                    <Box component={"img"} src={currentSupportChain?.chain?.logo} width={"36px"} height={"36px"} />
                     <Stack>
                       <Stack direction={"row"} spacing={"10px"}>
                         <Box className={"fs-18-regular light"}>{t("wal-8_from")}</Box>
-                        <Box className={"fs-18-regular white"}>{chainStore.chain.name}</Box>
+                        <Box className={"fs-18-regular white"}>{currentChainStore?.chain}</Box>
                       </Stack>
                       <Stack direction={"row"} alignItems={"center"} spacing={"8px"}>
                         <Box component={"img"} src={walletIcon} width={"12px"} height={"12px"} />
-                        <Box className={"fs-16-regular light"}>{chainStore.chain.wallet}</Box>
+                        <Box className={"fs-16-regular light"}>{getCurrentChainWalletAddress(walletStore, currentChainStore?.chain)}</Box>
                       </Stack>
                       <Stack direction={"row"} alignItems={"center"} spacing={"8px"}>
                         <Box className="fs-14-regular light">{t("wal-39_balance")}</Box>
-                        <Box className="fs-14-regular light">{chainStore.chain.balance.toString()}</Box>
+                        <Box className="fs-14-regular light">{getNativeTokenBalanceByChainName(balanceListStore, currentChainStore?.chain)}</Box>
                       </Stack>
                     </Stack>
                   </Stack>

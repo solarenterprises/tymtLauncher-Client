@@ -1,5 +1,5 @@
-import { useState, useEffect, useMemo } from "react";
-import { useSelector, useDispatch } from "react-redux";
+import { useState, useMemo } from "react";
+import { useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import _ from "lodash";
 
@@ -9,27 +9,34 @@ import { currencySymbols } from "../../consts/SupportCurrency";
 
 import { Stack, Box, Button, CircularProgress } from "@mui/material";
 
-import { AppDispatch } from "../../store";
-import { getTransactionsAsync, selectTrasaction, setTransasctions } from "../../features/wallet/CryptoSlice";
-import { getChain } from "../../features/wallet/ChainSlice";
+import { selectTrasaction } from "../../features/wallet/CryptoSlice";
 import { getCurrencyList } from "../../features/wallet/CurrencyListSlice";
 import { getCurrentCurrency } from "../../features/wallet/CurrentCurrencySlice";
+import { getCurrentChain } from "../../features/wallet/CurrentChainSlice";
+import { getPriceList } from "../../features/wallet/PriceListSlice";
+import { getCurrentToken } from "../../features/wallet/CurrentTokenSlice";
+import { getWallet } from "../../features/wallet/WalletSlice";
+
+import { formatBalance, formatTransaction } from "../../lib/helper";
+import { getNativeTokenPriceByChainName, getSupportChainByName } from "../../lib/helper/WalletHelper";
+import { openLink } from "../../lib/api/Downloads";
 
 import timerIcon from "../../assets/wallet/timer-icon.svg";
 
-import { IChain, ICurrencyList, ICurrentCurrency, transactionIconMap } from "../../types/walletTypes";
-
-import { formatBalance, formatTransaction } from "../../lib/helper";
-import { openLink } from "../../lib/api/Downloads";
+import { ICurrencyList, ICurrentChain, ICurrentCurrency, ICurrentToken, IPriceList, ISupportChain, IWallet, transactionIconMap } from "../../types/walletTypes";
 
 const TransCard = () => {
   const { t } = useTranslation();
-  const dispatch = useDispatch<AppDispatch>();
 
-  const chain: IChain = useSelector(getChain);
   const transactions: any[] = useSelector(selectTrasaction);
   const currencyListStore: ICurrencyList = useSelector(getCurrencyList);
   const currentCurrencyStore: ICurrentCurrency = useSelector(getCurrentCurrency);
+  const currentChainStore: ICurrentChain = useSelector(getCurrentChain);
+  const currentTokenStore: ICurrentToken = useSelector(getCurrentToken);
+  const priceListStore: IPriceList = useSelector(getPriceList);
+  const walletStore: IWallet = useSelector(getWallet);
+
+  const currentSupportChain: ISupportChain = useMemo(() => getSupportChainByName(currentChainStore?.chain), [currentChainStore]);
 
   const reserve: number = useMemo(
     () => currencyListStore?.list?.find((one) => one?.name === currentCurrencyStore?.currency)?.reserve,
@@ -38,37 +45,27 @@ const TransCard = () => {
   const currencySymbol: string = useMemo(() => currencySymbols[currentCurrencyStore?.currency], [currentCurrencyStore]);
 
   const [page, setPage] = useState<number>(1);
+  //@ts-ignore
   const [loading, setLoading] = useState<boolean>(false);
 
-  useEffect(() => {
-    dispatch(setTransasctions());
-    dispatch(
-      getTransactionsAsync({
-        chain: chain,
-        page: 1,
-      })
-    );
-    setPage(1);
-  }, [dispatch, chain]);
-
-  useEffect(() => {
-    if (page !== 1) {
-      setLoading(true);
-      dispatch(
-        getTransactionsAsync({
-          chain: chain,
-          page: page,
-        })
-      )
-        .then(() => {
-          setLoading(false);
-        })
-        .catch((err) => {
-          console.error("Failed to load more: ", err);
-          setLoading(false);
-        });
-    }
-  }, [dispatch, page]);
+  // useEffect(() => {
+  //   if (page !== 1) {
+  //     setLoading(true);
+  //     dispatch(
+  //       getTransactionsAsync({
+  //         chain: chain,
+  //         page: page,
+  //       })
+  //     )
+  //       .then(() => {
+  //         setLoading(false);
+  //       })
+  //       .catch((err) => {
+  //         console.error("Failed to load more: ", err);
+  //         setLoading(false);
+  //       });
+  //   }
+  // }, [dispatch, page]);
 
   const handleButtonClick = (path: string) => {
     const externalLink = path;
@@ -83,7 +80,7 @@ const TransCard = () => {
     <Box>
       {transactions &&
         transactions?.map((data, index) => {
-          const { direction, address, time, url, amount, logo, symbol } = formatTransaction(chain, data);
+          const { direction, address, time, url, amount, logo, symbol } = formatTransaction(walletStore, currentSupportChain, currentTokenStore?.token, data);
           if (!address || !url || !amount) return null;
           else
             return (
@@ -115,7 +112,7 @@ const TransCard = () => {
                       <Box className={"fs-16-regular white center-align"}>{`${amount} ${symbol}`}</Box>
                     </Stack>
                     <Box className={"fs-12-light light t-right"}>{`${currencySymbol} ${formatBalance(
-                      Number(chain.chain.price ?? 0) * Number(amount) * reserve
+                      Number(getNativeTokenPriceByChainName(priceListStore, currentSupportChain?.chain?.name) ?? 0) * Number(amount) * reserve
                     )}`}</Box>
                   </Stack>
                 </Stack>
