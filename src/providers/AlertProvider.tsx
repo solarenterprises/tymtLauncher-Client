@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from "react";
+import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Outlet } from "react-router-dom";
 
@@ -22,67 +22,60 @@ import { fetchAlertListAsync } from "../features/alert/AlertListSlice";
 import { fetchAdminListAsync } from "../features/chat/AdminListSlice";
 import { fetchGameListAsync } from "../features/store/GameListSlice";
 import { fetchComingGameListAsync } from "../features/store/ComingGameListSlice";
+import { getWallet } from "../features/wallet/WalletSlice";
 import { rsaDecrypt } from "../features/chat/RsaApi";
 
 import { IChatroom, IParticipant } from "../types/ChatroomAPITypes";
 import { IMyInfo, IRsa } from "../types/chatTypes";
+import { IWallet } from "../types/walletTypes";
 
 const AlertProvider = () => {
   const dispatch = useDispatch<AppDispatch>();
+
   const rsaStore: IRsa = useSelector(getRsa);
   const myInfoStore: IMyInfo = useSelector(getMyInfo);
-
-  //@ts-ignore
-  const initAction = useCallback(async () => {
-    try {
-      console.log("initAction");
-
-      // Fetch all data
-      dispatch(fetchGameListAsync());
-      dispatch(fetchComingGameListAsync());
-      dispatch(fetchAdminListAsync(["admin"]));
-      dispatch(fetchAlertListAsync(myInfoStore?._id));
-      dispatch(fetchContactListAsync());
-      dispatch(fetchFriendListAsync());
-      dispatch(fetchBlockListAsync());
-      dispatch(fetchMutedListAsync());
-      dispatch(fetchUnreadMessageListAsync(myInfoStore?._id));
-      dispatch(fetchGlobalChatroomListAsync());
-      dispatch(fetchPublicChatroomListAsync());
-      dispatch(fetchChatroomListAsync(myInfoStore?._id)).then((action) => {
-        try {
-          if (action.type.endsWith("/fulfilled")) {
-            const newChatroomList = action.payload as IChatroom[];
-
-            const newSKeyArray = newChatroomList.map((chatroom) => {
-              if (chatroom.isGlobal) {
-                return {
-                  roomId: chatroom._id,
-                  sKey: "",
-                };
-              }
-              const mySelf: IParticipant = chatroom.participants.find((participant) => participant.userId === myInfoStore?._id);
-              const sKey: ISKey = {
-                roomId: chatroom._id,
-                sKey: rsaDecrypt(mySelf.userKey, rsaStore.privateKey),
-              };
-              return sKey;
-            });
-            dispatch(setSKeyList(newSKeyArray));
-          }
-        } catch (err) {
-          console.error("Failed to newSKeyArray: ", err);
-        }
-      });
-    } catch (err) {
-      console.error("Failed to initAction: ", err);
-    }
-  }, [myInfoStore]);
+  const walletStore: IWallet = useSelector(getWallet);
 
   useEffect(() => {
-    dispatch(fetchBalanceListAsync());
+    dispatch(fetchBalanceListAsync(walletStore));
     dispatch(fetchPriceListAsync());
     dispatch(fetchCurrencyListAsync());
+    dispatch(fetchGameListAsync());
+    dispatch(fetchComingGameListAsync());
+    dispatch(fetchAdminListAsync(["admin"]));
+    dispatch(fetchAlertListAsync(myInfoStore?._id));
+    dispatch(fetchContactListAsync());
+    dispatch(fetchFriendListAsync());
+    dispatch(fetchBlockListAsync());
+    dispatch(fetchMutedListAsync());
+    dispatch(fetchUnreadMessageListAsync(myInfoStore?._id));
+    dispatch(fetchGlobalChatroomListAsync());
+    dispatch(fetchPublicChatroomListAsync());
+    dispatch(fetchChatroomListAsync(myInfoStore?._id)).then((action) => {
+      try {
+        if (action.type.endsWith("/fulfilled")) {
+          const newChatroomList = action.payload as IChatroom[];
+
+          const newSKeyArray = newChatroomList.map((chatroom) => {
+            if (chatroom.isGlobal) {
+              return {
+                roomId: chatroom._id,
+                sKey: "",
+              };
+            }
+            const mySelf: IParticipant = chatroom.participants.find((participant) => participant.userId === myInfoStore?._id);
+            const sKey: ISKey = {
+              roomId: chatroom._id,
+              sKey: rsaDecrypt(mySelf.userKey, rsaStore.privateKey),
+            };
+            return sKey;
+          });
+          dispatch(setSKeyList(newSKeyArray));
+        }
+      } catch (err) {
+        console.error("Failed to newSKeyArray: ", err);
+      }
+    });
   }, []);
 
   return (

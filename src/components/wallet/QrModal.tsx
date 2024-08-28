@@ -1,12 +1,11 @@
 import { useSelector } from "react-redux";
 import { useMemo } from "react";
-import QRCode from "react-qr-code";
 import { useTranslation } from "react-i18next";
+import QRCode from "react-qr-code";
 
 import { Box, Stack, Modal, Tooltip, Button, Fade } from "@mui/material";
 
 import { getWallet } from "../../features/wallet/WalletSlice";
-import { getCurrentChain } from "../../features/wallet/CurrentChainSlice";
 
 import closeIcon from "../../assets/settings/x-icon.svg";
 import copyIcon from "../../assets/settings/copy-icon.svg";
@@ -15,7 +14,7 @@ import SettingStyle from "../../styles/SettingStyle";
 
 import { getCurrentChainWalletAddress } from "../../lib/helper/WalletHelper";
 
-import { ICurrentChain, ISupportChain, IWallet } from "../../types/walletTypes";
+import { ISupportChain, IWallet } from "../../types/walletTypes";
 
 export interface IPropsQrModal {
   supportChain: ISupportChain;
@@ -28,9 +27,8 @@ const QrModal = ({ supportChain, open, setOpen }: IPropsQrModal) => {
   const classnames = SettingStyle();
 
   const walletStore: IWallet = useSelector(getWallet);
-  const currentChainStore: ICurrentChain = useSelector(getCurrentChain);
 
-  const currentWallet = useMemo(() => getCurrentChainWalletAddress(walletStore, currentChainStore?.chain), [walletStore, currentChainStore]);
+  const currentWallet = useMemo(() => getCurrentChainWalletAddress(walletStore, supportChain?.chain?.name), [walletStore]);
 
   const modalStyle = {
     display: "flex",

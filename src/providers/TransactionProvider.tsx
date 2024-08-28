@@ -13,7 +13,7 @@ import { AppDispatch } from "../store";
 import { getNonCustodial } from "../features/account/NonCustodialSlice";
 import { getSaltToken } from "../features/account/SaltTokenSlice";
 import { getMnemonic } from "../features/account/MnemonicSlice";
-import { setWallet } from "../features/wallet/WalletSlice";
+import { getWallet, setWallet } from "../features/wallet/WalletSlice";
 import { getAccount } from "../features/account/AccountSlice";
 import { getWalletList } from "../features/wallet/WalletListSlice";
 import { getCurrentChain } from "../features/wallet/CurrentChainSlice";
@@ -21,6 +21,10 @@ import { getCurrentChain } from "../features/wallet/CurrentChainSlice";
 import { IAccount, IMnemonic, ISaltToken, nonCustodialType } from "../types/accountTypes";
 import { IGetAccountReq, IGetBalanceReq, ISendContractReq, ISignMessageReq, IVerifyMessageReq } from "../types/eventParamTypes";
 import { ICurrentChain, IWallet, IWalletList } from "../types/walletTypes";
+import { setCurrentToken } from "../features/wallet/CurrentTokenSlice";
+import { fetchBalanceListAsync } from "../features/wallet/BalanceListSlice";
+import { fetchPriceListAsync } from "../features/wallet/PriceListSlice";
+import { fetchCurrencyListAsync } from "../features/wallet/CurrencyListSlice";
 
 const TransactionProvider = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -31,6 +35,7 @@ const TransactionProvider = () => {
   const walletListStore: IWalletList = useSelector(getWalletList);
   const accountStore: IAccount = useSelector(getAccount);
   const currentChainStore: ICurrentChain = useSelector(getCurrentChain);
+  const walletStore: IWallet = useSelector(getWallet);
 
   const nonCustodialStoreRef = useRef(nonCustodialStore);
   const saltTokenStoreRef = useRef(saltTokenStore);
@@ -53,10 +58,12 @@ const TransactionProvider = () => {
   }, [accountStore, walletListStore]);
 
   useEffect(() => {
-    // set chainStore
-    // set balanceStore
     console.log("currentChainStore has been changed!");
-  }, [currentChainStore]);
+    dispatch(setCurrentToken(""));
+    dispatch(fetchBalanceListAsync(walletStore));
+    dispatch(fetchPriceListAsync());
+    dispatch(fetchCurrencyListAsync());
+  }, [currentChainStore, walletStore]);
 
   useEffect(() => {
     const unlisten_get_account = listen("POST-/get-account", async (event) => {

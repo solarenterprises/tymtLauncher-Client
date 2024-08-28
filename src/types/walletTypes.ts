@@ -144,17 +144,17 @@ export interface IToken {
   cmc: string;
 }
 
-export interface multiWalletType {
-  Arbitrum: IChain;
-  Avalanche: IChain;
-  Bitcoin: IChain;
-  Binance: IChain;
-  Ethereum: IChain;
-  Optimism: IChain;
-  Polygon: IChain;
-  Solana: IChain;
-  Solar: IChain;
-}
+// export interface multiWalletType {
+//   Arbitrum: IChain;
+//   Avalanche: IChain;
+//   Bitcoin: IChain;
+//   Binance: IChain;
+//   Ethereum: IChain;
+//   Optimism: IChain;
+//   Polygon: IChain;
+//   Solana: IChain;
+//   Solar: IChain;
+// }
 
 export interface IWallet {
   arbitrum: string;
@@ -233,4 +233,9 @@ export interface IPrice {
 
 export interface IPriceList {
   list: IPrice[];
+}
+
+export interface IParamsFetchChainBalance {
+  walletStore: IWallet;
+  chainName: string;
 }

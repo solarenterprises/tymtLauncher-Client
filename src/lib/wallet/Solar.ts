@@ -5,9 +5,10 @@ import Big from "big.js";
 import SolarAPI from "../api/SolarAPI";
 import { net_name, solar_api_url } from "../../configs/index";
 import { IRecipient } from "../../features/wallet/CryptoApi";
-import { multiWalletType } from "../../types/walletTypes";
-import tymtStorage from "../Storage";
 import { testAccountTokens } from "../../consts/testMnemonics";
+import { IPriceList } from "../../types/walletTypes";
+import { getSupportChainByName, getTokenPriceByCmc } from "../helper/WalletHelper";
+import { ChainNames } from "../../consts/Chains";
 
 export class Solar implements IWallet {
   address: string;
@@ -172,8 +173,8 @@ export class Solar implements IWallet {
           );
         });
 
-        const multiWalletStore: multiWalletType = JSON.parse(await tymtStorage.get(`multiWallet`));
-        const sxpPriceUSD = multiWalletStore.Solar.chain.price;
+        const priceListStore: IPriceList = JSON.parse(sessionStorage.getItem(`priceList`));
+        const sxpPriceUSD = getTokenPriceByCmc(priceListStore, getSupportChainByName(ChainNames.SOLAR)?.chain?.cmc);
         let itransaction = transaction
           .fee(
             Big(tx.fee)
@@ -227,8 +228,9 @@ export class Solar implements IWallet {
               .times(10 ** 8)
               .toFixed(0)
           );
-        const multiWalletStore: multiWalletType = JSON.parse(await tymtStorage.get(`multiWallet`));
-        const sxpPriceUSD = multiWalletStore.Solar.chain.price;
+
+        const priceListStore: IPriceList = JSON.parse(sessionStorage.getItem(`priceList`));
+        const sxpPriceUSD = getTokenPriceByCmc(priceListStore, getSupportChainByName(ChainNames.SOLAR)?.chain?.cmc);
         let itransaction = transaction
           .fee(
             Big(tx.fee)
@@ -294,8 +296,8 @@ export class Solar implements IWallet {
           );
         });
 
-        const multiWalletStore: multiWalletType = JSON.parse(await tymtStorage.get(`multiWallet`));
-        const sxpPriceUSD = multiWalletStore.Solar.chain.price;
+        const priceListStore: IPriceList = JSON.parse(sessionStorage.getItem(`priceList`));
+        const sxpPriceUSD = getTokenPriceByCmc(priceListStore, getSupportChainByName(ChainNames.SOLAR)?.chain?.cmc);
         let itransaction = transaction
           .fee(
             Big(tx.fee)
@@ -349,8 +351,8 @@ export class Solar implements IWallet {
               .times(10 ** 8)
               .toFixed(0)
           );
-        const multiWalletStore: multiWalletType = JSON.parse(await tymtStorage.get(`multiWallet`));
-        const sxpPriceUSD = multiWalletStore.Solar.chain.price;
+        const priceListStore: IPriceList = JSON.parse(sessionStorage.getItem(`priceList`));
+        const sxpPriceUSD = getTokenPriceByCmc(priceListStore, getSupportChainByName(ChainNames.SOLAR)?.chain?.cmc);
         let itransaction = transaction
           .fee(
             Big(tx.fee)
@@ -411,8 +413,8 @@ export class Solar implements IWallet {
 
   static async vote(passphrase: string, addr: string, votesAsset: any, fee: string) {
     Managers.configManager.setFromPreset(net_name === "mainnet" ? "mainnet" : "testnet");
-    const multiWalletStore: multiWalletType = JSON.parse(await tymtStorage.get(`multiWallet`));
-    const sxpPriceUSD = multiWalletStore.Solar.chain.price;
+    const priceListStore: IPriceList = JSON.parse(sessionStorage.getItem(`priceList`));
+    const sxpPriceUSD = getTokenPriceByCmc(priceListStore, getSupportChainByName(ChainNames.SOLAR)?.chain?.cmc);
     let nonce = await Solar.getCurrentNonce(addr);
     let tx = Transactions.BuilderFactory.vote()
       .nonce((nonce + 1).toString())

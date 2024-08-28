@@ -64,20 +64,22 @@ const Wallet = () => {
   );
   const symbol: string = useMemo(() => currencySymbols[currentCurrencyStore?.currency], [currentCurrencyStore]);
   const totalBalance = useMemo(() => {
-    supportChains?.reduce((acc, supportChain) => {
-      const nativeBalance = balanceListStore?.list?.find((one) => one?.symbol === supportChain?.chain?.symbol)?.balance;
-      const nativePrice = priceListStore?.list?.find((one) => one?.cmc === supportChain?.chain?.cmc)?.price;
-      acc = acc + (nativeBalance ?? 0) * (nativePrice ?? 0);
-      acc =
-        acc +
-        supportChain?.tokens?.reduce((sub, token) => {
-          const tokenBalance = balanceListStore?.list?.find((one) => one?.symbol === token?.symbol)?.balance;
-          const tokenPrice = priceListStore?.list?.find((one) => one?.cmc === token?.cmc)?.price;
-          sub = sub + (tokenBalance ?? 0) * (tokenPrice ?? 0);
-          return sub;
-        }, 0);
-      return acc;
-    }, 0) * (reserve as number);
+    const res =
+      supportChains?.reduce((acc, supportChain) => {
+        const nativeBalance = balanceListStore?.list?.find((one) => one?.symbol === supportChain?.chain?.symbol)?.balance;
+        const nativePrice = priceListStore?.list?.find((one) => one?.cmc === supportChain?.chain?.cmc)?.price;
+        acc = acc + (nativeBalance ?? 0) * (nativePrice ?? 0);
+        acc =
+          acc +
+          supportChain?.tokens?.reduce((sub, token) => {
+            const tokenBalance = balanceListStore?.list?.find((one) => one?.symbol === token?.symbol)?.balance;
+            const tokenPrice = priceListStore?.list?.find((one) => one?.cmc === token?.cmc)?.price;
+            sub = sub + (tokenBalance ?? 0) * (tokenPrice ?? 0);
+            return sub;
+          }, 0);
+        return acc;
+      }, 0) * (reserve as number);
+    return res;
   }, [balanceListStore, priceListStore, reserve]);
 
   return (

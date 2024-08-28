@@ -49,7 +49,7 @@ export const priceListSlice = createSlice({
   },
 });
 
-export const getPriceList = (state: any) => state.balanceList.data;
+export const getPriceList = (state: any) => state.priceList.data;
 export const { setPriceList } = priceListSlice.actions;
 
 export default priceListSlice.reducer;

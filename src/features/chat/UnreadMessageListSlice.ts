@@ -49,7 +49,7 @@ export const unreadMessageListSlice = createSlice({
       })
       .addCase(fetchUnreadMessageListAsync.fulfilled, (state, action: PayloadAction<any>) => {
         if (!action.payload) {
-          console.error("Failed to fetchUnreadMessageListAsync: action.payload undefined!");
+          console.log("Failed to fetchUnreadMessageListAsync: action.payload undefined!");
           return;
         }
         state.data = action.payload;

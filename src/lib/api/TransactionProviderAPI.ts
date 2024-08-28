@@ -2,6 +2,7 @@ import { emit } from "@tauri-apps/api/event";
 import { Body, fetch as tauriFetch, ResponseType } from "@tauri-apps/api/http";
 
 import { tymt_backend_url } from "../../configs";
+import { ChainNames } from "../../consts/Chains";
 
 import tymtCore from "../core/tymtCore";
 import tymtStorage from "../Storage";
@@ -10,20 +11,21 @@ import ERC20 from "../wallet/ERC20";
 import { IRecipient } from "../../features/wallet/CryptoApi";
 
 import { decrypt } from "./Encrypt";
+import { getSupportChainByName, getSupportTokenByAddress, getTokenPriceByCmc } from "../helper/WalletHelper";
 
 import { IMnemonic, ISaltToken, nonCustodialType } from "../../types/accountTypes";
 import { IGetAccountReq, IGetBalanceReq, ISendContractReq, ISendTransactionReq, ISignMessageReq, IVerifyMessageReq } from "../../types/eventParamTypes";
-import { IWalletSetting } from "../../types/settingTypes";
-import { INative, IToken, chainEnum, chainIconMap, multiWalletType } from "../../types/walletTypes";
+import { IPriceList, ISupportNative, ISupportToken, IToken, IWallet, chainEnum, chainIconMap } from "../../types/walletTypes";
 import { IMyInfo } from "../../types/chatTypes";
+import { IWalletSetting } from "../../types/settingTypes";
 
 export default class TransactionProviderAPI {
   static getAccount = async (params: IGetAccountReq) => {
-    let multiWalletStore: multiWalletType = JSON.parse(tymtStorage.get(`multiWallet`));
+    const walletStore: IWallet = JSON.parse(tymtStorage.get(`wallet`));
     let res: string = "";
     switch (params.chain) {
       case "solar":
-        res = multiWalletStore.Solar.chain.wallet;
+        res = walletStore?.solar;
         break;
       case "ethereum":
       case "polygon":
@@ -31,13 +33,13 @@ export default class TransactionProviderAPI {
       case "avalanche":
       case "arbitrum":
       case "optimism":
-        res = multiWalletStore.Ethereum.chain.wallet;
+        res = walletStore?.ethereum;
         break;
       case "bitcoin":
-        res = multiWalletStore.Bitcoin.chain.wallet;
+        res = walletStore?.bitcoin;
         break;
       case "solana":
-        res = multiWalletStore.Solana.chain.wallet;
+        res = walletStore?.solana;
         break;
     }
     return res;
@@ -181,9 +183,11 @@ export default class TransactionProviderAPI {
 
   // check if balance >= amount-to-be-sent + gas fee
   private static validateTransactionAmount = async (json_data: ISendTransactionReq) => {
-    const multiWalletStore: multiWalletType = JSON.parse(tymtStorage.get(`multiWallet`));
-    const walletStore: IWalletSetting = JSON.parse(tymtStorage.get(`wallet`));
-    const feeInUSD = Number(walletStore.fee) as number;
+    const walletSettingStore: IWalletSetting = JSON.parse(tymtStorage.get(`walletSetting`));
+    const walletStore: IWallet = JSON.parse(tymtStorage.get(`wallet`));
+    const priceListStore: IPriceList = JSON.parse(sessionStorage.getItem(`priceList`));
+
+    const feeInUSD = Number(walletSettingStore?.fee) as number;
     const currentToken = await this.getToken(json_data);
     const isNativeToken = await this.isNativeToken(json_data);
     const totalAmount: number = json_data.transfers.reduce((sum, transfer) => {
@@ -191,54 +195,54 @@ export default class TransactionProviderAPI {
     }, 0);
     let address: string = "";
     let bal: number = 0;
-    let price: number = currentToken.price as number; // Token price in USD
+    let price: number = getTokenPriceByCmc(priceListStore, currentToken?.cmc);
     switch (json_data.chain) {
       case "solar":
-        address = multiWalletStore.Solar.chain.wallet;
+        address = walletStore?.solar;
         bal = await tymtCore.Blockchains.solar.wallet.getBalance(address);
         break;
       case "ethereum":
-        address = multiWalletStore.Ethereum.chain.wallet;
+        address = walletStore?.ethereum;
         bal = isNativeToken
           ? await tymtCore.Blockchains.eth.wallet.getBalance(address)
           : (await tymtCore.Blockchains.eth.wallet.getTokenBalance(address, [currentToken as IToken]))[0].balance; // Divided by decimal
         break;
       case "binance":
-        address = multiWalletStore.Binance.chain.wallet;
+        address = walletStore?.binance;
         bal = isNativeToken
           ? await tymtCore.Blockchains.bsc.wallet.getBalance(address)
           : (await tymtCore.Blockchains.bsc.wallet.getTokenBalance(address, [currentToken as IToken]))[0].balance; // Divided by decimal
         break;
       case "polygon":
-        address = multiWalletStore.Polygon.chain.wallet;
+        address = walletStore?.polygon;
         bal = isNativeToken
           ? await tymtCore.Blockchains.polygon.wallet.getBalance(address)
           : (await tymtCore.Blockchains.polygon.wallet.getTokenBalance(address, [currentToken as IToken]))[0].balance; // Divided by decimal
         break;
       case "arbitrum":
-        address = multiWalletStore.Arbitrum.chain.wallet;
+        address = walletStore?.arbitrum;
         bal = isNativeToken
           ? await tymtCore.Blockchains.arbitrum.wallet.getBalance(address)
           : (await tymtCore.Blockchains.arbitrum.wallet.getTokenBalance(address, [currentToken as IToken]))[0].balance; // Divided by decimal
         break;
       case "avalanche":
-        address = multiWalletStore.Avalanche.chain.wallet;
+        address = walletStore?.avalanche;
         bal = isNativeToken
           ? await tymtCore.Blockchains.avalanche.wallet.getBalance(address)
           : (await tymtCore.Blockchains.avalanche.wallet.getTokenBalance(address, [currentToken as IToken]))[0].balance; // Divided by decimal
         break;
       case "optimism":
-        address = multiWalletStore.Optimism.chain.wallet;
+        address = walletStore?.optimism;
         bal = isNativeToken
           ? await tymtCore.Blockchains.op.wallet.getBalance(address)
           : (await tymtCore.Blockchains.op.wallet.getTokenBalance(address, [currentToken as IToken]))[0].balance; // Divided by decimal
         break;
       case "bitcoin":
-        address = multiWalletStore.Bitcoin.chain.wallet;
+        address = walletStore?.bitcoin;
         bal = await tymtCore.Blockchains.btc.wallet.getBalance(address);
         break;
       case "solana":
-        address = multiWalletStore.Solana.chain.wallet;
+        address = walletStore?.solana;
         bal = await tymtCore.Blockchains.solana.wallet.getBalance(address);
         break;
     }
@@ -256,40 +260,38 @@ export default class TransactionProviderAPI {
 
   // If token not existed, return the native token
   static getToken = async (json_data: ISendTransactionReq) => {
-    let resToken: IToken;
-    resToken = await this.getTokenOnly(json_data);
+    const resToken = await this.getTokenOnly(json_data);
     if (resToken) return resToken;
 
     const { chain } = json_data;
-    const multiWalletStore: multiWalletType = JSON.parse(tymtStorage.get(`multiWallet`));
-    let nativeToken: INative;
+    let nativeToken: ISupportNative;
     switch (chain) {
       case "solar":
-        nativeToken = multiWalletStore.Solar.chain;
+        nativeToken = getSupportChainByName(ChainNames.SOLAR)?.chain;
         break;
       case "ethereum":
-        nativeToken = multiWalletStore.Ethereum.chain;
+        nativeToken = getSupportChainByName(ChainNames.ETHEREUM)?.chain;
         break;
       case "binance":
-        nativeToken = multiWalletStore.Binance.chain;
+        nativeToken = getSupportChainByName(ChainNames.BINANCE)?.chain;
         break;
       case "polygon":
-        nativeToken = multiWalletStore.Polygon.chain;
+        nativeToken = getSupportChainByName(ChainNames.POLYGON)?.chain;
         break;
       case "arbitrum":
-        nativeToken = multiWalletStore.Arbitrum.chain;
+        nativeToken = getSupportChainByName(ChainNames.ARBITRUM)?.chain;
         break;
       case "avalanche":
-        nativeToken = multiWalletStore.Avalanche.chain;
+        nativeToken = getSupportChainByName(ChainNames.AVALANCHE)?.chain;
         break;
       case "optimism":
-        nativeToken = multiWalletStore.Optimism.chain;
+        nativeToken = getSupportChainByName(ChainNames.OPTIMISM)?.chain;
         break;
       case "bitcoin":
-        nativeToken = multiWalletStore.Bitcoin.chain;
+        nativeToken = getSupportChainByName(ChainNames.BITCOIN)?.chain;
         break;
       case "solana":
-        nativeToken = multiWalletStore.Solana.chain;
+        nativeToken = getSupportChainByName(ChainNames.SOLANA)?.chain;
         break;
     }
     return nativeToken;
@@ -298,38 +300,8 @@ export default class TransactionProviderAPI {
   // Without native token
   private static getTokenOnly = async (json_data: ISendTransactionReq) => {
     if (!json_data.token) return undefined;
-    const { chain, token } = json_data;
-    const multiWalletStore: multiWalletType = JSON.parse(tymtStorage.get(`multiWallet`));
-    let resToken: IToken;
-    switch (chain) {
-      case "solar":
-        resToken = undefined;
-        break;
-      case "ethereum":
-        resToken = multiWalletStore.Ethereum.tokens.find((element) => element.address === token);
-        break;
-      case "binance":
-        resToken = multiWalletStore.Binance.tokens.find((element) => element.address === token);
-        break;
-      case "polygon":
-        resToken = multiWalletStore.Polygon.tokens.find((element) => element.address === token);
-        break;
-      case "arbitrum":
-        resToken = multiWalletStore.Arbitrum.tokens.find((element) => element.address === token);
-        break;
-      case "avalanche":
-        resToken = multiWalletStore.Avalanche.tokens.find((element) => element.address === token);
-        break;
-      case "optimism":
-        resToken = multiWalletStore.Optimism.tokens.find((element) => element.address === token);
-        break;
-      case "bitcoin":
-        resToken = undefined;
-        break;
-      case "solana":
-        resToken = undefined;
-        break;
-    }
+    const { token } = json_data;
+    const resToken: ISupportToken = getSupportTokenByAddress(token);
     return resToken;
   };
 
@@ -485,7 +457,6 @@ export default class TransactionProviderAPI {
   static verifyMessage = async (jsonData: IVerifyMessageReq) => {
     try {
       const mnemonicStore: IMnemonic = JSON.parse(sessionStorage.getItem("mnemonic"));
-      const multiWalletStore: multiWalletType = JSON.parse(tymtStorage.get("multiWallet"));
 
       if (!jsonData || !jsonData.message || !jsonData.signature || !jsonData.chain) {
         return false;
@@ -503,7 +474,8 @@ export default class TransactionProviderAPI {
         case "avalanche":
         case "arbitrum":
         case "optimism":
-          res = await tymtCore.Blockchains.eth.wallet.verifyMessage(jsonData.message, jsonData.signature, multiWalletStore.Ethereum.chain.wallet);
+          const walletStore: IWallet = JSON.parse(tymtStorage.get(`wallet`));
+          res = await tymtCore.Blockchains.eth.wallet.verifyMessage(jsonData.message, jsonData.signature, walletStore?.ethereum);
           break;
         case "bitcoin":
           break;

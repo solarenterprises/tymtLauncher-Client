@@ -20,11 +20,12 @@ import { AppDispatch } from "../../../store";
 import { getTempAccount, setTempAccount } from "../../../features/account/TempAccountSlice";
 import { setAccount } from "../../../features/account/AccountSlice";
 import { addAccountList } from "../../../features/account/AccountListSlice";
-import { getWallet, setWallet } from "../../../features/wallet/WalletSlice";
+import { setWallet } from "../../../features/wallet/WalletSlice";
 import { addWalletList } from "../../../features/wallet/WalletListSlice";
 import { getSaltToken, setSaltToken } from "../../../features/account/SaltTokenSlice";
 import { getMachineId } from "../../../features/account/MachineIdSlice";
 import { fetchMyInfoAsync } from "../../../features/account/MyInfoSlice";
+import { getTempWallet } from "../../../features/wallet/TempWalletSlice";
 import { setLogin } from "../../../features/account/LoginSlice";
 
 import AuthAPI from "../../../lib/api/AuthAPI";
@@ -43,7 +44,7 @@ const NonCustodialImport1 = () => {
   const dispatch = useDispatch<AppDispatch>();
 
   const tempAccountStore: IAccount = useSelector(getTempAccount);
-  const tempWalletStore: IWallet = useSelector(getWallet);
+  const tempWalletStore: IWallet = useSelector(getTempWallet);
   const saltTokenStore: ISaltToken = useSelector(getSaltToken);
   const machineIdStore: IMachineId = useSelector(getMachineId);
 

@@ -3,7 +3,7 @@ import { ethers } from "ethers";
 import * as ethereumjsWallet from "ethereumjs-wallet";
 import * as bip39 from "bip39";
 import { avax_api_url, avax_rpc_url, net_name } from "../../configs";
-import { IToken, IGetTokenBalanceRes } from "../../types/walletTypes";
+import { ISupportToken, IBalance } from "../../types/walletTypes";
 import tymtStorage from "../Storage";
 
 class Avalanche implements IWallet {
@@ -39,29 +39,29 @@ class Avalanche implements IWallet {
     }
   }
 
-  static async getTokenBalance(addr: string, tokens: IToken[]): Promise<IGetTokenBalanceRes[]> {
+  static async getTokenBalance(addr: string, tokens: ISupportToken[]): Promise<IBalance[]> {
     try {
-      let result: IGetTokenBalanceRes[] = [];
+      let result: IBalance[] = [];
       for (let i = 0; i < tokens.length; i++) {
-        const tokenContractAddress = tokens[i].address;
-        const tokenAbi = ["function balanceOf(address owner) view returns (uint256)"];
-        const customProvider = new ethers.JsonRpcProvider(avax_rpc_url);
-        const tokenContract = new ethers.Contract(tokenContractAddress, tokenAbi, customProvider);
         if (net_name === "testnet") {
           result.push({
-            cmc: tokens[i].cmc,
-            balance: 0,
+            symbol: tokens[i].symbol,
+            balance: 0.0,
           });
         } else {
+          const tokenContractAddress = tokens[i].address;
+          const tokenAbi = ["function balanceOf(address owner) view returns (uint256)"];
+          const customProvider = new ethers.JsonRpcProvider(avax_rpc_url);
+          const tokenContract = new ethers.Contract(tokenContractAddress, tokenAbi, customProvider);
           result.push({
-            cmc: tokens[i].cmc,
+            symbol: tokens[i].symbol,
             balance: parseFloat(await tokenContract.balanceOf(addr)) / 10 ** (tokens[i].decimals as number),
           });
         }
       }
       return result;
     } catch (err) {
-      console.log(err);
+      console.log("Failed to AVALANCHE getTokenBalance: ", err);
       return [];
     }
   }

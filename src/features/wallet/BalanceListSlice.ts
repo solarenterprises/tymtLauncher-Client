@@ -2,7 +2,7 @@ import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { IBalance, IBalanceList } from "../../types/walletTypes";
 import { compareJSONStructure } from "../../lib/api/JSONHelper";
 import { resetBalanceList } from "../../lib/helper/WalletHelper";
-import { fetchBalanceList } from "./BalanceListApi";
+import { fetchBalanceList, fetchChainBalance } from "./BalanceListApi";
 
 const init: IBalanceList = {
   list: resetBalanceList(),
@@ -24,6 +24,7 @@ const initialState = {
 };
 
 export const fetchBalanceListAsync = createAsyncThunk("balanceList/fetchBalanceListAsync", fetchBalanceList);
+export const fetchChainBalanceAsync = createAsyncThunk("balanceList/fetchChainBalanceAsync", fetchChainBalance);
 
 export const balanceListSlice = createSlice({
   name: "balanceList",
@@ -42,7 +43,19 @@ export const balanceListSlice = createSlice({
       .addCase(fetchBalanceListAsync.fulfilled, (state, action: PayloadAction<any>) => {
         const data = action.payload as IBalance[];
         if (!data) return;
-        state.data.list = data;
+        const rest = state.data.list.filter((one) => !data?.some((item) => item?.symbol === one?.symbol));
+        state.data.list = [...rest, ...data];
+        sessionStorage.setItem(`balanceList`, JSON.stringify(state.data));
+        state.status = "balanceList";
+      })
+      .addCase(fetchChainBalanceAsync.pending, (state) => {
+        state.status = "loading";
+      })
+      .addCase(fetchChainBalanceAsync.fulfilled, (state, action: PayloadAction<any>) => {
+        const data = action.payload as IBalance[];
+        if (!data) return;
+        const rest = state.data.list.filter((one) => !data?.some((item) => item?.symbol === one?.symbol));
+        state.data.list = [...rest, ...data];
         sessionStorage.setItem(`balanceList`, JSON.stringify(state.data));
         state.status = "balanceList";
       });

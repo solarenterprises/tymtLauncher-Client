@@ -1,6 +1,6 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import { ThemeProvider, createTheme } from "@mui/material/styles";
@@ -15,6 +15,8 @@ import Alertindex from "../../pages/alert";
 import { selectNotification } from "../../features/settings/NotificationSlice";
 import { getAlertList } from "../../features/alert/AlertListSlice";
 import { getMyInfo } from "../../features/account/MyInfoSlice";
+import { getCurrentChain } from "../../features/wallet/CurrentChainSlice";
+import { getWallet } from "../../features/wallet/WalletSlice";
 
 import { getCurrentLogo } from "../../features/home/Tymtlogo";
 import { getCurrentPage, setCurrentPage } from "../../features/home/Navigation";
@@ -24,14 +26,15 @@ import { IMyInfo } from "../../types/chatTypes";
 import { notificationType } from "../../types/settingTypes";
 import { PaginationType } from "../../types/homeTypes";
 import { TymtlogoType } from "../../types/homeTypes";
-import { IWallet } from "../../types/walletTypes";
+import { ICurrentChain, IWallet } from "../../types/walletTypes";
+
+import { getCurrentChainWalletAddress } from "../../lib/helper/WalletHelper";
 
 import Back from "./Back";
 import Avatar from "./Avatar";
 import newlogo from "../../assets/main/newlogo.png";
 import newlogohead from "../../assets/main/newlogohead.png";
 import searchlg from "../../assets/main/searchlg.svg";
-import { getWallet } from "../../features/wallet/WalletSlice";
 
 const theme = createTheme({
   palette: {
@@ -58,6 +61,9 @@ const Navbar = () => {
   const alertListStore: IAlertList = useSelector(getAlertList);
   const myInfoStore: IMyInfo = useSelector(getMyInfo);
   const walletStore: IWallet = useSelector(getWallet);
+  const currentChainStore: ICurrentChain = useSelector(getCurrentChain);
+
+  const currentWallet = useMemo(() => getCurrentChainWalletAddress(walletStore, currentChainStore?.chain), [walletStore, currentChainStore]);
 
   const [showSetting, setShowSetting] = useState(false);
   const [showChat, setShowChat] = useState(false);
@@ -409,9 +415,7 @@ const Navbar = () => {
                 <Box className={"fs-16-regular white"}>
                   {myInfoStore?.nickName?.length > 11 ? `${myInfoStore?.nickName?.substring(0, 10)}...` : myInfoStore?.nickName}
                 </Box>
-                <Box className={"fs-14-regular light"}>
-                  {`${walletStore?.solar?.substring(0, 5)}...${walletStore?.solar?.substring(walletStore?.solar?.length - 4)}`}
-                </Box>
+                <Box className={"fs-14-regular light"}>{`${currentWallet?.substring(0, 5)}...${currentWallet?.substring(currentWallet?.length - 4)}`}</Box>
               </Stack>
             </Stack>
           </Button>

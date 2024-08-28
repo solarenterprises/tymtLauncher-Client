@@ -7,8 +7,6 @@ export const fetchAdminList = async (body: string[]) => {
       console.error("Failed to fetchAdminList: response undefined!", res);
       return null;
     }
-
-    console.log("fetchAdminList", res);
     return {
       admins: res.data.result,
     };

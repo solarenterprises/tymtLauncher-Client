@@ -1,5 +1,4 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { compareJSONStructure } from "../../lib/api/JSONHelper";
 import { IMyInfo } from "../../types/chatTypes";
 import { fetchMyInfo } from "./MyInfoApi";
 
@@ -30,7 +29,7 @@ const init: IMyInfo = {
 
 const loadMyInfo: () => IMyInfo = () => {
   const data = sessionStorage.getItem(`myInfo`);
-  if (!data || !compareJSONStructure(JSON.parse(data), init)) {
+  if (!data) {
     sessionStorage.setItem(`myInfo`, JSON.stringify(init));
     return init;
   } else {
@@ -52,7 +51,7 @@ export const myInfoSlice = createSlice({
   reducers: {
     setMyInfo: (state, action) => {
       state.data = action.payload;
-      sessionStorage.setItem(`myInfo`, JSON.stringify(action.payload));
+      sessionStorage.setItem(`myInfo`, JSON.stringify(state.data));
     },
   },
   extraReducers(builder) {

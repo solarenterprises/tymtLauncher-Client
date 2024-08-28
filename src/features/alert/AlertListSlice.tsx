@@ -100,7 +100,7 @@ export const alertListSlice = createSlice({
       })
       .addCase(fetchUnreadAlertListAsync.fulfilled, (state, action: PayloadAction<any>) => {
         if (!action.payload && !action.payload.read) {
-          console.error("Failed to fetchUnreadAlertListSync: action.payload.read undefined");
+          console.log("Failed to fetchUnreadAlertListSync: action.payload.read undefined");
         }
         state.data = { ...state.data, unread: addAlertHistory([...action.payload.unread], [...state.data.unread]), unreadCount: action.payload.unreadCount };
         tymtStorage.set(`alertList`, JSON.stringify(state.data));

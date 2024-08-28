@@ -13,17 +13,12 @@ const init: IWalletSetting = {
 
 const loadWalletSetting: () => IWalletSetting = () => {
   const data = tymtStorage.get(`walletSetting`);
-  if (data === null || data === "" || data === undefined) {
-    tymtStorage.set(`wallet`, JSON.stringify(init));
+  if (!data || !compareJSONStructure(JSON.parse(data), init)) {
+    tymtStorage.set(`walletSetting`, JSON.stringify(init));
     return init;
-  } else {
-    if (compareJSONStructure(JSON.parse(data), init)) {
-      return JSON.parse(data);
-    } else {
-      tymtStorage.set(`wallet`, JSON.stringify(init));
-      return init;
-    }
   }
+
+  return JSON.parse(data);
 };
 
 const initialState = {

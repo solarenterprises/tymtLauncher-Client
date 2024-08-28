@@ -25,7 +25,6 @@ class PriceAPI {
         console.error("getAllTokenPrices: response undefined or not an array");
         return [] as ITokenPriceRes[];
       }
-      console.log("PriceAPI.getAllTokenPrices");
       return result?.data?.result?.data as ITokenPriceRes[];
     } catch (err) {
       console.error("Failed to getAllTokenPrices: ", err);

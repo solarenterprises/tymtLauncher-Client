@@ -25,6 +25,10 @@ import priceListReducer from "./features/wallet/PriceListSlice";
 import balanceListReducer from "./features/wallet/BalanceListSlice";
 // ~ Wallet
 
+// Setting
+import walletSettingReducer from "./features/settings/WalletSettingSlice";
+// ~ Setting
+
 import nonCustodialReducer from "./features/account/NonCustodialSlice";
 import custodialReducer from "./features/account/CustodialSlice";
 import tempNonCustodialReducer from "./features/account/TempNonCustodialSlice";
@@ -108,6 +112,10 @@ const store = configureStore({
     balanceList: balanceListReducer,
     currencyList: currencyListReducer,
     // ~ Wallet
+
+    // Setting
+    walletSetting: walletSettingReducer,
+    // ~ Setting
 
     custodial: custodialReducer,
     nonCustodial: nonCustodialReducer,

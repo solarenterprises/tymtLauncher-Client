@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 import { currencySymbols } from "../../consts/SupportCurrency";
 
@@ -29,6 +29,7 @@ import qrIcon from "../../assets/wallet/qr-icon.svg";
 
 import { IBalanceList, ICurrencyList, ICurrentCurrency, IPriceList, ISupportChain } from "../../types/walletTypes";
 import { getTokenBalanceBySymbol, getTokenPriceByCmc } from "../../lib/helper/WalletHelper";
+import { setCurrentChain } from "../../features/wallet/CurrentChainSlice";
 
 const backgrounds = [walletImg1, walletImg2, walletImg3, walletImg4, walletImg5, walletImg6, walletImg7, walletImg8, walletImg9];
 
@@ -39,6 +40,8 @@ export interface IPropsWalletCard {
 }
 
 const WalletCard = ({ supportChain, index }: IPropsWalletCard) => {
+  const dispatch = useDispatch();
+
   const background = backgrounds[index];
   const common = CommonStyles();
 
@@ -56,6 +59,10 @@ const WalletCard = ({ supportChain, index }: IPropsWalletCard) => {
   const price = useMemo(() => getTokenPriceByCmc(priceListStore, supportChain?.chain?.cmc), [priceListStore]);
 
   const [open, setOpen] = useState(false);
+
+  const handleWalletCardClick = () => {
+    dispatch(setCurrentChain(supportChain?.chain?.name));
+  };
 
   return (
     <>
@@ -76,7 +83,7 @@ const WalletCard = ({ supportChain, index }: IPropsWalletCard) => {
             transform: "scale(0.95)",
           },
         }}
-        onClick={() => {}}
+        onClick={handleWalletCardClick}
       >
         <Stack direction={"row"} gap={3} justifyContent={"space-between"} width={"100%"}>
           <Stack direction={"row"} justifyContent={"flex-start"} gap={"16px"}>

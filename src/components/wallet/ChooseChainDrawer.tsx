@@ -1,6 +1,6 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 import { supportChains } from "../../consts/SupportTokens";
 import { currencySymbols } from "../../consts/SupportCurrency";
@@ -17,8 +17,9 @@ import { getBalanceList } from "../../features/wallet/BalanceListSlice";
 import { getPriceList } from "../../features/wallet/PriceListSlice";
 import { getCurrencyList } from "../../features/wallet/CurrencyListSlice";
 import { getCurrentCurrency } from "../../features/wallet/CurrentCurrencySlice";
+import { getCurrentChain, setCurrentChain } from "../../features/wallet/CurrentChainSlice";
 
-import { IBalanceList, IChain, ICurrencyList, ICurrentCurrency, IPriceList, IWallet } from "../../types/walletTypes";
+import { IBalanceList, ICurrencyList, ICurrentChain, ICurrentCurrency, IPriceList, IWallet } from "../../types/walletTypes";
 
 import { formatBalance } from "../../lib/helper";
 import { getCurrentChainWalletAddress, getTokenBalanceBySymbol, getTokenPriceByCmc } from "../../lib/helper/WalletHelper";
@@ -35,13 +36,14 @@ interface props {
 const ChooseChainDrawer = ({ view, setView }: props) => {
   const classname = SettingStyle();
   const { t } = useTranslation();
-  const [state, setState] = useState({ right: false });
+  const dispatch = useDispatch();
 
   const walletStore: IWallet = useSelector(getWallet);
   const balanceListStore: IBalanceList = useSelector(getBalanceList);
   const priceListStore: IPriceList = useSelector(getPriceList);
   const currencyListStore: ICurrencyList = useSelector(getCurrencyList);
   const currentCurrencyStore: ICurrentCurrency = useSelector(getCurrentCurrency);
+  const currentChainStore: ICurrentChain = useSelector(getCurrentChain);
 
   const reserve: number = useMemo(
     () => currencyListStore?.list?.find((one) => one?.name === currentCurrencyStore?.currency)?.reserve,
@@ -51,9 +53,7 @@ const ChooseChainDrawer = ({ view, setView }: props) => {
 
   //@ts-ignore
   const [loading, setLoading] = useState<boolean>(false);
-
-  //@ts-ignore
-  const selectChain = useCallback((data: IChain) => {}, []);
+  const [state, setState] = useState({ right: false });
 
   const toggleDrawer = (anchor: Anchor, open: boolean) => (event: React.KeyboardEvent | React.MouseEvent) => {
     if (event && event.type === "keydown" && ((event as React.KeyboardEvent).key === "Tab" || (event as React.KeyboardEvent).key === "Shift")) {
@@ -102,7 +102,14 @@ const ChooseChainDrawer = ({ view, setView }: props) => {
 
         {supportChains?.map((supportChain, index) => (
           <>
-            <Button className="common-btn" onClick={() => {}} fullWidth key={index}>
+            <Button
+              className={`common-btn ${currentChainStore?.chain === supportChain?.chain?.name ? "active" : null}`}
+              onClick={() => {
+                dispatch(setCurrentChain(supportChain?.chain?.name));
+              }}
+              fullWidth
+              key={index}
+            >
               <Stack direction={"row"} alignItems={"center"} justifyContent={"space-between"} padding={"12px 16px"}>
                 <Stack direction={"row"} alignItems={"center"} spacing={"16px"}>
                   <Box component={"img"} src={supportChain?.chain?.logo} width="32px" height="32px" />

@@ -19,17 +19,17 @@ import Loading from "../../components/Loading";
 import { AppDispatch } from "../../store";
 import { setMountedFalse, setMountedTrue } from "../../features/chat/IntercomSupportSlice";
 import { selectLanguage } from "../../features/settings/LanguageSlice";
-//@ts-ignore
-import { getChain, setChainAsync } from "../../features/wallet/ChainSlice";
-import { INotification, sendCoinAPIAsync } from "../../features/wallet/CryptoSlice";
+import { INotification } from "../../features/wallet/CryptoSlice";
 import { getCurrencyList } from "../../features/wallet/CurrencyListSlice";
 import { getCurrentCurrency } from "../../features/wallet/CurrentCurrencySlice";
 import { getAccount } from "../../features/account/AccountSlice";
 import { getWalletSetting, setWalletSetting } from "../../features/settings/WalletSettingSlice";
+import { getCurrentChain } from "../../features/wallet/CurrentChainSlice";
 
-import { IRecipient, ISendCoin } from "../../features/wallet/CryptoApi";
+import { IRecipient } from "../../features/wallet/CryptoApi";
 import TransactionProviderAPI from "../../lib/api/TransactionProviderAPI";
 import { getKeccak256Hash } from "../../lib/api/Encrypt";
+import { getCurrentChainWalletAddress, getSupportChainByName } from "../../lib/helper/WalletHelper";
 
 import SettingStyle from "../../styles/SettingStyle";
 
@@ -39,9 +39,9 @@ import d53 from "../../lib/game/district 53/logo.png";
 
 import { IWalletSetting, languageType } from "../../types/settingTypes";
 import { ISendTransactionReq } from "../../types/eventParamTypes";
-//@ts-ignore
-import { IChain, ICurrencyList, ICurrentCurrency, INative, IToken, chainEnum, chainIconMap } from "../../types/walletTypes";
+import { ICurrencyList, ICurrentChain, ICurrentCurrency, INative, ISupportChain, IToken, IWallet } from "../../types/walletTypes";
 import { IAccount } from "../../types/accountTypes";
+import { getWallet } from "../../features/wallet/WalletSlice";
 
 const WalletD53Transaction = () => {
   const {
@@ -52,12 +52,14 @@ const WalletD53Transaction = () => {
   const dispatch = useDispatch<AppDispatch>();
 
   const langStore: languageType = useSelector(selectLanguage);
-  const chainStore: IChain = useSelector(getChain);
   const currencyListStore: ICurrencyList = useSelector(getCurrencyList);
   const currentCurrencyStore: ICurrentCurrency = useSelector(getCurrentCurrency);
   const accountStore: IAccount = useSelector(getAccount);
   const walletSettingStore: IWalletSetting = useSelector(getWalletSetting);
+  const currentChainStore: ICurrentChain = useSelector(getCurrentChain);
+  const walletStore: IWallet = useSelector(getWallet);
 
+  const currentSupportChain: ISupportChain = useMemo(() => getSupportChainByName(currentChainStore?.chain), [currentChainStore]);
   const reserve: number = useMemo(
     () => currencyListStore?.list?.find((one) => one?.name === currentCurrencyStore?.currency)?.reserve,
     [currencyListStore, currentCurrencyStore]
@@ -81,7 +83,6 @@ const WalletD53Transaction = () => {
   const [switchChainModalOpen, setSwitchChainModalOpen] = useState<boolean>(false);
 
   const componentRef = useRef<HTMLDivElement>(null);
-  const chainStoreRef = useRef(chainStore);
 
   useEffect(() => {
     if (componentRef.current) {
@@ -89,10 +90,6 @@ const WalletD53Transaction = () => {
       appWindow.setSize(new LogicalSize(445, height));
     }
   }, [note, memo, icon, amount, to, chain]);
-
-  useEffect(() => {
-    chainStoreRef.current = chainStore;
-  }, [chainStore]);
 
   const formik = useFormik({
     initialValues: {
@@ -124,29 +121,30 @@ const WalletD53Transaction = () => {
             amount: amount,
           },
         ];
+        // @ts-ignore
         const tx = {
           passphrase: formik.values.password,
           recipients: recipients,
           fee: walletSettingStore?.fee,
           vendorField: memo,
         };
-        const temp: ISendCoin = {
-          chain: chainStore,
-          data: tx,
-        };
-        dispatch(sendCoinAPIAsync(temp)).then((action) => {
-          if (action.type.endsWith("/fulfilled")) {
-            res = action.payload as INotification;
-            res.title = `Send ${chainStore.currentToken}`;
-            emit("res-POST-/send-transaction", res);
-          }
-        });
+        // const temp: ISendCoin = {
+        //   chain: chainStore,
+        //   data: tx,
+        // };
+        // dispatch(sendCoinAPIAsync(temp)).then((action) => {
+        //   if (action.type.endsWith("/fulfilled")) {
+        //     res = action.payload as INotification;
+        //     res.title = `Send ${chainStore.currentToken}`;
+        //     emit("res-POST-/send-transaction", res);
+        //   }
+        // });
       }
     } catch (err) {
       console.error("Failed to TransactionProviderAPI.sendTransaction: ", err);
       res = {
         status: "failed",
-        title: `Send ${chainStore.chain.symbol}`,
+        title: `Send ${currentSupportChain?.chain?.symbol}`,
         message: err.toString(),
       };
       emit("res-POST-/send-transaction", res);
@@ -172,7 +170,7 @@ const WalletD53Transaction = () => {
     }
     let res = {
       status: "failed",
-      title: `Send ${chainStore.chain.symbol}`,
+      title: `Send ${currentSupportChain?.chain?.symbol}`,
       message: "Request rejected",
     };
     emit("res-POST-/send-transaction", res);
@@ -407,7 +405,7 @@ const WalletD53Transaction = () => {
                   border: "1px solid rgb(71, 76, 76)",
                 }}
               >
-                <Box className="fs-12-regular white">{chainStore.chain.wallet}</Box>
+                <Box className="fs-12-regular white">{getCurrentChainWalletAddress(walletStore, currentChainStore?.chain)}</Box>
               </Stack>
             }
             PopperProps={{
@@ -431,7 +429,7 @@ const WalletD53Transaction = () => {
               }}
             >
               <Box component={"img"} src={icon} width={"16px"} height={"16px"} />
-              <Box className={"fs-16-regular white"}>{getShortAddr(chainStore.chain.wallet)}</Box>
+              <Box className={"fs-16-regular white"}>{getShortAddr(getCurrentChainWalletAddress(walletStore, currentChainStore?.chain))}</Box>
             </Stack>
           </Tooltip>
           <Box
@@ -512,7 +510,7 @@ const WalletD53Transaction = () => {
                 <Box
                   className={"fs-16-regular white"}
                   onClick={() => {
-                    navigator.clipboard.writeText(chainStore.chain.wallet);
+                    navigator.clipboard.writeText(getCurrentChainWalletAddress(walletStore, currentChainStore?.chain));
                     setCopied(true);
                   }}
                   sx={{
@@ -540,7 +538,7 @@ const WalletD53Transaction = () => {
                     "0,0.000"
                   )}`}</Box>
                 </Stack>
-                <Box component={"img"} src={token?.logo ?? chainStore.chain.logo ?? ""} width={"30px"} height={"30px"} />
+                <Box component={"img"} src={token?.logo ?? currentSupportChain?.chain?.logo ?? ""} width={"30px"} height={"30px"} />
               </Stack>
             </Stack>
           </Stack>

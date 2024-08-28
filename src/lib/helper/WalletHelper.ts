@@ -3,6 +3,8 @@ import { IBalance, IBalanceList, IPrice, IPriceList, IWallet } from "../../types
 import tymtCore from "../core/tymtCore";
 import { ChainNames } from "../../consts/Chains";
 import { supportChains } from "../../consts/SupportTokens";
+import { Identities, Managers } from "@solar-network/crypto";
+import { Hash, HashAlgorithms } from "@solar-network/crypto/dist/crypto/index.js";
 
 export const getWalletAddressFromPassphrase = async (passphrase: string) => {
   try {
@@ -94,7 +96,20 @@ export const getSupportNativeOrTokenBySymbol = (tokenSymbol: string) => {
       }
     }
   } catch (err) {
-    console.log("Failed to getSupportTokenBySymbol: ", err);
+    console.log("Failed to getSupportNativeOrTokenBySymbol: ", err);
+  }
+};
+
+export const getSupportTokenByAddress = (address: string) => {
+  try {
+    for (const chain of supportChains) {
+      const token = chain?.tokens?.find((token) => token?.address === address);
+      if (token) {
+        return token;
+      }
+    }
+  } catch (err) {
+    console.log("Failed to getSupportTokenByAddress: ", err);
   }
 };
 
@@ -104,6 +119,15 @@ export const getSupportChainByName = (chainName: string) => {
     return res;
   } catch (err) {
     console.log("Failed to getSupportChainByName: ", err);
+  }
+};
+
+export const getSupportTokensByChainName = (chainName: string) => {
+  try {
+    const res = getSupportChainByName(chainName)?.tokens;
+    return res;
+  } catch (err) {
+    console.log("Failed to getSupportTokensByChainName: ", err);
   }
 };
 
@@ -223,22 +247,36 @@ export const resetPriceList = () => {
         cmc: one?.chain?.cmc,
         price: 0.0,
       };
+      uniqueCmcSet.add(item.cmc); // Add to the set
       return item;
     });
 
     const altTokens: IPrice[] = supportChains?.flatMap((chain) =>
-      chain?.tokens?.map((token) => {
-        const item: IPrice = {
-          cmc: token?.cmc,
-          price: 0.0,
-        };
-        return item;
-      })
+      chain?.tokens?.reduce((acc, token) => {
+        if (!uniqueCmcSet.has(token.cmc)) {
+          const item: IPrice = {
+            cmc: token?.cmc,
+            price: 0.0,
+          };
+          uniqueCmcSet.add(item.cmc);
+          acc.push(item);
+        }
+        return acc;
+      }, [])
     );
 
-    const res: IPrice[] = [...nativeTokens, ...altTokens].filter((item) => uniqueCmcSet.has(item.cmc) && uniqueCmcSet.delete(item.cmc));
+    const res = [...nativeTokens, ...altTokens];
     return res;
   } catch (err) {
     console.log("Failed to resetPriceList: ", err);
   }
+};
+
+export const getCredentials = async (mnemonic: string) => {
+  Managers.configManager.setFromPreset("mainnet");
+  const keys = Identities.Keys.fromPassphrase(mnemonic);
+  const message = mnemonic;
+  const hash = HashAlgorithms.sha256(message);
+  const signature = Hash.signSchnorr(hash, keys);
+  return signature;
 };

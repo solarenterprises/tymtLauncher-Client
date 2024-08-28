@@ -35,13 +35,14 @@ import walletIcon from "../../assets/wallet.svg";
 import { IRecipient, ISendCoinData } from "../../features/wallet/CryptoApi";
 import { formatBalance } from "../../lib/helper";
 
-import { IBalanceList, ICurrencyList, ICurrentChain, ICurrentCurrency, ICurrentToken, IWallet } from "../../types/walletTypes";
+import { IBalanceList, ICurrencyList, ICurrentChain, ICurrentCurrency, ICurrentToken, IPriceList, IWallet } from "../../types/walletTypes";
 import { nonCustodialType, walletEnum } from "../../types/accountTypes";
 import { IWalletSetting } from "../../types/settingTypes";
 import { getCurrentToken } from "../../features/wallet/CurrentTokenSlice";
 import {
   getCurrentChainWalletAddress,
   getNativeTokenBalanceByChainName,
+  getNativeTokenPriceByChainName,
   getSupportChainByName,
   getSupportNativeOrTokenBySymbol,
 } from "../../lib/helper/WalletHelper";
@@ -49,13 +50,14 @@ import { getCurrentChain } from "../../features/wallet/CurrentChainSlice";
 import { ChainNames } from "../../consts/Chains";
 import { getWallet } from "../../features/wallet/WalletSlice";
 import { getBalanceList } from "../../features/wallet/BalanceListSlice";
+import { getPriceList } from "../../features/wallet/PriceListSlice";
 
-interface IPriceData {
-  price: string;
-  balance: string;
-  label: string;
-  logo: string;
-}
+// interface IPriceData {
+//   price: string;
+//   balance: string;
+//   label: string;
+//   logo: string;
+// }
 
 const WalletSendSXP = () => {
   const { t } = useTranslation();
@@ -72,6 +74,7 @@ const WalletSendSXP = () => {
   const currentChainStore: ICurrentChain = useSelector(getCurrentChain);
   const walletStore: IWallet = useSelector(getWallet);
   const balanceListStore: IBalanceList = useSelector(getBalanceList);
+  const priceListStore: IPriceList = useSelector(getPriceList);
 
   const [addressBookView, setAddressBookView] = useState<boolean>(false);
   const [transactionFeeView, setTransactionFeeView] = useState<boolean>(false);
@@ -81,8 +84,6 @@ const WalletSendSXP = () => {
   const [draft, setDraft] = useState<IRecipient[]>([]);
   const [password, setPassword] = useState("");
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  //@ts-ignore
-  const [priceData, setPriceData] = useState<IPriceData>();
   //@ts-ignore
   const [options, setOptions] = useState([]);
   const open = Boolean(anchorEl);
@@ -95,7 +96,11 @@ const WalletSendSXP = () => {
   const currentNativeOrToken = useMemo(() => getSupportNativeOrTokenBySymbol(currentTokenStore?.token), [currentTokenStore]);
   const currentSupportChain = useMemo(() => getSupportChainByName(currentChainStore?.chain), [currentChainStore]);
   const currentWallet = useMemo(() => getCurrentChainWalletAddress(walletStore, currentChainStore?.chain), [currentChainStore, walletStore]);
-  const currentNativeBalance = useMemo(() => getNativeTokenBalanceByChainName(balanceListStore, currentChainStore?.chain), [currentChainStore]);
+  const currentNativeBalance = useMemo(
+    () => getNativeTokenBalanceByChainName(balanceListStore, currentChainStore?.chain) ?? 0,
+    [balanceListStore, currentChainStore]
+  );
+  const currentNativePrice = useMemo(() => getNativeTokenPriceByChainName(priceListStore, currentChainStore?.chain) ?? 0, [priceListStore, currentChainStore]);
 
   const { setNotificationStatus, setNotificationTitle, setNotificationDetail, setNotificationOpen, setNotificationLink } = useNotification();
 
@@ -263,7 +268,7 @@ const WalletSendSXP = () => {
                     <Box className={"fs-18-regular light"}>{t("wal-9_you-send")}</Box>
                     <Stack direction={"row"} alignItems={"center"} spacing={"8px"}>
                       <Box component={"img"} src={walletIcon} width={"18px"} height={"18px"} />
-                      <Box className={"fs-12-light light"}>{priceData ? formatBalance(priceData.balance, 4) : "0.0"}</Box>
+                      <Box className={"fs-12-light light"}>{formatBalance(currentNativeBalance ?? 0, 4)}</Box>
                       <Box
                         className={"fs-14-bold blue"}
                         onClick={() => {
@@ -281,9 +286,7 @@ const WalletSendSXP = () => {
                   <Stack direction={"row"} alignItems={"center"} justifyContent={"space-between"}>
                     <Stack width={"100%"}>
                       <InputBox id="send-amount" placeholder="0.0" label="" align="left" onChange={handleAmount} value={amount?.toString()} />
-                      <Box className={"fs-12-light light"}>
-                        {`~${symbol} ${priceData ? formatBalance(Number(amount) * Number(priceData.price) * reserve) : "0.0"}`}
-                      </Box>
+                      <Box className={"fs-12-light light"}>{`~${symbol} ${formatBalance(Number(amount) * Number(currentNativePrice) * reserve, 4)}`}</Box>
                     </Stack>
                     <Stack direction={"row"} alignItems={"center"} padding={"4px 8px"} spacing={"8px"}>
                       {/* <Box component={"img"} src={chainStore.chain.logo} width={30}/>
@@ -299,9 +302,9 @@ const WalletSendSXP = () => {
                       >
                         <Stack direction={"row"} gap={1}>
                           <Box>
-                            <img src={priceData ? priceData.logo : ""} width={30} />
+                            <img src={""} width={30} />
                           </Box>
-                          <Box className="fs-18-regular white">{priceData ? priceData.label : ""}</Box>
+                          <Box className="fs-18-regular white">{""}</Box>
                         </Stack>
                       </Button>
                       <Menu

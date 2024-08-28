@@ -29,7 +29,7 @@ export const fetchUnreadAlertList = async ({ userId, page, limit }: IFetchAlertL
       };
     }
   } catch (err) {
-    console.error("Failed to fetchUnreadAlertList: ", err);
+    console.log("Failed to fetchUnreadAlertList: ", err);
     return {
       unread: [],
       unreadCount: 0,
