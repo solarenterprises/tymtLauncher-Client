@@ -1,11 +1,12 @@
 import tymtStorage from "../../lib/Storage";
 import Solar from "../../lib/wallet/Solar";
-import { IChain } from "../../types/walletTypes";
+import { IChain, IWallet } from "../../types/walletTypes";
 import { decrypt } from "../../lib/api/Encrypt";
 import { getAPIAndKey, getRPCUrl, getTransactionUrl } from "../../lib/helper";
 import ERC20 from "../../lib/wallet/ERC20";
 import Avalanche from "../../lib/wallet/Avalanche";
 import tymtCore from "../../lib/core/tymtCore";
+import { getCurrentChainWalletAddress, getSupportChainByName, getSupportNativeOrTokenBySymbol } from "../../lib/helper/WalletHelper";
 // import { INotification } from "./CryptoSlice";
 
 export interface IRecipient {
@@ -91,29 +92,28 @@ export const sendCoinAPI = async ({ chain, data }: ISendCoin): Promise<any> => {
   }
 };
 
-export async function walletTransaction(data: { chain: IChain; page: number }) {
+export async function walletTransaction(data: { walletStore: IWallet; chainName: string; tokenSymbol: string; page: number }) {
+  console.log("fetchTransactions");
   tymtStorage.set(`loadMoreAvailable`, true);
-  if (data.chain.chain.symbol === "SXP") {
-    return await Solar.getTransactions(data.chain.chain.wallet, data.page);
-  } else if (data.chain.chain.symbol === "BTC") {
-    return await tymtCore.Blockchains.btc.wallet.getTransactions(data.chain.chain.wallet, data.page);
-  } else if (data.chain.chain.symbol === "AVAX") {
-    return await Avalanche.getTransactions(data.chain.chain.wallet, data.page);
-  } else if (data.chain.chain.symbol === "SOL") {
-    return await tymtCore.Blockchains.solana.wallet.getTransactions(data.chain.chain.wallet, data.page);
+  const currentSupportChain = getSupportChainByName(data?.chainName);
+  const currentWalletAddress = getCurrentChainWalletAddress(data?.walletStore, data?.chainName);
+  if (currentSupportChain?.chain?.symbol === "SXP") {
+    return await Solar.getTransactions(currentWalletAddress, data.page);
+  } else if (currentSupportChain?.chain?.symbol === "BTC") {
+    return await tymtCore.Blockchains.btc.wallet.getTransactions(currentWalletAddress, data.page);
+  } else if (currentSupportChain?.chain?.symbol === "AVAX") {
+    return await Avalanche.getTransactions(currentWalletAddress, data.page);
+  } else if (currentSupportChain?.chain?.symbol === "SOL") {
+    return await tymtCore.Blockchains.solana.wallet.getTransactions(currentWalletAddress, data.page);
   } else {
-    if (data.chain.currentToken == "chain" || data.chain.currentToken == "") {
-      const url = getTransactionUrl(data.chain, data.page);
+    if (data?.tokenSymbol == "chain" || data?.tokenSymbol == "") {
+      const url = getTransactionUrl(currentWalletAddress, data.chainName, data.page);
       return await ERC20.getTransactions(url);
     } else {
-      let selectedToken;
-      data.chain.tokens.map((token) => {
-        if (token.symbol == data.chain.currentToken) {
-          selectedToken = token;
-        }
-      });
-      const { api_url, api_key } = getAPIAndKey(data.chain);
-      const url = `${api_url}?module=account&action=tokentx&contractaddress=${selectedToken.address}&address=${data.chain.chain.wallet}&page=${data.page}&offset=15&apikey=${api_key}`;
+      const selectedToken = getSupportNativeOrTokenBySymbol(data?.tokenSymbol);
+
+      const { api_url, api_key } = getAPIAndKey(data?.chainName);
+      const url = `${api_url}?module=account&action=tokentx&contractaddress=${selectedToken.address}&address=${currentWalletAddress}&page=${data.page}&offset=15&apikey=${api_key}`;
       return await ERC20.getERCTransactions(url);
     }
   }

@@ -31,6 +31,7 @@ import {
   matic_rpc_url,
 } from "../configs";
 import { getCurrentChainWalletAddress } from "./helper/WalletHelper";
+import { ChainNames } from "../consts/Chains";
 
 export const formatDate = (unixTimestamp: number) => {
   const date = new Date(unixTimestamp * 1000);
@@ -111,11 +112,11 @@ export const formatTransaction = (walletStore: IWallet, chain: ISupportChain, cu
   let time = "";
   let url = "";
   let amount = "";
-  let logo = "";
-  let symbol = "";
-  if (currentTokenSymbol == "chain" || currentTokenSymbol == "") {
-    logo = chain.chain.logo;
-    symbol = chain.chain.symbol;
+  let logo = chain?.chain?.logo;
+  let symbol = chain?.chain?.symbol;
+
+  const isNativeToken = chain.chain.symbol === currentTokenSymbol;
+  if (isNativeToken) {
     if (chain.chain.symbol == "SXP") {
       if (data?.type === 6) {
         // transfer
@@ -294,29 +295,28 @@ export const getBalanceUrl = (chain: IChain): string => {
     return `${matic_api_url}?module=account&action=balance&address=${chain.chain.wallet}&apikey=${matic_api_key}`;
   }
 };
-export const getTransactionUrl = (chain: IChain, page: number): string => {
-  if (chain.chain.symbol === "ETH") {
-    return `${eth_api_url}?module=account&action=txlist&address=${chain.chain.wallet}&page=${page}&offset=15&sort=desc&apikey=${eth_api_key}`;
+export const getTransactionUrl = (walletAddress: string, chainName: string, page: number): string => {
+  if (chainName === ChainNames.ETHEREUM) {
+    return `${eth_api_url}?module=account&action=txlist&address=${walletAddress}&page=${page}&offset=15&sort=desc&apikey=${eth_api_key}`;
   }
-  if (chain.chain.symbol === "ARBETH") {
-    return `${arb_api_url}?module=account&action=txlist&address=${chain.chain.wallet}&page=${page}&offset=15&sort=desc&apikey=${arb_api_key}`;
+  if (chainName === ChainNames.ARBITRUM) {
+    return `${arb_api_url}?module=account&action=txlist&address=${walletAddress}&page=${page}&offset=15&sort=desc&apikey=${arb_api_key}`;
   }
-  if (chain.chain.symbol === "AVAX") {
+  if (chainName === ChainNames.AVALANCHE) {
     if (net_name === "mainnet") {
-      return `${avax_api_url}/address/${chain.chain.wallet}/erc20-transfers?limit=15`;
+      return `${avax_api_url}/address/${walletAddress}/erc20-transfers?limit=15`;
     } else {
-      return `${avax_api_url}/address/${chain.chain.wallet}/transactions?sort=desc&limit=15`;
+      return `${avax_api_url}/address/${walletAddress}/transactions?sort=desc&limit=15`;
     }
   }
-
-  if (chain.chain.symbol === "BNB") {
-    return `${bsc_api_url}?module=account&action=txlist&address=${chain.chain.wallet}&page=${page}&offset=15&sort=desc&apikey=${bsc_api_key}`;
+  if (chainName === ChainNames.BINANCE) {
+    return `${bsc_api_url}?module=account&action=txlist&address=${walletAddress}&page=${page}&offset=15&sort=desc&apikey=${bsc_api_key}`;
   }
-  if (chain.chain.symbol === "OETH") {
-    return `${op_api_url}?module=account&action=txlist&address=${chain.chain.wallet}&page=${page}&offset=15&sort=desc&apikey=${op_api_key}`;
+  if (chainName === ChainNames.OPTIMISM) {
+    return `${op_api_url}?module=account&action=txlist&address=${walletAddress}&page=${page}&offset=15&sort=desc&apikey=${op_api_key}`;
   }
-  if (chain.chain.symbol === "MATIC") {
-    return `${matic_api_url}?module=account&action=txlist&address=${chain.chain.wallet}&page=${page}&offset=15&sort=desc&apikey=${matic_api_key}`;
+  if (chainName === ChainNames.POLYGON) {
+    return `${matic_api_url}?module=account&action=txlist&address=${walletAddress}&page=${page}&offset=15&sort=desc&apikey=${matic_api_key}`;
   }
 };
 
@@ -364,36 +364,36 @@ export const getRPCUrlFromChainName = (chain: string): string => {
   }
 };
 
-export const getAPIAndKey = (chain: IChain) => {
+export const getAPIAndKey = (chainName: string) => {
   let api_url,
     api_key = "";
-  switch (chain.chain.symbol) {
-    case "BNB": {
+  switch (chainName) {
+    case ChainNames.BINANCE: {
       api_url = bsc_api_url;
       api_key = bsc_api_key;
       break;
     }
-    case "Ethereum": {
+    case ChainNames.ETHEREUM: {
       api_url = eth_api_url;
       api_key = eth_api_key;
       break;
     }
-    case "MATIC": {
+    case ChainNames.POLYGON: {
       api_url = matic_api_url;
       api_key = matic_api_key;
       break;
     }
-    case "AVAX": {
+    case ChainNames.AVALANCHE: {
       api_url = avax_api_url;
       api_key = "";
       break;
     }
-    case "ARBETH": {
+    case ChainNames.ARBITRUM: {
       api_url = arb_api_url;
       api_key = arb_api_key;
       break;
     }
-    case "OETH": {
+    case ChainNames.OPTIMISM: {
       api_url = op_api_url;
       api_key = op_api_key;
       break;

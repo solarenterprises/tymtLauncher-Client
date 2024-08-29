@@ -239,3 +239,7 @@ export interface IParamsFetchChainBalance {
   walletStore: IWallet;
   chainName: string;
 }
+
+export interface ITransactionList {
+  list: any[];
+}

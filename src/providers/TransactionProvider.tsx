@@ -25,6 +25,8 @@ import { setCurrentToken } from "../features/wallet/CurrentTokenSlice";
 import { fetchBalanceListAsync } from "../features/wallet/BalanceListSlice";
 import { fetchPriceListAsync } from "../features/wallet/PriceListSlice";
 import { fetchCurrencyListAsync } from "../features/wallet/CurrencyListSlice";
+import { getNativeSymbolByChainName } from "../lib/helper/WalletHelper";
+import { fetchTransactionListAsync } from "../features/wallet/TransactionListSlice";
 
 const TransactionProvider = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -59,10 +61,18 @@ const TransactionProvider = () => {
 
   useEffect(() => {
     console.log("currentChainStore has been changed!");
-    dispatch(setCurrentToken(""));
+    dispatch(setCurrentToken(getNativeSymbolByChainName(currentChainStore?.chain)));
     dispatch(fetchBalanceListAsync(walletStore));
     dispatch(fetchPriceListAsync());
     dispatch(fetchCurrencyListAsync());
+    dispatch(
+      fetchTransactionListAsync({
+        walletStore: walletStore,
+        chainName: currentChainStore?.chain,
+        tokenSymbol: getNativeSymbolByChainName(currentChainStore?.chain),
+        page: 1,
+      })
+    );
   }, [currentChainStore, walletStore]);
 
   useEffect(() => {
