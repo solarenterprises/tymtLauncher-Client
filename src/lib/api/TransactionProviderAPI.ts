@@ -2,7 +2,7 @@ import { emit } from "@tauri-apps/api/event";
 import { Body, fetch as tauriFetch, ResponseType } from "@tauri-apps/api/http";
 
 import { tymt_backend_url } from "../../configs";
-import { ChainNames } from "../../consts/Chains";
+import { ChainIcons, ChainNames } from "../../consts/Chains";
 
 import tymtCore from "../core/tymtCore";
 import tymtStorage from "../Storage";
@@ -13,9 +13,9 @@ import { IRecipient } from "../../features/wallet/CryptoApi";
 import { decrypt } from "./Encrypt";
 import { getSupportChainByName, getSupportTokenByAddress, getTokenPriceByCmc } from "../helper/WalletHelper";
 
-import { IMnemonic, ISaltToken, nonCustodialType } from "../../types/accountTypes";
+import { IAccount, IMnemonic, ISaltToken } from "../../types/accountTypes";
 import { IGetAccountReq, IGetBalanceReq, ISendContractReq, ISendTransactionReq, ISignMessageReq, IVerifyMessageReq } from "../../types/eventParamTypes";
-import { IPriceList, ISupportNative, ISupportToken, IToken, IWallet, chainEnum, chainIconMap } from "../../types/walletTypes";
+import { IPriceList, ISupportNative, ISupportToken, IWallet } from "../../types/walletTypes";
 import { IMyInfo } from "../../types/chatTypes";
 import { IWalletSetting } from "../../types/settingTypes";
 
@@ -146,9 +146,9 @@ export default class TransactionProviderAPI {
   };
 
   private static validateTymtAccount = async (json_data: ISendTransactionReq) => {
-    const nonCustodialStore: nonCustodialType = JSON.parse(tymtStorage.get(`nonCustodial`));
-    const myInfoStore: IMyInfo = JSON.parse(tymtStorage.get(`myInfo`));
-    if (nonCustodialStore.mnemonic === "" || nonCustodialStore.password === "" || myInfoStore._id !== json_data.requestUserId) {
+    const accountStore: IAccount = JSON.parse(tymtStorage.get(`account`));
+    const myInfoStore: IMyInfo = JSON.parse(sessionStorage.getItem(`myInfo`));
+    if (accountStore?.mnemonic === "" || accountStore?.password === "" || myInfoStore._id !== json_data.requestUserId) {
       return false;
     }
     return true;
@@ -205,37 +205,37 @@ export default class TransactionProviderAPI {
         address = walletStore?.ethereum;
         bal = isNativeToken
           ? await tymtCore.Blockchains.eth.wallet.getBalance(address)
-          : (await tymtCore.Blockchains.eth.wallet.getTokenBalance(address, [currentToken as IToken]))[0].balance; // Divided by decimal
+          : (await tymtCore.Blockchains.eth.wallet.getTokenBalance(address, [currentToken as ISupportToken]))[0].balance; // Divided by decimal
         break;
       case "binance":
         address = walletStore?.binance;
         bal = isNativeToken
           ? await tymtCore.Blockchains.bsc.wallet.getBalance(address)
-          : (await tymtCore.Blockchains.bsc.wallet.getTokenBalance(address, [currentToken as IToken]))[0].balance; // Divided by decimal
+          : (await tymtCore.Blockchains.bsc.wallet.getTokenBalance(address, [currentToken as ISupportToken]))[0].balance; // Divided by decimal
         break;
       case "polygon":
         address = walletStore?.polygon;
         bal = isNativeToken
           ? await tymtCore.Blockchains.polygon.wallet.getBalance(address)
-          : (await tymtCore.Blockchains.polygon.wallet.getTokenBalance(address, [currentToken as IToken]))[0].balance; // Divided by decimal
+          : (await tymtCore.Blockchains.polygon.wallet.getTokenBalance(address, [currentToken as ISupportToken]))[0].balance; // Divided by decimal
         break;
       case "arbitrum":
         address = walletStore?.arbitrum;
         bal = isNativeToken
           ? await tymtCore.Blockchains.arbitrum.wallet.getBalance(address)
-          : (await tymtCore.Blockchains.arbitrum.wallet.getTokenBalance(address, [currentToken as IToken]))[0].balance; // Divided by decimal
+          : (await tymtCore.Blockchains.arbitrum.wallet.getTokenBalance(address, [currentToken as ISupportToken]))[0].balance; // Divided by decimal
         break;
       case "avalanche":
         address = walletStore?.avalanche;
         bal = isNativeToken
           ? await tymtCore.Blockchains.avalanche.wallet.getBalance(address)
-          : (await tymtCore.Blockchains.avalanche.wallet.getTokenBalance(address, [currentToken as IToken]))[0].balance; // Divided by decimal
+          : (await tymtCore.Blockchains.avalanche.wallet.getTokenBalance(address, [currentToken as ISupportToken]))[0].balance; // Divided by decimal
         break;
       case "optimism":
         address = walletStore?.optimism;
         bal = isNativeToken
           ? await tymtCore.Blockchains.op.wallet.getBalance(address)
-          : (await tymtCore.Blockchains.op.wallet.getTokenBalance(address, [currentToken as IToken]))[0].balance; // Divided by decimal
+          : (await tymtCore.Blockchains.op.wallet.getTokenBalance(address, [currentToken as ISupportToken]))[0].balance; // Divided by decimal
         break;
       case "bitcoin":
         address = walletStore?.bitcoin;
@@ -313,8 +313,9 @@ export default class TransactionProviderAPI {
 
   static sendTransaction = async (jsonData: ISendTransactionReq, password: string, fee: string) => {
     let res: any;
-    const nonCustodialStore: nonCustodialType = JSON.parse(tymtStorage.get(`nonCustodial`));
-    const passphrase: string = await decrypt(nonCustodialStore.mnemonic, password);
+    const accountStore: IAccount = JSON.parse(tymtStorage.get(`account`));
+    console.log(accountStore?.mnemonic, password, fee);
+    const passphrase: string = await decrypt(accountStore?.mnemonic, password);
     const recipients: IRecipient[] = [];
     for (let i = 0; i < jsonData.transfers.length; i++) {
       recipients.push({
@@ -493,31 +494,31 @@ export default class TransactionProviderAPI {
     let res: string;
     switch (chain) {
       case "ethereum":
-        res = chainIconMap.get(chainEnum.ethereum);
+        res = ChainIcons.ETHEREUM;
         break;
       case "binance":
-        res = chainIconMap.get(chainEnum.binance);
+        res = ChainIcons.BINANCE;
         break;
       case "polygon":
-        res = chainIconMap.get(chainEnum.polygon);
+        res = ChainIcons.POLYGON;
         break;
       case "arbitrum":
-        res = chainIconMap.get(chainEnum.arbitrumone);
+        res = ChainIcons.ARBITRUM;
         break;
       case "avalanche":
-        res = chainIconMap.get(chainEnum.avalanche);
+        res = ChainIcons.AVALANCHE;
         break;
       case "optimism":
-        res = chainIconMap.get(chainEnum.optimism);
+        res = ChainIcons.OPTIMISM;
         break;
       case "solar":
-        res = chainIconMap.get(chainEnum.solar);
+        res = ChainIcons.SOLAR;
         break;
       case "bitcoin":
-        res = chainIconMap.get(chainEnum.bitcoin);
+        res = ChainIcons.BITCOIN;
         break;
       case "solana":
-        res = chainIconMap.get(chainEnum.solana);
+        res = ChainIcons.SOLANA;
         break;
     }
     return res;
@@ -527,31 +528,31 @@ export default class TransactionProviderAPI {
     let res: string;
     switch (chain) {
       case "ethereum":
-        res = "Ethereum";
+        res = ChainNames.ETHEREUM;
         break;
       case "binance":
-        res = "Binance";
+        res = ChainNames.BINANCE;
         break;
       case "polygon":
-        res = "Polygon";
+        res = ChainNames.POLYGON;
         break;
       case "arbitrum":
-        res = "Arbitrum";
+        res = ChainNames.ARBITRUM;
         break;
       case "avalanche":
-        res = "Avalanche C-Chain";
+        res = ChainNames.AVALANCHE;
         break;
       case "optimism":
-        res = "Optimism";
+        res = ChainNames.OPTIMISM;
         break;
       case "solar":
-        res = "Solar Blockchain";
+        res = ChainNames.SOLAR;
         break;
       case "bitcoin":
-        res = "Bitcoin";
+        res = ChainNames.BITCOIN;
         break;
       case "solana":
-        res = "Solana";
+        res = ChainNames.SOLANA;
         break;
     }
     return res;

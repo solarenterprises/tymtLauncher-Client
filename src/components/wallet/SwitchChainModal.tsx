@@ -15,14 +15,15 @@ import closeIcon from "../../assets/settings/x-icon.svg";
 
 import { ICurrentChain, ISupportChain } from "../../types/walletTypes";
 
-interface props {
+export interface IPropsSwitchChainModal {
   open: boolean;
   setOpen: (status: boolean) => void;
   handleRejectClick: () => void;
   switchChain: () => Promise<void>;
   chain: string;
 }
-const SwitchChainModal = ({ open, setOpen, handleRejectClick, switchChain, chain }: props) => {
+
+const SwitchChainModal = ({ open, setOpen, handleRejectClick, switchChain, chain }: IPropsSwitchChainModal) => {
   const { t } = useTranslation();
 
   const currentChainStore: ICurrentChain = useSelector(getCurrentChain);

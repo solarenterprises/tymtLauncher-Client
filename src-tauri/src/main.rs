@@ -576,7 +576,7 @@ async fn main() -> std::io::Result<()> {
 
                 match
                     client
-                        .post("https://tymt.com/api/orders/request-new-order")
+                        .post("https://dev.tymt.com/api/orders/request-new-order")
                         .header(header::CONTENT_TYPE, "application/json")
                         .header(
                             "x-token",
@@ -625,9 +625,14 @@ async fn main() -> std::io::Result<()> {
 
                 let client = Client::new();
 
+                println!("-------> https://dev.tymt.com/api/orders/orders/{}", request_param.id);
                 match
                     client
-                        .get(format!("https://tymt.com/api/orders/orders/{}", request_param.id))
+                        .get(format!("https://dev.tymt.com/api/orders/orders/{}", request_param.id))
+                        .header(
+                            "x-token",
+                            request.headers().get("x-token").unwrap().to_str().unwrap().to_string()
+                        )
                         .send().await
                 {
                     Ok(response) =>

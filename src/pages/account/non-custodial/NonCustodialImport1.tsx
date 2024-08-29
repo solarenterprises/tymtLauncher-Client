@@ -37,6 +37,7 @@ import tymt3 from "../../../assets/account/tymt3.png";
 
 import { IAccount, IMachineId, ISaltToken } from "../../../types/accountTypes";
 import { IWallet } from "../../../types/walletTypes";
+import { setMnemonic } from "../../../features/account/MnemonicSlice";
 
 const NonCustodialImport1 = () => {
   const navigate = useNavigate();
@@ -88,6 +89,8 @@ const NonCustodialImport1 = () => {
       const uid = res2?.data?._id;
 
       await dispatch(fetchMyInfoAsync(uid));
+
+      dispatch(setMnemonic(tempAccountStore?.mnemonic));
 
       dispatch(setLogin(true));
       navigate("/home");

@@ -9,17 +9,6 @@ import Splash from "./pages/welcome/Splash";
 import Start from "./pages/account/Start";
 import Welcome from "./pages/account/Welcome";
 
-import CustodialSignUp1 from "./pages/account/custodial/CustodialSignUp1";
-import CustodialSignUp1VerifyEmail from "./pages/account/custodial/CustodialSignUp1VerifyEmail";
-import CustodialSignUp2 from "./pages/account/custodial/CustodialSignUp2";
-import CustodialSignUp3 from "./pages/account/custodial/CustodialSignUp3";
-import CustodialLogin1 from "./pages/account/custodial/CustodialLogin1";
-import CustodialLogin2 from "./pages/account/custodial/CustodialLogIn2";
-import CustodialReset1 from "./pages/account/custodial/CustodialReset1";
-import CustodialReset1ResetLink from "./pages/account/custodial/CustodialReset1ResetLink";
-import CustodialReset2 from "./pages/account/custodial/CustodialReset2";
-import CustodialReset3 from "./pages/account/custodial/CustodialReset3";
-
 import NonCustodialSignUp2 from "./pages/account/non-custodial/NonCustodialSignUp2";
 import NonCustodialSignUp3 from "./pages/account/non-custodial/NonCustodialSignUp3";
 import NonCustodialSignUp4 from "./pages/account/non-custodial/NonCustodialSignUp4";
@@ -88,16 +77,6 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
                     <Route path="/non-custodial/signup/4" element={<NonCustodialSignUp4 />} />
                     <Route path="/non-custodial/login/2" element={<NonCustodialLogIn2 />} />
                     <Route path="/non-custodial/import/1" element={<NonCustodialImport1 />} />
-                    <Route path="/custodial/signup/1" element={<CustodialSignUp1 />} />
-                    <Route path="/custodial/signup/1/verify-email" element={<CustodialSignUp1VerifyEmail />} />
-                    <Route path="/custodial/signup/2" element={<CustodialSignUp2 />} />
-                    <Route path="/custodial/signup/3" element={<CustodialSignUp3 />} />
-                    <Route path="/custodial/login/1" element={<CustodialLogin1 />} />
-                    <Route path="/custodial/login/2" element={<CustodialLogin2 />} />
-                    <Route path="/custodial/reset/1" element={<CustodialReset1 />} />
-                    <Route path="/custodial/reset/1/reset-link" element={<CustodialReset1ResetLink />} />
-                    <Route path="/custodial/reset/2" element={<CustodialReset2 />} />
-                    <Route path="/custodial/reset/3" element={<CustodialReset3 />} />
                     <Route path="/confirm-information/:mode" element={<ConfirmInformation />} />
                     <Route path="/" element={<SocketProvider />}>
                       <Route path="/" element={<ChatProvider />}>
