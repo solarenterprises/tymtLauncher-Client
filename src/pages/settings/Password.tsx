@@ -1,25 +1,32 @@
-import { Box, Button, Divider, Stack } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import { useCallback, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import SettingStyle from "../../styles/SettingStyle";
-import backIcon from "../../assets/settings/back-icon.svg";
+
+import { Box, Button, Divider, Stack } from "@mui/material";
+
+import { useNotification } from "../../providers/NotificationProvider";
+
 import InputText from "../../components/account/InputText";
 import SecurityLevel from "../../components/account/SecurityLevel";
+
+import { getAccount, setAccount } from "../../features/account/AccountSlice";
+
+import { getKeccak256Hash } from "../../lib/api/Encrypt";
+
+import SettingStyle from "../../styles/SettingStyle";
+
+import backIcon from "../../assets/settings/back-icon.svg";
+
 import { propsType } from "../../types/settingTypes";
-import { custodialType, nonCustodialType } from "../../types/accountTypes";
-import { getNonCustodial, setNonCustodial } from "../../features/account/NonCustodialSlice";
-import { getCustodial } from "../../features/account/CustodialSlice";
-import { useNotification } from "../../providers/NotificationProvider";
-import createKeccakHash from "keccak";
+import { IAccount } from "../../types/accountTypes";
 
 const Password = ({ view, setView }: propsType) => {
   const classname = SettingStyle();
   const { t } = useTranslation();
   const dispatch = useDispatch();
-  const nonCustodialStore: nonCustodialType = useSelector(getNonCustodial);
-  const custodialStore: custodialType = useSelector(getCustodial);
-  const userStore = nonCustodialStore;
+
+  const accountStore: IAccount = useSelector(getAccount);
+
   const [newPwd, setNewPwd] = useState("");
   const [oldPwd, setOldPwd] = useState("");
   const [cfmPwd, setCfmPwd] = useState("");
@@ -27,7 +34,7 @@ const Password = ({ view, setView }: propsType) => {
   const { setNotificationStatus, setNotificationTitle, setNotificationDetail, setNotificationOpen, setNotificationLink } = useNotification();
 
   const updatePassword = useCallback(() => {
-    if (userStore.password !== createKeccakHash("keccak256").update(oldPwd).digest("hex")) {
+    if (accountStore?.password !== getKeccak256Hash(oldPwd)) {
       setNotificationStatus("failed");
       setNotificationTitle(t("alt-15_update-password"));
       setNotificationDetail(t("alt-16_update-password-old"));
@@ -38,7 +45,7 @@ const Password = ({ view, setView }: propsType) => {
       setCfmPwd("");
       return;
     }
-    if (userStore.password === createKeccakHash("keccak256").update(newPwd).digest("hex")) {
+    if (accountStore?.password === getKeccak256Hash(newPwd)) {
       setNotificationStatus("failed");
       setNotificationTitle(t("alt-15_update-password"));
       setNotificationDetail(t("alt-17_update-password-new"));
@@ -65,11 +72,18 @@ const Password = ({ view, setView }: propsType) => {
     setNotificationDetail(t("alt-19_update-password-success"));
     setNotificationOpen(true);
     setNotificationLink(null);
-    dispatch(setNonCustodial({ ...nonCustodialStore, password: createKeccakHash("keccak256").update(newPwd).digest("hex") }));
+
+    dispatch(
+      setAccount({
+        ...accountStore,
+        password: getKeccak256Hash(newPwd),
+      })
+    );
+
     setNewPwd("");
     setOldPwd("");
     setCfmPwd("");
-  }, [userStore, nonCustodialStore, custodialStore, newPwd, oldPwd, cfmPwd]);
+  }, [accountStore, newPwd, oldPwd, cfmPwd]);
 
   return (
     <>

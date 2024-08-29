@@ -173,6 +173,15 @@ export const getNativeTokenBalanceByChainName = (balanceListStore: IBalanceList,
   }
 };
 
+export const checkNativeToken = (tokenSymbol: string) => {
+  try {
+    const res = supportChains?.some((one) => one?.chain?.symbol === tokenSymbol);
+    return res;
+  } catch (err) {
+    console.log("Failed to checkNativeToken: ", err);
+  }
+};
+
 export const getCurrentChainWalletAddress = (walletStore: IWallet, chainName: string) => {
   try {
     let res: string = "";

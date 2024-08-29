@@ -1,11 +1,10 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { useDispatch, useSelector } from "react-redux";
-
-import createKeccakHash from "keccak";
-
 import { useFormik } from "formik";
 import * as Yup from "yup";
+
+import "../../../global.css";
 
 import { Grid, Box, Stack } from "@mui/material";
 
@@ -16,23 +15,15 @@ import AccountNextButton from "../../../components/account/AccountNextButton";
 import Stepper from "../../../components/account/Stepper";
 import HaveAccount from "../../../components/account/HaveAccount";
 import SecurityLevel from "../../../components/account/SecurityLevel";
-// import IAgreeTerms from "../../../components/account/IAgreeTerms";
+import BenefitModal from "../../../components/account/BenefitModal";
 
 import tymt3 from "../../../assets/account/tymt3.png";
 
-import "../../../global.css";
-import { custodialType } from "../../../types/accountTypes";
-import { getTempCustodial, setTempCustodial } from "../../../features/account/TempCustodialSlice";
-import BenefitModal from "../../../components/account/BenefitModal";
-import { useState } from "react";
-
 const CustodialSignUp1 = () => {
   const navigate = useNavigate();
-  const dispatch = useDispatch();
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [path, setPath] = useState("");
-  const tempCustodialStore: custodialType = useSelector(getTempCustodial);
 
   const formik = useFormik({
     initialValues: {
@@ -67,13 +58,6 @@ const CustodialSignUp1 = () => {
         .oneOf([Yup.ref("password")], t("cca-64_password-must-match")),
     }),
     onSubmit: () => {
-      dispatch(
-        setTempCustodial({
-          ...tempCustodialStore,
-          email: formik.values.email,
-          password: createKeccakHash("keccak256").update(formik.values.password).digest("hex"),
-        })
-      );
       setPath("/custodial/signup/1/verify-email");
       setOpen(true);
     },

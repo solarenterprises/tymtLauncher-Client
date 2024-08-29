@@ -28,12 +28,12 @@ import closeImg from "../../assets/settings/collaps-close-btn.svg";
 
 type Anchor = "right";
 
-interface props {
+export interface IPropsChooseChainDrawer {
   view: boolean;
   setView: (param: boolean) => void;
 }
 
-const ChooseChainDrawer = ({ view, setView }: props) => {
+const ChooseChainDrawer = ({ view, setView }: IPropsChooseChainDrawer) => {
   const classname = SettingStyle();
   const { t } = useTranslation();
   const dispatch = useDispatch();
@@ -51,8 +51,7 @@ const ChooseChainDrawer = ({ view, setView }: props) => {
   );
   const symbol: string = useMemo(() => currencySymbols[currentCurrencyStore?.currency], [currentCurrencyStore]);
 
-  //@ts-ignore
-  const [loading, setLoading] = useState<boolean>(false);
+  // const [loading, setLoading] = useState<boolean>(false);
   const [state, setState] = useState({ right: false });
 
   const toggleDrawer = (anchor: Anchor, open: boolean) => (event: React.KeyboardEvent | React.MouseEvent) => {
@@ -62,8 +61,10 @@ const ChooseChainDrawer = ({ view, setView }: props) => {
 
     setState({ ...state, [anchor]: open });
   };
+
   return (
     <SwipeableDrawer
+      key={`choose-chain-drawer`}
       anchor="right"
       open={view}
       onClose={() => setView(false)}
@@ -75,11 +76,11 @@ const ChooseChainDrawer = ({ view, setView }: props) => {
         },
       }}
     >
-      {loading && <Loading />}
-      <Box className={classname.collaps_pan}>
+      {false && <Loading />}
+      <Box key={`1-box`} className={classname.collaps_pan}>
         <img src={closeImg} className={classname.close_icon} onClick={() => setView(false)} />
       </Box>
-      <Box className={classname.setting_pan}>
+      <Box key={`2-box`} className={classname.setting_pan}>
         <Stack direction={"row"} alignItems={"center"} spacing={"16px"} padding={"18px 16px"}>
           <IconButton
             className="icon-button"
@@ -101,14 +102,13 @@ const ChooseChainDrawer = ({ view, setView }: props) => {
         />
 
         {supportChains?.map((supportChain, index) => (
-          <>
+          <div key={`${supportChain?.chain?.symbol}-${index}-${index}`}>
             <Button
               className={`common-btn ${currentChainStore?.chain === supportChain?.chain?.name ? "active" : null}`}
               onClick={() => {
                 dispatch(setCurrentChain(supportChain?.chain?.name));
               }}
               fullWidth
-              key={index}
             >
               <Stack direction={"row"} alignItems={"center"} justifyContent={"space-between"} padding={"12px 16px"}>
                 <Stack direction={"row"} alignItems={"center"} spacing={"16px"}>
@@ -137,7 +137,7 @@ const ChooseChainDrawer = ({ view, setView }: props) => {
                 backgroundColor: "#FFFFFF1A",
               }}
             />
-          </>
+          </div>
         ))}
       </Box>
     </SwipeableDrawer>

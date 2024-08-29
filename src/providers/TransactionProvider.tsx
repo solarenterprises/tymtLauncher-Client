@@ -10,7 +10,6 @@ import tymtCore from "../lib/core/tymtCore";
 import TransactionProviderAPI from "../lib/api/TransactionProviderAPI";
 
 import { AppDispatch } from "../store";
-import { getNonCustodial } from "../features/account/NonCustodialSlice";
 import { getSaltToken } from "../features/account/SaltTokenSlice";
 import { getMnemonic } from "../features/account/MnemonicSlice";
 import { getWallet, setWallet } from "../features/wallet/WalletSlice";
@@ -18,7 +17,7 @@ import { getAccount } from "../features/account/AccountSlice";
 import { getWalletList } from "../features/wallet/WalletListSlice";
 import { getCurrentChain } from "../features/wallet/CurrentChainSlice";
 
-import { IAccount, IMnemonic, ISaltToken, nonCustodialType } from "../types/accountTypes";
+import { IAccount, IMnemonic, ISaltToken } from "../types/accountTypes";
 import { IGetAccountReq, IGetBalanceReq, ISendContractReq, ISignMessageReq, IVerifyMessageReq } from "../types/eventParamTypes";
 import { ICurrentChain, IWallet, IWalletList } from "../types/walletTypes";
 import { setCurrentToken } from "../features/wallet/CurrentTokenSlice";
@@ -31,7 +30,6 @@ import { fetchTransactionListAsync } from "../features/wallet/TransactionListSli
 const TransactionProvider = () => {
   const dispatch = useDispatch<AppDispatch>();
 
-  const nonCustodialStore: nonCustodialType = useSelector(getNonCustodial);
   const saltTokenStore: ISaltToken = useSelector(getSaltToken);
   const mnemonicStore: IMnemonic = useSelector(getMnemonic);
   const walletListStore: IWalletList = useSelector(getWalletList);
@@ -39,13 +37,9 @@ const TransactionProvider = () => {
   const currentChainStore: ICurrentChain = useSelector(getCurrentChain);
   const walletStore: IWallet = useSelector(getWallet);
 
-  const nonCustodialStoreRef = useRef(nonCustodialStore);
   const saltTokenStoreRef = useRef(saltTokenStore);
   const mnemonicStoreRef = useRef(mnemonicStore);
 
-  useEffect(() => {
-    nonCustodialStoreRef.current = nonCustodialStore;
-  }, [nonCustodialStore]);
   useEffect(() => {
     saltTokenStoreRef.current = saltTokenStore;
   }, [saltTokenStore]);

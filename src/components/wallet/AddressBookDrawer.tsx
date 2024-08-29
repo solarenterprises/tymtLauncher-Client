@@ -2,14 +2,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 
-import {
-  SwipeableDrawer,
-  Box,
-  Stack,
-  Button,
-  Divider,
-  IconButton,
-} from "@mui/material";
+import { SwipeableDrawer, Box, Stack, Button, Divider, IconButton } from "@mui/material";
 
 import ArrowBackOutlinedIcon from "@mui/icons-material/ArrowBackOutlined";
 
@@ -33,23 +26,17 @@ const AddressBookDrawer = ({ view, setView, setAddress }: props) => {
   const addressData = useSelector(selectAddress);
   const [state, setState] = useState({ right: false });
 
-  const toggleDrawer =
-    (anchor: Anchor, open: boolean) =>
-    (event: React.KeyboardEvent | React.MouseEvent) => {
-      if (
-        event &&
-        event.type === "keydown" &&
-        ((event as React.KeyboardEvent).key === "Tab" ||
-          (event as React.KeyboardEvent).key === "Shift")
-      ) {
-        return;
-      }
+  const toggleDrawer = (anchor: Anchor, open: boolean) => (event: React.KeyboardEvent | React.MouseEvent) => {
+    if (event && event.type === "keydown" && ((event as React.KeyboardEvent).key === "Tab" || (event as React.KeyboardEvent).key === "Shift")) {
+      return;
+    }
 
-      setState({ ...state, [anchor]: open });
-    };
+    setState({ ...state, [anchor]: open });
+  };
 
   return (
     <SwipeableDrawer
+      key={`address-book-drawer`}
       anchor="right"
       open={view}
       onClose={() => setView(false)}
@@ -62,19 +49,10 @@ const AddressBookDrawer = ({ view, setView, setAddress }: props) => {
       }}
     >
       <Box className={classname.collaps_pan}>
-        <img
-          src={closeImg}
-          className={classname.close_icon}
-          onClick={() => setView(false)}
-        />
+        <img src={closeImg} className={classname.close_icon} onClick={() => setView(false)} />
       </Box>
       <Box className={classname.setting_pan}>
-        <Stack
-          direction={"row"}
-          alignItems={"center"}
-          spacing={"16px"}
-          padding={"18px 16px"}
-        >
+        <Stack direction={"row"} alignItems={"center"} spacing={"16px"} padding={"18px 16px"}>
           <IconButton
             className="icon-button"
             sx={{
@@ -104,7 +82,7 @@ const AddressBookDrawer = ({ view, setView, setAddress }: props) => {
                 setAddress(data.address);
                 setView(false);
               }}
-              key={index}
+              key={`${index}-${index}`}
             >
               <Stack padding={"16px"} width={"100%"}>
                 <Box className="fs-18-regular white t-left">{data.name}</Box>

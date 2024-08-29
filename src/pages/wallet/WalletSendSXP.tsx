@@ -1,7 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import createKeccakHash from "keccak";
 
 import { currencySymbols } from "../../consts/SupportCurrency";
 
@@ -16,15 +15,14 @@ import AddressBookDrawer from "../../components/wallet/AddressBookDrawer";
 import TransactionFeeDrawer from "../../components/wallet/TransactionFeeDrawer";
 import ChooseChainDrawer from "../../components/wallet/ChooseChainDrawer";
 
-import { Grid, Box, Stack, IconButton, Button, Menu, MenuItem } from "@mui/material";
+import { Grid, Box, Stack, IconButton, Button } from "@mui/material";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 
 import { AppDispatch } from "../../store";
 import { getAccount } from "../../features/account/AccountSlice";
-import { selectPending } from "../../features/wallet/CryptoSlice";
-import { getNonCustodial } from "../../features/account/NonCustodialSlice";
-import { getCurrencyList } from "../../features/wallet/CurrencyListSlice";
+import { INotification, selectPending, sendCoinAsync } from "../../features/wallet/CryptoSlice";
+import { fetchCurrencyListAsync, getCurrencyList } from "../../features/wallet/CurrencyListSlice";
 import { getCurrentCurrency } from "../../features/wallet/CurrentCurrencySlice";
 import { getWalletSetting } from "../../features/settings/WalletSettingSlice";
 
@@ -32,11 +30,10 @@ import SettingStyle from "../../styles/SettingStyle";
 
 import walletIcon from "../../assets/wallet.svg";
 
-import { IRecipient, ISendCoinData } from "../../features/wallet/CryptoApi";
+import { IRecipient, ISendCoin, ISendCoinData } from "../../features/wallet/CryptoApi";
 import { formatBalance } from "../../lib/helper";
 
 import { IBalanceList, ICurrencyList, ICurrentChain, ICurrentCurrency, ICurrentToken, IPriceList, IWallet } from "../../types/walletTypes";
-import { nonCustodialType, walletEnum } from "../../types/accountTypes";
 import { IWalletSetting } from "../../types/settingTypes";
 import { getCurrentToken } from "../../features/wallet/CurrentTokenSlice";
 import {
@@ -49,8 +46,9 @@ import {
 import { getCurrentChain } from "../../features/wallet/CurrentChainSlice";
 import { ChainNames } from "../../consts/Chains";
 import { getWallet } from "../../features/wallet/WalletSlice";
-import { getBalanceList } from "../../features/wallet/BalanceListSlice";
-import { getPriceList } from "../../features/wallet/PriceListSlice";
+import { fetchBalanceListAsync, getBalanceList } from "../../features/wallet/BalanceListSlice";
+import { fetchPriceListAsync, getPriceList } from "../../features/wallet/PriceListSlice";
+import { getKeccak256Hash } from "../../lib/api/Encrypt";
 
 // interface IPriceData {
 //   price: string;
@@ -66,7 +64,6 @@ const WalletSendSXP = () => {
 
   const pending = useSelector(selectPending);
   const accountStore = useSelector(getAccount);
-  const nonCustodialStore: nonCustodialType = useSelector(getNonCustodial);
   const currencyListStore: ICurrencyList = useSelector(getCurrencyList);
   const currentCurrencyStore: ICurrentCurrency = useSelector(getCurrentCurrency);
   const walletSettingStore: IWalletSetting = useSelector(getWalletSetting);
@@ -84,8 +81,6 @@ const WalletSendSXP = () => {
   const [draft, setDraft] = useState<IRecipient[]>([]);
   const [password, setPassword] = useState("");
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  //@ts-ignore
-  const [options, setOptions] = useState([]);
   const open = Boolean(anchorEl);
 
   const reserve: number = useMemo(
@@ -108,9 +103,9 @@ const WalletSendSXP = () => {
     setAnchorEl(event.currentTarget);
   };
 
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
+  // const handleClose = () => {
+  //   setAnchorEl(null);
+  // };
 
   const updateDraft = useCallback(() => {
     if (address === "" || amount === "") return;
@@ -160,60 +155,51 @@ const WalletSendSXP = () => {
   }, [draft, setDraft, address, amount, currentSupportChain, currentNativeOrToken]);
 
   const handleTransfer = useCallback(async () => {
-    if (accountStore.wallet === walletEnum.noncustodial) {
-      let params: ISendCoinData = {
-        passphrase: password,
-        fee: walletSettingStore?.fee,
-        recipients: draft,
-      };
-      if (draft.length > 0) {
-        params.recipients = draft;
-      } else {
-        let currentToken: {
-          address: string;
-          symbol: string;
-          logo: string;
-          decimals: Number;
-        } = {
-          address: currentNativeOrToken?.address,
-          symbol: currentNativeOrToken?.symbol,
-          logo: currentNativeOrToken?.logo,
-          decimals: currentNativeOrToken?.decimals,
-        };
-        params.recipients = [
-          {
-            address: address,
-            amount: amount,
-            chainSymbol: currentSupportChain?.chain?.symbol,
-            tokenSymbol: currentToken.symbol,
-            tokenAddr: currentToken.address,
-            tokenDecimals: currentToken.decimals,
-            icon: currentToken.logo,
-          },
-        ];
-      }
+    let params: ISendCoinData = {
+      passphrase: password,
+      fee: walletSettingStore?.fee,
+      recipients: draft,
+    };
+    if (draft.length > 0) {
+      params.recipients = draft;
+    } else {
+      params.recipients = [
+        {
+          address: address,
+          amount: amount,
+          chainSymbol: currentSupportChain?.chain?.symbol,
+          tokenSymbol: currentNativeOrToken?.symbol,
+          tokenAddr: currentNativeOrToken?.address,
+          tokenDecimals: currentNativeOrToken?.decimals,
+          icon: currentNativeOrToken?.logo,
+        },
+      ];
 
-      // const temp: ISendCoin = {
-      //   chain: chainStore,
-      //   data: params,
-      // };
-      // dispatch(sendCoinAsync(temp)).then((action) => {
-      //   if (action.type.endsWith("/fulfilled")) {
-      //     setNotificationStatus((action.payload as INotification).status);
-      //     setNotificationTitle((action.payload as INotification).title);
-      //     setNotificationDetail((action.payload as INotification).message);
-      //     setNotificationOpen(true);
-      //     setNotificationLink(null);
-      //     if ((action.payload as INotification).status === "success") {
-      //       setDraft([]);
-      //       setAmount("");
-      //       setAddress("");
-      //       setPassword("");
-      //     }
-      //   }
-      // });
+      const temp: ISendCoin = {
+        currentTokenSymbol: currentTokenStore?.token,
+        data: params,
+      };
+      dispatch(sendCoinAsync(temp)).then((action) => {
+        if (action.type.endsWith("/fulfilled")) {
+          setNotificationStatus((action.payload as INotification).status);
+          setNotificationTitle((action.payload as INotification).title);
+          setNotificationDetail((action.payload as INotification).message);
+          setNotificationOpen(true);
+          setNotificationLink(null);
+          if ((action.payload as INotification).status === "success") {
+            setDraft([]);
+            setAmount("");
+            setAddress("");
+            setPassword("");
+          }
+
+          dispatch(fetchBalanceListAsync(walletStore));
+          dispatch(fetchPriceListAsync());
+          dispatch(fetchCurrencyListAsync());
+        }
+      });
     }
-  }, [walletSettingStore, draft, address, dispatch, password, currentNativeOrToken, currentSupportChain]);
+  }, [walletSettingStore, walletStore, draft, address, dispatch, password, currentNativeOrToken, currentSupportChain, accountStore]);
 
   const removeDraft = useCallback(
     (deleteId: number) => {
@@ -240,74 +226,73 @@ const WalletSendSXP = () => {
 
   return (
     <AnimatedComponent threshold={0}>
-      <div>
+      <Grid container>
         <Grid container>
-          <Grid container>
-            <Grid item xs={12} md={12} xl={7} mb={"80px"}>
-              <Box className={"wallet-form-card p-32-56 br-16"}>
-                <Box className={"fs-h2 white"} mb={"32px"}>
-                  {t("wal-7_send-sxp")}
-                </Box>
-                <Box className={"wallet-form-card-hover p-24-16 br-16"} mb={"32px"} onClick={() => setChooseChainView(true)}>
-                  <Stack direction="row" alignItems={"center"} spacing={"16px"}>
-                    <Box component={"img"} src={currentSupportChain?.chain?.logo} width={"36px"} height={"36px"} />
-                    <Stack>
-                      <Stack direction={"row"} spacing={"10px"}>
-                        <Box className={"fs-18-regular light"}>{t("wal-8_from")}</Box>
-                        <Box className={"fs-18-regular white"}>{currentSupportChain?.chain?.name}</Box>
-                      </Stack>
-                      <Stack direction={"row"} alignItems={"center"} spacing={"8px"}>
-                        <Box component={"img"} src={walletIcon} width={"12px"} height={"12px"} />
-                        <Box className={"fs-14-regular light"}>{currentWallet}</Box>
-                      </Stack>
+          <Grid item xs={12} md={12} xl={7} mb={"80px"}>
+            <Box className={"wallet-form-card p-32-56 br-16"}>
+              <Box className={"fs-h2 white"} mb={"32px"}>
+                {t("wal-7_send-sxp")}
+              </Box>
+              <Box className={"wallet-form-card-hover p-24-16 br-16"} mb={"32px"} onClick={() => setChooseChainView(true)}>
+                <Stack direction="row" alignItems={"center"} spacing={"16px"}>
+                  <Box component={"img"} src={currentSupportChain?.chain?.logo} width={"36px"} height={"36px"} />
+                  <Stack>
+                    <Stack direction={"row"} spacing={"10px"}>
+                      <Box className={"fs-18-regular light"}>{t("wal-8_from")}</Box>
+                      <Box className={"fs-18-regular white"}>{currentSupportChain?.chain?.name}</Box>
                     </Stack>
-                  </Stack>
-                </Box>
-                <Box className={"wallet-form-card p-16-16 br-16 blur"} mb={"32px"}>
-                  <Stack direction={"row"} alignItems={"center"} justifyContent={"space-between"} mb={"16px"}>
-                    <Box className={"fs-18-regular light"}>{t("wal-9_you-send")}</Box>
                     <Stack direction={"row"} alignItems={"center"} spacing={"8px"}>
-                      <Box component={"img"} src={walletIcon} width={"18px"} height={"18px"} />
-                      <Box className={"fs-12-light light"}>{formatBalance(currentNativeBalance ?? 0, 4)}</Box>
-                      <Box
-                        className={"fs-14-bold blue"}
-                        onClick={() => {
-                          setAmount(currentNativeBalance?.toString());
-                          handleAmount(currentNativeBalance?.toString());
-                        }}
-                        sx={{
-                          cursor: "pointer",
-                        }}
-                      >
-                        {t("wal-10_max")}
-                      </Box>
+                      <Box component={"img"} src={walletIcon} width={"12px"} height={"12px"} />
+                      <Box className={"fs-14-regular light"}>{currentWallet}</Box>
                     </Stack>
                   </Stack>
-                  <Stack direction={"row"} alignItems={"center"} justifyContent={"space-between"}>
-                    <Stack width={"100%"}>
-                      <InputBox id="send-amount" placeholder="0.0" label="" align="left" onChange={handleAmount} value={amount?.toString()} />
-                      <Box className={"fs-12-light light"}>{`~${symbol} ${formatBalance(Number(amount) * Number(currentNativePrice) * reserve, 4)}`}</Box>
-                    </Stack>
-                    <Stack direction={"row"} alignItems={"center"} padding={"4px 8px"} spacing={"8px"}>
-                      {/* <Box component={"img"} src={chainStore.chain.logo} width={30}/>
+                </Stack>
+              </Box>
+              <Box className={"wallet-form-card p-16-16 br-16 blur"} mb={"32px"}>
+                <Stack direction={"row"} alignItems={"center"} justifyContent={"space-between"} mb={"16px"}>
+                  <Box className={"fs-18-regular light"}>{t("wal-9_you-send")}</Box>
+                  <Stack direction={"row"} alignItems={"center"} spacing={"8px"}>
+                    <Box component={"img"} src={walletIcon} width={"18px"} height={"18px"} />
+                    <Box className={"fs-12-light light"}>{formatBalance(currentNativeBalance ?? 0, 4)}</Box>
+                    <Box
+                      className={"fs-14-bold blue"}
+                      onClick={() => {
+                        setAmount(currentNativeBalance?.toString());
+                        handleAmount(currentNativeBalance?.toString());
+                      }}
+                      sx={{
+                        cursor: "pointer",
+                      }}
+                    >
+                      {t("wal-10_max")}
+                    </Box>
+                  </Stack>
+                </Stack>
+                <Stack direction={"row"} alignItems={"center"} justifyContent={"space-between"}>
+                  <Stack width={"100%"}>
+                    <InputBox id="send-amount" placeholder="0.0" label="" align="left" onChange={handleAmount} value={amount?.toString()} />
+                    <Box className={"fs-12-light light"}>{`~${symbol} ${formatBalance(Number(amount) * Number(currentNativePrice) * reserve, 4)}`}</Box>
+                  </Stack>
+                  <Stack direction={"row"} alignItems={"center"} padding={"4px 8px"} spacing={"8px"}>
+                    {/* <Box component={"img"} src={chainStore.chain.logo} width={30}/>
                     <Box className={"fs-18-regular white"}>
                       {chainStore.chain.symbol}
                     </Box> */}
-                      <Button
-                        id="basic-button"
-                        aria-controls={open ? "basic-menu" : undefined}
-                        aria-haspopup="true"
-                        aria-expanded={open ? "true" : undefined}
-                        onClick={handleClick}
-                      >
-                        <Stack direction={"row"} gap={1}>
-                          <Box>
-                            <img src={""} width={30} />
-                          </Box>
-                          <Box className="fs-18-regular white">{""}</Box>
-                        </Stack>
-                      </Button>
-                      <Menu
+                    <Button
+                      id="basic-button"
+                      aria-controls={open ? "basic-menu" : undefined}
+                      aria-haspopup="true"
+                      aria-expanded={open ? "true" : undefined}
+                      onClick={handleClick}
+                    >
+                      <Stack direction={"row"} gap={1}>
+                        <Box>
+                          <img src={""} width={30} />
+                        </Box>
+                        <Box className="fs-18-regular white">{""}</Box>
+                      </Stack>
+                    </Button>
+                    {/* <Menu
                         id="basic-menu"
                         anchorEl={anchorEl}
                         open={open}
@@ -317,7 +302,7 @@ const WalletSendSXP = () => {
                         }}
                       >
                         {options.map((token, index) => (
-                          <MenuItem onClick={() => {}} key={index}>
+                          <MenuItem onClick={() => {}} key={`${token}-${index}`}>
                             <Stack direction={"row"} gap={1}>
                               <Box>
                                 <img src={token.icon} width={20} />
@@ -326,102 +311,101 @@ const WalletSendSXP = () => {
                             </Stack>
                           </MenuItem>
                         ))}
-                      </Menu>
+                      </Menu> */}
+                  </Stack>
+                </Stack>
+              </Box>
+              <Box className={"wallet-form-card p-16-16 br-16 blur"} mb={"32px"}>
+                <Box className={"fs-18-regular light"} mb={"8px"}>
+                  {t("wal-11_to")}
+                </Box>
+                <InputText
+                  id="recipient-address"
+                  type="address"
+                  value={address}
+                  setValue={setAddress}
+                  label={t("wal-12_recipient-address")}
+                  onIconButtonClick={() => {
+                    navigator.clipboard.writeText(address);
+                  }}
+                  onAddressButtonClick={() => setAddressBookView(true)}
+                />
+                {Number(amount) > 0 && address !== "" && (Number(walletSettingStore?.fee) > 0 || currentSupportChain?.chain?.symbol !== "SXP") && (
+                  <Button
+                    fullWidth
+                    className={classname.action_button}
+                    onClick={() => {
+                      updateDraft();
+                    }}
+                  >
+                    {t("set-57_save")}
+                  </Button>
+                )}
+              </Box>
+              {(currentSupportChain?.chain?.symbol === "SXP" || currentSupportChain?.chain?.symbol === "BTC") && (
+                <Box className={"wallet-form-card p-16-16 br-16"} mb={"32px"}>
+                  <Stack direction={"row"} alignItems={"center"} justifyContent={"space-between"}>
+                    <Box className={"fs-16-regular light"}>{t("wal-13_trans-fee")}</Box>
+                    <Stack direction={"row"} alignItems={"center"} spacing={"8px"}>
+                      <Box className={"fs-16-regular white"}>{walletSettingStore?.fee} USD</Box>
+                      <IconButton className="icon-button" onClick={() => setTransactionFeeView(true)}>
+                        <EditOutlinedIcon className="icon-button" />
+                      </IconButton>
                     </Stack>
                   </Stack>
                 </Box>
-                <Box className={"wallet-form-card p-16-16 br-16 blur"} mb={"32px"}>
-                  <Box className={"fs-18-regular light"} mb={"8px"}>
-                    {t("wal-11_to")}
-                  </Box>
-                  <InputText
-                    id="recipient-address"
-                    type="address"
-                    value={address}
-                    setValue={setAddress}
-                    label={t("wal-12_recipient-address")}
-                    onIconButtonClick={() => {
-                      navigator.clipboard.writeText(address);
-                    }}
-                    onAddressButtonClick={() => setAddressBookView(true)}
-                  />
-                  {Number(amount) > 0 && address !== "" && (Number(walletSettingStore?.fee) > 0 || currentSupportChain?.chain?.symbol !== "SXP") && (
-                    <Button
-                      fullWidth
-                      className={classname.action_button}
-                      onClick={() => {
-                        updateDraft();
-                      }}
-                    >
-                      {t("set-57_save")}
-                    </Button>
-                  )}
-                </Box>
-                {(currentSupportChain?.chain?.symbol === "SXP" || currentSupportChain?.chain?.symbol === "BTC") && (
-                  <Box className={"wallet-form-card p-16-16 br-16"} mb={"32px"}>
-                    <Stack direction={"row"} alignItems={"center"} justifyContent={"space-between"}>
-                      <Box className={"fs-16-regular light"}>{t("wal-13_trans-fee")}</Box>
-                      <Stack direction={"row"} alignItems={"center"} spacing={"8px"}>
-                        <Box className={"fs-16-regular white"}>{walletSettingStore?.fee} USD</Box>
-                        <IconButton className="icon-button">
-                          <EditOutlinedIcon className="icon-button" onClick={() => setTransactionFeeView(true)} />
-                        </IconButton>
-                      </Stack>
-                    </Stack>
-                  </Box>
-                )}
-                <Box mb={"32px"}>
-                  <InputText id="send-password" type="password" label={t("ncca-3_password")} value={password} setValue={setPassword} />
-                </Box>
-                <Button
-                  disabled={
-                    pending ||
-                    Number(amount) === 0 ||
-                    address === "" ||
-                    (Number(walletSettingStore?.fee) === 0 && currentSupportChain?.chain?.symbol === "SXP") ||
-                    createKeccakHash("keccak256").update(password).digest("hex") !== nonCustodialStore.password
-                  }
-                  className={"red-button fw"}
-                  onClick={handleTransfer}
-                >
-                  {t("wal-14_transfer")}
-                </Button>
+              )}
+              <Box mb={"32px"}>
+                <InputText id="send-password" type="password" label={t("ncca-3_password")} value={password} setValue={setPassword} />
               </Box>
-            </Grid>
-            <Grid item xs={12} md={12} xl={5} padding={"0px 32px"}>
-              <Stack spacing={"16px"}>
-                {draft.map((data, index) => (
-                  <Box className={"wallet-form-card p-16-16 br-16"} key={index}>
-                    <Stack spacing={"15px"}>
-                      <Stack direction={"row"} alignItems={"center"} justifyContent={"space-between"}>
-                        <Stack>
-                          <Box className="fs-18-regular light">{t("wal-11_to")}</Box>
-                          <Box className="fs-18-regular white">{data.address}</Box>
-                        </Stack>
-                        <IconButton
-                          className="icon-button"
-                          onClick={() => {
-                            removeDraft(index);
-                          }}
-                        >
-                          <DeleteOutlineIcon className="icon-button" />
-                        </IconButton>
+              <Button
+                disabled={
+                  pending ||
+                  Number(amount) === 0 ||
+                  address === "" ||
+                  (Number(walletSettingStore?.fee) === 0 && currentSupportChain?.chain?.symbol === "SXP") ||
+                  getKeccak256Hash(password) !== accountStore?.password
+                }
+                className={"red-button fw"}
+                onClick={handleTransfer}
+              >
+                {t("wal-14_transfer")}
+              </Button>
+            </Box>
+          </Grid>
+          <Grid item xs={12} md={12} xl={5} padding={"0px 32px"}>
+            <Stack spacing={"16px"}>
+              {draft.map((data, index) => (
+                <Box className={"wallet-form-card p-16-16 br-16"} key={`${data?.amount}-${index}`}>
+                  <Stack spacing={"15px"}>
+                    <Stack direction={"row"} alignItems={"center"} justifyContent={"space-between"}>
+                      <Stack>
+                        <Box className="fs-18-regular light">{t("wal-11_to")}</Box>
+                        <Box className="fs-18-regular white">{data.address}</Box>
                       </Stack>
-                      <Stack direction={"row"} alignItems={"center"} justifyContent={"space-between"}>
-                        <Box className="fs-16-regular light">{t("wal-15_amount")}</Box>
-                        <Box className="fs-16-regular white">{data.amount + " " + data.tokenSymbol}</Box>
-                      </Stack>
+                      <IconButton
+                        className="icon-button"
+                        onClick={() => {
+                          removeDraft(index);
+                        }}
+                      >
+                        <DeleteOutlineIcon className="icon-button" />
+                      </IconButton>
                     </Stack>
-                  </Box>
-                ))}
-              </Stack>
-            </Grid>
+                    <Stack direction={"row"} alignItems={"center"} justifyContent={"space-between"}>
+                      <Box className="fs-16-regular light">{t("wal-15_amount")}</Box>
+                      <Box className="fs-16-regular white">{data.amount + " " + data.tokenSymbol}</Box>
+                    </Stack>
+                  </Stack>
+                </Box>
+              ))}
+            </Stack>
           </Grid>
         </Grid>
-        <AddressBookDrawer view={addressBookView} setView={setAddressBookView} setAddress={setAddress} />
-        <TransactionFeeDrawer view={transactionFeeView} setView={setTransactionFeeView} />
-        <ChooseChainDrawer view={chooseChainView} setView={setChooseChainView} />
-      </div>
+      </Grid>
+      <AddressBookDrawer view={addressBookView} setView={setAddressBookView} setAddress={setAddress} />
+      <TransactionFeeDrawer view={transactionFeeView} setView={setTransactionFeeView} />
+      <ChooseChainDrawer view={chooseChainView} setView={setChooseChainView} />
     </AnimatedComponent>
   );
 };

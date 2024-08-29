@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import numeral from "numeral";
@@ -17,10 +17,10 @@ import ComingModal from "../../components/ComingModal";
 import AnimatedComponent from "../../components/AnimatedComponent";
 
 import { AppDispatch } from "../../store";
-import { getCurrencyList } from "../../features/wallet/CurrencyListSlice";
+import { fetchCurrencyListAsync, getCurrencyList } from "../../features/wallet/CurrencyListSlice";
 import { getCurrentCurrency } from "../../features/wallet/CurrentCurrencySlice";
-import { getBalanceList } from "../../features/wallet/BalanceListSlice";
-import { getPriceList } from "../../features/wallet/PriceListSlice";
+import { fetchBalanceListAsync, getBalanceList } from "../../features/wallet/BalanceListSlice";
+import { fetchPriceListAsync, getPriceList } from "../../features/wallet/PriceListSlice";
 import { getWalletSetting, setWalletSetting } from "../../features/settings/WalletSettingSlice";
 
 import sendIcon from "../../assets/wallet/send-icon.svg";
@@ -28,14 +28,16 @@ import receiveIcon from "../../assets/wallet/receive-icon.svg";
 import percentIcon from "../../assets/wallet/percent-icon.svg";
 import refreshIcon from "../../assets/wallet/refresh-icon.svg";
 
-import { IBalanceList, ICurrencyList, ICurrentChain, ICurrentCurrency, ICurrentToken, IPriceList } from "../../types/walletTypes";
+import { IBalanceList, ICurrencyList, ICurrentChain, ICurrentCurrency, ICurrentToken, IPriceList, IWallet } from "../../types/walletTypes";
 import { IWalletSetting } from "../../types/settingTypes";
 
 import WalletStyle from "../../styles/WalletStyles";
 import SettingStyle from "../../styles/SettingStyle";
-import { getSupportChainByName, getTokenBalanceBySymbol } from "../../lib/helper/WalletHelper";
+import { getNativeSymbolByChainName, getSupportChainByName, getTokenBalanceBySymbol } from "../../lib/helper/WalletHelper";
 import { getCurrentToken } from "../../features/wallet/CurrentTokenSlice";
 import { getCurrentChain } from "../../features/wallet/CurrentChainSlice";
+import { getWallet } from "../../features/wallet/WalletSlice";
+import { fetchTransactionListAsync } from "../../features/wallet/TransactionListSlice";
 
 // const order = ["Solar", "Binance", "Ethereum", "Bitcoin", "Solana", "Polygon", "Avalanche", "Arbitrum", "Optimism"];
 
@@ -52,6 +54,7 @@ const Wallet = () => {
   const currentChainStore: ICurrentChain = useSelector(getCurrentChain);
   const balanceListStore: IBalanceList = useSelector(getBalanceList);
   const priceListStore: IPriceList = useSelector(getPriceList);
+  const walletStore: IWallet = useSelector(getWallet);
   const walletSettingStore: IWalletSetting = useSelector(getWalletSetting);
 
   const [loading, setLoading] = useState<boolean>(false);
@@ -81,6 +84,24 @@ const Wallet = () => {
       }, 0) * (reserve as number);
     return res;
   }, [balanceListStore, priceListStore, reserve]);
+
+  const handleRefreshClick = useCallback(() => {
+    try {
+      dispatch(fetchBalanceListAsync(walletStore));
+      dispatch(fetchPriceListAsync());
+      dispatch(fetchCurrencyListAsync());
+      dispatch(
+        fetchTransactionListAsync({
+          walletStore: walletStore,
+          chainName: currentChainStore?.chain,
+          tokenSymbol: getNativeSymbolByChainName(currentChainStore?.chain),
+          page: 1,
+        })
+      );
+    } catch (err) {
+      console.log("Failed to handleRefreshClick: ", err);
+    }
+  }, [walletStore, currentChainStore]);
 
   return (
     <>
@@ -143,7 +164,7 @@ const Wallet = () => {
                         <Box className="fs-14-regular t-center fw blue">{t("wal-3_vote")}</Box>
                       </Stack>
                       <Stack spacing={"8px"}>
-                        <IconButton className={"wallet-icon-button"} onClick={() => {}}>
+                        <IconButton className={"wallet-icon-button"} onClick={handleRefreshClick}>
                           <img src={refreshIcon} className="wallet-icon-button-icon" />
                         </IconButton>
                         <Box className="fs-14-regular center fw blue">{t("sto-35_refresh")}</Box>

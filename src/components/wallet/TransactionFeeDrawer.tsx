@@ -56,6 +56,7 @@ const TransactionFeeDrawer = ({ view, setView }: props) => {
 
   return (
     <SwipeableDrawer
+      key={`transaction-fee-drawer`}
       anchor="right"
       open={view}
       onClose={() => setView(false)}

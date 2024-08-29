@@ -1,12 +1,12 @@
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { useSelector } from "react-redux";
 import { useState } from "react";
 import createKeccakHash from "keccak";
-import { getCustodial } from "../../../features/account/CustodialSlice";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import { Grid, Box, Stack } from "@mui/material";
+
+import "../../../global.css";
+
 import Back from "../../../components/account/Back";
 import AccountHeader from "../../../components/account/AccountHeader";
 import InputText from "../../../components/account/InputText";
@@ -15,16 +15,16 @@ import ForgotYourPassword from "../../../components/account/ForgotYourPassword";
 import Stepper from "../../../components/account/Stepper";
 import DontHaveAccount from "../../../components/account/DontHaveAccount";
 import BenefitModal from "../../../components/account/BenefitModal";
+
+import { Grid, Box, Stack } from "@mui/material";
+
 import tymt7 from "../../../assets/account/tymt2.png";
-import "../../../global.css";
-import { custodialType } from "../../../types/accountTypes";
 
 const CustodialLogIn1 = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [path, setPath] = useState("");
-  const custodialStore: custodialType = useSelector(getCustodial);
 
   const formik = useFormik({
     initialValues: {
@@ -35,10 +35,10 @@ const CustodialLogIn1 = () => {
       email: Yup.string()
         .email(t("cca-62_invalid-email-address"))
         .required(t("cca-63_required"))
-        .test("equals", t("cca-59_wrong-email"), (value) => value === custodialStore.email),
+        .test("equals", t("cca-59_wrong-email"), (value) => value === "custodialStore.email"),
       password: Yup.string()
         .required(t("cca-63_required"))
-        .test("equals", t("cca-60_wrong-password"), (value) => createKeccakHash("keccak256").update(value).digest("hex") === custodialStore.password),
+        .test("equals", t("cca-60_wrong-password"), (value) => createKeccakHash("keccak256").update(value).digest("hex") === "custodialStore.password"),
     }),
     onSubmit: () => {
       setPath("/custodial/login/2");

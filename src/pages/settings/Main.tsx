@@ -10,7 +10,6 @@ import { supportChains } from "../../consts/SupportTokens";
 
 import Avatar from "../../components/home/Avatar";
 
-import { getNonCustodial } from "../../features/account/NonCustodialSlice";
 import { selectNotification } from "../../features/settings/NotificationSlice";
 import { getMyInfo } from "../../features/account/MyInfoSlice";
 import { getCurrencyList } from "../../features/wallet/CurrencyListSlice";
@@ -46,7 +45,6 @@ const Main = ({ view, setView }: propsType) => {
   const currentCurrencyStore: ICurrentCurrency = useSelector(getCurrentCurrency);
   const currentChainStore: ICurrentChain = useSelector(getCurrentChain);
   const notificationStore: notificationType = useSelector(selectNotification);
-  const userStore = useSelector(getNonCustodial);
   const myInfoStore: IMyInfo = useSelector(getMyInfo);
   const walletStore: IWallet = useSelector(getWallet);
   const balanceListStore: IBalanceList = useSelector(getBalanceList);
@@ -99,7 +97,7 @@ const Main = ({ view, setView }: propsType) => {
               </Box>
               <Box className="center-align" sx={{ flexDirection: "column", alignItems: "flex-start" }}>
                 <Box className="fs-14-light white">{t("set-1_welcome")}</Box>
-                <Box className="fs-h4 white">{userStore.nickname}</Box>
+                <Box className="fs-h4 white">{myInfoStore?.nickName}</Box>
               </Box>
             </Box>
             <Box>

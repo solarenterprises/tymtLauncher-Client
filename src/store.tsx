@@ -14,6 +14,10 @@ import walletReducer from "./features/wallet/WalletSlice";
 import walletListReducer from "./features/wallet/WalletListSlice";
 import tempWalletReducer from "./features/wallet/TempWalletSlice";
 import myInfoReducer from "./features/account/MyInfoSlice";
+import saltTokenReducer from "./features/account/SaltTokenSlice";
+import mnemonicReducer from "./features/account/MnemonicSlice";
+import machineIdReducer from "./features/account/MachineIdSlice";
+import threeConfirmReducer from "./features/account/ThreeConfirmSlice";
 // ~ Auth
 
 // Wallet
@@ -24,31 +28,19 @@ import currencyListReducer from "./features/wallet/CurrencyListSlice";
 import priceListReducer from "./features/wallet/PriceListSlice";
 import balanceListReducer from "./features/wallet/BalanceListSlice";
 import transactionListReducer from "./features/wallet/TransactionListSlice";
+import currencyReducer from "./features/wallet/CurrencyListSlice";
+import cryptoReducer from "./features/wallet/CryptoSlice";
 // ~ Wallet
 
 // Setting
 import walletSettingReducer from "./features/settings/WalletSettingSlice";
 // ~ Setting
 
-import nonCustodialReducer from "./features/account/NonCustodialSlice";
-import custodialReducer from "./features/account/CustodialSlice";
-import tempNonCustodialReducer from "./features/account/TempNonCustodialSlice";
-import tempCustodialReducer from "./features/account/TempCustodialSlice";
-import threeConfirmReducer from "./features/account/ThreeConfirmSlice";
 import navigationReducer from "./features/home/Navigation";
 import tymtlogoReducer from "./features/home/Tymtlogo";
-import librarymodeReducer from "./features/library/Librarymode";
-import cryptoReducer from "./features/wallet/CryptoSlice";
-import gameoverviewReducer from "./features/store/Gameview";
 import tymtReducer from "./features/account/TymtSlice";
 import d53PasswordReducer from "./features/wallet/D53PasswordSlice";
 import tempD53PasswordReducer from "./features/wallet/TempD53PasswordSlice";
-import currencyReducer from "./features/wallet/CurrencyListSlice";
-import machineIdReducer from "./features/account/MachineIdSlice";
-import mnemonicReducer from "./features/account/MnemonicSlice";
-import saltTokenReducer from "./features/account/SaltTokenSlice";
-import downloadStatusReducer from "./features/home/DownloadStatusSlice";
-import installStatusReducer from "./features/home/InstallStatusSlice";
 
 // Chat
 import socketHashReducer from "./features/chat/SocketHashSlice";
@@ -78,6 +70,10 @@ import historicalChatroomMembersReducer from "./features/chat/HistoricalChatroom
 import gameListReducer from "./features/store/GameListSlice";
 import comingGameListReducer from "./features/store/ComingGameListSlice";
 import removeStatusReducer from "./features/home/RemoveStatusSlice";
+import downloadStatusReducer from "./features/home/DownloadStatusSlice";
+import installStatusReducer from "./features/home/InstallStatusSlice";
+import librarymodeReducer from "./features/library/Librarymode";
+import gameoverviewReducer from "./features/store/Gameview";
 // ~ SDK
 
 const blacklistActionTypes = ["intercomsupport/setChatMounted", "intercomsupport/setMountedTrue", "intercomsupport/setMountedFalse"];
@@ -103,6 +99,13 @@ const store = configureStore({
     wallet: walletReducer,
     walletList: walletListReducer,
     tempWallet: tempWalletReducer,
+    threeConfirm: threeConfirmReducer,
+    mnemonic: mnemonicReducer,
+    saltToken: saltTokenReducer,
+    rsa: rsaReducer,
+    machineId: machineIdReducer,
+    socketHash: socketHashReducer,
+    myInfo: myInfoReducer,
     // ~ Auth
 
     // Wallet
@@ -113,55 +116,50 @@ const store = configureStore({
     balanceList: balanceListReducer,
     currencyList: currencyListReducer,
     transactionList: transactionListReducer,
+    crypto: cryptoReducer,
+    currency: currencyReducer,
     // ~ Wallet
 
     // Setting
     walletSetting: walletSettingReducer,
     // ~ Setting
 
-    custodial: custodialReducer,
-    nonCustodial: nonCustodialReducer,
-    tempNonCustodial: tempNonCustodialReducer,
-    tempCustodial: tempCustodialReducer,
-    threeConfirm: threeConfirmReducer,
+    // Chat
     chatHistory: chatHistoryReducer,
     contactList: contactListReducer,
-    navigation: navigationReducer,
-    tymtlogo: tymtlogoReducer,
-    librarymode: librarymodeReducer,
-    crypto: cryptoReducer,
-    downloadStatus: downloadStatusReducer,
-    installStatus: installStatusReducer,
-    gameoverview: gameoverviewReducer,
-    tymt: tymtReducer,
-    d53Password: d53PasswordReducer,
-    tempD53Password: tempD53PasswordReducer,
-    currency: currencyReducer,
     friendList: friendListReducer,
     blockList: blockListReducer,
     chatroomList: chatroomListReducer,
     globalChatroomList: globalChatroomListReducer,
     publicChatroomList: publicChatroomListReducer,
-    machineId: machineIdReducer,
-    socketHash: socketHashReducer,
-    chatmounted: chatmountedReducer,
-    mnemonic: mnemonicReducer,
-    saltToken: saltTokenReducer,
-    alertList: alertListReducer,
-    rsa: rsaReducer,
     currentChatroom: currentChatroomReducer,
     currentChatroomMembers: currentChatroomMembersReducer,
     sKeyList: sKeyListReducer,
-    activeUserList: activeUserListReducer,
-    mutedList: mutedListReducer,
-    myInfo: myInfoReducer,
-    unreadMessageList: unreadMessageListReducer,
-    renderTime: renderTimeReducer,
-    adminList: adminListReducer,
     historicalChatroomMembers: historicalChatroomMembersReducer,
+    adminList: adminListReducer,
+    mutedList: mutedListReducer,
+    alertList: alertListReducer,
+    activeUserList: activeUserListReducer,
+    unreadMessageList: unreadMessageListReducer,
+    // ~ Chat
+
+    // SDK
     gameList: gameListReducer,
     comingGameList: comingGameListReducer,
     removeStatus: removeStatusReducer,
+    downloadStatus: downloadStatusReducer,
+    installStatus: installStatusReducer,
+    librarymode: librarymodeReducer,
+    gameoverview: gameoverviewReducer,
+    // ~ SDK
+
+    navigation: navigationReducer,
+    tymtlogo: tymtlogoReducer,
+    tymt: tymtReducer,
+    d53Password: d53PasswordReducer,
+    tempD53Password: tempD53PasswordReducer,
+    chatmounted: chatmountedReducer,
+    renderTime: renderTimeReducer,
   },
   middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(stateSyncMiddleware),
 });

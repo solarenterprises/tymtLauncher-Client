@@ -320,24 +320,23 @@ export const getTransactionUrl = (walletAddress: string, chainName: string, page
   }
 };
 
-export const getRPCUrl = (chain: IChain): string => {
-  if (chain.chain.symbol === "ETH") {
+export const getRPCUrl = (currentTokenSymbol: string): string => {
+  if (currentTokenSymbol === "ETH") {
     return eth_rpc_url;
   }
-  if (chain.chain.symbol === "ARBETH") {
+  if (currentTokenSymbol === "ARBETH") {
     return arb_rpc_url;
   }
-  if (chain.chain.symbol === "AVAX") {
+  if (currentTokenSymbol === "AVAX") {
     return avax_rpc_url;
   }
-
-  if (chain.chain.symbol === "BNB") {
+  if (currentTokenSymbol === "BNB") {
     return bsc_rpc_url;
   }
-  if (chain.chain.symbol === "OETH") {
+  if (currentTokenSymbol === "OETH") {
     return op_rpc_url;
   }
-  if (chain.chain.symbol === "MATIC") {
+  if (currentTokenSymbol === "MATIC") {
     return matic_rpc_url;
   }
 };

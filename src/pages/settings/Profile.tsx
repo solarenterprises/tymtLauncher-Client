@@ -12,13 +12,11 @@ import Avatar from "../../components/home/Avatar";
 import InputText from "../../components/account/InputText";
 
 import { AppDispatch } from "../../store";
-import { getNonCustodial, setNonCustodial } from "../../features/account/NonCustodialSlice";
-import { getCustodial } from "../../features/account/CustodialSlice";
 import { selectNotification } from "../../features/settings/NotificationSlice";
 import { fileUpload, updateUserNickname } from "../../features/account/AccountApi";
 
 import { notificationType, propsType } from "../../types/settingTypes";
-import { custodialType, nonCustodialType } from "../../types/accountTypes";
+import { IAccount } from "../../types/accountTypes";
 
 import SettingStyle from "../../styles/SettingStyle";
 
@@ -28,6 +26,7 @@ import { ISocketParamsSyncEventsAll } from "../../types/SocketTypes";
 import { SyncEventNames } from "../../consts/SyncEventNames";
 import { IMyInfo } from "../../types/chatTypes";
 import { getMyInfo, setMyInfo } from "../../features/account/MyInfoSlice";
+import { getAccount, setAccount } from "../../features/account/AccountSlice";
 
 const Profile = ({ view, setView }: propsType) => {
   const classname = SettingStyle();
@@ -35,13 +34,11 @@ const Profile = ({ view, setView }: propsType) => {
   const { socket } = useSocket();
   const dispatch = useDispatch<AppDispatch>();
 
-  const nonCustodial: nonCustodialType = useSelector(getNonCustodial);
-  const custodial: custodialType = useSelector(getCustodial);
+  const accountStore: IAccount = useSelector(getAccount);
   const notificationStore: notificationType = useSelector(selectNotification);
-  const userStore = nonCustodial;
   const myInfoStore: IMyInfo = useSelector(getMyInfo);
 
-  const [nickname, setNickname] = useState(userStore.nickname);
+  const [nickname, setNickname] = useState(accountStore?.nickName);
   const [error, setError] = useState<string>("");
 
   const { setNotificationStatus, setNotificationTitle, setNotificationDetail, setNotificationOpen, setNotificationLink } = useNotification();
@@ -57,7 +54,7 @@ const Profile = ({ view, setView }: propsType) => {
       await validationSchema.validate(nickname);
       setError("");
 
-      dispatch(setNonCustodial({ ...nonCustodial, nickname: nickname }));
+      dispatch(setAccount({ ...accountStore, nickName: nickname }));
 
       const res = await updateUserNickname(myInfoStore?._id, nickname);
       console.log(res.data, "updateUserNickName");
@@ -79,7 +76,7 @@ const Profile = ({ view, setView }: propsType) => {
       setNotificationOpen(true);
       setNotificationLink(null);
     }
-  }, [nickname, nonCustodial, custodial, myInfoStore]);
+  }, [nickname, accountStore, myInfoStore]);
 
   const UploadFile = () => {
     const fileInput = document.getElementById("file-input");

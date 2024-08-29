@@ -25,6 +25,7 @@ import { decrypt, getKeccak256Hash } from "../../lib/api/Encrypt";
 import { getNonCustodySignInToken, getReqBodyNonCustodyBeforeSignIn, getReqBodyNonCustodySignIn } from "../../lib/helper/AuthAPIHelper";
 
 import { IAccount, IMachineId, ISaltToken } from "../../types/accountTypes";
+import { getRsaKeyPairAsync } from "../../features/chat/RsaSlice";
 
 const LoginAccountForm = () => {
   const { t } = useTranslation();
@@ -58,6 +59,7 @@ const LoginAccountForm = () => {
     try {
       const decryptedMnemonic: string = await decrypt(accountStore?.mnemonic, "");
       dispatch(setMnemonic(decryptedMnemonic));
+      dispatch(getRsaKeyPairAsync(decryptedMnemonic));
 
       const body1 = getReqBodyNonCustodyBeforeSignIn(accountStore, decryptedMnemonic);
       const res1 = await AuthAPI.nonCustodyBeforeSignin(body1);
@@ -91,7 +93,6 @@ const LoginAccountForm = () => {
     validationSchema: Yup.object({
       password: Yup.string()
         .test("equals", t("cca-60_wrong-password"), (value) => {
-          console.log(value, getKeccak256Hash(value), accountStoreRef?.current?.password);
           return getKeccak256Hash(value) === accountStoreRef?.current?.password;
         })
         .test(
@@ -118,6 +119,7 @@ const LoginAccountForm = () => {
       try {
         const decryptedMnemonic: string = await decrypt(accountStoreRef?.current?.mnemonic, formik.values.password);
         dispatch(setMnemonic(decryptedMnemonic));
+        dispatch(getRsaKeyPairAsync(decryptedMnemonic));
 
         const body1 = getReqBodyNonCustodyBeforeSignIn(accountStoreRef?.current, decryptedMnemonic);
         const res1 = await AuthAPI.nonCustodyBeforeSignin(body1);

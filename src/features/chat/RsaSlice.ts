@@ -32,7 +32,7 @@ export const rsaSlice = createSlice({
   reducers: {
     setRsa: (state, action) => {
       state.data = action.payload;
-      sessionStorage.setItem(`rsa`, JSON.stringify(action.payload));
+      sessionStorage.setItem(`rsa`, JSON.stringify(state.data));
     },
   },
   extraReducers(builder) {

@@ -1,11 +1,9 @@
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { useSelector } from "react-redux";
-
-import { getCustodial } from "../../../features/account/CustodialSlice";
-
 import { useFormik } from "formik";
 import * as Yup from "yup";
+
+import "../../../global.css";
 
 import { Grid, Box, Stack } from "@mui/material";
 
@@ -18,13 +16,9 @@ import DontHaveAccount from "../../../components/account/DontHaveAccount";
 
 import tymt4 from "../../../assets/account/tymt4.png";
 
-import "../../../global.css";
-import { custodialType } from "../../../types/accountTypes";
-
 const CustodialReset1 = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const custodialStore: custodialType = useSelector(getCustodial);
 
   const formik = useFormik({
     initialValues: {
@@ -34,7 +28,7 @@ const CustodialReset1 = () => {
       email: Yup.string()
         .email(t("cca-62_invalid-email-address"))
         .required(t("cca-63_required"))
-        .test("equals", "Wrong email", (value) => value === custodialStore.email),
+        .test("equals", "Wrong email", (value) => value === "custodialStore.email"),
     }),
     onSubmit: () => {
       navigate("/custodial/reset/1/reset-link");

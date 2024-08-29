@@ -8,13 +8,13 @@ import AccountHeader from "../../../components/account/AccountHeader";
 import AccountNextButton from "../../../components/account/AccountNextButton";
 import Stepper from "../../../components/account/Stepper";
 import HaveAccount from "../../../components/account/HaveAccount";
+import AccountIconBar from "../../../components/account/AccountIconBar";
 
 import tymt4 from "../../../assets/account/tymt4.png";
 import email from "../../../assets/account/email.svg";
 import link from "../../../assets/account/link.svg";
 
 import "../../../global.css";
-import AccountIconBar from "../../../components/account/AccountIconBar";
 
 const CustodialSignUp1VerifyEmail = () => {
   const navigate = useNavigate();

@@ -1,7 +1,4 @@
-import { useSelector } from "react-redux";
-import { getTempNonCustodial } from "../../features/account/TempNonCustodialSlice";
 import MnemonicRandomWord from "./MnemonicRandomWord";
-import { nonCustodialType } from "../../types/accountTypes";
 import { shuffleArray } from "../../lib/helper/WalletHelper";
 
 export interface IPropsMnemonicRandomPad {
@@ -9,8 +6,6 @@ export interface IPropsMnemonicRandomPad {
 }
 
 const MnemonicRandomPad = ({ passphrase }: IPropsMnemonicRandomPad) => {
-  const tempNonCustodialStore: nonCustodialType = useSelector(getTempNonCustodial);
-
   const temp = passphrase.split(" ");
   const mnemonic = shuffleArray(temp);
 
@@ -86,7 +81,7 @@ const MnemonicRandomPad = ({ passphrase }: IPropsMnemonicRandomPad) => {
           <MnemonicRandomWord number={"12"} word={mnemonic[11]} />
         </div>
       </div>
-      {tempNonCustodialStore.mnemonicLength === 24 && (
+      {mnemonic.length === 24 && (
         <>
           <div
             style={{

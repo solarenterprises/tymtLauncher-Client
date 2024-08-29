@@ -46,6 +46,7 @@ import { INotificationParams } from "../../types/NotificationTypes";
 import tymt1 from "../../assets/account/tymt1.png";
 import GuestIcon from "../../assets/account/Guest.svg";
 import ImportIcon from "../../assets/account/Import.svg";
+import { getRsaKeyPairAsync } from "../../features/chat/RsaSlice";
 
 const Welcome = () => {
   const navigate = useNavigate();
@@ -102,6 +103,7 @@ const Welcome = () => {
       dispatch(setWallet(newWalletAddress));
       dispatch(addWalletList(newWalletAddress));
       dispatch(setMnemonic(newPassphrase));
+      dispatch(getRsaKeyPairAsync(newPassphrase));
 
       const body1: INonCustodyBeforeSignInReq = getReqBodyNonCustodyBeforeSignIn(newAccount, newPassphrase);
       const res1 = await AuthAPI.nonCustodyBeforeSignin(body1);

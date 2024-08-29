@@ -4,7 +4,6 @@ import { useSelector } from "react-redux";
 import { emit } from "@tauri-apps/api/event";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import createKeccakHash from "keccak";
 
 import { TauriEventNames } from "../../consts/TauriEventNames";
 
@@ -13,13 +12,13 @@ import { Box, Button, Divider, Stack } from "@mui/material";
 import InputText from "../../components/account/InputText";
 import MnemonicRevealPad from "../../components/account/MnemonicRevealPad";
 
-import { decrypt } from "../../lib/api/Encrypt";
+import { getAccount } from "../../features/account/AccountSlice";
 
-import { getNonCustodial } from "../../features/account/NonCustodialSlice";
+import { decrypt, getKeccak256Hash } from "../../lib/api/Encrypt";
 
 import { propsType } from "../../types/settingTypes";
-import { nonCustodialType } from "../../types/accountTypes";
 import { INotificationParams } from "../../types/NotificationTypes";
+import { IAccount } from "../../types/accountTypes";
 
 import SettingStyle from "../../styles/SettingStyle";
 
@@ -29,7 +28,7 @@ const Backup = ({ view, setView }: propsType) => {
   const classname = SettingStyle();
   const { t } = useTranslation();
 
-  const nonCustodialStore: nonCustodialType = useSelector(getNonCustodial);
+  const accountStore: IAccount = useSelector(getAccount);
 
   const [passphrase, setPassphrase] = useState<string>("");
   const [blur, setBlur] = useState<boolean>(true);
@@ -38,7 +37,7 @@ const Backup = ({ view, setView }: propsType) => {
   const handleSubmit = useCallback(
     async (password: string) => {
       try {
-        const decryptedPassphrase = await decrypt(nonCustodialStore.mnemonic, password);
+        const decryptedPassphrase = await decrypt(accountStore?.mnemonic, password);
         setPassphrase(decryptedPassphrase);
         const noti_0: INotificationParams = {
           status: "success",
@@ -60,7 +59,7 @@ const Backup = ({ view, setView }: propsType) => {
         emit(TauriEventNames.NOTIFICATION, noti_0);
       }
     },
-    [nonCustodialStore]
+    [accountStore]
   );
 
   const formik = useFormik({
@@ -70,7 +69,7 @@ const Backup = ({ view, setView }: propsType) => {
     validationSchema: Yup.object({
       password: Yup.string()
         .required(t("cca-63_required"))
-        .test("equals", t("cca-60_wrong-password"), (value) => createKeccakHash("keccak256").update(value).digest("hex") === nonCustodialStore?.password),
+        .test("equals", t("cca-60_wrong-password"), (value) => getKeccak256Hash(value) === accountStore?.password),
     }),
     onSubmit: () => handleSubmit(formik.values.password),
   });

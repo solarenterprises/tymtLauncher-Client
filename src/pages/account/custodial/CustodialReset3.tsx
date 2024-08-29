@@ -1,11 +1,5 @@
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { useDispatch, useSelector } from "react-redux";
-
-import createKeccakHash from "keccak";
-
-import { getCustodial, setCustodial } from "../../../features/account/CustodialSlice";
-
 import { useFormik } from "formik";
 import * as Yup from "yup";
 
@@ -23,13 +17,9 @@ import tymt4 from "../../../assets/account/tymt4.png";
 
 import "../../../global.css";
 
-import { custodialType } from "../../../types/accountTypes";
-
 const CustodialReset3 = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const dispatch = useDispatch();
-  const custodialStore: custodialType = useSelector(getCustodial);
 
   const formik = useFormik({
     initialValues: {
@@ -62,12 +52,6 @@ const CustodialReset3 = () => {
         .oneOf([Yup.ref("password")], t("cca-64_password-must-match")),
     }),
     onSubmit: () => {
-      dispatch(
-        setCustodial({
-          ...custodialStore,
-          password: createKeccakHash("keccak256").update(formik.values.password).digest("hex"),
-        })
-      );
       navigate("/custodial/login/1");
     },
   });
