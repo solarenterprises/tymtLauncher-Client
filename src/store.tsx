@@ -72,8 +72,6 @@ import comingGameListReducer from "./features/store/ComingGameListSlice";
 import removeStatusReducer from "./features/home/RemoveStatusSlice";
 import downloadStatusReducer from "./features/home/DownloadStatusSlice";
 import installStatusReducer from "./features/home/InstallStatusSlice";
-import librarymodeReducer from "./features/library/Librarymode";
-import gameoverviewReducer from "./features/store/Gameview";
 // ~ SDK
 
 const blacklistActionTypes = ["intercomsupport/setChatMounted", "intercomsupport/setMountedTrue", "intercomsupport/setMountedFalse"];
@@ -149,8 +147,6 @@ const store = configureStore({
     removeStatus: removeStatusReducer,
     downloadStatus: downloadStatusReducer,
     installStatus: installStatusReducer,
-    librarymode: librarymodeReducer,
-    gameoverview: gameoverviewReducer,
     // ~ SDK
 
     navigation: navigationReducer,
