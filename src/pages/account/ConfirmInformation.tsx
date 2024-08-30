@@ -41,6 +41,10 @@ import { IWallet } from "../../types/walletTypes";
 import { ISaltToken, IMachineId, IAccount } from "../../types/accountTypes";
 import { INonCustodySignUpReq } from "../../types/AuthAPITypes";
 import { fetchMyInfoAsync } from "../../features/account/MyInfoSlice";
+import { generateSocketHash } from "../../features/chat/SocketHashApi";
+import { setMnemonic } from "../../features/account/MnemonicSlice";
+import { setSocketHash } from "../../features/chat/SocketHashSlice";
+import { getRsaKeyPairAsync } from "../../features/chat/RsaSlice";
 
 const ConfirmInformation = () => {
   const navigate = useNavigate();
@@ -120,6 +124,11 @@ const ConfirmInformation = () => {
 
       const uid = res2?.data?._id;
       await dispatch(fetchMyInfoAsync(uid));
+
+      const newSocketHash = generateSocketHash(tempAccountStoreRef.current?.mnemonic);
+      dispatch(setSocketHash(newSocketHash));
+      dispatch(setMnemonic(tempAccountStoreRef?.current?.mnemonic));
+      dispatch(getRsaKeyPairAsync(tempAccountStoreRef?.current?.mnemonic));
 
       dispatch(setLogin(true));
       navigate("/home");

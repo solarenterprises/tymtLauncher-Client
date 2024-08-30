@@ -38,6 +38,9 @@ import tymt3 from "../../../assets/account/tymt3.png";
 import { IAccount, IMachineId, ISaltToken } from "../../../types/accountTypes";
 import { IWallet } from "../../../types/walletTypes";
 import { setMnemonic } from "../../../features/account/MnemonicSlice";
+import { generateSocketHash } from "../../../features/chat/SocketHashApi";
+import { setSocketHash } from "../../../features/chat/SocketHashSlice";
+import { getRsaKeyPairAsync } from "../../../features/chat/RsaSlice";
 
 const NonCustodialImport1 = () => {
   const navigate = useNavigate();
@@ -90,7 +93,10 @@ const NonCustodialImport1 = () => {
 
       await dispatch(fetchMyInfoAsync(uid));
 
+      const newSocketHash = generateSocketHash(tempAccountStore?.mnemonic);
+      dispatch(setSocketHash(newSocketHash));
       dispatch(setMnemonic(tempAccountStore?.mnemonic));
+      dispatch(getRsaKeyPairAsync(tempAccountStore?.mnemonic));
 
       dispatch(setLogin(true));
       navigate("/home");

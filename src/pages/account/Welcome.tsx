@@ -47,6 +47,8 @@ import tymt1 from "../../assets/account/tymt1.png";
 import GuestIcon from "../../assets/account/Guest.svg";
 import ImportIcon from "../../assets/account/Import.svg";
 import { getRsaKeyPairAsync } from "../../features/chat/RsaSlice";
+import { generateSocketHash } from "../../features/chat/SocketHashApi";
+import { setSocketHash } from "../../features/chat/SocketHashSlice";
 
 const Welcome = () => {
   const navigate = useNavigate();
@@ -102,8 +104,6 @@ const Welcome = () => {
       dispatch(addAccountList(newAccount));
       dispatch(setWallet(newWalletAddress));
       dispatch(addWalletList(newWalletAddress));
-      dispatch(setMnemonic(newPassphrase));
-      dispatch(getRsaKeyPairAsync(newPassphrase));
 
       const body1: INonCustodyBeforeSignInReq = getReqBodyNonCustodyBeforeSignIn(newAccount, newPassphrase);
       const res1 = await AuthAPI.nonCustodyBeforeSignin(body1);
@@ -122,6 +122,11 @@ const Welcome = () => {
 
       const uid = res2?.data?._id;
       await dispatch(fetchMyInfoAsync(uid));
+
+      const newSocketHash = generateSocketHash(newPassphrase);
+      dispatch(setSocketHash(newSocketHash));
+      dispatch(setMnemonic(newPassphrase));
+      dispatch(getRsaKeyPairAsync(newPassphrase));
 
       dispatch(setLogin(true));
       navigate("/home");

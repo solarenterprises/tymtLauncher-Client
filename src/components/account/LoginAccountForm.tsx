@@ -26,6 +26,8 @@ import { getNonCustodySignInToken, getReqBodyNonCustodyBeforeSignIn, getReqBodyN
 
 import { IAccount, IMachineId, ISaltToken } from "../../types/accountTypes";
 import { getRsaKeyPairAsync } from "../../features/chat/RsaSlice";
+import { generateSocketHash } from "../../features/chat/SocketHashApi";
+import { setSocketHash } from "../../features/chat/SocketHashSlice";
 
 const LoginAccountForm = () => {
   const { t } = useTranslation();
@@ -118,8 +120,6 @@ const LoginAccountForm = () => {
     onSubmit: async () => {
       try {
         const decryptedMnemonic: string = await decrypt(accountStoreRef?.current?.mnemonic, formik.values.password);
-        dispatch(setMnemonic(decryptedMnemonic));
-        dispatch(getRsaKeyPairAsync(decryptedMnemonic));
 
         const body1 = getReqBodyNonCustodyBeforeSignIn(accountStoreRef?.current, decryptedMnemonic);
         const res1 = await AuthAPI.nonCustodyBeforeSignin(body1);
@@ -138,6 +138,11 @@ const LoginAccountForm = () => {
         const uid = res2?.data?._id;
 
         await dispatch(fetchMyInfoAsync(uid));
+
+        const newSocketHash = generateSocketHash(decryptedMnemonic);
+        dispatch(setSocketHash(newSocketHash));
+        dispatch(setMnemonic(decryptedMnemonic));
+        dispatch(getRsaKeyPairAsync(decryptedMnemonic));
 
         dispatch(setLogin(true));
         navigate("/home");
