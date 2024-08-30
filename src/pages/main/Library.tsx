@@ -1,6 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useSelector, useDispatch } from "react-redux";
 
 import { Grid, Box } from "@mui/material";
 
@@ -9,21 +8,9 @@ import Multichainbtn from "../../components/store/Multichainbtn";
 import Libraryshow from "../../components/library/Libraryshow";
 import StoreGameItems from "../../components/store/StoreGameItems";
 
-import { setLibraryMode } from "../../features/library/Librarymode";
-import { getLibrarymode } from "../../features/library/Librarymode";
-
-import { librarymodeType } from "../../types/homeTypes";
-
 const Library = () => {
-  const dispatch = useDispatch();
   const { t } = useTranslation();
-  const mode: librarymodeType = useSelector(getLibrarymode);
-  const [status, setStatus] = useState<number>(mode.mode);
-
-  useEffect(() => {
-    let updateData = { ...mode, mode: status };
-    dispatch(setLibraryMode(updateData));
-  }, [status]);
+  const [status, setStatus] = useState<number>(0);
 
   return (
     <Grid item xs={12} sx={{ display: "flex", flexDirection: "column" }}>
@@ -33,7 +20,7 @@ const Library = () => {
         {false && <Multichainbtn />}
       </Grid>
       <Grid item xs={12} marginTop={"32px"}>
-        <Libraryshow />
+        <Libraryshow status={status} />
         {status === 3 && <StoreGameItems />}
       </Grid>
     </Grid>

@@ -72,7 +72,7 @@ export const District53: IGame = {
     networks: [],
     repository: "",
     description:
-      "1. Voxel-Based Open World: Explore District 53, a sprawling city of voxel-built structures, from towering high-rises to underground clubs, all crafted in captivating 3D pixel art. <br><br>2. Strategic Empire Building: Manage resources such as vox-coins, tech modules, and energy to expand your district. <br><br>3. Strategize your expansion in a world where every block placed can mean the difference between dominance and destruction. <br><br>4. Faction Warfare: Lead your pixelated populace in strategic skirmishes against rival districts. <br><br>5. Utilize unique voxel-based weaponry and units in battles that are easy to grasp but challenging to master. <br><br>6. Customizable Avatars: Design your character from a variety of voxel models. Equip voxel gear and cyber enhancements to specialize in various roles such as Hacker, Enforcer, or Tycoon. <br><br>7. Engaging Story Campaigns: Dive into campaigns filled with voxelized villains and allies. Your choices in interactive storylines will determine the fate of your district and its inhabitants.",
+      "1. Voxel-Based Open World: Explore District 53, a sprawling city of voxel-built structures, from towering high-rises to underground clubs, all crafted in captivating 3D pixel art.\n\n2. Strategic Empire Building: Manage resources such as vox-coins, tech modules, and energy to expand your district.\n\n3. Strategize your expansion in a world where every block placed can mean the difference between dominance and destruction.\n\n4. Faction Warfare: Lead your pixelated populace in strategic skirmishes against rival districts.\n\n5. Utilize unique voxel-based weaponry and units in battles that are easy to grasp but challenging to master.\n\n6. Customizable Avatars: Design your character from a variety of voxel models. Equip voxel gear and cyber enhancements to specialize in various roles such as Hacker, Enforcer, or Tycoon.\n\n7. Engaging Story Campaigns: Dive into campaigns filled with voxelized villains and allies. Your choices in interactive storylines will determine the fate of your district and its inhabitants.",
     discord_url: "https://discord.gg/district53/",
     launch_epic: false,
     twitter_url: "https://x.com/D53_Metaverse/",
@@ -89,7 +89,7 @@ export const District53: IGame = {
     prompt_donation: "",
     donation_address: "",
     short_description:
-      "Unleash your creativity in a world where every action counts! <br><br>District 53 Metaverse is a voxel-based online world, where blockchain meets mining, crafting, and building. With integration into the Solar Blockchain, every move you make earns you SXP, turning your adventures into tangible rewards. Survival, Creative and PvP modes available!",
+      "Unleash your creativity in a world where every action counts! District 53 Metaverse is a voxel-based online world, where blockchain meets mining, crafting, and building. With integration into the Solar Blockchain, every move you make earns you SXP, turning your adventures into tangible rewards. Survival, Creative and PvP modes available!",
     system_requirements: {
       cpu: "64-bit CPU",
       gpu: "GPU with support for DirectX 12 or newer, Vulkan or Metal",
@@ -101,7 +101,7 @@ export const District53: IGame = {
   project_name: "District53",
   rank: 0,
   releaseMeta: {
-    name: "District53",
+    name: "October 28, 2022",
     meta_url: "",
     platforms: {
       windows_amd64: {
@@ -116,7 +116,7 @@ export const District53: IGame = {
     release_id: "",
     description: "",
     external_url: "",
-    release_name: "October 28, 2022",
+    release_name: "",
   },
   title: "District53",
   visibilityState: "", // active
