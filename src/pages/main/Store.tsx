@@ -9,7 +9,6 @@ import Releasebtn from "../../components/store/Releasebtn";
 import Platformbtn from "../../components/store/Platformbtn";
 import Genrebtn from "../../components/store/Genre";
 import Rankingbtn from "../../components/store/Ranking";
-import Storeshow from "../../components/store/Storeshow";
 import StoreGameItems from "../../components/store/StoreGameItems";
 import TypeBtn from "../../components/store/TypeBtn";
 
@@ -65,7 +64,6 @@ const Store = () => {
           marginTop: "32px",
         }}
       >
-        <Storeshow />
         <StoreGameItems releaseDate={releaseDate} genre={genre} platform={platform} rank={rank} type={type} keyword={keyword} />
       </Grid>
     </>

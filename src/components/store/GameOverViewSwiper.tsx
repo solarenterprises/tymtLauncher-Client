@@ -23,7 +23,7 @@ const GameOverViewSwiper = ({ game, currentImageIndex, setSrc, setType, setCurre
   return (
     <Swiper spaceBetween={15} slidesPerView={"auto"} loop={false}>
       {game?.projectMeta?.gallery?.map((item, index) => (
-        <SwiperSlide style={{ width: "150px" }}>
+        <SwiperSlide key={index} style={{ width: "150px" }}>
           {item.type === "image" && (
             <img
               key={`${index}`}

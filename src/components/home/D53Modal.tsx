@@ -1,12 +1,17 @@
-import { useEffect, useState } from "react";
-import { Box, Stack, Modal, Button, Fade } from "@mui/material";
-import closeIcon from "../../assets/settings/x-icon.svg";
-import { runGame } from "../../lib/api/Downloads";
 import { useTranslation } from "react-i18next";
-import InputText from "../account/InputText";
-import { useNotification } from "../../providers/NotificationProvider";
+import { useEffect, useState } from "react";
 import { fetch as tauriFetch, ResponseType } from "@tauri-apps/api/http";
+
 import { production_version } from "../../configs";
+
+import { Box, Stack, Modal, Button, Fade } from "@mui/material";
+
+import { useNotification } from "../../providers/NotificationProvider";
+
+import InputText from "../account/InputText";
+
+import closeIcon from "../../assets/settings/x-icon.svg";
+import { runD53 } from "../../lib/api/Downloads";
 
 interface props {
   open: boolean;
@@ -46,7 +51,7 @@ const D53Modal = ({ open, setOpen }: props) => {
     } else {
       const selectedServer = serverList.find((server) => server.ip === serverIp);
       if (!selectedServer) {
-        await runGame("district53", serverIp, autoMode);
+        // await runGame("district53", serverIp, autoMode);
       } else {
         if (selectedServer?.clients >= selectedServer?.clients_max) {
           setNotificationStatus("failed");
@@ -55,7 +60,7 @@ const D53Modal = ({ open, setOpen }: props) => {
           setNotificationOpen(true);
           setNotificationLink(null);
         } else {
-          const res = await runGame("district53", serverIp, autoMode);
+          const res = await runD53(serverIp, autoMode);
           if (!res) {
             setNotificationStatus("failed");
             setNotificationTitle(t("alt-9_run-failed"));

@@ -25,6 +25,7 @@ import { IGameList } from "../../types/GameTypes";
 import gradient1 from "../../assets/main/gradient-gameoverview.svg";
 import GameOverViewJumbo from "./GameOverViewJumbo";
 import GameOverViewDescription from "./GameOverViewDescription";
+import { BasicGameList } from "../../lib/game/BasicGameList";
 
 const ComingGameOverview = () => {
   const { gameid } = useParams();
@@ -37,7 +38,7 @@ const ComingGameOverview = () => {
   const gameListStore: IGameList = useSelector(getGameList);
 
   const game = useMemo(
-    () => [...gameListStore?.games, ...comingGameListStore?.games]?.find((game) => game?._id === gameid),
+    () => [...BasicGameList, ...gameListStore?.games, ...comingGameListStore?.games]?.find((game) => game?._id === gameid),
     [comingGameListStore, gameListStore]
   );
 
@@ -59,6 +60,7 @@ const ComingGameOverview = () => {
                 <GameOverViewJumbo type={type} src={src} />
               </Grid>
               <Grid
+                item
                 xs={12}
                 sx={{
                   marginTop: "12px",

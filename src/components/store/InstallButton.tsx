@@ -9,6 +9,8 @@ import { TauriEventNames } from "../../consts/TauriEventNames";
 
 import { Button, Stack, Box } from "@mui/material";
 
+import D53Modal from "../home/D53Modal";
+
 import { getDownloadStatus } from "../../features/home/DownloadStatusSlice";
 
 import { IGame } from "../../types/GameTypes";
@@ -17,6 +19,7 @@ import { INotificationGameDownloadParams, INotificationParams } from "../../type
 import { checkOnline, downloadNewGame, isInstalled } from "../../lib/api/Downloads";
 import { IDownloadStatus } from "../../types/homeTypes";
 import WarningModalNewGame from "../home/WarningModalNewGame";
+import { District53 } from "../../lib/game/district 53/District53";
 
 export interface IPropsInstallButton {
   game: IGame;
@@ -28,12 +31,14 @@ const InstallButton = ({ game }: IPropsInstallButton) => {
   const downloadStatusStore: IDownloadStatus = useSelector(getDownloadStatus);
 
   const [modalView, setModalView] = useState<boolean>(false);
+  const [d53ModalView, setD53ModalView] = useState<boolean>(false);
   const [isSupporting, setIsSupporting] = useState<boolean>(false);
   const [installed, setInstalled] = useState(false);
 
   const handleClick = useCallback(async () => {
     if (installed) {
-      setModalView(true);
+      if (game?._id === District53?._id) setD53ModalView(true);
+      else setModalView(true);
       return;
     }
     const id = game?.project_name;
@@ -155,6 +160,7 @@ const InstallButton = ({ game }: IPropsInstallButton) => {
         )}
       </Button>
       <WarningModalNewGame open={modalView} setOpen={setModalView} game={game} />
+      <D53Modal open={d53ModalView} setOpen={setD53ModalView} />
     </>
   );
 };

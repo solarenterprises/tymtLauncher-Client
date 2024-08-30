@@ -1,23 +1,20 @@
-//@ts-ignore
-import { useState, useEffect } from "react";
-import { Grid, Box, Stack } from "@mui/material";
-import { useTranslation } from "react-i18next";
-import { getLibrarymode } from "../../features/library/Librarymode";
-import { useSelector } from "react-redux";
-import nogames from "../../assets/main/nogames.png";
-import { librarymodeType } from "../../types/homeTypes";
-import Games from "../../lib/game/Game";
-//@ts-ignore
-import { isInstalled } from "../../lib/api/Downloads";
-import { useNavigate } from "react-router-dom";
-import solar from "../../assets/chains/solar.svg";
-import Loading from "../Loading";
-import AnimatedComponent from "../AnimatedComponent";
+import { useState } from "react";
+// import { Grid, Box, Stack } from "@mui/material";
+// import { useTranslation } from "react-i18next";
+// import { getLibrarymode } from "../../features/library/Librarymode";
+// import { useSelector } from "react-redux";
+// import nogames from "../../assets/main/nogames.png";
+// import { librarymodeType } from "../../types/homeTypes";
+// import { isInstalled } from "../../lib/api/Downloads";
+// import { useNavigate } from "react-router-dom";
+// import solar from "../../assets/chains/solar.svg";
+// import Loading from "../Loading";
+// import AnimatedComponent from "../AnimatedComponent";
 
 const Libraryshow = () => {
-  const { t } = useTranslation();
-  const data: librarymodeType = useSelector(getLibrarymode);
-  const navigate = useNavigate();
+  // const { t } = useTranslation();
+  // const data: librarymodeType = useSelector(getLibrarymode);
+  // const navigate = useNavigate();
   //@ts-ignore
   const [installList, setInstallList] = useState<string[]>([]);
   //@ts-ignore
@@ -51,7 +48,7 @@ const Libraryshow = () => {
 
   return (
     <>
-      <Grid item xs={12}>
+      {/* <Grid item xs={12}>
         {data.mode === 0 && <Box className={"fs-40-bold white"}>{t("lib-1_your-games")}</Box>}
         {data.mode === 1 && <Box className={"fs-40-bold white"}>{t("lib-2_wishlist")}</Box>}
         {data.mode === 2 && <Box className={"fs-40-bold white"}>{t("lib-3_download")}</Box>}
@@ -135,7 +132,7 @@ const Libraryshow = () => {
             </AnimatedComponent>
           </Grid>
         )}
-      </Grid>
+      </Grid> */}
     </>
   );
 };

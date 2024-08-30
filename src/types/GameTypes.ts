@@ -27,25 +27,21 @@ export interface IGame {
     tags: string[];
     type: string; // native, browser
     image: string;
-    gallery: [
-      {
-        src: string;
-        name: string;
-        type: string; // image, youtube
-      }
-    ];
+    gallery: Array<{
+      src: string;
+      name: string;
+      type: string; // image, youtube
+    }>;
     meta_uri: string;
-    networks: [
-      {
-        icon: string;
-        name: string;
-        type: string; // nonFungible, fungible
-        address: string;
-        chain_id: string;
-        marketplace_urls: string[];
-        meta_mask_compatible: boolean;
-      }
-    ];
+    networks: Array<{
+      icon: string;
+      name: string;
+      type: string; // nonFungible, fungible
+      address: string;
+      chain_id: string;
+      marketplace_urls: string[];
+      meta_mask_compatible: boolean;
+    }>;
     repository: string;
     description: string;
     discord_url: string;

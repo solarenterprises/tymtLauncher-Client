@@ -12,6 +12,7 @@ import { getComingGameList } from "../../features/store/ComingGameListSlice";
 import { IGame, IGameList } from "../../types/GameTypes";
 
 import { filterByGenre, filterByKeyword, filterByPlatform, filterByRank, filterByType } from "../../lib/helper/FilterHelper";
+import { BasicGameList } from "../../lib/game/BasicGameList";
 
 export interface IPropsStoreGameItems {
   platform?: string;
@@ -26,7 +27,7 @@ const StoreGameItems = ({ platform, genre, rank, type, keyword }: IPropsStoreGam
   const gameListStore: IGameList = useSelector(getGameList);
   const comingGameListStore: IGameList = useSelector(getComingGameList);
 
-  const allGames: IGame[] = useMemo(() => [...gameListStore?.games, ...comingGameListStore?.games], [gameListStore, comingGameListStore]);
+  const allGames: IGame[] = useMemo(() => [...BasicGameList, ...gameListStore?.games, ...comingGameListStore?.games], [gameListStore, comingGameListStore]);
 
   const resultGames: IGame[] = useMemo(() => {
     let data = [...allGames];

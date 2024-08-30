@@ -1,35 +1,7 @@
-import { Grid, Box } from "@mui/material";
-import { useTranslation } from "react-i18next";
-import { useParams } from "react-router-dom";
-import { useEffect, useState } from "react";
-import Games, { Game } from "../../lib/game/Game";
-import { languageType } from "../../types/settingTypes";
-import { useSelector } from "react-redux";
-import { selectLanguage } from "../../features/settings/LanguageSlice";
-
 const Overview = () => {
-  const param = useParams();
-  const id: string = param.gameid ?? "";
-  const game: Game = Games[id];
-  const { t } = useTranslation();
-  const [select, setSelect] = useState(0);
-  const [image, setImage] = useState(game.images[0]);
-  const langStore: languageType = useSelector(selectLanguage);
-  const lang = langStore.language;
-
-  useEffect(() => {
-    const intervalId = setInterval(() => {
-      const temp = (select + 1) % game.images.length;
-      setSelect(temp);
-      setImage(game.images[temp]);
-    }, 3 * 1000);
-
-    return () => clearInterval(intervalId);
-  }, [game.images.length, select]);
-
   return (
     <>
-      <Box className={"fs-40-bold white"} marginTop={"24px"}>
+      {/* <Box className={"fs-40-bold white"} marginTop={"24px"}>
         {t("ga-10_overview")}
       </Box>
       <Box className={"fs-24-bold white"} marginTop={"32px"}>
@@ -88,7 +60,7 @@ const Overview = () => {
             loading="lazy"
           />
         </Grid>
-      </Box>
+      </Box> */}
     </>
   );
 };

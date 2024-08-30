@@ -2,23 +2,16 @@ import { Box, Stack, Modal, Fade } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import closeIcon from "../../assets/settings/x-icon.svg";
 import logo from "../../assets/main/foxhead-comingsoon.png";
-import { openLink, runGame } from "../../lib/api/Downloads";
-import Games from "../../lib/game/Game";
-import { languageType } from "../../types/settingTypes";
-import { useSelector } from "react-redux";
-import { selectLanguage } from "../../features/settings/LanguageSlice";
+
 import { useNotification } from "../../providers/NotificationProvider";
 
 interface props {
   open: boolean;
   setOpen: (status: boolean) => void;
-  id: string;
 }
 
-const WarningModal = ({ open, setOpen, id }: props) => {
+const WarningModal = ({ open, setOpen }: props) => {
   const { t } = useTranslation();
-  const langStore: languageType = useSelector(selectLanguage);
-  const lang = langStore.language;
 
   const modalStyle = {
     display: "flex",
@@ -45,14 +38,14 @@ const WarningModal = ({ open, setOpen, id }: props) => {
               <Box className="center-align">
                 <img width={200} src={logo} />
               </Box>
-              <Box className="fs-h3 white">{Games[id].warning[lang]}</Box>
+              {/* <Box className="fs-h3 white">{Games[id].warning[lang]}</Box> */}
               <Box
                 className="fs-h3 blue"
                 sx={{
                   cursor: "pointer",
                 }}
                 onClick={() => {
-                  openLink(Games[id].warningLink);
+                  // openLink(Games[id].warningLink);
                 }}
               >
                 Click here
@@ -60,7 +53,8 @@ const WarningModal = ({ open, setOpen, id }: props) => {
               <Box
                 onClick={async () => {
                   setOpen(false);
-                  const isExisting = await runGame(id);
+                  // const isExisting = await runGame(id);
+                  const isExisting = false;
                   if (!isExisting) {
                     setNotificationStatus("failed");
                     setNotificationTitle(t("alt-9_run-failed"));

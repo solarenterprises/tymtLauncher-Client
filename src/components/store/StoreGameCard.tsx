@@ -84,10 +84,8 @@ const StoreGameCard = ({ game, isComing }: IPropsStoreGameCard) => {
               }}
             >
               {game?.projectMeta?.tags?.map((tag, index) => (
-                <SwiperSlide style={{ width: "auto" }}>
-                  <Box key={index} className="fs-14-regular white card_genre_label">
-                    {tag}
-                  </Box>
+                <SwiperSlide style={{ width: "auto" }} key={index}>
+                  <Box className="fs-14-regular white card_genre_label">{tag}</Box>
                 </SwiperSlide>
               ))}
             </Swiper>
