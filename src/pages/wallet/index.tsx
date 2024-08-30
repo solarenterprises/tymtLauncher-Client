@@ -1,9 +1,11 @@
 import { useTranslation } from "react-i18next";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
+import { emit } from "@tauri-apps/api/event";
 import numeral from "numeral";
 
+import { TauriEventNames } from "../../consts/TauriEventNames";
 import { currencySymbols } from "../../consts/SupportCurrency";
 import { supportChains } from "../../consts/SupportTokens";
 
@@ -22,6 +24,12 @@ import { getCurrentCurrency } from "../../features/wallet/CurrentCurrencySlice";
 import { fetchBalanceListAsync, getBalanceList } from "../../features/wallet/BalanceListSlice";
 import { fetchPriceListAsync, getPriceList } from "../../features/wallet/PriceListSlice";
 import { getWalletSetting, setWalletSetting } from "../../features/settings/WalletSettingSlice";
+import { getCurrentToken } from "../../features/wallet/CurrentTokenSlice";
+import { getCurrentChain } from "../../features/wallet/CurrentChainSlice";
+import { getWallet } from "../../features/wallet/WalletSlice";
+import { fetchTransactionListAsync } from "../../features/wallet/TransactionListSlice";
+
+import { getNativeSymbolByChainName, getSupportChainByName, getTokenBalanceBySymbol } from "../../lib/helper/WalletHelper";
 
 import sendIcon from "../../assets/wallet/send-icon.svg";
 import receiveIcon from "../../assets/wallet/receive-icon.svg";
@@ -30,14 +38,10 @@ import refreshIcon from "../../assets/wallet/refresh-icon.svg";
 
 import { IBalanceList, ICurrencyList, ICurrentChain, ICurrentCurrency, ICurrentToken, IPriceList, IWallet } from "../../types/walletTypes";
 import { IWalletSetting } from "../../types/settingTypes";
+import { INotificationParams } from "../../types/NotificationTypes";
 
 import WalletStyle from "../../styles/WalletStyles";
 import SettingStyle from "../../styles/SettingStyle";
-import { getNativeSymbolByChainName, getSupportChainByName, getTokenBalanceBySymbol } from "../../lib/helper/WalletHelper";
-import { getCurrentToken } from "../../features/wallet/CurrentTokenSlice";
-import { getCurrentChain } from "../../features/wallet/CurrentChainSlice";
-import { getWallet } from "../../features/wallet/WalletSlice";
-import { fetchTransactionListAsync } from "../../features/wallet/TransactionListSlice";
 
 // const order = ["Solar", "Binance", "Ethereum", "Bitcoin", "Solana", "Polygon", "Avalanche", "Arbitrum", "Optimism"];
 
@@ -85,23 +89,48 @@ const Wallet = () => {
     return res;
   }, [balanceListStore, priceListStore, reserve]);
 
-  const handleRefreshClick = useCallback(() => {
+  const handleRefreshClick = useCallback(async () => {
     try {
-      dispatch(fetchBalanceListAsync(walletStore));
-      dispatch(fetchPriceListAsync());
-      dispatch(fetchCurrencyListAsync());
-      dispatch(
-        fetchTransactionListAsync({
-          walletStore: walletStore,
-          chainName: currentChainStore?.chain,
-          tokenSymbol: getNativeSymbolByChainName(currentChainStore?.chain),
-          page: 1,
-        })
-      );
+      const asyncAll = [
+        dispatch(fetchBalanceListAsync(walletStore)),
+        dispatch(fetchPriceListAsync()),
+        dispatch(fetchCurrencyListAsync()),
+        dispatch(
+          fetchTransactionListAsync({
+            walletStore: walletStore,
+            chainName: currentChainStore?.chain,
+            tokenSymbol: getNativeSymbolByChainName(currentChainStore?.chain),
+            page: 1,
+          })
+        ),
+      ];
+
+      await Promise.all(asyncAll);
+
+      const noti: INotificationParams = {
+        status: "success",
+        title: t("set-85_success"),
+        message: t("alt-21_balances-refresh-success"),
+        link: null,
+        translate: false,
+      };
+      emit(TauriEventNames.NOTIFICATION, noti);
     } catch (err) {
       console.log("Failed to handleRefreshClick: ", err);
+      const noti: INotificationParams = {
+        status: "failed",
+        title: t("wal-56_failed"),
+        message: t("wal-53_refresh-vote-failed"),
+        link: null,
+        translate: false,
+      };
+      emit(TauriEventNames.NOTIFICATION, noti);
     }
   }, [walletStore, currentChainStore]);
+
+  useEffect(() => {
+    handleRefreshClick();
+  }, []);
 
   return (
     <>

@@ -47,8 +47,8 @@ const AlertProvider = () => {
   const loginStore: ILogin = useSelector(getLogin);
   const accountStore: IAccount = useSelector(getAccount);
 
-  useEffect(() => {
-    if (loginStore?.isLoggedIn) {
+  const timerAction = async () => {
+    try {
       // Wallet
       dispatch(fetchBalanceListAsync(walletStore));
       dispatch(fetchPriceListAsync());
@@ -104,7 +104,20 @@ const AlertProvider = () => {
         }
       });
       // ~ Chat
+    } catch (err) {
+      console.log("Failed to timerAction: ", err);
     }
+  };
+
+  useEffect(() => {
+    let intervalId: NodeJS.Timeout;
+    if (loginStore?.isLoggedIn) {
+      intervalId = setInterval(() => timerAction(), 120 * 1e3);
+    }
+
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+    };
   }, [loginStore]);
 
   useEffect(() => {
