@@ -9,7 +9,7 @@ import "firebase/database";
 
 import { Box, Divider, Button, Stack } from "@mui/material";
 
-import { addChatHistory } from "../../lib/api/JSONHelper";
+import { addChatHistory } from "../../lib/helper/JSONHelper";
 
 import { AppDispatch } from "../../store";
 import { getChatHistory, setChatHistory, setChatHistoryAsync } from "../../features/chat/ChatHistorySlice";

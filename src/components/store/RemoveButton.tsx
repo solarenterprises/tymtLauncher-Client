@@ -3,7 +3,7 @@ import { useState, useEffect, useMemo } from "react";
 import { Button } from "@mui/material";
 import DeleteOutlineRoundedIcon from "@mui/icons-material/DeleteOutlineRounded";
 
-import { isInstalled } from "../../lib/api/Downloads";
+import { isInstalled } from "../../lib/helper/DownloadHelper";
 
 import { IGame, IGameList } from "../../types/GameTypes";
 import { emit } from "@tauri-apps/api/event";

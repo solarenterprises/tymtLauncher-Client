@@ -29,7 +29,7 @@ import { ChatHistoryType, IMyInfo, propsChatInputFieldType } from "../../types/c
 import { IChatroom } from "../../types/ChatroomAPITypes";
 
 import MessageAPI from "../../lib/api/MessageAPI";
-import { shortenFileName } from "../../lib/api/URLHelper";
+import { shortenFileName } from "../../lib/helper/URLHelper";
 
 const theme = createTheme({
   palette: {

@@ -6,7 +6,7 @@ import externalIcon from "../../assets/settings/external-link.svg";
 import twitterIcon from "../../assets/settings/twitter-icon.svg";
 import discordIcon from "../../assets/settings/discord-icon.svg";
 import { propsType } from "../../types/settingTypes";
-import { openLink } from "../../lib/api/Downloads";
+import { openLink } from "../../lib/helper/DownloadHelper";
 import { tymtlinks } from "../../lib/setting/tymtlinks";
 import Tymtlinks from "../../lib/setting/tymtlinks";
 import { tymt_version } from "../../configs";

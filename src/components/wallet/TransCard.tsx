@@ -19,7 +19,7 @@ import { getTransactionList } from "../../features/wallet/TransactionListSlice";
 
 import { formatBalance, formatTransaction } from "../../lib/helper";
 import { getNativeTokenPriceByChainName, getSupportChainByName } from "../../lib/helper/WalletHelper";
-import { openLink } from "../../lib/api/Downloads";
+import { openLink } from "../../lib/helper/DownloadHelper";
 
 import timerIcon from "../../assets/wallet/timer-icon.svg";
 

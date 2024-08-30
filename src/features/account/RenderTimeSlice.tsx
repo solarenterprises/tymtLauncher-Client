@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { compareJSONStructure } from "../../lib/api/JSONHelper";
+import { compareJSONStructure } from "../../lib/helper/JSONHelper";
 
 export interface IRenderTime {
   renderTime: number;

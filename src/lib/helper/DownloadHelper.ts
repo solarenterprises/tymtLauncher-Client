@@ -281,10 +281,19 @@ export const getExecutablePathNewGame = async (game: IGame) => {
     const cpu = await arch();
     switch (platform) {
       case "Linux":
+        switch (cpu) {
+          case "arm":
+            res = game?.releaseMeta?.platforms?.linux_arm64?.executable;
+            break;
+          case "x86_64":
+            res = game?.releaseMeta?.platforms?.linux_amd64?.executable;
+            break;
+        }
         break;
       case "Windows_NT":
         switch (cpu) {
           case "arm":
+            res = game?.releaseMeta?.platforms?.windows_arm64?.executable;
             break;
           case "x86_64":
             res = game?.releaseMeta?.platforms?.windows_amd64?.executable;
@@ -294,8 +303,10 @@ export const getExecutablePathNewGame = async (game: IGame) => {
       case "Darwin":
         switch (cpu) {
           case "arm":
+            res = game?.releaseMeta?.platforms?.darwin_arm64?.executable;
             break;
           case "x86_64":
+            res = game?.releaseMeta?.platforms?.darwin_arm64?.executable;
             break;
         }
         break;
@@ -403,5 +414,24 @@ export const downloadAndUnzipNewGameWindows = async (install_path: string, url: 
     });
   } catch (err) {
     console.error("Failed to downloadAndUnzipNewGameWindows: ", err);
+  }
+};
+
+export const getSupportOSList = (game: IGame) => {
+  try {
+    let res: string[] = [];
+    if (game?.releaseMeta?.platforms?.darwin_amd64 || game?.releaseMeta?.platforms?.darwin_arm64) {
+      res = ["darwin", ...res];
+    }
+    if (game?.releaseMeta?.platforms?.linux_amd64 || game?.releaseMeta?.platforms?.linux_arm64) {
+      res = ["linux", ...res];
+    }
+    if (game?.releaseMeta?.platforms?.windows_amd64 || game?.releaseMeta?.platforms?.windows_arm64) {
+      res = ["windows", ...res];
+    }
+    return res;
+  } catch (err) {
+    console.log("Failed to getSupportOSList: ", err);
+    return [];
   }
 };

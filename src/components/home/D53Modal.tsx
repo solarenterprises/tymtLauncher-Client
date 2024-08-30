@@ -11,7 +11,7 @@ import { useNotification } from "../../providers/NotificationProvider";
 import InputText from "../account/InputText";
 
 import closeIcon from "../../assets/settings/x-icon.svg";
-import { runD53 } from "../../lib/api/Downloads";
+import { runD53 } from "../../lib/helper/DownloadHelper";
 
 interface props {
   open: boolean;

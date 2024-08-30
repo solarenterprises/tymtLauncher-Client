@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import tymtStorage from "../../lib/Storage";
 import { notificationType } from "../../types/settingTypes";
-import { compareJSONStructure } from "../../lib/api/JSONHelper";
+import { compareJSONStructure } from "../../lib/helper/JSONHelper";
 
 const init: notificationType = {
   alert: true,

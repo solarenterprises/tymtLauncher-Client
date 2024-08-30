@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { IBalance, IBalanceList } from "../../types/walletTypes";
-import { compareJSONStructure } from "../../lib/api/JSONHelper";
+import { compareJSONStructure } from "../../lib/helper/JSONHelper";
 import { resetBalanceList } from "../../lib/helper/WalletHelper";
 import { fetchBalanceList, fetchChainBalance } from "./BalanceListApi";
 

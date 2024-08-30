@@ -2,7 +2,6 @@ import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import { ThreeDots } from "react-loader-spinner";
-import { type, arch } from "@tauri-apps/api/os";
 import { emit } from "@tauri-apps/api/event";
 
 import { TauriEventNames } from "../../consts/TauriEventNames";
@@ -16,7 +15,7 @@ import { getDownloadStatus } from "../../features/home/DownloadStatusSlice";
 import { IGame } from "../../types/GameTypes";
 import { INotificationGameDownloadParams, INotificationParams } from "../../types/NotificationTypes";
 
-import { checkOnline, downloadNewGame, isInstalled } from "../../lib/api/Downloads";
+import { checkOnline, downloadNewGame, getFullExecutablePathNewGame, isInstalled } from "../../lib/helper/DownloadHelper";
 import { IDownloadStatus } from "../../types/homeTypes";
 import WarningModalNewGame from "../home/WarningModalNewGame";
 import { District53 } from "../../lib/game/district 53/District53";
@@ -83,27 +82,9 @@ const InstallButton = ({ game }: IPropsInstallButton) => {
 
   useEffect(() => {
     const checkSupport = async () => {
-      let res: boolean = false;
-      const platform = await type();
-      const cpu = await arch();
-      switch (platform) {
-        case "Linux":
-          break;
-        case "Darwin":
-          break;
-        case "Windows_NT":
-          switch (cpu) {
-            case "x86_64":
-              res = true;
-              break;
-            default:
-              res = false;
-          }
-          break;
-        default:
-          res = false;
-      }
-      setIsSupporting(res);
+      const fullPath = await getFullExecutablePathNewGame(game);
+      if (!fullPath) setIsSupporting(false);
+      else setIsSupporting(true);
     };
 
     checkSupport();

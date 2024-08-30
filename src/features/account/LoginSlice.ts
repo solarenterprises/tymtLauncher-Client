@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { ILogin } from "../../types/accountTypes";
-import { compareJSONStructure } from "../../lib/api/JSONHelper";
+import { compareJSONStructure } from "../../lib/helper/JSONHelper";
 
 const init: ILogin = {
   isLoggedIn: false,

@@ -37,7 +37,7 @@ import { fetchHistoricalChatroomMembersAsync } from "../../features/chat/Histori
 import { getMyInfo } from "../../features/account/MyInfoSlice";
 import { IActiveUserList, getActiveUserList } from "../../features/chat/ActiveUserListSlice";
 
-import { addChatHistory } from "../../lib/api/JSONHelper";
+import { addChatHistory } from "../../lib/helper/JSONHelper";
 
 import { ChatHistoryType, IContactList, IMyInfo } from "../../types/chatTypes";
 import { chatType, notificationType } from "../../types/settingTypes";

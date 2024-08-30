@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { IPrice, IPriceList } from "../../types/walletTypes";
-import { compareJSONStructure } from "../../lib/api/JSONHelper";
+import { compareJSONStructure } from "../../lib/helper/JSONHelper";
 import { resetPriceList } from "../../lib/helper/WalletHelper";
 import { fetchPriceList } from "./PriceListApi";
 

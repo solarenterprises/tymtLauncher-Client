@@ -81,6 +81,41 @@ export interface IGame {
         downloadSize: string;
         external_url: string;
       };
+      windows_arm64?: {
+        name: string;
+        executable: string;
+        installSize: string;
+        downloadSize: string;
+        external_url: string;
+      };
+      darwin_amd64?: {
+        name: string;
+        executable: string;
+        installSize: string;
+        downloadSize: string;
+        external_url: string;
+      };
+      darwin_arm64?: {
+        name: string;
+        executable: string;
+        installSize: string;
+        downloadSize: string;
+        external_url: string;
+      };
+      linux_amd64?: {
+        name: string;
+        executable: string;
+        installSize: string;
+        downloadSize: string;
+        external_url: string;
+      };
+      linux_arm64?: {
+        name: string;
+        executable: string;
+        installSize: string;
+        downloadSize: string;
+        external_url: string;
+      };
       web?: {
         name: string;
         external_url: string;

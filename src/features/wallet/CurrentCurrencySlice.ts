@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { ICurrentCurrency } from "../../types/walletTypes";
-import { compareJSONStructure } from "../../lib/api/JSONHelper";
+import { compareJSONStructure } from "../../lib/helper/JSONHelper";
 
 const init: ICurrentCurrency = {
   currency: "USD",

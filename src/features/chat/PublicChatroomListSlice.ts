@@ -1,5 +1,5 @@
 import { PayloadAction, createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { compareJSONStructure } from "../../lib/api/JSONHelper";
+import { compareJSONStructure } from "../../lib/helper/JSONHelper";
 import { IChatroomList } from "../../types/ChatroomAPITypes";
 import { fetchPublicChatroomList } from "./PublicChatroomListApi";
 

@@ -2,7 +2,7 @@ import { useTranslation } from "react-i18next";
 
 import { Box, Button, Tooltip, Stack } from "@mui/material";
 
-import { openLink } from "../../lib/api/Downloads";
+import { openLink } from "../../lib/helper/DownloadHelper";
 
 import { IGame } from "../../types/GameTypes";
 

@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { ICurrentChain } from "../../types/walletTypes";
-import { compareJSONStructure } from "../../lib/api/JSONHelper";
+import { compareJSONStructure } from "../../lib/helper/JSONHelper";
 import { ChainNames } from "../../consts/Chains";
 
 const init: ICurrentChain = {

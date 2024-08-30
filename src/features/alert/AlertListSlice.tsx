@@ -1,7 +1,7 @@
 import { PayloadAction, createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import tymtStorage from "../../lib/Storage";
 import { IAlertList } from "../../types/alertTypes";
-import { addAlertHistory, compareJSONStructure } from "../../lib/api/JSONHelper";
+import { addAlertHistory, compareJSONStructure } from "../../lib/helper/JSONHelper";
 import {
   fetchAlertList,
   fetchCountUnreadAlertList,

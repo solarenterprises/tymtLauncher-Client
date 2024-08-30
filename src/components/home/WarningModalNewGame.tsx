@@ -2,7 +2,7 @@ import { useTranslation } from "react-i18next";
 
 import { Box, Stack, Modal, Fade } from "@mui/material";
 
-import { runNewGame } from "../../lib/api/Downloads";
+import { runNewGame } from "../../lib/helper/DownloadHelper";
 
 import { IGame } from "../../types/GameTypes";
 

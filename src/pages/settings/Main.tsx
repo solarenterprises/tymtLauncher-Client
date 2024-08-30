@@ -20,7 +20,7 @@ import { getPriceList } from "../../features/wallet/PriceListSlice";
 import { getWallet } from "../../features/wallet/WalletSlice";
 
 import { getExplorerUrl } from "../../lib/helper";
-import { openLink } from "../../lib/api/Downloads";
+import { openLink } from "../../lib/helper/DownloadHelper";
 import { getCurrentChainWalletAddress } from "../../lib/helper/WalletHelper";
 
 import SettingStyle from "../../styles/SettingStyle";

@@ -12,7 +12,7 @@ import downloadsmall from "../../assets/main/downloadsmall.svg";
 import { getCurrentLogo } from "../../features/home/Tymtlogo";
 
 import { IDownloadStatus, IPoint, TymtlogoType } from "../../types/homeTypes";
-import { openDir } from "../../lib/api/Downloads";
+import { openDir } from "../../lib/helper/DownloadHelper";
 import numeral from "numeral";
 
 const InstallingProcess = () => {

@@ -2,7 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 import tymtStorage from "../../lib/Storage";
 
 import { ID53Password } from "../../types/walletTypes";
-import { compareJSONStructure } from "../../lib/api/JSONHelper";
+import { compareJSONStructure } from "../../lib/helper/JSONHelper";
 
 const init: ID53Password = {
   password: "",

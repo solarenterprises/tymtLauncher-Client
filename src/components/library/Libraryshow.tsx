@@ -8,7 +8,7 @@ import { Grid, Box, Stack } from "@mui/material";
 import StoreGameCard from "../store/StoreGameCard";
 import AnimatedComponent from "../AnimatedComponent";
 
-import { isInstalled } from "../../lib/api/Downloads";
+import { isInstalled } from "../../lib/helper/DownloadHelper";
 
 import NoGamePng from "../../assets/main/nogames.png";
 

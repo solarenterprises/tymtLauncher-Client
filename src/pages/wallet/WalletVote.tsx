@@ -25,7 +25,7 @@ import Solar from "../../lib/wallet/Solar";
 
 import { formatDecimal } from "../../lib/helper";
 import { translateString } from "../../lib/api/Translate";
-import { openLink } from "../../lib/api/Downloads";
+import { openLink } from "../../lib/helper/DownloadHelper";
 import { getNativeTokenBalanceByChainName, getNativeTokenPriceByChainName } from "../../lib/helper/WalletHelper";
 
 import accountIcon from "../../assets/wallet/account.svg";

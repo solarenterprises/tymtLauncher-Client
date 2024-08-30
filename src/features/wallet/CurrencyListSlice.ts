@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import { ICurrency, ICurrencyList } from "../../types/walletTypes";
 import { supportCurrency } from "../../consts/SupportCurrency";
-import { compareJSONStructure } from "../../lib/api/JSONHelper";
+import { compareJSONStructure } from "../../lib/helper/JSONHelper";
 import { fetchCurrencyList } from "./CurrencyListApi";
 
 const init: ICurrencyList = {
