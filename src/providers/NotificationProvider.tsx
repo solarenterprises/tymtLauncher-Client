@@ -201,18 +201,6 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
       );
     });
 
-    const unlisten_game_download_finished_rust = listen(TauriEventNames.GAME_DOWNLOAD_FINISHED_RUST, async (_event) => {
-      dispatch(
-        setDownloadStatus({
-          progress: 0,
-          speed: 0,
-          total: 0,
-          isDownloading: false,
-          game: null,
-        })
-      );
-    });
-
     const unlisten_fs_remove_dir = listen(TauriEventNames.FS_REMOVE_DIR, async (event) => {
       const game = event.payload as IGame;
       if (!game) {
@@ -236,7 +224,6 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
       unlisten_notification.then((unlistenFn) => unlistenFn());
       unlisten_game_download.then((unlistenFn) => unlistenFn());
       unlisten_game_download_progress.then((unlistenFn) => unlistenFn());
-      unlisten_game_download_finished_rust.then((unlistenFn) => unlistenFn());
       unlisten_fs_remove_dir.then((unlistenFn) => unlistenFn());
     };
   });

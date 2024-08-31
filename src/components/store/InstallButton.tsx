@@ -15,7 +15,7 @@ import { getDownloadStatus } from "../../features/home/DownloadStatusSlice";
 import { IGame } from "../../types/GameTypes";
 import { INotificationGameDownloadParams, INotificationParams } from "../../types/NotificationTypes";
 
-import { checkOnline, downloadNewGame, getFullExecutablePathNewGame, isInstalled } from "../../lib/helper/DownloadHelper";
+import { checkOnline, downloadAndInstallNewGame, getFullExecutablePathNewGame, isInstalled } from "../../lib/helper/DownloadHelper";
 import { IDownloadStatus } from "../../types/homeTypes";
 import WarningModalNewGame from "../home/WarningModalNewGame";
 import { District53 } from "../../lib/game/district 53/District53";
@@ -60,7 +60,7 @@ const InstallButton = ({ game }: IPropsInstallButton) => {
         };
         emit(TauriEventNames.GAME_DOWNLOAD, noti_1);
 
-        const downloadable = await downloadNewGame(game);
+        const downloadable = await downloadAndInstallNewGame(game);
 
         if (!downloadable) {
           const noti_1: INotificationGameDownloadParams = {
@@ -96,7 +96,7 @@ const InstallButton = ({ game }: IPropsInstallButton) => {
       setInstalled(await isInstalled(game));
     };
 
-    let intervalId = setInterval(() => checkInstalled(game), 1 * 1e3);
+    let intervalId = setInterval(() => checkInstalled(game), 10 * 1e3);
 
     return () => {
       if (intervalId) clearInterval(intervalId);

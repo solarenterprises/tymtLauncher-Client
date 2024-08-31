@@ -94,7 +94,7 @@ const District53intro = ({ setImage }: props) => {
               cursor: "pointer",
             }}
             onClick={() => {
-              navigate(`/store/district53`);
+              navigate(`/coming/${District53?._id}`);
             }}
           >
             {t("hom-5_district53")}

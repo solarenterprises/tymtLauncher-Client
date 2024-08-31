@@ -1686,8 +1686,6 @@ async fn download_and_unzip_new_game_windows(
     if let Err(e) = delete_file(app_handle.clone(), file_location.clone()).await {
         eprintln!("Error deleting file: {}", e);
     }
-
-    app_handle.emit_all("download_finished_rust", "download_finished_rust");
 }
 
 #[derive(serde::Serialize)]
@@ -1759,9 +1757,9 @@ async fn download_to_app_dir(
             last_emit_time = Instant::now();
         }
 
-        println!("downloaded => {}", downloaded);
-        println!("total_size => {}", total_size);
-        println!("speed => {:?}", speed);
+        // println!("downloaded => {}", downloaded);
+        // println!("total_size => {}", total_size);
+        // println!("speed => {:?}", speed);
     }
 
     return Ok(());
