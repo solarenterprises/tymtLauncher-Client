@@ -91,10 +91,10 @@ export const District53: IGame = {
     short_description:
       "Unleash your creativity in a world where every action counts! District 53 Metaverse is a voxel-based online world, where blockchain meets mining, crafting, and building. With integration into the Solar Blockchain, every move you make earns you SXP, turning your adventures into tangible rewards. Survival, Creative and PvP modes available!",
     system_requirements: {
-      cpu: "64-bit CPU",
-      gpu: "GPU with support for DirectX 12 or newer, Vulkan or Metal",
-      disk: "2 GiB available space",
-      memory: "4 GiB RAM",
+      cpu: "Intel Pentium 4 @ 2.0 Ghz or Greater",
+      gpu: "Nvidia or Amd; Best recommended 2GB graphic memory",
+      disk: "500MB+ of free disk space",
+      memory: "8GB+ of RAM",
     },
     is_hyperplay_exclusive: false,
   },
@@ -119,7 +119,7 @@ export const District53: IGame = {
     release_name: "",
   },
   title: "District53",
-  visibilityState: "", // active
+  visibilityState: "active", // active
   externalStoreId: "",
   createdAt: "",
   updatedAt: "",
