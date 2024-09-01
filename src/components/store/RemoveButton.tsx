@@ -28,7 +28,6 @@ const RemoveButton = ({ game }: IPropsRemoveButton) => {
 
   useEffect(() => {
     const checkInstalled = async (game: IGame) => {
-      console.log("checkInstalled");
       setInstalled(await isInstalled(game));
     };
 

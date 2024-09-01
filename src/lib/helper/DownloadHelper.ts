@@ -3,6 +3,7 @@ import { appDataDir } from "@tauri-apps/api/path";
 import { type, arch } from "@tauri-apps/api/os";
 import { invoke } from "@tauri-apps/api/tauri";
 import { open } from "@tauri-apps/api/shell";
+import { ResponseType, fetch as tauriFetch } from "@tauri-apps/api/http";
 
 import tymtStorage from "../Storage";
 import { District53 } from "../game/district 53/District53";
@@ -47,6 +48,9 @@ export const runNewGame = async (game: IGame) => {
       case "Windows_NT":
         switch (gameExtension) {
           case "exe":
+            await runUrlArgs(fullExecutablePath, []);
+            break;
+          case "bat":
             await runUrlArgs(fullExecutablePath, []);
             break;
         }
@@ -254,6 +258,7 @@ export const downloadAndInstallNewGame = async (game: IGame) => {
 
 export const getDownloadLinkNewGame = async (game: IGame) => {
   try {
+    const fullExecutablePath = await getFullExecutablePathNewGame(game);
     let res: string = "";
     if (game.projectMeta.type === "browser") {
       return res;
@@ -291,6 +296,9 @@ export const getDownloadLinkNewGame = async (game: IGame) => {
             break;
         }
         break;
+    }
+    if (fullExecutablePath && !res) {
+      res = await getDownloadLinkFromMetaUri(game);
     }
     return res;
   } catch (err) {
@@ -530,5 +538,67 @@ export const deleteDownloadFile = async (game: IGame) => {
   } catch (err) {
     console.log("Failed to deleteDownloadFile: ", err);
     return false;
+  }
+};
+
+export const getOsCpu = async () => {
+  try {
+    const platform = await type();
+    const cpu = await arch();
+
+    let resPlatform: string = "";
+    let resCpu: string = "";
+
+    switch (platform) {
+      case "Linux":
+        resPlatform = "linux";
+        break;
+      case "Windows_NT":
+        resPlatform = "windows";
+        break;
+      case "Darwin":
+        resPlatform = "darwin";
+
+        break;
+    }
+
+    switch (cpu) {
+      case "arm":
+        resCpu = "arm64";
+        break;
+      case "x86_64":
+        resCpu = "amd64";
+        break;
+    }
+    const res = `${resPlatform}_${resCpu}`;
+    return res;
+  } catch (err) {
+    console.log("Failed to getOsCpu: ", err);
+  }
+};
+
+export const fetchMetaUri = async (game) => {
+  try {
+    const metaUri = game?.releaseMeta?.meta_uri;
+    const res1: any = await tauriFetch(metaUri, {
+      method: "GET",
+      timeout: 30,
+      responseType: ResponseType.JSON,
+    });
+    const res = res1?.data;
+    return res;
+  } catch (err) {
+    console.log("Failed to fetchMetaUri: ", err);
+  }
+};
+
+export const getDownloadLinkFromMetaUri = async (game) => {
+  try {
+    const data = await fetchMetaUri(game);
+    const osCpu = await getOsCpu();
+    const res: string = data?.platforms[osCpu]?.external_url;
+    return res;
+  } catch (err) {
+    console.log("Failed to getDownloadLinkFromMetaUri: ", err);
   }
 };
