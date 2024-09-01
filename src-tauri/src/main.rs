@@ -16,7 +16,7 @@ use std::path::{ Path, PathBuf };
 use std::process::Command;
 use std::sync::OnceLock;
 use std::time::{ Instant, Duration };
-use std::fs;
+use std::{ fs, io };
 use tauri::Manager;
 use tauri::{ CustomMenuItem, SystemTray, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem };
 use futures_util::stream::StreamExt;

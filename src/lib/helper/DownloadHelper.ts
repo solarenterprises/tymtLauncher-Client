@@ -275,6 +275,7 @@ export const getFullExecutablePathNewGame = async (game: IGame) => {
     const prefix: string = await appDataDir();
     const exePath: string = await getExecutablePathNewGame(game);
     const fullPath = prefix + `v${tymt_version}/games/${game.project_name}/` + exePath;
+    console.log("getFullExecutablePathNewGame", fullPath);
     return fullPath;
   } catch (err) {
     console.log("Failed to getFullExecutablePathNewGame: ", err);
@@ -444,20 +445,20 @@ export const getSupportOSList = (game: IGame) => {
 
 export const getDownloadFileFullPath = async (game: IGame) => {
   try {
-    console.log("getSourceFileLocation");
     const fileName = await getDownloadFileNameNewGame(game);
     const res = `${await appDataDir()}${fileName}`;
+    console.log("getDownloadFileFullPath", res);
     return res;
   } catch (err) {
-    console.log("Failed to getSourceFileLocation: ", err);
+    console.log("Failed to getDownloadFileFullPath: ", err);
     return "";
   }
 };
 
 export const getInstallDir = async (game: IGame) => {
   try {
-    console.log("getInstallDir");
     const res = `${await appDataDir()}v${tymt_version}/games/${game?.project_name}`;
+    console.log("getInstallDir", res);
     return res;
   } catch (err) {
     console.log("Failed to getInstallDir: ", err);
@@ -467,8 +468,8 @@ export const getInstallDir = async (game: IGame) => {
 
 export const getDownloadFileExtension = async (game: IGame) => {
   try {
-    const url = await getDownloadLinkNewGame(game);
-    const parts = url.split(".");
+    const fileName = await getDownloadFileNameNewGame(game);
+    const parts = fileName.split(".");
     return parts.length > 1 ? parts.pop() || null : null;
   } catch (err) {
     console.log("Failed to getDownloadFileExtension: ", err);
@@ -490,6 +491,7 @@ export const getExecutableFileExtension = async (game: IGame) => {
 export const deleteDownloadFile = async (game: IGame) => {
   try {
     const fullPath = await getDownloadFileFullPath(game);
+    console.log("deleteDownloadFile", fullPath);
 
     await invoke("delete_file", {
       fileLocation: fullPath,
