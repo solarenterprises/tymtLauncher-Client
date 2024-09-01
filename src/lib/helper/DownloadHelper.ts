@@ -262,11 +262,10 @@ export const installGame = async (game: IGame) => {
       case "Darwin":
         switch (sourceExtension) {
           case "zip":
-            await invoke("unzip_macos"),
-              {
-                fileLocation: fileLocation,
-                installDir: installDir,
-              };
+            await invoke("unzip_macos", {
+              fileLocation: fileLocation,
+              installDir: installDir,
+            });
             break;
         }
         break;
