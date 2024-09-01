@@ -48,7 +48,7 @@ const WarningModalNewGame = ({ open, setOpen, game }: IPropsWarningModalNewGame)
               <Box
                 onClick={async () => {
                   //   setOpen(false);
-                  const res = await runNewGame(game, []);
+                  const res = await runNewGame(game);
                   if (res) {
                     setOpen(false);
                     return;

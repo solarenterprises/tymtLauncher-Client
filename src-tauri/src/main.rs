@@ -1242,7 +1242,7 @@ async fn untarbz2_macos(
 #[cfg(target_family = "unix")]
 #[tauri::command]
 async fn chmod_macos(app_handle: tauri::AppHandle, executable_path: String) -> Result<(), String> {
-    let path = PathBuf::from(executable_path);
+    let path = PathBuf::from(&executable_path);
 
     // Check if the file exists
     if !path.exists() {

@@ -29,15 +29,37 @@ export async function isInstalled(game: IGame) {
   }
 }
 
-export const runNewGame = async (game: IGame, args: string[]) => {
+export const runNewGame = async (game: IGame) => {
   try {
-    const executablePath = await getExecutablePathNewGame(game);
-    console.log("executablePath: ", executablePath);
-    if (!executablePath) return false;
-    const fullExecutablePath = `${await appDataDir()}v${tymt_version}/games/${game.project_name}/${executablePath}`;
-    console.log("fullExecutablePath: ", fullExecutablePath);
-    if (!fullExecutablePath) return false;
-    await runUrlArgs(fullExecutablePath, args);
+    const fullExecutablePath = await getFullExecutablePathNewGame(game);
+    const gameExtension = (await getExecutableFileExtension(game)).toLowerCase();
+
+    const platform = await type();
+
+    switch (platform) {
+      case "Linux":
+        switch (gameExtension) {
+          case "appimage":
+            await runUrlArgs(fullExecutablePath, [`--appimage-extract-and-run`]);
+            break;
+        }
+        break;
+      case "Windows_NT":
+        switch (gameExtension) {
+          case "exe":
+            await runUrlArgs(fullExecutablePath, []);
+            break;
+        }
+        break;
+      case "Darwin":
+        switch (gameExtension) {
+          case "app":
+            await runUrlArgs("open", [fullExecutablePath]);
+            break;
+        }
+        break;
+    }
+
     return true;
   } catch (err) {
     console.error("Failed to runNewGame: ", err);
