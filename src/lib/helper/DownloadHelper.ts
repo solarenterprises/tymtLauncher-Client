@@ -12,91 +12,6 @@ import { local_server_port, tymt_version } from "../../configs";
 import { ISaltToken } from "../../types/accountTypes";
 import { IGame } from "../../types/GameTypes";
 
-export async function downloadAppImageLinux(url: string, targetDir: string) {
-  return invoke("download_appimage_linux", {
-    url: url,
-    target: targetDir,
-    authorization: `Basic ${btoa("dev:shine skype sherry occupant python cure urology phantom broadband overlying groin sensation")}`,
-  });
-}
-
-export async function downloadAndUnzipLinux(url: string, targetDir: string, exe: string) {
-  return invoke("download_and_unzip_linux", {
-    url: url,
-    target: targetDir,
-    exeLocation: exe,
-  });
-}
-
-export async function downloadAndUnzipWindows(url: string, targetDir: string) {
-  return invoke("download_and_unzip_windows", {
-    url: url,
-    target: targetDir,
-    authorization: `Basic ${btoa("dev:shine skype sherry occupant python cure urology phantom broadband overlying groin sensation")}`,
-  });
-}
-
-export async function downloadAndUnzipMacOS(url: string, targetDir: string, exe: string) {
-  return invoke("download_and_unzip_macos", {
-    url: url,
-    target: targetDir,
-    exeLocation: exe,
-    authorization: `Basic ${btoa("dev:shine skype sherry occupant python cure urology phantom broadband overlying groin sensation")}`,
-  });
-}
-
-export async function downloadAndUntarbz2MacOS(url: string, targetDir: string, exe: string) {
-  return invoke("download_and_untarbz2_macos", {
-    url: url,
-    target: targetDir,
-    exeLocation: exe,
-  });
-}
-
-export async function downloadAndInstallAppImage(url: string, targetFile: string) {
-  return invoke("download_and_install_appimage", {
-    url: url,
-    target: targetFile,
-  });
-}
-
-export async function downloadFileLinux(url: string, targetFile: string) {
-  return invoke("download_file", {
-    url: url,
-    target: targetFile,
-  });
-}
-
-export async function runLinux(url: string) {
-  return invoke("run_linux", {
-    url: url,
-  });
-}
-
-export async function runWindows(url: string) {
-  return invoke("run_exe", {
-    url: url,
-  });
-}
-
-export async function runMacOS(url: string) {
-  return invoke("run_macos", {
-    url: url,
-  });
-}
-
-export async function runAppMacOS(url: string) {
-  return invoke("run_app_macos", {
-    url: url,
-  });
-}
-
-export async function runUrl(url: string) {
-  return invoke("run_exe", {
-    url: url,
-  });
-}
-
 export async function runUrlArgs(url: string, args: string[]) {
   return invoke("run_url_args", {
     url: url,
@@ -151,7 +66,6 @@ export const runD53 = async (serverIp: string, autoMode: boolean) => {
       case "Linux":
         args = [`--appimage-extract-and-run`, `--launcher_url`, launcherUrl, `--token`, token];
         break;
-
       case "Windows_NT":
         args = [`--launcher_url`, launcherUrl, `--token`, token];
         break;
@@ -246,6 +160,16 @@ export const installGame = async (game: IGame) => {
       case "Linux":
         switch (sourceExtension) {
           case "zip":
+            await invoke("unzip_linux", {
+              fileLocation: fileLocation,
+              installDir: installDir,
+            });
+            break;
+          case "AppImage":
+            await invoke("move_appimage_linux", {
+              fileLocation: fileLocation,
+              installDir: installDir,
+            });
             break;
         }
         break;
@@ -263,6 +187,12 @@ export const installGame = async (game: IGame) => {
         switch (sourceExtension) {
           case "zip":
             await invoke("unzip_macos", {
+              fileLocation: fileLocation,
+              installDir: installDir,
+            });
+            break;
+          case "bz2":
+            await invoke("untarbz2_macos", {
               fileLocation: fileLocation,
               installDir: installDir,
             });

@@ -118,6 +118,13 @@ export const District53: IGame = {
         downloadSize: "40000000",
         external_url: "https://github.com/solarenterprises/d53-minetest/releases/download/5.9.0.2/District53_5.9.0.2_mac_x64_86.zip",
       },
+      darwin_arm64: {
+        name: "District53_5.9.0.2_mac_arm.zip",
+        executable: "District53.app",
+        installSize: "",
+        downloadSize: "35000000",
+        external_url: "https://github.com/solarenterprises/d53-minetest/releases/download/5.9.0.2/District53_5.9.0.2_mac_arm.zip",
+      },
       linux_amd64: {
         name: "District53-5.9.0.2-x86_64.AppImage",
         executable: "District53-5.9.0.2-x86_64.AppImage",
