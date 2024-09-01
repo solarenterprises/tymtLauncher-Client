@@ -53,8 +53,11 @@ export const runNewGame = async (game: IGame) => {
         break;
       case "Darwin":
         switch (gameExtension) {
+          case "":
+            await runUrlArgs(fullExecutablePath, []);
+            break;
           case "app":
-            await runUrlArgs("open", [fullExecutablePath]);
+            await runUrlArgs("open", [`-a`, fullExecutablePath]);
             break;
         }
         break;
@@ -507,7 +510,7 @@ export const getExecutableFileExtension = async (game: IGame) => {
   try {
     const url = await getExecutablePathNewGame(game);
     const parts = url.split(".");
-    return parts.length > 1 ? parts.pop() || null : null;
+    return parts.length > 1 ? parts.pop() || "" : "";
   } catch (err) {
     console.log("Failed to getExecutableFileExtension:", err);
     return "";
