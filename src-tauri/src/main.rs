@@ -17,6 +17,8 @@ use std::process::Command;
 use std::sync::OnceLock;
 use std::time::{ Instant, Duration };
 use std::{ fs, io };
+#[cfg(target_family = "unix")]
+use std::os::unix::fs::PermissionsExt; // For Unix-specific permissions
 use tauri::Manager;
 use tauri::{ CustomMenuItem, SystemTray, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem };
 use futures_util::stream::StreamExt;
@@ -1235,6 +1237,31 @@ async fn untarbz2_macos(
     } else {
         Err(format!("Failed to unzip: exit code {}", status.status.code().unwrap_or(-1)))
     }
+}
+
+#[cfg(target_family = "unix")]
+#[tauri::command]
+async fn chmod_macos(app_handle: tauri::AppHandle, executable_path: String) -> Result<(), String> {
+    let path = PathBuf::from(executable_path);
+
+    // Check if the file exists
+    if !path.exists() {
+        return Err(format!("File does not exist: {}", executable_path));
+    }
+
+    // Set the executable permission
+    let mut permissions = fs
+        ::metadata(&path)
+        .map_err(|e| format!("Failed to get metadata: {}", e))?
+        .permissions();
+
+    permissions.set_mode(0o755); // Set permissions to rwxr-xr-x
+
+    fs
+        ::set_permissions(&path, permissions)
+        .map_err(|e| format!("Failed to set permissions: {}", e))?;
+
+    Ok(())
 }
 
 #[tauri::command]

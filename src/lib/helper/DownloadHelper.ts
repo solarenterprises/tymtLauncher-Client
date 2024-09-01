@@ -153,6 +153,7 @@ export const installGame = async (game: IGame) => {
     console.log("fileLocation", fileLocation);
     console.log("installDir", installDir);
 
+    const fullExecutablePath = await getFullExecutablePathNewGame(game);
     const sourceExtension = (await getDownloadFileExtension(game))?.toLocaleLowerCase();
     const platform = await type();
 
@@ -195,6 +196,9 @@ export const installGame = async (game: IGame) => {
             await invoke("untarbz2_macos", {
               fileLocation: fileLocation,
               installDir: installDir,
+            });
+            await invoke("chmod_macos", {
+              executablePath: fullExecutablePath,
             });
             break;
         }
