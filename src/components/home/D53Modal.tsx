@@ -49,7 +49,7 @@ const D53Modal = ({ open, setOpen }: props) => {
       setNotificationOpen(true);
       setNotificationLink(null);
     } else {
-      const selectedServer = serverList.find((server) => server.ip === serverIp);
+      const selectedServer = serverList?.find((server) => server.ip === serverIp);
       if (!selectedServer) {
         // await runGame("district53", serverIp, autoMode);
       } else {

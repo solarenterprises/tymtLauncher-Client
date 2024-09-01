@@ -387,7 +387,7 @@ export const getExecutablePathNewGame = async (game: IGame) => {
             res = game?.releaseMeta?.platforms?.darwin_arm64?.executable;
             break;
           case "x86_64":
-            res = game?.releaseMeta?.platforms?.darwin_arm64?.executable;
+            res = game?.releaseMeta?.platforms?.darwin_amd64?.executable;
             break;
         }
         break;
