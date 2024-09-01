@@ -239,11 +239,37 @@ export const installGame = async (game: IGame) => {
     console.log("fileLocation", fileLocation);
     console.log("installDir", installDir);
 
-    if ((await getDownloadFileExtension(game))?.toLocaleLowerCase() === "zip") {
-      await invoke("unzip_windows", {
-        fileLocation: fileLocation,
-        installDir: installDir,
-      });
+    const sourceExtension = (await getDownloadFileExtension(game))?.toLocaleLowerCase();
+    const platform = await type();
+
+    switch (platform) {
+      case "Linux":
+        switch (sourceExtension) {
+          case "zip":
+            break;
+        }
+        break;
+      case "Windows_NT":
+        switch (sourceExtension) {
+          case "zip":
+            await invoke("unzip_windows", {
+              fileLocation: fileLocation,
+              installDir: installDir,
+            });
+            break;
+        }
+        break;
+      case "Darwin":
+        switch (sourceExtension) {
+          case "zip":
+            await invoke("unzip_macos"),
+              {
+                fileLocation: fileLocation,
+                installDir: installDir,
+              };
+            break;
+        }
+        break;
     }
 
     return true;

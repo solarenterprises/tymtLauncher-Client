@@ -128,6 +128,7 @@ async fn main() -> std::io::Result<()> {
                 download_and_unzip_new_game_windows,
                 download_to_app_dir,
                 unzip_windows,
+                unzip_macos,
                 delete_file,
                 run_exe,
                 run_url_args,
@@ -1779,6 +1780,27 @@ async fn unzip_windows(
         .map_err(|e| format!("Failed to unzip file: {}", e))?;
 
     Ok(())
+}
+
+#[tauri::command]
+async fn unzip_macos(
+    app_handle: tauri::AppHandle,
+    file_location: String,
+    install_dir: String
+) -> Result<(), String> {
+    let status = Command::new("ditto")
+        .arg("-x")
+        .arg("-k")
+        .arg(&file_location)
+        .arg(&install_dir)
+        .status()
+        .map_err(|e| format!("Failed to execute ditto: {}", e))?;
+
+    if status.success() {
+        Ok(())
+    } else {
+        Err(format!("Failed to unzip: exit code {}", status.code().unwrap_or(-1)))
+    }
 }
 
 #[tauri::command]
