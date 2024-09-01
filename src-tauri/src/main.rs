@@ -1216,6 +1216,15 @@ async fn untarbz2_macos(
     file_location: String,
     install_dir: String
 ) -> Result<(), String> {
+    let install_path = PathBuf::from(&install_dir);
+
+    // Create the directory if it doesn't exist
+    if !install_path.exists() {
+        fs
+            ::create_dir_all(&install_path)
+            .map_err(|e| format!("Failed to create directory: {}", e))?;
+    }
+
     let status = Command::new("tar")
         .args(["-xvjf", &file_location, "-C", &install_dir])
         .output()
