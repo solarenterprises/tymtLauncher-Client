@@ -27,7 +27,7 @@ const StoreGameItems = ({ platform, genre, rank, type, keyword }: IPropsStoreGam
   const gameListStore: IGameList = useSelector(getGameList);
   const comingGameListStore: IGameList = useSelector(getComingGameList);
 
-  const allGames: IGame[] = useMemo(() => [...BasicGameList, ...gameListStore?.games, ...comingGameListStore?.games], [gameListStore, comingGameListStore]);
+  const allGames: IGame[] = useMemo(() => [...BasicGameList, ...gameListStore?.games], [gameListStore]);
 
   const resultGames: IGame[] = useMemo(() => {
     let data = [...allGames];
