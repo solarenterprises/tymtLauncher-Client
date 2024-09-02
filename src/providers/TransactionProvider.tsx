@@ -13,7 +13,7 @@ import { AppDispatch } from "../store";
 import { getSaltToken } from "../features/account/SaltTokenSlice";
 import { getMnemonic } from "../features/account/MnemonicSlice";
 import { getWallet, setWallet } from "../features/wallet/WalletSlice";
-import { getAccount } from "../features/account/AccountSlice";
+import { getAccount, setAccount } from "../features/account/AccountSlice";
 import { getWalletList } from "../features/wallet/WalletListSlice";
 import { getCurrentChain } from "../features/wallet/CurrentChainSlice";
 
@@ -26,6 +26,8 @@ import { fetchPriceListAsync } from "../features/wallet/PriceListSlice";
 import { fetchCurrencyListAsync } from "../features/wallet/CurrencyListSlice";
 import { getNativeSymbolByChainName } from "../lib/helper/WalletHelper";
 import { fetchTransactionListAsync } from "../features/wallet/TransactionListSlice";
+import AuthAPI from "../lib/api/AuthAPI";
+import { addAccountList } from "../features/account/AccountListSlice";
 
 const TransactionProvider = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -68,6 +70,38 @@ const TransactionProvider = () => {
       })
     );
   }, [currentChainStore, walletStore]);
+
+  useEffect(() => {
+    const upgradeUserData = async () => {
+      try {
+        const sxpAddress = accountStore?.sxpAddress;
+        console.log("upgradeUserData: ", sxpAddress);
+
+        const data = await AuthAPI.getUserBySolarAddress(sxpAddress);
+        if (!data) {
+          console.log("Failed to upgradeUserData: user undefined!", data);
+          return;
+        }
+        const newAvatar = data?.data?.users[0]?.avatar;
+        if (!newAvatar) {
+          console.log("Failed to upgradeUserData: newAvatar undefined!", newAvatar);
+          return;
+        }
+        
+        const newAccount: IAccount = {
+          ...accountStore,
+          avatar: newAvatar,
+        };
+
+        dispatch(setAccount(newAccount));
+        dispatch(addAccountList(newAccount));
+      } catch (err) {
+        console.log("Failed to upgradeUserData: ", err);
+      }
+    };
+
+    upgradeUserData();
+  }, [accountStore]);
 
   useEffect(() => {
     const unlisten_get_account = listen("POST-/get-account", async (event) => {

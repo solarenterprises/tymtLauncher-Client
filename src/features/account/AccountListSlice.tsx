@@ -33,8 +33,8 @@ export const accountListSlice = createSlice({
     addAccountList: (state, action) => {
       const account = action.payload as IAccount;
       if (!account) return;
-      if (state.data.list.some((one) => one.sxpAddress === account.sxpAddress)) return;
-      state.data.list = [...state.data.list, account];
+      const rest = state.data.list.filter((one) => one.sxpAddress !== account.sxpAddress);
+      state.data.list = [...rest, account];
       tymtStorage.set(`accountList`, JSON.stringify(state.data));
     },
     delAccountList: (state, action) => {
