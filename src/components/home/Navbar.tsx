@@ -2,6 +2,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useCallback, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { debounce } from "lodash";
 
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import { Grid, Button, TextField, InputAdornment, Stack, Box, Tooltip } from "@mui/material";
@@ -71,6 +72,15 @@ const Navbar = () => {
   const [value, setValue] = useState<string>("");
   const [cardModalOpen, setCardModalOpen] = useState<boolean>(false);
   const [coming, setComing] = useState<boolean>(false);
+
+  const handleChange = useCallback(
+    (value) => {
+      navigate(`/store?key=${value}`);
+    },
+    [setValue, navigate]
+  );
+
+  const debouncedChangeHandler = useCallback(debounce(handleChange, 1000), [handleChange]);
 
   const setView = useCallback(
     (view: boolean) => {
@@ -154,7 +164,7 @@ const Navbar = () => {
                         className={"clear_filter"}
                         onClick={() => {
                           setValue("");
-                          if (location.pathname === `/store`) navigate(`/store`);
+                          navigate(`/store`);
                         }}
                       >
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -168,7 +178,7 @@ const Navbar = () => {
               }}
               onChange={(e) => {
                 if (setValue) setValue(e.target.value);
-                if (!e.target.value && location.pathname === `/store`) navigate(`/store`);
+                debouncedChangeHandler(e.target.value);
               }}
               onKeyDown={(event) => {
                 if (event.key === "Enter") {
