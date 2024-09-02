@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { BasicGameList } from "../../lib/game/BasicGameList";
@@ -21,11 +21,28 @@ export interface IPropsLibraryShow {
 const LibraryShow = ({ status }: IPropsLibraryShow) => {
   const { t } = useTranslation();
 
-  const installedList: IGame[] = useMemo(() => BasicGameList?.filter(async (game) => await isInstalled(game)), [BasicGameList]);
+  const [installedList, setInstalledList] = useState<IGame[]>([]);
+
   const uninstalledList: IGame[] = useMemo(
     () => BasicGameList?.filter((game) => !installedList?.some((one) => one?._id === game?._id)),
     [BasicGameList, installedList]
   );
+
+  useEffect(() => {
+    const fetchInstalledGames = async () => {
+      // setLoading(true);
+      const results = await Promise.all(
+        BasicGameList?.map(async (game) => {
+          const installed = await isInstalled(game);
+          return installed ? game : null;
+        })
+      );
+      setInstalledList(results.filter((game) => game !== null));
+      // setLoading(false);
+    };
+
+    fetchInstalledGames();
+  }, [BasicGameList]);
 
   return (
     <>
