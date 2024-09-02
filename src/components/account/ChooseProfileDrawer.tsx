@@ -1,9 +1,12 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 
 import { SwipeableDrawer, Box, Stack, IconButton, Divider } from "@mui/material";
 
 import ArrowBackOutlinedIcon from "@mui/icons-material/ArrowBackOutlined";
+
+import RedStrokeButton from "./RedStrokeButton";
 
 import { getAccountList } from "../../features/account/AccountListSlice";
 
@@ -23,6 +26,7 @@ interface props {
 
 const ChooseProfileDrawer = ({ view, setView }: props) => {
   const classname = SettingStyle();
+  const navigate = useNavigate();
 
   const accountListStore: IAccountList = useSelector(getAccountList);
 
@@ -34,6 +38,10 @@ const ChooseProfileDrawer = ({ view, setView }: props) => {
     }
 
     setState({ ...state, [anchor]: open });
+  };
+
+  const handleAddNewProfileButtonClick = () => {
+    navigate("/non-custodial/login/2");
   };
 
   return (
@@ -73,12 +81,13 @@ const ChooseProfileDrawer = ({ view, setView }: props) => {
             marginBottom: "24px",
           }}
         />
-        <Stack direction={"column"} justifyContent={"space-between"} padding={"0px 16px"}>
+        <Stack direction={"column"} justifyContent={"space-between"} padding={"0px 16px"} minHeight={"calc(100% - 110px)"}>
           <Stack direction={"column"} gap={"16px"}>
             {accountListStore?.list?.map((one, index) => (
               <ProfileCard account={one} key={index} />
             ))}
           </Stack>
+          <RedStrokeButton text="Add new profile" onClick={handleAddNewProfileButtonClick} />
         </Stack>
       </Box>
     </SwipeableDrawer>
