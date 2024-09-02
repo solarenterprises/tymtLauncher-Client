@@ -1,6 +1,6 @@
 import { Box, Stack, Modal, Fade } from "@mui/material";
 import closeIcon from "../assets/settings/x-icon.svg";
-import cardImg from "../assets/main/card.png";
+import cardImg from "../assets/main/card1.png";
 import { useTranslation } from "react-i18next";
 
 interface props {
