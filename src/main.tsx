@@ -15,6 +15,10 @@ import NonCustodialSignUp4 from "./pages/account/non-custodial/NonCustodialSignU
 import NonCustodialLogIn2 from "./pages/account/non-custodial/NonCustodialLogIn2";
 import NonCustodialImport1 from "./pages/account/non-custodial/NonCustodialImport1";
 
+import GuestCompletePassword from "./pages/account/non-custodial/GuestCompletePassword";
+import GuestCompletePassphrase from "./pages/account/non-custodial/GuestCompletePassphrase";
+import GuestCompleteNickname from "./pages/account/non-custodial/GuestCompleteNickname";
+
 import ConfirmInformation from "./pages/account/ConfirmInformation";
 
 import Homepage from "./pages/main/Homepage";
@@ -38,6 +42,7 @@ import { FullscreenProvider } from "./providers/FullscreenProvider";
 import { Provider as StoreProvider } from "react-redux";
 import { SocketProvider } from "./providers/SocketProvider";
 import { NotificationProvider } from "./providers/NotificationProvider";
+
 import ChatProvider from "./providers/Chatprovider";
 import AlertProvider from "./providers/AlertProvider";
 import UpdateProvider from "./providers/UpdateProvider";
@@ -76,6 +81,9 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
                     <Route path="/non-custodial/signup/4" element={<NonCustodialSignUp4 />} />
                     <Route path="/non-custodial/login/2" element={<NonCustodialLogIn2 />} />
                     <Route path="/non-custodial/import/1" element={<NonCustodialImport1 />} />
+                    <Route path="/guest/complete/password" element={<GuestCompletePassword />} />
+                    <Route path="/guest/complete/passphrase" element={<GuestCompletePassphrase />} />
+                    <Route path="/guest/complete/nickname" element={<GuestCompleteNickname />} />
                     <Route path="/confirm-information/:mode" element={<ConfirmInformation />} />
                     <Route path="/" element={<SocketProvider />}>
                       <Route path="/" element={<ChatProvider />}>

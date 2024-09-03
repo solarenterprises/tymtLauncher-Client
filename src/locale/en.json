@@ -89,6 +89,7 @@
     "ncca-59_too-short": "Must be at least 3 characters long.",
     "ncca-60_too-long": "Must not exceed 50 characters.",
     "ncca-61_invalid-characters": "Can only contain alphanumeric characters, underscores, and the following special characters: !@#$%^&*()-+=,.?",
+    "ncca-62_complete": "Complete",
     "ncl-1_password": "Password",
     "ncl-2_welcome-back": "Welcome back",
     "ncl-3_decentralised-non-custodial": "The decentralised Non custodial log in",

@@ -98,29 +98,13 @@ const MnemonicRevealPad = ({ passphrase, blur, setBlur }: IPropsMnemonicRevealPa
           }}
         >
           <div style={{ width: "151px", height: "42px", padding: "8px" }}>
-            <MnemonicWord number={"1"} word={mnemonic[0]} />
+            <MnemonicWord number={"1"} word={mnemonic[0] ?? ""} />
           </div>
           <div style={{ width: "151px", height: "42px", padding: "8px" }}>
-            <MnemonicWord number={"2"} word={mnemonic[1]} />
+            <MnemonicWord number={"2"} word={mnemonic[1] ?? ""} />
           </div>
           <div style={{ width: "151px", height: "42px", padding: "8px" }}>
-            <MnemonicWord number={"3"} word={mnemonic[2]} />
-          </div>
-        </div>
-        <div
-          style={{
-            width: "436px",
-            display: "flex",
-          }}
-        >
-          <div style={{ width: "151px", height: "42px", padding: "8px" }}>
-            <MnemonicWord number={"4"} word={mnemonic[3]} />
-          </div>
-          <div style={{ width: "151px", height: "42px", padding: "8px" }}>
-            <MnemonicWord number={"5"} word={mnemonic[4]} />
-          </div>
-          <div style={{ width: "151px", height: "42px", padding: "8px" }}>
-            <MnemonicWord number={"6"} word={mnemonic[5]} />
+            <MnemonicWord number={"3"} word={mnemonic[2] ?? ""} />
           </div>
         </div>
         <div
@@ -130,13 +114,13 @@ const MnemonicRevealPad = ({ passphrase, blur, setBlur }: IPropsMnemonicRevealPa
           }}
         >
           <div style={{ width: "151px", height: "42px", padding: "8px" }}>
-            <MnemonicWord number={"7"} word={mnemonic[6]} />
+            <MnemonicWord number={"4"} word={mnemonic[3] ?? ""} />
           </div>
           <div style={{ width: "151px", height: "42px", padding: "8px" }}>
-            <MnemonicWord number={"8"} word={mnemonic[7]} />
+            <MnemonicWord number={"5"} word={mnemonic[4] ?? ""} />
           </div>
           <div style={{ width: "151px", height: "42px", padding: "8px" }}>
-            <MnemonicWord number={"9"} word={mnemonic[8]} />
+            <MnemonicWord number={"6"} word={mnemonic[5] ?? ""} />
           </div>
         </div>
         <div
@@ -146,13 +130,29 @@ const MnemonicRevealPad = ({ passphrase, blur, setBlur }: IPropsMnemonicRevealPa
           }}
         >
           <div style={{ width: "151px", height: "42px", padding: "8px" }}>
-            <MnemonicWord number={"10"} word={mnemonic[9]} />
+            <MnemonicWord number={"7"} word={mnemonic[6] ?? ""} />
           </div>
           <div style={{ width: "151px", height: "42px", padding: "8px" }}>
-            <MnemonicWord number={"11"} word={mnemonic[10]} />
+            <MnemonicWord number={"8"} word={mnemonic[7] ?? ""} />
           </div>
           <div style={{ width: "151px", height: "42px", padding: "8px" }}>
-            <MnemonicWord number={"12"} word={mnemonic[11]} />
+            <MnemonicWord number={"9"} word={mnemonic[8] ?? ""} />
+          </div>
+        </div>
+        <div
+          style={{
+            width: "436px",
+            display: "flex",
+          }}
+        >
+          <div style={{ width: "151px", height: "42px", padding: "8px" }}>
+            <MnemonicWord number={"10"} word={mnemonic[9] ?? ""} />
+          </div>
+          <div style={{ width: "151px", height: "42px", padding: "8px" }}>
+            <MnemonicWord number={"11"} word={mnemonic[10] ?? ""} />
+          </div>
+          <div style={{ width: "151px", height: "42px", padding: "8px" }}>
+            <MnemonicWord number={"12"} word={mnemonic[11] ?? ""} />
           </div>
         </div>
         {mnemonic.length === 24 && (
@@ -164,29 +164,13 @@ const MnemonicRevealPad = ({ passphrase, blur, setBlur }: IPropsMnemonicRevealPa
               }}
             >
               <div style={{ width: "151px", height: "42px", padding: "8px" }}>
-                <MnemonicWord number={"13"} word={mnemonic[12]} />
+                <MnemonicWord number={"13"} word={mnemonic[12] ?? ""} />
               </div>
               <div style={{ width: "151px", height: "42px", padding: "8px" }}>
-                <MnemonicWord number={"14"} word={mnemonic[13]} />
+                <MnemonicWord number={"14"} word={mnemonic[13] ?? ""} />
               </div>
               <div style={{ width: "151px", height: "42px", padding: "8px" }}>
-                <MnemonicWord number={"15"} word={mnemonic[14]} />
-              </div>
-            </div>
-            <div
-              style={{
-                width: "436px",
-                display: "flex",
-              }}
-            >
-              <div style={{ width: "151px", height: "42px", padding: "8px" }}>
-                <MnemonicWord number={"16"} word={mnemonic[15]} />
-              </div>
-              <div style={{ width: "151px", height: "42px", padding: "8px" }}>
-                <MnemonicWord number={"17"} word={mnemonic[16]} />
-              </div>
-              <div style={{ width: "151px", height: "42px", padding: "8px" }}>
-                <MnemonicWord number={"18"} word={mnemonic[17]} />
+                <MnemonicWord number={"15"} word={mnemonic[14] ?? ""} />
               </div>
             </div>
             <div
@@ -196,13 +180,13 @@ const MnemonicRevealPad = ({ passphrase, blur, setBlur }: IPropsMnemonicRevealPa
               }}
             >
               <div style={{ width: "151px", height: "42px", padding: "8px" }}>
-                <MnemonicWord number={"19"} word={mnemonic[18]} />
+                <MnemonicWord number={"16"} word={mnemonic[15] ?? ""} />
               </div>
               <div style={{ width: "151px", height: "42px", padding: "8px" }}>
-                <MnemonicWord number={"20"} word={mnemonic[19]} />
+                <MnemonicWord number={"17"} word={mnemonic[16] ?? ""} />
               </div>
               <div style={{ width: "151px", height: "42px", padding: "8px" }}>
-                <MnemonicWord number={"21"} word={mnemonic[20]} />
+                <MnemonicWord number={"18"} word={mnemonic[17] ?? ""} />
               </div>
             </div>
             <div
@@ -212,13 +196,29 @@ const MnemonicRevealPad = ({ passphrase, blur, setBlur }: IPropsMnemonicRevealPa
               }}
             >
               <div style={{ width: "151px", height: "42px", padding: "8px" }}>
-                <MnemonicWord number={"22"} word={mnemonic[21]} />
+                <MnemonicWord number={"19"} word={mnemonic[18] ?? ""} />
               </div>
               <div style={{ width: "151px", height: "42px", padding: "8px" }}>
-                <MnemonicWord number={"23"} word={mnemonic[22]} />
+                <MnemonicWord number={"20"} word={mnemonic[19] ?? ""} />
               </div>
               <div style={{ width: "151px", height: "42px", padding: "8px" }}>
-                <MnemonicWord number={"24"} word={mnemonic[23]} />
+                <MnemonicWord number={"21"} word={mnemonic[20] ?? ""} />
+              </div>
+            </div>
+            <div
+              style={{
+                width: "436px",
+                display: "flex",
+              }}
+            >
+              <div style={{ width: "151px", height: "42px", padding: "8px" }}>
+                <MnemonicWord number={"22"} word={mnemonic[21] ?? ""} />
+              </div>
+              <div style={{ width: "151px", height: "42px", padding: "8px" }}>
+                <MnemonicWord number={"23"} word={mnemonic[22] ?? ""} />
+              </div>
+              <div style={{ width: "151px", height: "42px", padding: "8px" }}>
+                <MnemonicWord number={"24"} word={mnemonic[23] ?? ""} />
               </div>
             </div>
           </>

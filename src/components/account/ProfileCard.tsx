@@ -1,11 +1,16 @@
+import { useMemo } from "react";
 import { useDispatch } from "react-redux";
 
 import { Button, Stack, Box } from "@mui/material";
 
 import Avatar from "../home/Avatar";
+import CompleteButton from "./CompleteButton";
+
+import { setAccount } from "../../features/account/AccountSlice";
+
+import { getKeccak256Hash } from "../../lib/api/Encrypt";
 
 import { IAccount } from "../../types/accountTypes";
-import { setAccount } from "../../features/account/AccountSlice";
 
 export interface IPropsProfileCard {
   account: IAccount;
@@ -13,6 +18,8 @@ export interface IPropsProfileCard {
 
 const ProfileCard = ({ account }: IPropsProfileCard) => {
   const dispatch = useDispatch();
+
+  const isGuest: boolean = useMemo(() => account?.nickName === "Guest" && account?.password === getKeccak256Hash(""), [account]);
 
   const handleClick = () => {
     dispatch(setAccount(account));
@@ -38,13 +45,16 @@ const ProfileCard = ({ account }: IPropsProfileCard) => {
           },
         }}
       >
-        <Stack direction="row" alignItems="center" gap="12px" width={"100%"}>
-          <Avatar url={account?.avatar} size={64} />
-          <Stack>
-            <Box className={"fs-16-regular white"}>{account?.nickName}</Box>
-            <Box className={"fs-14-regular light"}>{`non custodial wallet account`}</Box>
-            <Box className={"fs-12-regular blue"}>{account?.sxpAddress}</Box>
+        <Stack gap={"8px"} width={"100%"}>
+          <Stack direction="row" alignItems="center" gap="12px" width={"100%"}>
+            <Avatar url={account?.avatar} size={64} />
+            <Stack>
+              <Box className={"fs-16-regular white"}>{account?.nickName}</Box>
+              <Box className={"fs-14-regular light"}>{`non custodial wallet account`}</Box>
+              <Box className={"fs-12-regular blue"}>{account?.sxpAddress}</Box>
+            </Stack>
           </Stack>
+          <Stack>{isGuest && <CompleteButton account={account} />}</Stack>
         </Stack>
       </Button>
     </>

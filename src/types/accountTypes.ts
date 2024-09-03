@@ -15,6 +15,7 @@ export interface ILogin {
 }
 
 export interface IAccount {
+  uid: string;
   avatar: string;
   nickName: string;
   password: string;

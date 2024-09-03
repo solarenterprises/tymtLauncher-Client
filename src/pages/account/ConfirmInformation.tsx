@@ -45,6 +45,8 @@ import { generateSocketHash } from "../../features/chat/SocketHashApi";
 import { setMnemonic } from "../../features/account/MnemonicSlice";
 import { setSocketHash } from "../../features/chat/SocketHashSlice";
 import { getRsaKeyPairAsync } from "../../features/chat/RsaSlice";
+import UserAPI from "../../lib/api/UserAPI";
+import { IReqUpdateUser } from "../../types/UserAPITypes";
 
 const ConfirmInformation = () => {
   const navigate = useNavigate();
@@ -78,7 +80,7 @@ const ConfirmInformation = () => {
   const [loading, setLoading] = useState<boolean>(false);
 
   const displayWallet: IWallet = useMemo(() => {
-    if (mode === "signup") return tempWalletStore;
+    if (mode === "signup" || mode === "guest") return tempWalletStore;
   }, [tempWalletStore]);
 
   const handleBackClick = () => {
@@ -87,14 +89,19 @@ const ConfirmInformation = () => {
 
   const handleSignUp = async () => {
     try {
-      const newAccount: IAccount = {
+      let newAccount: IAccount = {
         ...tempAccountStoreRef.current,
         password: getKeccak256Hash(tempAccountStoreRef.current?.password),
         mnemonic: await encrypt(tempAccountStoreRef.current?.mnemonic, tempAccountStoreRef.current?.password),
       };
 
       const body: INonCustodySignUpReq = getReqBodyNonCustodySignUp(newAccount, tempWalletStoreRef.current, tempAccountStoreRef.current?.mnemonic);
-      await AuthAPI.nonCustodySignUp(body);
+      const res = await AuthAPI.nonCustodySignUp(body);
+
+      newAccount = {
+        ...newAccount,
+        uid: res?.data?._id,
+      };
 
       dispatch(setAccount(newAccount));
       dispatch(addAccountList(newAccount));
@@ -102,6 +109,26 @@ const ConfirmInformation = () => {
       dispatch(addWalletList(tempWalletStoreRef.current));
     } catch (err) {
       console.log("Failed to handleSignUp: ", err);
+    }
+  };
+
+  const handleGuestComplete = async () => {
+    try {
+      const newAccount: IAccount = {
+        ...tempAccountStoreRef.current,
+        password: getKeccak256Hash(tempAccountStoreRef.current?.password),
+        mnemonic: await encrypt(tempAccountStoreRef.current?.mnemonic, tempAccountStoreRef.current?.password),
+      };
+
+      const body: IReqUpdateUser = {
+        nickName: tempAccountStoreRef.current.nickName,
+      };
+      await UserAPI.updateUser(newAccount?.uid, body);
+
+      dispatch(setAccount(newAccount));
+      dispatch(addAccountList(newAccount));
+    } catch (err) {
+      console.log("Failed to handleGuestComplete: ", err);
     }
   };
 
@@ -140,6 +167,7 @@ const ConfirmInformation = () => {
   const handleConfirmClick = async () => {
     setLoading(true);
     if (mode === "signup") await handleSignUp();
+    else if (mode === "guest") await handleGuestComplete();
     await handleLogin();
     setLoading(false);
   };

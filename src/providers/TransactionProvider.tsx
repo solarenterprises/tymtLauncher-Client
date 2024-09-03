@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { Outlet } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -71,36 +71,36 @@ const TransactionProvider = () => {
     );
   }, [currentChainStore, walletStore]);
 
-  useEffect(() => {
-    const upgradeUserData = async () => {
-      try {
-        const sxpAddress = accountStore?.sxpAddress;
-        console.log("upgradeUserData: ", sxpAddress);
+  const fetchUserAvatar = useCallback(async () => {
+    try {
+      const sxpAddress = accountStore?.sxpAddress;
+      console.log("upgradeUserData: ", sxpAddress);
 
-        const data = await AuthAPI.getUserBySolarAddress(sxpAddress);
-        if (!data) {
-          console.log("Failed to upgradeUserData: user undefined!", data);
-          return;
-        }
-        const newAvatar = data?.data?.users[0]?.avatar;
-        if (!newAvatar) {
-          console.log("Failed to upgradeUserData: newAvatar undefined!", newAvatar);
-          return;
-        }
-        
-        const newAccount: IAccount = {
-          ...accountStore,
-          avatar: newAvatar,
-        };
-
-        dispatch(setAccount(newAccount));
-        dispatch(addAccountList(newAccount));
-      } catch (err) {
-        console.log("Failed to upgradeUserData: ", err);
+      const data = await AuthAPI.getUserBySolarAddress(sxpAddress);
+      if (!data) {
+        console.log("Failed to upgradeUserData: user undefined!", data);
+        return;
       }
-    };
+      const newAvatar = data?.data?.users[0]?.avatar;
+      if (!newAvatar) {
+        console.log("Failed to upgradeUserData: newAvatar undefined!", newAvatar);
+        return;
+      }
 
-    upgradeUserData();
+      const newAccount: IAccount = {
+        ...accountStore,
+        avatar: newAvatar,
+      };
+
+      dispatch(setAccount(newAccount));
+      dispatch(addAccountList(newAccount));
+    } catch (err) {
+      console.log("Failed to upgradeUserData: ", err);
+    }
+  }, [accountStore]);
+
+  useEffect(() => {
+    fetchUserAvatar();
   }, [accountStore]);
 
   useEffect(() => {

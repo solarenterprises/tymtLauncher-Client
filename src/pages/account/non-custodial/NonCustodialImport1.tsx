@@ -53,13 +53,14 @@ const NonCustodialImport1 = () => {
   const machineIdStore: IMachineId = useSelector(getMachineId);
 
   const handleImport = useCallback(
-    async (newNickName: string, newPassword: string) => {
+    async (newNickName: string, newPassword: string, newUid: string) => {
       try {
         const newAccount: IAccount = {
           ...tempAccountStore,
           password: getKeccak256Hash(newPassword),
           mnemonic: await encrypt(tempAccountStore?.mnemonic, newPassword),
           nickName: newNickName,
+          uid: newUid,
         };
 
         dispatch(setAccount(newAccount));
@@ -152,7 +153,8 @@ const NonCustodialImport1 = () => {
           navigate("/non-custodial/signup/4");
         } else {
           const newNickName: string = res?.data?.users[0]?.nickName;
-          await handleImport(newNickName, newPassword);
+          const newUid: string = res?.data?.users[0]?._id;
+          await handleImport(newNickName, newPassword, newUid);
           await handleLogin();
         }
       } catch (err) {

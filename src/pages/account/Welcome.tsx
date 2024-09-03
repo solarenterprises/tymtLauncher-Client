@@ -88,7 +88,8 @@ const Welcome = () => {
       const encryptedPassphrase: string = await encrypt(newPassphrase, newPassword);
       const newRsaPubKey: string = (await getRsaKeyPair(newPassphrase))?.publicKey;
 
-      const newAccount: IAccount = {
+      let newAccount: IAccount = {
+        uid: "",
         avatar: "",
         nickName: "Guest",
         password: encryptedPassword,
@@ -98,7 +99,12 @@ const Welcome = () => {
       };
 
       const body0: INonCustodySignUpReq = getReqBodyNonCustodySignUp(newAccount, newWalletAddress, newPassphrase);
-      await AuthAPI.nonCustodySignUp(body0);
+      const res0 = await AuthAPI.nonCustodySignUp(body0);
+
+      newAccount = {
+        ...newAccount,
+        uid: res0?.data?._id,
+      };
 
       dispatch(setAccount(newAccount));
       dispatch(addAccountList(newAccount));

@@ -3,6 +3,7 @@ import { IAccount } from "../../types/accountTypes";
 import { compareJSONStructure } from "../../lib/helper/JSONHelper";
 
 const init: IAccount = {
+  uid: "",
   avatar: "",
   nickName: "",
   password: "",
