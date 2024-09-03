@@ -12,7 +12,7 @@ import { removeDir } from "@tauri-apps/api/fs";
 import { tymt_version } from "../configs";
 import { TauriEventNames } from "../consts/TauriEventNames";
 
-import AlertComp from "../components/AlertComp";
+import AlertComp from "../components/snackbars/AlertComp";
 
 import { getDownloadStatus, setDownloadStatus } from "../features/home/DownloadStatusSlice";
 import { selectNotification } from "../features/settings/NotificationSlice";

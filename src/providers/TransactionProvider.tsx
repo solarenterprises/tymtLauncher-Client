@@ -28,6 +28,7 @@ import { getNativeSymbolByChainName } from "../lib/helper/WalletHelper";
 import { fetchTransactionListAsync } from "../features/wallet/TransactionListSlice";
 import AuthAPI from "../lib/api/AuthAPI";
 import { addAccountList } from "../features/account/AccountListSlice";
+import GuestCompleteSnackbar from "../components/snackbars/GuestCompleteSnackbar";
 
 const TransactionProvider = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -74,16 +75,16 @@ const TransactionProvider = () => {
   const fetchUserAvatar = useCallback(async () => {
     try {
       const sxpAddress = accountStore?.sxpAddress;
-      console.log("upgradeUserData: ", sxpAddress);
+      console.log("fetchUserAvatar: ", sxpAddress);
 
       const data = await AuthAPI.getUserBySolarAddress(sxpAddress);
       if (!data) {
-        console.log("Failed to upgradeUserData: user undefined!", data);
+        console.log("Failed to fetchUserAvatar: user undefined!", data);
         return;
       }
       const newAvatar = data?.data?.users[0]?.avatar;
       if (!newAvatar) {
-        console.log("Failed to upgradeUserData: newAvatar undefined!", newAvatar);
+        console.log("Failed to fetchUserAvatar: newAvatar undefined!", newAvatar);
         return;
       }
 
@@ -95,7 +96,7 @@ const TransactionProvider = () => {
       dispatch(setAccount(newAccount));
       dispatch(addAccountList(newAccount));
     } catch (err) {
-      console.log("Failed to upgradeUserData: ", err);
+      console.log("Failed to fetchUserAvatar: ", err);
     }
   }, [accountStore]);
 
@@ -158,6 +159,7 @@ const TransactionProvider = () => {
   return (
     <>
       <Outlet />
+      <GuestCompleteSnackbar open={true} />
     </>
   );
 };
