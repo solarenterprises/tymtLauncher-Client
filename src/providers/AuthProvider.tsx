@@ -3,11 +3,13 @@ import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { Outlet } from "react-router-dom";
 
+import GuestCompleteSnackbar from "../components/snackbars/GuestCompleteSnackbar";
+
 import { getLogin } from "../features/account/LoginSlice";
 import { getMyInfo } from "../features/account/MyInfoSlice";
 
-import { IMyInfo } from "../types/chatTypes";
 import { ILogin } from "../types/accountTypes";
+import { IMyInfo } from "../types/chatTypes";
 
 export const AuthProvider = () => {
   const navigate = useNavigate();
@@ -16,10 +18,15 @@ export const AuthProvider = () => {
   const loginStore: ILogin = useSelector(getLogin);
 
   useEffect(() => {
-    if (false) {
+    if (!loginStore?.isLoggedIn) {
       navigate("/start");
     }
   }, [loginStore, myInfoStore]);
 
-  return <Outlet />;
+  return (
+    <>
+      <Outlet />
+      <GuestCompleteSnackbar />
+    </>
+  );
 };

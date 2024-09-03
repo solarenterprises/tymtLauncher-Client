@@ -7,6 +7,7 @@ import { emit } from "@tauri-apps/api/event";
 
 import tymtCore from "../lib/core/tymtCore";
 
+import AuthAPI from "../lib/api/AuthAPI";
 import TransactionProviderAPI from "../lib/api/TransactionProviderAPI";
 
 import { AppDispatch } from "../store";
@@ -16,19 +17,17 @@ import { getWallet, setWallet } from "../features/wallet/WalletSlice";
 import { getAccount, setAccount } from "../features/account/AccountSlice";
 import { getWalletList } from "../features/wallet/WalletListSlice";
 import { getCurrentChain } from "../features/wallet/CurrentChainSlice";
-
-import { IAccount, IMnemonic, ISaltToken } from "../types/accountTypes";
-import { IGetAccountReq, IGetBalanceReq, ISendContractReq, ISignMessageReq, IVerifyMessageReq } from "../types/eventParamTypes";
-import { ICurrentChain, IWallet, IWalletList } from "../types/walletTypes";
 import { setCurrentToken } from "../features/wallet/CurrentTokenSlice";
 import { fetchBalanceListAsync } from "../features/wallet/BalanceListSlice";
 import { fetchPriceListAsync } from "../features/wallet/PriceListSlice";
 import { fetchCurrencyListAsync } from "../features/wallet/CurrencyListSlice";
 import { getNativeSymbolByChainName } from "../lib/helper/WalletHelper";
 import { fetchTransactionListAsync } from "../features/wallet/TransactionListSlice";
-import AuthAPI from "../lib/api/AuthAPI";
 import { addAccountList } from "../features/account/AccountListSlice";
-import GuestCompleteSnackbar from "../components/snackbars/GuestCompleteSnackbar";
+
+import { IAccount, IMnemonic, ISaltToken } from "../types/accountTypes";
+import { IGetAccountReq, IGetBalanceReq, ISendContractReq, ISignMessageReq, IVerifyMessageReq } from "../types/eventParamTypes";
+import { ICurrentChain, IWallet, IWalletList } from "../types/walletTypes";
 
 const TransactionProvider = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -159,7 +158,6 @@ const TransactionProvider = () => {
   return (
     <>
       <Outlet />
-      <GuestCompleteSnackbar open={true} />
     </>
   );
 };

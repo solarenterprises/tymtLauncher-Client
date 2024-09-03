@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -12,6 +12,8 @@ import { setTempAccount } from "../../features/account/TempAccountSlice";
 import { setTempWallet } from "../../features/wallet/TempWalletSlice";
 import { getAccount } from "../../features/account/AccountSlice";
 import { getWallet } from "../../features/wallet/WalletSlice";
+
+import { getKeccak256Hash } from "../../lib/api/Encrypt";
 
 import CloseIcon from "../../assets/settings/x-icon.svg";
 import BellIcon from "../../assets/bell.svg";
@@ -27,12 +29,19 @@ export interface IPropsGuestCompleteSnackbar {
   open: boolean;
 }
 
-const GuestCompleteSnackbar = ({ open }: IPropsGuestCompleteSnackbar) => {
+const GuestCompleteSnackbar = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
   const accountStore: IAccount = useSelector(getAccount);
   const walletStore: IWallet = useSelector(getWallet);
+
+  const isGuest: boolean = useMemo(() => {
+    if (accountStore?.nickName === "Guest" && accountStore?.password === getKeccak256Hash("")) return true;
+    return false;
+  }, [accountStore]);
+
+  const [open, setOpen] = useState<boolean>(false);
 
   const handleDoNowClick = useCallback(async () => {
     dispatch(setTempAccount(accountStore));
@@ -41,7 +50,21 @@ const GuestCompleteSnackbar = ({ open }: IPropsGuestCompleteSnackbar) => {
     navigate("/guest/complete/password");
   }, [accountStore, walletStore]);
 
-  const handleLaterClick = async () => {};
+  const handleLaterClick = useCallback(async () => {
+    setOpen(false);
+    setTimeout(() => {
+      if (isGuest) setOpen(true);
+    }, 10 * 1e3);
+  }, [isGuest]);
+
+  const handleCloseClick = () => {
+    setOpen(false);
+  };
+
+  useEffect(() => {
+    if (isGuest) setOpen(true);
+    else setOpen(false);
+  }, [isGuest]);
 
   return (
     <>
@@ -76,7 +99,7 @@ const GuestCompleteSnackbar = ({ open }: IPropsGuestCompleteSnackbar) => {
                 <Box className="fs-h4 white">{`Secure Passphrase and create password.`}</Box>
                 <Box className="fs-16-regular white">{`You receive funds, you should secure your account in few steps: Secure Passphrase and create password.`}</Box>
               </Stack>
-              <Box component="img" src={CloseIcon} width={"32px"} height={"32px"} />
+              <Box component="img" src={CloseIcon} width={"32px"} height={"32px"} onClick={handleCloseClick} />
             </Stack>
             <Stack direction={"row"} gap={"16px"} justifyContent={"flex-end"}>
               <RedFullSmallButton text="Do it now" onClick={handleDoNowClick} />
