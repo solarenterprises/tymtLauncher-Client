@@ -197,7 +197,7 @@ const ConfirmInformation = () => {
                   >
                     <Grid item xs={12} container justifyContent={"space-between"}>
                       <Back onClick={handleBackClick} />
-                      <Stepper all={0} now={0} texts={[t("ncca-48_almost-done-confirm")]} />
+                      <Stepper all={0} now={0} text={t("ncca-48_almost-done-confirm")} />
                     </Grid>
                     <Grid item xs={12}></Grid>
                     <Grid item xs={12} mt={"80px"}>

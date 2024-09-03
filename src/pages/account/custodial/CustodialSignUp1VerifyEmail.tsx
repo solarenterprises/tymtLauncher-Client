@@ -41,7 +41,7 @@ const CustodialSignUp1VerifyEmail = () => {
                 >
                   <Grid item xs={12} container justifyContent={"space-between"}>
                     <Back onClick={handleBackClick} />
-                    <Stepper all={3} now={1} texts={[t("ncca-1_create-account"), "", ""]} />
+                    <Stepper all={3} now={1} text={t("ncca-1_create-account")} />
                   </Grid>
                   <Grid item xs={12} mt={"80px"}>
                     <AccountHeader title={t("cca-15_verify-your-email")} />

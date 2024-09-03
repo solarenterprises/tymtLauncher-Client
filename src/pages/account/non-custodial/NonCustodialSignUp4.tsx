@@ -79,7 +79,7 @@ const NonCustodialSignUp4 = () => {
                   >
                     <Grid item xs={12} container justifyContent={"space-between"}>
                       <Back onClick={handleBackClick} />
-                      <Stepper all={4} now={4} texts={["", "", "", t("ncca-39_create-nickname")]} />
+                      <Stepper all={4} now={4} text={t("ncca-39_create-nickname")} />
                     </Grid>
 
                     <Grid item xs={12} mt={"80px"}>

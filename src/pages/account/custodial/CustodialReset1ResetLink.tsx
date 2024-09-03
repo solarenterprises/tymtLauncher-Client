@@ -41,7 +41,7 @@ const CustodialReset1ResetLink = () => {
                 >
                   <Grid item xs={12} container justifyContent={"space-between"}>
                     <Back onClick={handleBackClick} />
-                    <Stepper all={2} now={1} texts={[t("cca-46_reset-password"), ""]} />
+                    <Stepper all={2} now={1} text={t("cca-46_reset-password")} />
                   </Grid>
                   <Grid item xs={12} mt={"80px"}>
                     <AccountHeader title={t("cca-46_reset-password")} />

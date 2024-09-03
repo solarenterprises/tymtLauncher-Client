@@ -61,7 +61,7 @@ const GuestCompletePassphrase = () => {
                   >
                     <Grid item xs={12} container justifyContent={"space-between"}>
                       <Back onClick={handleBackClick} />
-                      <Stepper all={4} now={2} texts={["", t("ncl-11_secure-passphrase"), t("ncl-1_password"), ""]} />
+                      <Stepper all={3} now={2} text={t("ncca-12_secure-wallet")} />
                     </Grid>
 
                     <Grid item xs={12} mt={"40px"}>

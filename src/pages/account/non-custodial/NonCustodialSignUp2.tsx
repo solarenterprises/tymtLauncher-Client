@@ -16,12 +16,15 @@ import MnemonicComboBox from "../../../components/account/MnemonicComboBox";
 import MnemonicPad from "../../../components/account/MnemonicPad";
 import PassphraseModal from "../../../components/account/PassphraseModal";
 
-import tymt3 from "../../../assets/account/tymt3.png";
+import { getTempAccount, setTempAccount } from "../../../features/account/TempAccountSlice";
+
+import { getRsaKeyPair } from "../../../features/chat/RsaApi";
 
 import { getMnemonic } from "../../../lib/helper/WalletHelper";
-import { getTempAccount, setTempAccount } from "../../../features/account/TempAccountSlice";
+
+import tymt3 from "../../../assets/account/tymt3.png";
+
 import { IAccount } from "../../../types/accountTypes";
-import { getRsaKeyPair } from "../../../features/chat/RsaApi";
 
 const NonCustodialSignUp2 = () => {
   const navigate = useNavigate();
@@ -84,7 +87,7 @@ const NonCustodialSignUp2 = () => {
                   >
                     <Grid item xs={12} container justifyContent={"space-between"}>
                       <Back onClick={handleBackClick} />
-                      <Stepper all={4} now={2} texts={["", t("ncca-12_secure-wallet"), "", ""]} />
+                      <Stepper all={4} now={2} text={t("ncca-12_secure-wallet")} />
                     </Grid>
                     <Grid item xs={12} mt={"80px"}>
                       <AccountHeader title={t("ncca-13_secure-passphrase")} text={t("ncca-14_here-your-mnemonic")} />

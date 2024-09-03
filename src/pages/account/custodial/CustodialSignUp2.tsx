@@ -64,7 +64,7 @@ const CustodialSignUp2 = () => {
                 >
                   <Grid item xs={12} container justifyContent={"space-between"}>
                     <Back onClick={handleBackClick} />
-                    <Stepper all={3} now={2} texts={["", t("cca-21_secure-wallet"), ""]} />
+                    <Stepper all={3} now={2} text={t("cca-21_secure-wallet")} />
                   </Grid>
 
                   <Grid item xs={12} mt={"80px"}>

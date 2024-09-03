@@ -141,7 +141,7 @@ const NonCustodialLogIn2 = () => {
                   >
                     <Grid item xs={12} container justifyContent={"space-between"}>
                       <Back onClick={handleBackClick} />
-                      <Stepper all={4} now={2} texts={["", t("ncl-11_secure-passphrase"), t("ncl-1_password"), ""]} />
+                      <Stepper all={2} now={1} text={t("ncl-11_secure-passphrase")} />
                     </Grid>
 
                     <Grid item xs={12} mt={"80px"}>

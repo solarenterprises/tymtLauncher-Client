@@ -57,10 +57,6 @@ const GuestCompleteSnackbar = () => {
     }, 60 * 60 * 1e3); // Show the snackbar after 1 hour
   }, [isGuest]);
 
-  const handleCloseClick = () => {
-    setOpen(false);
-  };
-
   useEffect(() => {
     if (isGuest) setOpen(true);
     else setOpen(false);
@@ -99,7 +95,7 @@ const GuestCompleteSnackbar = () => {
                 <Box className="fs-h4 white">{`Secure Passphrase and create password.`}</Box>
                 <Box className="fs-16-regular white">{`You receive funds, you should secure your account in few steps: Secure Passphrase and create password.`}</Box>
               </Stack>
-              <Box component="img" src={CloseIcon} width={"32px"} height={"32px"} onClick={handleCloseClick} />
+              <Box component="img" src={CloseIcon} width={"32px"} height={"32px"} onClick={handleLaterClick} />
             </Stack>
             <Stack direction={"row"} gap={"16px"} justifyContent={"flex-end"}>
               <RedFullSmallButton text="Do it now" onClick={handleDoNowClick} />

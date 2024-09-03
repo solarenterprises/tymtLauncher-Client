@@ -192,7 +192,7 @@ const NonCustodialImport1 = () => {
                   >
                     <Grid item xs={12} container justifyContent={"space-between"}>
                       <Back onClick={handleBackClick} />
-                      <Stepper all={4} now={1} texts={[t("ncca-1_create-account"), "", "", ""]} />
+                      <Stepper all={2} now={2} text={t("ncl-11_secure-passphrase")} />
                     </Grid>
 
                     <Grid item xs={12} mt={"80px"}>

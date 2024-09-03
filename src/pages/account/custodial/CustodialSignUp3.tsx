@@ -53,7 +53,7 @@ const CustodialSignUp3 = () => {
                 >
                   <Grid item xs={12} container justifyContent={"space-between"}>
                     <Back onClick={handleBackClick} />
-                    <Stepper all={3} now={3} texts={["", "", t("cca-24_create-nickname")]} />
+                    <Stepper all={3} now={3} text={t("cca-24_create-nickname")} />
                   </Grid>
 
                   <Grid item xs={12} mt={"80px"}>

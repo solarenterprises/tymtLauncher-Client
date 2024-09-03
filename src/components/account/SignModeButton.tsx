@@ -35,9 +35,9 @@ const SignModeButton = ({ icon, text, loading, onClick }: IPropsSignModeButton) 
         </Stack>
         {loading ? (
           <CircularProgress
+            size={"24px"}
             sx={{
-              width: "24px",
-              height: "24px",
+              color: "#F5EBFF",
             }}
           />
         ) : (
