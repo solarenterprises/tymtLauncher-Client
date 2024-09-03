@@ -59,7 +59,9 @@ const ChooseProfile = ({ view, setView }: IPropsChooseProfile) => {
                 <ProfileCard account={one} key={index} />
               ))}
             </Stack>
-            <RedStrokeButton text="Add new profile" onClick={handleAddNewProfileButtonClick} />
+            <Stack mt={"16px"} mb={"16px"}>
+              <RedStrokeButton text="Add new profile" onClick={handleAddNewProfileButtonClick} />
+            </Stack>
           </Stack>
         </Box>
       </>

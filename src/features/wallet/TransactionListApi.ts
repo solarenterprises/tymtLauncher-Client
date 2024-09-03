@@ -39,3 +39,7 @@ export async function fetchTransactionList(data: { walletStore: IWallet; chainNa
     console.log("Failed to fetchTransactionList: ", err);
   }
 }
+
+export async function initializeTransactionList() {
+  return [];
+}

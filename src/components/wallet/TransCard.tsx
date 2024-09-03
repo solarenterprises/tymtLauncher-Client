@@ -1,24 +1,23 @@
-import { useState, useMemo, Suspense } from "react";
-import { useSelector } from "react-redux";
+import { useState, useMemo, Suspense, useCallback, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import _, { isArray } from "lodash";
-
-import tymtStorage from "../../lib/Storage";
 
 import { currencySymbols } from "../../consts/SupportCurrency";
 
 import { Stack, Box, Button, CircularProgress } from "@mui/material";
 
+import { AppDispatch } from "../../store";
 import { getCurrencyList } from "../../features/wallet/CurrencyListSlice";
 import { getCurrentCurrency } from "../../features/wallet/CurrentCurrencySlice";
 import { getCurrentChain } from "../../features/wallet/CurrentChainSlice";
 import { getPriceList } from "../../features/wallet/PriceListSlice";
 import { getCurrentToken } from "../../features/wallet/CurrentTokenSlice";
 import { getWallet } from "../../features/wallet/WalletSlice";
-import { getTransactionList } from "../../features/wallet/TransactionListSlice";
+import { addTransactionListAsync, getTransactionList } from "../../features/wallet/TransactionListSlice";
 
 import { formatBalance, formatTransaction } from "../../lib/helper";
-import { getNativeTokenPriceByChainName, getSupportChainByName } from "../../lib/helper/WalletHelper";
+import { getNativeSymbolByChainName, getNativeTokenPriceByChainName, getSupportChainByName } from "../../lib/helper/WalletHelper";
 import { openLink } from "../../lib/helper/DownloadHelper";
 
 import timerIcon from "../../assets/wallet/timer-icon.svg";
@@ -37,6 +36,7 @@ import {
 
 const TransCard = () => {
   const { t } = useTranslation();
+  const dispatch = useDispatch<AppDispatch>();
 
   const currencyListStore: ICurrencyList = useSelector(getCurrencyList);
   const currentCurrencyStore: ICurrentCurrency = useSelector(getCurrentCurrency);
@@ -55,17 +55,44 @@ const TransCard = () => {
   const currencySymbol: string = useMemo(() => currencySymbols[currentCurrencyStore?.currency], [currentCurrencyStore]);
 
   const [page, setPage] = useState<number>(1);
-  //@ts-ignore
   const [loading, setLoading] = useState<boolean>(false);
+  const [loadable, setLoadable] = useState<boolean>(true);
 
   const handleButtonClick = (path: string) => {
     const externalLink = path;
     openLink(externalLink);
   };
 
-  const loadMore = async () => {
-    setPage(page + 1); // will trigger useEffect
-  };
+  const loadMore = useCallback(async () => {
+    try {
+      setLoading(true);
+      const data = await dispatch(
+        addTransactionListAsync({
+          walletStore: walletStore,
+          chainName: currentChainStore?.chain,
+          tokenSymbol: getNativeSymbolByChainName(currentChainStore?.chain),
+          page: page + 1,
+        })
+      );
+      if (data.type.endsWith("/fulfilled")) {
+        const newTransactionList = data.payload as any[];
+        if (!newTransactionList || !isArray(newTransactionList) || newTransactionList.length === 0) {
+          setLoadable(false);
+        } else {
+          setPage(page + 1);
+        }
+      }
+      setLoading(false);
+    } catch (err) {
+      console.log("Failed to loadMore: ", err);
+      setLoading(false);
+    }
+  }, [walletStore, currentChainStore]);
+
+  useEffect(() => {
+    setPage(1);
+    setLoadable(true);
+  }, [currentChainStore]);
 
   return (
     <Suspense>
@@ -112,7 +139,7 @@ const TransCard = () => {
                 </Button>
               );
           })}
-        {tymtStorage.get(`loadMoreAvailable`) === true && (
+        {loadable && (
           <Button
             key={`load-more`}
             sx={{
