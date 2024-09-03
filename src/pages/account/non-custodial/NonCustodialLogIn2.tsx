@@ -145,7 +145,7 @@ const NonCustodialLogIn2 = () => {
                     </Grid>
 
                     <Grid item xs={12} mt={"80px"}>
-                      <AccountHeader title={"Hello"} text={t("ncl-12_type-your-mnemonic")} />
+                      <AccountHeader title={t("ncca-63_hello")} text={t("ncl-12_type-your-mnemonic")} />
                     </Grid>
                     <form onSubmit={formik.handleSubmit} style={{ width: "100%" }}>
                       <Grid item xs={12} mt={"48px"}>

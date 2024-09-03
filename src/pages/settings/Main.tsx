@@ -115,7 +115,9 @@ const Main = ({ view, setView }: propsType) => {
             <Box>
               <Button
                 className="button_navbar_common"
-                onClick={() => {
+                onClick={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
                   setView("general");
                 }}
                 sx={{ padding: 0 }}

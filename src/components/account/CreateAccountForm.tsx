@@ -31,24 +31,20 @@ const CreateAccountForm = () => {
     },
     validationSchema: Yup.object({
       password: Yup.string()
-        .test(
-          "password-requirements",
-          "Password must meet at least four out of the five requirements: Include a lowercase letter, an uppercase letter, a number, a special character, and be at least 8 characters long.",
-          (value) => {
-            if (!value) {
-              return false;
-            }
-            const checks = [
-              /[a-z]/.test(value), // Check for lowercase letter
-              /[A-Z]/.test(value), // Check for uppercase letter
-              /\d/.test(value), // Check for digit
-              /^[^\s'";\\]+$/.test(value), // Exclude spaces, single quotes, double quotes, semicolons, and backslashes
-              value.length >= 8, // Check for minimum length
-            ];
-            const passedConditions = checks.filter(Boolean).length;
-            return passedConditions >= 4;
+        .test("password-requirements", t("cca-66_password-must-be"), (value) => {
+          if (!value) {
+            return false;
           }
-        )
+          const checks = [
+            /[a-z]/.test(value), // Check for lowercase letter
+            /[A-Z]/.test(value), // Check for uppercase letter
+            /\d/.test(value), // Check for digit
+            /^[^\s'";\\]+$/.test(value), // Exclude spaces, single quotes, double quotes, semicolons, and backslashes
+            value.length >= 8, // Check for minimum length
+          ];
+          const passedConditions = checks.filter(Boolean).length;
+          return passedConditions >= 4;
+        })
         .required(t("cca-63_required")),
       passwordMatch: Yup.string()
         .required(t("cca-63_required"))
@@ -73,11 +69,11 @@ const CreateAccountForm = () => {
     <>
       <form onSubmit={formik.handleSubmit}>
         <Stack gap={"24px"}>
-          <Box className="fs-24-regular white">Create account</Box>
+          <Box className="fs-24-regular white">{t("ncca-1_create-account")}</Box>
           <Stack>
             <InputText
               id="password"
-              label="Password"
+              label={t("ncca-3_password")}
               type="password"
               name="password"
               value={formik.values.password}
@@ -90,7 +86,7 @@ const CreateAccountForm = () => {
           <Stack>
             <InputText
               id="repeat-password"
-              label="Repeat Password"
+              label={t("ncca-5_repeat-password")}
               type="password"
               name="passwordMatch"
               value={formik.values.passwordMatch}
@@ -103,7 +99,7 @@ const CreateAccountForm = () => {
           <IAgreeTerms checked={checked} setChecked={setChecked} />
           <AccountNextButton
             isSubmit={true}
-            text={"Next"}
+            text={t("ncca-7_next")}
             disabled={(formik.errors.password ? true : false || formik.errors.passwordMatch ? true : false) || !checked}
           />
         </Stack>

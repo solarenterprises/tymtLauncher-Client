@@ -65,10 +65,7 @@ const GuestCompletePassphrase = () => {
                     </Grid>
 
                     <Grid item xs={12} mt={"40px"}>
-                      <AccountHeader
-                        title={"Secure passphrase"}
-                        text={"Here’s your secure mnemonic phrase. Please write it down. Keep it in a secure place. This phrase is your key!"}
-                      />
+                      <AccountHeader title={t("ncl-11_secure-passphrase")} text={t("ncca-67_write-down")} />
                     </Grid>
                     <Grid item xs={12} mt={"48px"}>
                       <MnemonicRevealPad passphrase={tempAccountStore?.mnemonic} blur={blur} setBlur={setBlur} />

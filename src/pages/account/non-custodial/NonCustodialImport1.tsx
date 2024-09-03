@@ -196,7 +196,7 @@ const NonCustodialImport1 = () => {
                     </Grid>
 
                     <Grid item xs={12} mt={"80px"}>
-                      <AccountHeader title={"Hello again!"} text={"Please type your mnemonic phrase exactly as it was shown to ensure it's correct."} />
+                      <AccountHeader title={t("ncca-65_hello-again")} text={t("ncl-12_type-your-mnemonic")} />
                     </Grid>
                     <form onSubmit={formik.handleSubmit} style={{ width: "100%" }}>
                       <Grid item xs={12} mt={"48px"}>

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
+import { useTranslation } from "react-i18next";
 import { invoke } from "@tauri-apps/api";
 import { emit } from "@tauri-apps/api/event";
 import { motion } from "framer-motion";
@@ -25,10 +26,13 @@ import { setMnemonic } from "../../features/account/MnemonicSlice";
 import { setLogin } from "../../features/account/LoginSlice";
 import { setWallet } from "../../features/wallet/WalletSlice";
 import { addWalletList } from "../../features/wallet/WalletListSlice";
+import { getRsaKeyPairAsync } from "../../features/chat/RsaSlice";
+import { setSocketHash } from "../../features/chat/SocketHashSlice";
 
 import AuthAPI from "../../lib/api/AuthAPI";
 
 import { getRsaKeyPair } from "../../features/chat/RsaApi";
+import { generateSocketHash } from "../../features/chat/SocketHashApi";
 import { encrypt, getKeccak256Hash } from "../../lib/api/Encrypt";
 import { getMnemonic, getWalletAddressFromPassphrase } from "../../lib/helper/WalletHelper";
 import {
@@ -46,13 +50,11 @@ import { INotificationParams } from "../../types/NotificationTypes";
 import tymt1 from "../../assets/account/tymt1.png";
 import GuestIcon from "../../assets/account/Guest.svg";
 import ImportIcon from "../../assets/account/Import.svg";
-import { getRsaKeyPairAsync } from "../../features/chat/RsaSlice";
-import { generateSocketHash } from "../../features/chat/SocketHashApi";
-import { setSocketHash } from "../../features/chat/SocketHashSlice";
 
 const Welcome = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
+  const { t } = useTranslation();
 
   const saltTokenStore: ISaltToken = useSelector(getSaltToken);
   const machineIdStore: IMachineId = useSelector(getMachineId);
@@ -182,12 +184,12 @@ const Welcome = () => {
                     }}
                   >
                     <Grid item xs={12}>
-                      <AccountHeader title={"Hello!"} />
+                      <AccountHeader title={t("ncca-63_hello")} />
                     </Grid>
                     <Grid item xs={12} mt={"48px"}>
                       <Stack direction={"row"} alignItems={"center"} gap={"16px"}>
-                        <SignModeButton icon={GuestIcon} text={"Play as a guest"} onClick={handlePlayGuest} loading={loading} />
-                        <SignModeButton icon={ImportIcon} text={"Import wallet"} onClick={() => navigate("/non-custodial/login/2")} />
+                        <SignModeButton icon={GuestIcon} text={t("ncca-64_play-as-guest")} onClick={handlePlayGuest} loading={loading} />
+                        <SignModeButton icon={ImportIcon} text={t("ncl-8_import-wallet")} onClick={() => navigate("/non-custodial/login/2")} />
                       </Stack>
                     </Grid>
                     <Grid item xs={12} mt={"32px"}>

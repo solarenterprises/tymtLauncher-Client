@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useSelector } from "react-redux";
-
+import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 
 import { Grid, Box, Stack, Divider } from "@mui/material";
@@ -11,15 +11,17 @@ import ChooseProfileButton from "../../../components/account/ChooseProfileButton
 import LoginAccountForm from "../../../components/account/LoginAccountForm";
 import OrLine from "../../../components/account/OrLine";
 import DontHaveAccount from "../../../components/account/DontHaveAccount";
+import ChooseProfileDrawer from "../../../components/account/ChooseProfileDrawer";
 
 import { getAccount } from "../../../features/account/AccountSlice";
 
 import { IAccount } from "../../../types/accountTypes";
 
 import tymt1 from "../../../assets/account/tymt1.png";
-import ChooseProfileDrawer from "../../../components/account/ChooseProfileDrawer";
 
 const NonCustodialLogin1 = () => {
+  const { t } = useTranslation();
+
   const accountStore: IAccount = useSelector(getAccount);
 
   const [drawer, setDrawer] = useState<boolean>(false);
@@ -48,7 +50,7 @@ const NonCustodialLogin1 = () => {
                     }}
                   >
                     <Grid item xs={12}>
-                      <AccountHeader title={"Hello!"} />
+                      <AccountHeader title={t("ncca-63_hello")} />
                     </Grid>
                     <Grid item xs={12} mt={"48px"}>
                       <ChooseProfileButton account={accountStore} onClick={() => setDrawer(true)} />

@@ -115,14 +115,14 @@ const GuestCompletePassword = () => {
                     </Grid>
 
                     <Grid item xs={12} mt={"80px"}>
-                      <AccountHeader title={"Create account"} text={"Remember to create a strong yet memorable password for top security."} />
+                      <AccountHeader title={t("ncca-1_create-account")} text={t("ncca-2_remember-strong-password")} />
                     </Grid>
                     <form onSubmit={formik.handleSubmit} style={{ width: "100%" }}>
                       <Grid item xs={12} mt={"48px"}>
                         <InputText
                           id="non-custodial-new-password"
                           name="password"
-                          label={"Create password"}
+                          label={t("ncca-66_create-password")}
                           type="password"
                           value={formik.values.password}
                           onChange={formik.handleChange}

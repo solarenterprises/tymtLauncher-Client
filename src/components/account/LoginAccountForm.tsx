@@ -97,24 +97,20 @@ const LoginAccountForm = () => {
         .test("equals", t("cca-60_wrong-password"), (value) => {
           return getKeccak256Hash(value) === accountStoreRef?.current?.password;
         })
-        .test(
-          "password-requirements",
-          "Password must meet at least four out of the five requirements: Include a lowercase letter, an uppercase letter, a number, a special character, and be at least 8 characters long.",
-          (value) => {
-            if (!value) {
-              return false;
-            }
-            const checks = [
-              /[a-z]/.test(value), // Check for lowercase letter
-              /[A-Z]/.test(value), // Check for uppercase letter
-              /\d/.test(value), // Check for digit
-              /^[^\s'";\\]+$/.test(value), // Exclude spaces, single quotes, double quotes, semicolons, and backslashes
-              value.length >= 8, // Check for minimum length
-            ];
-            const passedConditions = checks.filter(Boolean).length;
-            return passedConditions >= 4;
+        .test("password-requirements", t("cca-66_password-must-be"), (value) => {
+          if (!value) {
+            return false;
           }
-        )
+          const checks = [
+            /[a-z]/.test(value), // Check for lowercase letter
+            /[A-Z]/.test(value), // Check for uppercase letter
+            /\d/.test(value), // Check for digit
+            /^[^\s'";\\]+$/.test(value), // Exclude spaces, single quotes, double quotes, semicolons, and backslashes
+            value.length >= 8, // Check for minimum length
+          ];
+          const passedConditions = checks.filter(Boolean).length;
+          return passedConditions >= 4;
+        })
         .required(t("cca-63_required")),
     }),
     onSubmit: async () => {
@@ -161,7 +157,7 @@ const LoginAccountForm = () => {
               <Stack>
                 <InputText
                   id="password"
-                  label="Password"
+                  label={t("ncca-3_password")}
                   type="password"
                   name="password"
                   value={formik.values.password}
@@ -171,10 +167,10 @@ const LoginAccountForm = () => {
                 />
                 {formik.touched.password && formik.errors.password && <Box className={"fs-16-regular red"}>{formik.errors.password}</Box>}
               </Stack>
-              <AccountNextButton isSubmit={true} text={"Next"} disabled={formik.touched.password && formik.errors.password ? true : false} />
+              <AccountNextButton isSubmit={true} text={t("ncca-7_next")} disabled={formik.touched.password && formik.errors.password ? true : false} />
             </>
           )}
-          {isGuest && <AccountNextButton text={"Next"} onClick={handleGuestLogin} />}
+          {isGuest && <AccountNextButton text={t("ncca-7_next")} onClick={handleGuestLogin} />}
         </Stack>
       </form>
     </>

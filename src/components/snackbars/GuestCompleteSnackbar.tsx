@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -30,6 +31,7 @@ export interface IPropsGuestCompleteSnackbar {
 }
 
 const GuestCompleteSnackbar = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
@@ -92,14 +94,14 @@ const GuestCompleteSnackbar = () => {
             <Stack direction={"row"} alignItems={"center"} gap={"12px"}>
               <Box component="img" src={BellIcon} width={"32px"} height={"32px"} />
               <Stack gap={"8px"}>
-                <Box className="fs-h4 white">{`Secure Passphrase and create password.`}</Box>
-                <Box className="fs-16-regular white">{`You receive funds, you should secure your account in few steps: Secure Passphrase and create password.`}</Box>
+                <Box className="fs-h4 white">{t("set-94_secure-passphrase-password")}</Box>
+                <Box className="fs-16-regular white">{t("set-95_you-should-secure")}</Box>
               </Stack>
               <Box component="img" src={CloseIcon} width={"32px"} height={"32px"} onClick={handleLaterClick} />
             </Stack>
             <Stack direction={"row"} gap={"16px"} justifyContent={"flex-end"}>
-              <RedFullSmallButton text="Do it now" onClick={handleDoNowClick} />
-              <RedStrokeSmallButton text="Later" onClick={handleLaterClick} />
+              <RedFullSmallButton text={t("hom-29_do-it-now")} onClick={handleDoNowClick} />
+              <RedStrokeSmallButton text={t("hom-30_later")} onClick={handleLaterClick} />
             </Stack>
           </Stack>
         </Box>
