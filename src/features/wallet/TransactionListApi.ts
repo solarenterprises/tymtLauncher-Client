@@ -29,7 +29,6 @@ export async function fetchTransactionList(data: { walletStore: IWallet; chainNa
         return await ERC20.getTransactions(url);
       } else {
         const selectedToken = getSupportNativeOrTokenBySymbol(data?.tokenSymbol);
-
         const { api_url, api_key } = getAPIAndKey(data?.chainName);
         const url = `${api_url}?module=account&action=tokentx&contractaddress=${selectedToken.address}&address=${currentWalletAddress}&page=${data.page}&offset=15&apikey=${api_key}`;
         return await ERC20.getERCTransactions(url);

@@ -17,7 +17,7 @@ import { getWallet, setWallet } from "../features/wallet/WalletSlice";
 import { getAccount, setAccount } from "../features/account/AccountSlice";
 import { getWalletList } from "../features/wallet/WalletListSlice";
 import { getCurrentChain } from "../features/wallet/CurrentChainSlice";
-import { setCurrentToken } from "../features/wallet/CurrentTokenSlice";
+import { getCurrentToken, setCurrentToken } from "../features/wallet/CurrentTokenSlice";
 import { fetchBalanceListAsync } from "../features/wallet/BalanceListSlice";
 import { fetchPriceListAsync } from "../features/wallet/PriceListSlice";
 import { fetchCurrencyListAsync } from "../features/wallet/CurrencyListSlice";
@@ -27,7 +27,7 @@ import { addAccountList } from "../features/account/AccountListSlice";
 
 import { IAccount, IMnemonic, ISaltToken } from "../types/accountTypes";
 import { IGetAccountReq, IGetBalanceReq, ISendContractReq, ISignMessageReq, IVerifyMessageReq } from "../types/eventParamTypes";
-import { ICurrentChain, IWallet, IWalletList } from "../types/walletTypes";
+import { ICurrentChain, ICurrentToken, IWallet, IWalletList } from "../types/walletTypes";
 import { setLogin } from "../features/account/LoginSlice";
 
 const TransactionProvider = () => {
@@ -38,6 +38,7 @@ const TransactionProvider = () => {
   const walletListStore: IWalletList = useSelector(getWalletList);
   const accountStore: IAccount = useSelector(getAccount);
   const currentChainStore: ICurrentChain = useSelector(getCurrentChain);
+  const currentTokenStore: ICurrentToken = useSelector(getCurrentToken);
   const walletStore: IWallet = useSelector(getWallet);
 
   const saltTokenStoreRef = useRef(saltTokenStore);
@@ -71,7 +72,19 @@ const TransactionProvider = () => {
         page: 1,
       })
     );
-  }, [currentChainStore, walletStore]);
+  }, [currentChainStore]);
+
+  useEffect(() => {
+    console.log("currentTokenStore has been changed!");
+    dispatch(
+      fetchTransactionListAsync({
+        walletStore: walletStore,
+        chainName: currentChainStore?.chain,
+        tokenSymbol: currentTokenStore?.token,
+        page: 1,
+      })
+    );
+  }, [currentTokenStore]);
 
   const fetchUserAvatar = useCallback(async () => {
     try {

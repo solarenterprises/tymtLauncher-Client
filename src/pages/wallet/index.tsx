@@ -24,7 +24,7 @@ import { getCurrentCurrency } from "../../features/wallet/CurrentCurrencySlice";
 import { fetchBalanceListAsync, getBalanceList } from "../../features/wallet/BalanceListSlice";
 import { fetchPriceListAsync, getPriceList } from "../../features/wallet/PriceListSlice";
 import { getWalletSetting, setWalletSetting } from "../../features/settings/WalletSettingSlice";
-import { getCurrentToken } from "../../features/wallet/CurrentTokenSlice";
+import { getCurrentToken, setCurrentToken } from "../../features/wallet/CurrentTokenSlice";
 import { getCurrentChain } from "../../features/wallet/CurrentChainSlice";
 import { getWallet } from "../../features/wallet/WalletSlice";
 import { fetchTransactionListAsync } from "../../features/wallet/TransactionListSlice";
@@ -244,9 +244,14 @@ const Wallet = () => {
               <Grid item xl={5} sm={12}>
                 <Stack padding={"25px"}>
                   <Box className={"fs-20-regular white"}>{t("wal-4_last-trans")}</Box>
-                  {currentSupportChain?.tokens?.length != 0 && (
+                  {currentSupportChain?.tokens?.length !== 0 && (
                     <Stack direction={"row"} gap={2} className="m-tb-10">
-                      <Button className={`common-btn ${currentTokenStore?.token === "chain" ? "active" : ""}`} onClick={() => {}}>
+                      <Button
+                        className={`common-btn ${currentTokenStore?.token === currentSupportChain?.chain?.symbol ? "active" : ""}`}
+                        onClick={() => {
+                          dispatch(setCurrentToken(currentSupportChain?.chain?.symbol));
+                        }}
+                      >
                         <Stack direction={"row"} justifyContent={"center"} textAlign={"center"} alignItems={"center"} gap={1}>
                           <Box className="center-align">
                             <img src={currentSupportChain?.chain?.logo} width={20} />
@@ -254,8 +259,14 @@ const Wallet = () => {
                           <Box className="fs-14-regular white">{currentSupportChain?.chain?.symbol}</Box>
                         </Stack>
                       </Button>
-                      {currentSupportChain?.tokens.map((token, index) => (
-                        <Button className={`common-btn ${currentTokenStore?.token === token.symbol ? "active" : ""}`} key={index} onClick={() => {}}>
+                      {currentSupportChain?.tokens?.map((token, index) => (
+                        <Button
+                          className={`common-btn ${currentTokenStore?.token === token.symbol ? "active" : ""}`}
+                          key={index}
+                          onClick={() => {
+                            dispatch(setCurrentToken(token?.symbol));
+                          }}
+                        >
                           <Stack direction={"row"} justifyContent={"center"} textAlign={"center"} alignItems={"center"} gap={1}>
                             <Box className="center-align">
                               <img src={token.logo} width={20} />
