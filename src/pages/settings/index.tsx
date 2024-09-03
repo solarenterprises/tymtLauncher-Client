@@ -20,6 +20,7 @@ import Security from "./Security";
 import Password from "./Password";
 import Address from "./Address";
 import Backup from "./Backup";
+import ChooseProfile from "./ChooseProfile";
 
 import SettingStyle from "../../styles/SettingStyle";
 
@@ -78,6 +79,7 @@ const Settings = ({ view, setView }: propsSettingType) => {
         <Password view={panel} setView={setPanel} />
         <Address view={panel} setView={setPanel} />
         <Backup view={panel} setView={setPanel} />
+        <ChooseProfile view={panel} setView={setPanel} />
       </Box>
     </SwipeableDrawer>
   );

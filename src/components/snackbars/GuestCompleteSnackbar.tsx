@@ -54,7 +54,7 @@ const GuestCompleteSnackbar = () => {
     setOpen(false);
     setTimeout(() => {
       if (isGuest) setOpen(true);
-    }, 10 * 1e3);
+    }, 60 * 60 * 1e3); // Show the snackbar after 1 hour
   }, [isGuest]);
 
   const handleCloseClick = () => {

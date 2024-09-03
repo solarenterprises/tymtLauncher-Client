@@ -90,7 +90,18 @@ const Main = ({ view, setView }: propsType) => {
     <>
       {view === "main" && (
         <Box className={classname.main_container}>
-          <Box className={classname.user_pad} sx={{}}>
+          <Box
+            onClick={() => setView("chooseProfile")}
+            className={classname.user_pad}
+            sx={{
+              transition: "all 0.3s ease",
+              cursor: "pointer",
+              borderRadius: "22px 22px 0px 0px",
+              "&:hover": {
+                backgroundColor: "#ffffff1a",
+              },
+            }}
+          >
             <Box sx={{ display: "flex", gap: "10px" }}>
               <Box className="center-align">
                 <Avatar onlineStatus={true} url={myInfoStore?.avatar} size={60} status={!notificationStore.alert ? "donotdisturb" : "online"} />
@@ -99,6 +110,7 @@ const Main = ({ view, setView }: propsType) => {
                 <Box className="fs-14-light white">{t("set-1_welcome")}</Box>
                 <Box className="fs-h4 white">{myInfoStore?.nickName}</Box>
               </Box>
+              <Box component={"img"} src={arrowImg} />
             </Box>
             <Box>
               <Button
