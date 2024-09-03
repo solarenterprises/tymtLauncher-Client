@@ -57,7 +57,7 @@ const LibrarymodeBtn = ({ status, setStatus }: propsmodeType) => {
           },
         }}
       >
-        <Box className={classes.switch_btn} sx={{ color: mode === 2 ? "#52E1F2" : "white" }}>
+        <Box className={classes.switch_btn} sx={{ color: mode === 3 ? "#52E1F2" : "white" }}>
           {t("lib-5_coming")}
         </Box>
       </Button>
