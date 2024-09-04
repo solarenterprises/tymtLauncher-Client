@@ -1187,6 +1187,12 @@ async fn move_appimage_linux(
         source_path.file_name().ok_or("Invalid file name")?
     );
 
+    if !destination_path.exists() {
+        fs
+            ::create_dir_all(&destination_path)
+            .map_err(|e| format!("Failed to create directory: {}", e))?;
+    }
+
     fs::rename(&source_path, &destination_path).map_err(|e| format!("Failed to move file: {}", e))?;
 
     Ok(())
