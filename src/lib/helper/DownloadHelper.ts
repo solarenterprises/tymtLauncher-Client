@@ -195,13 +195,17 @@ export const installGame = async (game: IGame) => {
               installDir: installDir,
             });
             break;
-          case "AppImage":
+          case "appimage":
             await invoke("move_appimage_linux", {
               fileLocation: fileLocation,
               installDir: installDir,
             });
+
             break;
         }
+        await invoke("set_permission", {
+          executablePath: fullExecutablePath,
+        });
         break;
       case "Windows_NT":
         switch (sourceExtension) {
@@ -226,11 +230,11 @@ export const installGame = async (game: IGame) => {
               fileLocation: fileLocation,
               installDir: installDir,
             });
-            await invoke("chmod_macos", {
-              executablePath: fullExecutablePath,
-            });
             break;
         }
+        await invoke("set_permission", {
+          executablePath: fullExecutablePath,
+        });
         break;
     }
 

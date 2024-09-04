@@ -126,6 +126,7 @@ async fn main() -> std::io::Result<()> {
                 move_appimage_linux,
                 delete_file,
                 run_url_args,
+                //set_permission,
                 open_directory,
                 get_machine_id,
                 is_window_visible,
@@ -1241,7 +1242,10 @@ async fn untarbz2_macos(
 
 #[cfg(target_family = "unix")]
 #[tauri::command]
-async fn chmod_macos(app_handle: tauri::AppHandle, executable_path: String) -> Result<(), String> {
+async fn set_permission(
+    app_handle: tauri::AppHandle,
+    executable_path: String
+) -> Result<(), String> {
     let path = PathBuf::from(&executable_path);
 
     // Check if the file exists
