@@ -90,8 +90,8 @@ const UserListItem = ({ user, index, roomMode, setView, page }: IPropsUserListIt
               navigate(`/chat/${newCurrentChatroom._id}`);
             } else {
               dispatch(setCurrentChatroom(newCurrentChatroom));
-              dispatch(fetchCurrentChatroomMembersAsync(newCurrentChatroom._id));
-              dispatch(fetchHistoricalChatroomMembersAsync(newCurrentChatroom._id));
+              await dispatch(fetchCurrentChatroomMembersAsync(newCurrentChatroom._id));
+              await dispatch(fetchHistoricalChatroomMembersAsync(newCurrentChatroom._id));
             }
 
             if (setView) setView("chatbox");
@@ -102,7 +102,7 @@ const UserListItem = ({ user, index, roomMode, setView, page }: IPropsUserListIt
           }
           // Else if we didn't have any DM in the past
           else {
-            dispatch(createDMAsync(user._id)).then((action) => {
+            dispatch(createDMAsync(user._id)).then(async (action) => {
               if (action.type.endsWith("/fulfilled")) {
                 const newCurrentChatroom = action.payload as IChatroom;
 
@@ -110,8 +110,8 @@ const UserListItem = ({ user, index, roomMode, setView, page }: IPropsUserListIt
                   navigate(`/chat/${newCurrentChatroom._id}`);
                 } else {
                   dispatch(setCurrentChatroom(newCurrentChatroom));
-                  dispatch(fetchCurrentChatroomMembersAsync(newCurrentChatroom._id));
-                  dispatch(fetchHistoricalChatroomMembersAsync(newCurrentChatroom._id));
+                  await dispatch(fetchCurrentChatroomMembersAsync(newCurrentChatroom._id));
+                  await dispatch(fetchHistoricalChatroomMembersAsync(newCurrentChatroom._id));
                 }
 
                 const data_1: ISocketParamsJoinMessageGroup = {
@@ -147,15 +147,15 @@ const UserListItem = ({ user, index, roomMode, setView, page }: IPropsUserListIt
         // Else if he is not in my contact list
         else {
           dispatch(createContactAsync(user._id)).then(() => {
-            dispatch(createDMAsync(user._id)).then((action) => {
+            dispatch(createDMAsync(user._id)).then(async (action) => {
               if (action.type.endsWith("/fulfilled")) {
                 const newCurrentChatroom = action.payload as IChatroom;
                 if (roomMode) {
                   navigate(`/chat/${newCurrentChatroom._id}`);
                 } else {
                   dispatch(setCurrentChatroom(newCurrentChatroom));
-                  dispatch(fetchCurrentChatroomMembersAsync(newCurrentChatroom._id));
-                  dispatch(fetchHistoricalChatroomMembersAsync(newCurrentChatroom._id));
+                  await dispatch(fetchCurrentChatroomMembersAsync(newCurrentChatroom._id));
+                  await dispatch(fetchHistoricalChatroomMembersAsync(newCurrentChatroom._id));
                 }
 
                 const data_1: ISocketParamsJoinMessageGroup = {
@@ -190,10 +190,10 @@ const UserListItem = ({ user, index, roomMode, setView, page }: IPropsUserListIt
         }
         console.log("handleUserListItemClick");
       } catch (err) {
-        console.error("Failed to handleUserListItemClick: ", err);
+        console.log("Failed to handleUserListItemClick: ", err);
       }
     } else {
-      console.error("Failed to handleUserListItemClick: socket not connected!");
+      console.log("Failed to handleUserListItemClick: socket not connected!");
     }
   }, [user, contactListStore, blockListStore, friendListStore, chatroomListStore, myInfoStore, socket.current]);
 
