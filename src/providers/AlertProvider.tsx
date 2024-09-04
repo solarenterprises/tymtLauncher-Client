@@ -112,6 +112,7 @@ const AlertProvider = () => {
   useEffect(() => {
     let intervalId: NodeJS.Timeout;
     if (loginStore?.isLoggedIn) {
+      timerAction();
       intervalId = setInterval(() => timerAction(), 120 * 1e3);
     }
 
