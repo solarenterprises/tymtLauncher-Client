@@ -1182,17 +1182,19 @@ async fn move_appimage_linux(
     file_location: String,
     install_dir: String
 ) -> Result<(), String> {
-    let source_path = PathBuf::from(file_location);
-    let destination_path = PathBuf::from(install_dir).join(
-        source_path.file_name().ok_or("Invalid file name")?
+    let source_path = PathBuf::from(&file_location);
+    let destination_path = PathBuf::from(&install_dir).join(
+        source_path.file_name().ok_or_else(|| "Invalid file name".to_string())?
     );
 
-    if !destination_path.exists() {
-        fs
-            ::create_dir_all(&destination_path)
-            .map_err(|e| format!("Failed to create directory: {}", e))?;
+    // Ensure the parent directory exists
+    if let Some(parent) = destination_path.parent() {
+        if !parent.exists() {
+            fs::create_dir_all(parent).map_err(|e| format!("Failed to create directory: {}", e))?;
+        }
     }
 
+    // Move the file
     fs::rename(&source_path, &destination_path).map_err(|e| format!("Failed to move file: {}", e))?;
 
     Ok(())
