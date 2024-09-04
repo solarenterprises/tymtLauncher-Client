@@ -7,7 +7,6 @@ import { emit } from "@tauri-apps/api/event";
 
 import tymtCore from "../lib/core/tymtCore";
 
-import AuthAPI from "../lib/api/AuthAPI";
 import TransactionProviderAPI from "../lib/api/TransactionProviderAPI";
 
 import { AppDispatch } from "../store";
@@ -23,12 +22,13 @@ import { fetchPriceListAsync } from "../features/wallet/PriceListSlice";
 import { fetchCurrencyListAsync } from "../features/wallet/CurrencyListSlice";
 import { getNativeSymbolByChainName } from "../lib/helper/WalletHelper";
 import { fetchTransactionListAsync } from "../features/wallet/TransactionListSlice";
-import { addAccountList } from "../features/account/AccountListSlice";
+import { getAccountList, setAccountList } from "../features/account/AccountListSlice";
 
-import { IAccount, IMnemonic, ISaltToken } from "../types/accountTypes";
+import { IAccount, IAccountList, IMnemonic, ISaltToken } from "../types/accountTypes";
 import { IGetAccountReq, IGetBalanceReq, ISendContractReq, ISignMessageReq, IVerifyMessageReq } from "../types/eventParamTypes";
 import { ICurrentChain, ICurrentToken, IWallet, IWalletList } from "../types/walletTypes";
 import { setLogin } from "../features/account/LoginSlice";
+import { fetchAccountListAvatar } from "../features/account/AccountApi";
 
 const TransactionProvider = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -37,6 +37,7 @@ const TransactionProvider = () => {
   const mnemonicStore: IMnemonic = useSelector(getMnemonic);
   const walletListStore: IWalletList = useSelector(getWalletList);
   const accountStore: IAccount = useSelector(getAccount);
+  const accountListStore: IAccountList = useSelector(getAccountList);
   const currentChainStore: ICurrentChain = useSelector(getCurrentChain);
   const currentTokenStore: ICurrentToken = useSelector(getCurrentToken);
   const walletStore: IWallet = useSelector(getWallet);
@@ -86,37 +87,28 @@ const TransactionProvider = () => {
     );
   }, [currentTokenStore]);
 
-  const fetchUserAvatar = useCallback(async () => {
+  const refreshAccountListAvatar = useCallback(async () => {
     try {
-      const sxpAddress = accountStore?.sxpAddress;
-      console.log("fetchUserAvatar: ", sxpAddress);
-
-      const data = await AuthAPI.getUserBySolarAddress(sxpAddress);
-      if (!data) {
-        console.log("Failed to fetchUserAvatar: user undefined!", data);
-        return;
-      }
-      const newAvatar = data?.data?.users[0]?.avatar;
-      if (!newAvatar) {
-        console.log("Failed to fetchUserAvatar: newAvatar undefined!", newAvatar);
-        return;
-      }
-
-      const newAccount: IAccount = {
-        ...accountStore,
-        avatar: newAvatar,
-      };
-
-      dispatch(setAccount(newAccount));
-      dispatch(addAccountList(newAccount));
+      console.log("refreshAccountListAvatar");
+      const newAccountList = await fetchAccountListAvatar(accountListStore);
+      dispatch(setAccountList(newAccountList));
     } catch (err) {
-      console.log("Failed to fetchUserAvatar: ", err);
+      console.log("Failed to refreshAccountListAvatar: ", err);
     }
-  }, [accountStore]);
+  }, [accountListStore]);
 
   useEffect(() => {
-    fetchUserAvatar();
-  }, [accountStore]);
+    refreshAccountListAvatar();
+  }, [accountListStore?.list?.length]);
+
+  useEffect(() => {
+    const newAccount = accountListStore?.list?.find((one) => one?.uid === accountStore?.uid);
+    if (!newAccount && accountListStore?.list?.length > 0) {
+      dispatch(setAccount(accountListStore?.list[0]));
+      return;
+    }
+    dispatch(setAccount(newAccount));
+  }, [accountListStore]);
 
   useEffect(() => {
     const unlisten_get_account = listen("POST-/get-account", async (event) => {
