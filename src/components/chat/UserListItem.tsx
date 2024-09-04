@@ -28,6 +28,7 @@ import { IContactList, IMyInfo, IRsa, userType } from "../../types/chatTypes";
 import { IChatroom, IChatroomList } from "../../types/ChatroomAPITypes";
 import { ISocketParamsJoinMessageGroup } from "../../types/SocketTypes";
 import { IPoint } from "../../types/homeTypes";
+import { setChatHistoryAsync } from "../../features/chat/ChatHistorySlice";
 
 export interface IPropsUserListItem {
   user: userType;
@@ -70,28 +71,29 @@ const UserListItem = ({ user, index, roomMode, setView, page }: IPropsUserListIt
       try {
         // If he is already in my contact list
         if (
-          blockListStore.contacts.some((element) => element._id === user._id) ||
-          contactListStore.contacts.some((element) => element._id === user._id) ||
-          friendListStore.contacts.some((element) => element._id === user._id)
+          blockListStore?.contacts.some((element) => element?._id === user._id) ||
+          contactListStore?.contacts.some((element) => element?._id === user._id) ||
+          friendListStore?.contacts.some((element) => element?._id === user._id)
         ) {
           console.log("handleUserListItemClick: Already in the block/contact/friend list!");
-          const haveDMWithUser = chatroomListStore.chatrooms
+          const haveDMWithUser = chatroomListStore?.chatrooms
             .filter((chatroom) => !chatroom.room_name)
-            .some((dm) => dm.participants.some((participant) => participant.userId === user._id));
+            .some((dm) => dm.participants.some((participant) => participant?.userId === user?._id));
           // If we already had DM in the past
           console.log("haveDMWithUser: ", haveDMWithUser);
           if (haveDMWithUser) {
-            const newCurrentChatroom = chatroomListStore.chatrooms
+            const newCurrentChatroom = chatroomListStore?.chatrooms
               .filter((chatroom) => !chatroom.room_name)
-              .find((dm) => dm.participants.some((participant) => participant.userId === user._id));
+              .find((dm) => dm.participants.some((participant) => participant?.userId === user._id));
             console.log("newCurrentChatroom: ", newCurrentChatroom);
 
             if (roomMode) {
-              navigate(`/chat/${newCurrentChatroom._id}`);
+              navigate(`/chat/${newCurrentChatroom?._id}`);
             } else {
               dispatch(setCurrentChatroom(newCurrentChatroom));
-              await dispatch(fetchCurrentChatroomMembersAsync(newCurrentChatroom._id));
-              await dispatch(fetchHistoricalChatroomMembersAsync(newCurrentChatroom._id));
+              await dispatch(setChatHistoryAsync({ messages: [] }));
+              await dispatch(fetchCurrentChatroomMembersAsync(newCurrentChatroom?._id));
+              await dispatch(fetchHistoricalChatroomMembersAsync(newCurrentChatroom?._id));
             }
 
             if (setView) setView("chatbox");
@@ -107,19 +109,20 @@ const UserListItem = ({ user, index, roomMode, setView, page }: IPropsUserListIt
                 const newCurrentChatroom = action.payload as IChatroom;
 
                 if (roomMode) {
-                  navigate(`/chat/${newCurrentChatroom._id}`);
+                  navigate(`/chat/${newCurrentChatroom?._id}`);
                 } else {
                   dispatch(setCurrentChatroom(newCurrentChatroom));
-                  await dispatch(fetchCurrentChatroomMembersAsync(newCurrentChatroom._id));
-                  await dispatch(fetchHistoricalChatroomMembersAsync(newCurrentChatroom._id));
+                  await dispatch(setChatHistoryAsync({ messages: [] }));
+                  await dispatch(fetchCurrentChatroomMembersAsync(newCurrentChatroom?._id));
+                  await dispatch(fetchHistoricalChatroomMembersAsync(newCurrentChatroom?._id));
                 }
 
                 const data_1: ISocketParamsJoinMessageGroup = {
-                  room_id: newCurrentChatroom._id,
+                  room_id: newCurrentChatroom?._id,
                   joined_user_id: user._id,
                 };
                 const data_2: ISocketParamsJoinMessageGroup = {
-                  room_id: newCurrentChatroom._id,
+                  room_id: newCurrentChatroom?._id,
                   joined_user_id: myInfoStore?._id,
                 };
                 socket.current.emit("join-message-group", JSON.stringify(data_1));
@@ -127,11 +130,11 @@ const UserListItem = ({ user, index, roomMode, setView, page }: IPropsUserListIt
                 console.log("socket.current.emit > join-message-group", data_1);
                 console.log("socket.current.emit > join-message-group", data_2);
 
-                const myUserKey = newCurrentChatroom.participants.find((participant) => participant.userId === myInfoStore?._id)?.userKey;
+                const myUserKey = newCurrentChatroom?.participants.find((participant) => participant.userId === myInfoStore?._id)?.userKey;
                 dispatch(
                   addOneSKeyList({
-                    roomId: newCurrentChatroom._id,
-                    sKey: rsaDecrypt(myUserKey, rsaStore.privateKey),
+                    roomId: newCurrentChatroom?._id,
+                    sKey: rsaDecrypt(myUserKey, rsaStore?.privateKey),
                   })
                 );
 
@@ -151,19 +154,20 @@ const UserListItem = ({ user, index, roomMode, setView, page }: IPropsUserListIt
               if (action.type.endsWith("/fulfilled")) {
                 const newCurrentChatroom = action.payload as IChatroom;
                 if (roomMode) {
-                  navigate(`/chat/${newCurrentChatroom._id}`);
+                  navigate(`/chat/${newCurrentChatroom?._id}`);
                 } else {
                   dispatch(setCurrentChatroom(newCurrentChatroom));
-                  await dispatch(fetchCurrentChatroomMembersAsync(newCurrentChatroom._id));
-                  await dispatch(fetchHistoricalChatroomMembersAsync(newCurrentChatroom._id));
+                  await dispatch(setChatHistoryAsync({ messages: [] }));
+                  await dispatch(fetchCurrentChatroomMembersAsync(newCurrentChatroom?._id));
+                  await dispatch(fetchHistoricalChatroomMembersAsync(newCurrentChatroom?._id));
                 }
 
                 const data_1: ISocketParamsJoinMessageGroup = {
-                  room_id: newCurrentChatroom._id,
+                  room_id: newCurrentChatroom?._id,
                   joined_user_id: user._id,
                 };
                 const data_2: ISocketParamsJoinMessageGroup = {
-                  room_id: newCurrentChatroom._id,
+                  room_id: newCurrentChatroom?._id,
                   joined_user_id: myInfoStore?._id,
                 };
                 socket.current.emit("join-message-group", JSON.stringify(data_1));
@@ -171,11 +175,11 @@ const UserListItem = ({ user, index, roomMode, setView, page }: IPropsUserListIt
                 console.log("socket.current.emit > join-message-group", data_1);
                 console.log("socket.current.emit > join-message-group", data_2);
 
-                const myUserKey = newCurrentChatroom.participants.find((participant) => participant.userId === myInfoStore?._id)?.userKey;
+                const myUserKey = newCurrentChatroom?.participants.find((participant) => participant?.userId === myInfoStore?._id)?.userKey;
                 dispatch(
                   addOneSKeyList({
-                    roomId: newCurrentChatroom._id,
-                    sKey: rsaDecrypt(myUserKey, rsaStore.privateKey),
+                    roomId: newCurrentChatroom?._id,
+                    sKey: rsaDecrypt(myUserKey, rsaStore?.privateKey),
                   })
                 );
 
@@ -223,7 +227,12 @@ const UserListItem = ({ user, index, roomMode, setView, page }: IPropsUserListIt
             },
           }}
         >
-          <Avatar onlineStatus={activeUserListStore.users.some((active) => active === user._id)} url={user.avatar} size={40} status={user.notificationStatus} />
+          <Avatar
+            onlineStatus={activeUserListStore?.users.some((active) => active === user._id)}
+            url={user.avatar}
+            size={40}
+            status={user.notificationStatus}
+          />
           <Stack flexDirection={"row"} alignItems={"center"} justifyContent={"space-between"} display={"flex"} sx={{ marginLeft: "25px", width: "320px" }}>
             <Box>
               <Stack direction={"column"} justifyContent={"flex-start"} spacing={1}>
