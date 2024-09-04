@@ -29,7 +29,7 @@ import { AppDispatch } from "../../store";
 import { selectNotification } from "../../features/settings/NotificationSlice";
 import { selectChat } from "../../features/settings/ChatSlice";
 import { setMountedFalse, setMountedTrue } from "../../features/chat/IntercomSupportSlice";
-import { getChatHistory, setChatHistory } from "../../features/chat/ChatHistorySlice";
+import { getChatHistory, setChatHistory, setChatHistoryAsync } from "../../features/chat/ChatHistorySlice";
 import { getContactList } from "../../features/chat/ContactListSlice";
 import { fetchCurrentChatroomAsync, getCurrentChatroom } from "../../features/chat/CurrentChatroomSlice";
 import { ICurrentChatroomMembers, fetchCurrentChatroomMembersAsync, getCurrentChatroomMembers } from "../../features/chat/CurrentChatroomMembersSlice";
@@ -116,12 +116,10 @@ const Chatroom = () => {
     currentChatroomStoreRef.current = currentChatroomStore;
   }, [currentChatroomStore]);
 
-  useEffect(() => {
-    console.log("NOTICE: currentPartnerStore changed: ", currentChatroomStore?._id);
-    if (currentChatroomStore?._id) {
-      dispatch(setChatHistory({ messages: [] }));
-    }
-  }, [currentChatroomStore]);
+  const refresh = async () => {
+    await dispatch(setChatHistoryAsync({ messages: [] }));
+    fetchMessages();
+  };
 
   useEffect(() => {
     if (chatroomId) {
@@ -151,8 +149,7 @@ const Chatroom = () => {
   // Fetch chat history of the first page
   useEffect(() => {
     if (socket.current) {
-      dispatch(setChatHistory({ messages: [] }));
-      fetchMessages();
+      refresh();
     }
   }, [socket.current, currentChatroomStore]);
 

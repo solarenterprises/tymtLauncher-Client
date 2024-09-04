@@ -30,6 +30,7 @@ import { fetchUnreadMessageListAsync } from "../../features/chat/UnreadMessageLi
 import { translateString } from "../../lib/api/Translate";
 import { fetchHistoricalChatroomMembersAsync } from "../../features/chat/HistoricalChatroomMembersSlice";
 import { getMyInfo } from "../../features/account/MyInfoSlice";
+import { setChatHistoryAsync } from "../../features/chat/ChatHistorySlice";
 
 export interface IPropsGroupListItem {
   group: IChatroom;
@@ -89,8 +90,9 @@ const GroupListItem = ({ group, index, roomMode, setView, gray }: IPropsGroupLis
               navigate(`/chat/${group._id}`);
             } else {
               dispatch(setCurrentChatroom(newChatroom));
-              newChatroom.isGlobal ? dispatch(setCurrentChatroomMembers([])) : dispatch(fetchCurrentChatroomMembersAsync(newChatroom._id));
-              dispatch(fetchHistoricalChatroomMembersAsync(newChatroom._id));
+              await dispatch(setChatHistoryAsync({ messages: [] }));
+              newChatroom.isGlobal ? dispatch(setCurrentChatroomMembers([])) : await dispatch(fetchCurrentChatroomMembersAsync(newChatroom._id));
+              await dispatch(fetchHistoricalChatroomMembersAsync(newChatroom._id));
             }
 
             if (socket.current && socket.current.connected) {
@@ -114,8 +116,9 @@ const GroupListItem = ({ group, index, roomMode, setView, gray }: IPropsGroupLis
           navigate(`/chat/${group._id}`);
         } else {
           await dispatch(fetchCurrentChatroomAsync(group._id));
-          group.isGlobal ? dispatch(setCurrentChatroomMembers([])) : dispatch(fetchCurrentChatroomMembersAsync(group._id));
-          dispatch(fetchHistoricalChatroomMembersAsync(group._id));
+          await dispatch(setChatHistoryAsync({ messages: [] }));
+          group.isGlobal ? dispatch(setCurrentChatroomMembers([])) : await dispatch(fetchCurrentChatroomMembersAsync(group._id));
+          await dispatch(fetchHistoricalChatroomMembersAsync(group._id));
         }
 
         if (setView) setView("chatbox");

@@ -12,7 +12,7 @@ import { Box, Divider, Button, Stack } from "@mui/material";
 import { addChatHistory } from "../../lib/helper/JSONHelper";
 
 import { AppDispatch } from "../../store";
-import { getChatHistory, setChatHistory, setChatHistoryAsync } from "../../features/chat/ChatHistorySlice";
+import { getChatHistory, setChatHistory } from "../../features/chat/ChatHistorySlice";
 import { selectChat } from "../../features/settings/ChatSlice";
 import { setMountedFalse, setMountedTrue } from "../../features/chat/IntercomSupportSlice";
 import { getCurrentChatroom } from "../../features/chat/CurrentChatroomSlice";
@@ -104,9 +104,7 @@ const Chatbox = ({ view, setView }: propsType) => {
   // Fetch chat history of the first page
   useEffect(() => {
     if (socket.current && view === "chatbox") {
-      dispatch(setChatHistoryAsync({ messages: [] })).then(() => {
-        fetchMessages();
-      });
+      fetchMessages();
     }
   }, [socket.current, view]);
 

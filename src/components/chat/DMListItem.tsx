@@ -26,6 +26,7 @@ import { fetchUnreadMessageListAsync, getUnreadMessageList, IUnreadMessageList }
 import { useNavigate } from "react-router-dom";
 import { fetchHistoricalChatroomMembersAsync } from "../../features/chat/HistoricalChatroomMembersSlice";
 import { getMyInfo } from "../../features/account/MyInfoSlice";
+import { setChatHistoryAsync } from "../../features/chat/ChatHistorySlice";
 
 export interface IPropsDMListItem {
   DM: IChatroom;
@@ -81,8 +82,9 @@ const DMListItem = ({ DM, index, roomMode, setView }: IPropsDMListItem) => {
         navigate(`/chat/${DM._id}`);
       } else {
         dispatch(setCurrentChatroom(DM));
-        dispatch(fetchCurrentChatroomMembersAsync(DM._id));
-        dispatch(fetchHistoricalChatroomMembersAsync(DM._id));
+        await dispatch(setChatHistoryAsync({ messages: [] }));
+        await dispatch(fetchCurrentChatroomMembersAsync(DM._id));
+        await dispatch(fetchHistoricalChatroomMembersAsync(DM._id));
       }
 
       if (setView) setView("chatbox");
