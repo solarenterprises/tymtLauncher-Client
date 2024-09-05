@@ -2,6 +2,13 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
+import { listen } from "@tauri-apps/api/event";
+import { Client } from "@alessiodf/wsapi-client";
+
+import { solar_wss_url } from "../../configs";
+import { ChainNames } from "../../consts/Chains";
+
+import { TauriEventNames } from "../../consts/TauriEventNames";
 
 import { Snackbar, Stack, Box } from "@mui/material";
 import Slide from "@mui/material/Slide";
@@ -15,6 +22,7 @@ import { getAccount } from "../../features/account/AccountSlice";
 import { getWallet } from "../../features/wallet/WalletSlice";
 
 import { getKeccak256Hash } from "../../lib/api/Encrypt";
+import { getCurrentChainWalletAddress } from "../../lib/helper/WalletHelper";
 
 import CloseIcon from "../../assets/settings/x-icon.svg";
 import BellIcon from "../../assets/bell.svg";
@@ -38,12 +46,34 @@ const GuestCompleteSnackbar = () => {
   const accountStore: IAccount = useSelector(getAccount);
   const walletStore: IWallet = useSelector(getWallet);
 
+  const [totalBalance, setTotalBalance] = useState<number>(0);
+
   const isGuest: boolean = useMemo(() => {
     if (accountStore?.nickName === "Guest" && accountStore?.password === getKeccak256Hash("")) return true;
     return false;
   }, [accountStore]);
 
   const [open, setOpen] = useState<boolean>(false);
+
+  const client = new Client(solar_wss_url);
+
+  const subscribeForTransactions = useCallback(async () => {
+    await client.connect();
+
+    const wallets = await client.get(`wallets/${getCurrentChainWalletAddress(walletStore, ChainNames.SOLAR)}`);
+    console.log("wallets");
+    console.log(wallets?.data?.balance);
+
+    setTotalBalance(wallets?.data?.balance);
+
+    client.subscribe("transaction.applied", (data) => console.log(JSON.stringify(data)));
+  }, [walletStore]);
+
+  useEffect(() => {
+    if (totalBalance > 0) {
+      setOpen(true);
+    }
+  }, [totalBalance]);
 
   const handleDoNowClick = useCallback(async () => {
     dispatch(setTempAccount(accountStore));
@@ -55,14 +85,31 @@ const GuestCompleteSnackbar = () => {
   const handleLaterClick = useCallback(async () => {
     setOpen(false);
     setTimeout(() => {
-      if (isGuest) setOpen(true);
+      if (isGuest) {
+        setOpen(true);
+      }
     }, 60 * 60 * 1e3); // Show the snackbar after 1 hour
   }, [isGuest]);
 
   useEffect(() => {
-    if (isGuest) setOpen(true);
-    else setOpen(false);
+    if (isGuest) {
+      subscribeForTransactions();
+      setTimeout(() => {
+        setOpen(true);
+      }, 60 * 1e3);
+    }
   }, [isGuest]);
+
+  useEffect(() => {
+    const unlisten_guest_modal_view = listen(TauriEventNames.GUEST_MODAL_VIEW, async (event) => {
+      const data: boolean = event.payload as boolean;
+      setOpen(data);
+    });
+
+    return () => {
+      unlisten_guest_modal_view.then((unlistenFn) => unlistenFn());
+    };
+  }, []);
 
   return (
     <>

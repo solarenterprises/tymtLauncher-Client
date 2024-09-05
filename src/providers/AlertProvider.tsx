@@ -83,17 +83,17 @@ const AlertProvider = () => {
           if (action.type.endsWith("/fulfilled")) {
             const newChatroomList = action.payload as IChatroom[];
 
-            const newSKeyArray = newChatroomList.map((chatroom) => {
-              if (chatroom.isGlobal) {
+            const newSKeyArray = newChatroomList?.map((chatroom) => {
+              if (chatroom?.isGlobal) {
                 return {
-                  roomId: chatroom._id,
+                  roomId: chatroom?._id,
                   sKey: "",
                 };
               }
-              const mySelf: IParticipant = chatroom.participants.find((participant) => participant.userId === myInfoStore?._id);
+              const mySelf: IParticipant = chatroom?.participants?.find((participant) => participant?.userId === myInfoStore?._id);
               const sKey: ISKey = {
                 roomId: chatroom._id,
-                sKey: rsaDecrypt(mySelf.userKey, rsaStore.privateKey),
+                sKey: rsaDecrypt(mySelf?.userKey, rsaStore?.privateKey),
               };
               return sKey;
             });
@@ -113,16 +113,17 @@ const AlertProvider = () => {
     let intervalId: NodeJS.Timeout;
     if (loginStore?.isLoggedIn) {
       timerAction();
-      intervalId = setInterval(() => timerAction(), 120 * 1e3);
+      intervalId = setInterval(() => {
+        timerAction();
+      }, 120 * 1e3);
     }
-
     return () => {
       if (intervalId) clearInterval(intervalId);
     };
   }, [loginStore]);
 
   useEffect(() => {
-    dispatch(fetchMyInfoAsync(myInfoStore._id));
+    dispatch(fetchMyInfoAsync(myInfoStore?._id));
   }, [accountStore]);
 
   return (

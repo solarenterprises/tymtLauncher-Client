@@ -61,7 +61,7 @@ export const myInfoSlice = createSlice({
       })
       .addCase(fetchMyInfoAsync.fulfilled, (state, action: PayloadAction<any>) => {
         if (!action.payload) {
-          console.error("Failed to fetchMyInfoAsync: ", action.payload);
+          console.log("Failed to fetchMyInfoAsync: action.payload undefined!", action.payload);
           return;
         }
         state.data = action.payload;

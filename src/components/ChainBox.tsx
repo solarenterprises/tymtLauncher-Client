@@ -20,9 +20,10 @@ import { IBalanceList, ICurrencyList, ICurrentChain, ICurrentCurrency, IPriceLis
 export interface IPropsChainBox {
   supportChain: ISupportChain;
   onClick: () => void;
+  onDoubleClick: () => void;
 }
 
-const ChainBox = ({ supportChain, onClick }: IPropsChainBox) => {
+const ChainBox = ({ supportChain, onClick, onDoubleClick }: IPropsChainBox) => {
   const currencyListStore: ICurrencyList = useSelector(getCurrencyList);
   const currentCurrencyStore: ICurrentCurrency = useSelector(getCurrentCurrency);
   const currentChainStore: ICurrentChain = useSelector(getCurrentChain);
@@ -42,6 +43,7 @@ const ChainBox = ({ supportChain, onClick }: IPropsChainBox) => {
   return (
     <Button
       onClick={onClick}
+      onDoubleClick={onDoubleClick}
       className={`common-btn ${isActive ? `active` : null}`}
       sx={{
         display: "block",

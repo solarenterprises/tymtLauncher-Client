@@ -4,4 +4,5 @@ export class TauriEventNames {
   static GAME_DOWNLOAD_FINISHED_RUST = "download_finished_rust";
   static NOTIFICATION = "notification";
   static FS_REMOVE_DIR = "fs-remove-dir";
+  static GUEST_MODAL_VIEW = "guest-modal-view";
 }

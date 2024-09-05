@@ -6,7 +6,7 @@ import { Grid, Box } from "@mui/material";
 import LibrarymodeBtn from "../../components/library/Librarymode";
 import Multichainbtn from "../../components/store/Multichainbtn";
 import Libraryshow from "../../components/library/Libraryshow";
-import StoreGameItems from "../../components/store/StoreGameItems";
+import StoreComingGameItems from "../../components/store/StoreComingGameItems";
 
 const Library = () => {
   const { t } = useTranslation();
@@ -21,7 +21,7 @@ const Library = () => {
       </Grid>
       <Grid item xs={12} marginTop={"32px"}>
         <Libraryshow status={status} />
-        {status === 3 && <StoreGameItems />}
+        {status === 3 && <StoreComingGameItems />}
       </Grid>
     </Grid>
   );

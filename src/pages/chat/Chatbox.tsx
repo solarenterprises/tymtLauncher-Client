@@ -34,6 +34,7 @@ import maximize from "../../assets/chat/maximize.svg";
 import backIcon from "../../assets/settings/back-icon.svg";
 
 import ChatStyle from "../../styles/ChatStyles";
+import TooltipComponent from "../../components/TooltipComponent";
 
 const Chatbox = ({ view, setView }: propsType) => {
   const { t } = useTranslation();
@@ -184,43 +185,48 @@ const Chatbox = ({ view, setView }: propsType) => {
                 <Button className={"setting-back-button"} onClick={() => setView("chatmain")}>
                   <Box component={"img"} src={backIcon}></Box>
                 </Button>
-                <Stack
-                  alignItems={"center"}
-                  flexDirection={"row"}
-                  gap={"16px"}
-                  sx={{
-                    cursor: "pointer",
-                    width: "300px",
-                    borderRadius: "4px",
-                    "&:hover": {
-                      backgroundColor: "#ffffff33",
-                    },
-                  }}
-                  onClick={() => {
-                    if (!isDM) setView("chatGroupMemberList");
-                  }}
-                >
-                  {isDM && currentPartner && (
-                    <Avatar
-                      onlineStatus={activeUserListStore.users.some((user) => user === currentPartner._id)}
-                      url={currentPartner.avatar}
-                      size={40}
-                      status={currentPartner.notificationStatus}
-                    />
-                  )}
-                  {!isDM && <GroupAvatar size={40} url={currentChatroomStore?.room_image} />}
-                  <Stack justifyContent={"flex-start"} direction={"column"} spacing={1} width={"244px"}>
-                    <Box className={"fs-18-bold white"} sx={{ WebkitBoxOrient: "vertical", WebkitLineClamp: 1, overflow: "hidden", textOverflow: "ellipsis" }}>
-                      {displayChatroomName}
-                    </Box>
-                    <Box
-                      className={"fs-12-regular gray"}
-                      sx={{ WebkitBoxOrient: "vertical", WebkitLineClamp: 1, overflow: "hidden", textOverflow: "ellipsis" }}
-                    >
-                      {displayChatroomSubName}
-                    </Box>
+                <TooltipComponent text={t("cha-65_click-for-participants")}>
+                  <Stack
+                    alignItems={"center"}
+                    flexDirection={"row"}
+                    gap={"16px"}
+                    sx={{
+                      cursor: "pointer",
+                      width: "300px",
+                      borderRadius: "4px",
+                      "&:hover": {
+                        backgroundColor: "#ffffff33",
+                      },
+                    }}
+                    onClick={() => {
+                      if (!isDM) setView("chatGroupMemberList");
+                    }}
+                  >
+                    {isDM && currentPartner && (
+                      <Avatar
+                        onlineStatus={activeUserListStore.users.some((user) => user === currentPartner._id)}
+                        url={currentPartner.avatar}
+                        size={40}
+                        status={currentPartner.notificationStatus}
+                      />
+                    )}
+                    {!isDM && <GroupAvatar size={40} url={currentChatroomStore?.room_image} />}
+                    <Stack justifyContent={"flex-start"} direction={"column"} spacing={1} width={"244px"}>
+                      <Box
+                        className={"fs-18-bold white"}
+                        sx={{ WebkitBoxOrient: "vertical", WebkitLineClamp: 1, overflow: "hidden", textOverflow: "ellipsis" }}
+                      >
+                        {displayChatroomName}
+                      </Box>
+                      <Box
+                        className={"fs-12-regular gray"}
+                        sx={{ WebkitBoxOrient: "vertical", WebkitLineClamp: 1, overflow: "hidden", textOverflow: "ellipsis" }}
+                      >
+                        {displayChatroomSubName}
+                      </Box>
+                    </Stack>
                   </Stack>
-                </Stack>
+                </TooltipComponent>
               </Stack>
               <Button
                 className={"setting-back-button"}

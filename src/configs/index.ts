@@ -13,6 +13,9 @@ export const notification_duration = import.meta.env.VITE_APP_NOTIFICATION_DURAT
 export const solar_api_url =
   import.meta.env.VITE_APP_NETWORK_NAME === "mainnet" ? import.meta.env.VITE_APP_MAINNET_SOLAR_URL : import.meta.env.VITE_APP_TESTNET_SOLAR_URL;
 
+export const solar_wss_url =
+  import.meta.env.VITE_APP_NETWORK_NAME === "mainnet" ? import.meta.env.VITE_APP_MAINNET_SOLAR_WSS_URL : import.meta.env.VITE_APP_TESTNET_SOLAR_WSS_URL;
+
 export const btc_api_url =
   import.meta.env.VITE_APP_NETWORK_NAME === "mainnet" ? import.meta.env.VITE_APP_MAINNET_BTC_URL : import.meta.env.VITE_APP_TESTNET_BTC_URL;
 

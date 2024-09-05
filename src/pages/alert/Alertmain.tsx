@@ -61,14 +61,14 @@ const Alertmain = () => {
   useEffect(() => {
     setPage(1);
     dispatch(fetchAlertListAsync(myInfoStore?._id));
-  }, [alertStatus, myInfoStore]);
+  }, [alertStatus, myInfoStore?._id]);
 
-  const handleMarkAllAsReadClick = () => {
+  const handleMarkAllAsReadClick = useCallback(() => {
     dispatch(updateAllAlertReadStatusAsync()).then(() => {
       setPage(1);
       dispatch(fetchAlertListAsync(myInfoStore?._id));
     });
-  };
+  }, [myInfoStore?._id]);
 
   return (
     <Box className={"alertmain-container"}>

@@ -8,6 +8,7 @@ import _ from "lodash";
 import { listen } from "@tauri-apps/api/event";
 
 import { useSocket } from "../../providers/SocketProvider";
+import TooltipComponent from "../../components/TooltipComponent";
 import Bubble from "../../components/chat/Bubble";
 import GroupAvatar from "../../components/chat/GroupAvatar";
 import ChatGroupMemberListRoom from "./ChatGroupMemberListRoom";
@@ -267,46 +268,49 @@ const Chatroom = () => {
                 }}
               >
                 <Stack flexDirection={"row"} alignItems={"center"} justifyContent={"space-between"}>
-                  <Stack
-                    alignItems={"center"}
-                    flexDirection={"row"}
-                    gap={"16px"}
-                    sx={{
-                      cursor: "pointer",
-                      width: "500px",
-                      borderRadius: "4px",
-                      "&:hover": {
-                        backgroundColor: "#ffffff33",
-                      },
-                    }}
-                    onClick={() => {
-                      if (!isDM) setPanel("chatGroupMemberListRoom");
-                    }}
-                  >
-                    {isDM && currentPartner && (
-                      <Avatar
-                        onlineStatus={activeUserListStore.users.some((user) => user === currentPartner._id)}
-                        url={currentPartner.avatar}
-                        size={40}
-                        status={currentPartner.notificationStatus}
-                      />
-                    )}
-                    {!isDM && <GroupAvatar size={40} url={currentChatroomStore?.room_image} />}
-                    <Stack marginLeft={"16px"} justifyContent={"flex-start"} direction={"column"} spacing={1} width={"444px"}>
-                      <Box
-                        className={"fs-18-bold white"}
-                        sx={{ WebkitBoxOrient: "vertical", WebkitLineClamp: 1, overflow: "hidden", textOverflow: "ellipsis" }}
-                      >
-                        {displayChatroomName}
-                      </Box>
-                      <Box
-                        className={"fs-12-regular gray"}
-                        sx={{ WebkitBoxOrient: "vertical", WebkitLineClamp: 1, overflow: "hidden", textOverflow: "ellipsis" }}
-                      >
-                        {displayChatroomSubName}
-                      </Box>
+                  <TooltipComponent text={t("cha-65_click-for-participants")}>
+                    <Stack
+                      alignItems={"center"}
+                      flexDirection={"row"}
+                      gap={"16px"}
+                      sx={{
+                        cursor: "pointer",
+                        width: "500px",
+                        borderRadius: "4px",
+                        "&:hover": {
+                          backgroundColor: "#ffffff33",
+                        },
+                      }}
+                      onClick={() => {
+                        if (!isDM) setPanel("chatGroupMemberListRoom");
+                      }}
+                    >
+                      {isDM && currentPartner && (
+                        <Avatar
+                          onlineStatus={activeUserListStore.users.some((user) => user === currentPartner._id)}
+                          url={currentPartner.avatar}
+                          size={40}
+                          status={currentPartner.notificationStatus}
+                        />
+                      )}
+                      {!isDM && <GroupAvatar size={40} url={currentChatroomStore?.room_image} />}
+                      <Stack marginLeft={"16px"} justifyContent={"flex-start"} direction={"column"} spacing={1} width={"444px"}>
+                        <Box
+                          className={"fs-18-bold white"}
+                          sx={{ WebkitBoxOrient: "vertical", WebkitLineClamp: 1, overflow: "hidden", textOverflow: "ellipsis" }}
+                        >
+                          {displayChatroomName}
+                        </Box>
+                        <Box
+                          className={"fs-12-regular gray"}
+                          sx={{ WebkitBoxOrient: "vertical", WebkitLineClamp: 1, overflow: "hidden", textOverflow: "ellipsis" }}
+                        >
+                          {displayChatroomSubName}
+                        </Box>
+                      </Stack>
                     </Stack>
-                  </Stack>
+                  </TooltipComponent>
+
                   <Stack direction={"row"} gap={"10px"} alignItems={"center"}>
                     <Button className={"setting-back-button"} onClick={() => setPanel("chatGroupEditRoom")}>
                       <EditIcon className="icon-button" />
