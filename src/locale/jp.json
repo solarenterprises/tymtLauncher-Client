@@ -202,7 +202,7 @@
     "set-93_seconds": "秒",
     "set-94_secure-passphrase-password": "パスフレーズを保護してパスワードを作成します。",
     "set-95_you-should-secure": "資金を受け取ったら、いくつかの手順でアカウントを保護する必要があります: パスフレーズを保護し、パスワードを作成します。",
-    "set-96_chain_address_copied": "ウォレットアドレスがコピーされました!",
+    "set-96_chain_address_copied": "ウォレット アドレスがクリップボードにコピーされました。ネットワークに切り替える場合は、ダブルクリックしてください。",
     "ncr-1_reset-wallet": "ウォレットをリセットする",
     "ncr-2_please-write-secret": "秘密の回復フレーズを書いてください",
     "ncr-3_restore": "復元",

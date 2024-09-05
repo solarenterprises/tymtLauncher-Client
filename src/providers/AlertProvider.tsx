@@ -20,8 +20,8 @@ import { fetchMyInfoAsync, getMyInfo } from "../features/account/MyInfoSlice";
 import { fetchUnreadMessageListAsync } from "../features/chat/UnreadMessageListSlice";
 import { fetchAlertListAsync } from "../features/alert/AlertListSlice";
 import { fetchAdminListAsync } from "../features/chat/AdminListSlice";
-import { fetchGameListAsync } from "../features/store/GameListSlice";
-import { fetchComingGameListAsync } from "../features/store/ComingGameListSlice";
+import { fetchAllGameListAsync } from "../features/store/GameListSlice";
+// import { fetchAllComingGameListAsync } from "../features/store/ComingGameListSlice";
 import { getWallet } from "../features/wallet/WalletSlice";
 import { getCurrentChain } from "../features/wallet/CurrentChainSlice";
 import { fetchTransactionListAsync } from "../features/wallet/TransactionListSlice";
@@ -64,8 +64,8 @@ const AlertProvider = () => {
       // ~ Wallet
 
       // SDK
-      dispatch(fetchGameListAsync());
-      dispatch(fetchComingGameListAsync());
+      dispatch(fetchAllGameListAsync());
+      // dispatch(fetchAllComingGameListAsync());
       // ~ SDK
 
       // Chat

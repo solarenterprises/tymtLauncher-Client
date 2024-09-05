@@ -6,11 +6,10 @@ import { Grid } from "@mui/material";
 import StoreGameCard from "./StoreGameCard";
 import AnimatedComponent from "../AnimatedComponent";
 
-import { getComingGameList } from "../../features/store/ComingGameListSlice";
-
 import { IGame, IGameList } from "../../types/GameTypes";
 
 import { filterByGenre, filterByKeyword, filterByPlatform, filterByRank, filterByType } from "../../lib/helper/FilterHelper";
+import { getGameList } from "../../features/store/GameListSlice";
 
 export interface IPropsStoreGameItems {
   platform?: string;
@@ -22,7 +21,15 @@ export interface IPropsStoreGameItems {
 }
 
 const StoreComingGameItems = ({ platform, genre, rank, type, keyword }: IPropsStoreGameItems) => {
-  const comingGameListStore: IGameList = useSelector(getComingGameList);
+  const gameListStore: IGameList = useSelector(getGameList);
+
+  const comingGameListStore: IGameList = useMemo(() => {
+    const data = gameListStore?.games?.filter((one) => one?.visibilityState === "coming soon");
+    const res: IGameList = {
+      games: data,
+    };
+    return res;
+  }, [gameListStore]);
 
   const resultGames: IGame[] = useMemo(() => {
     let data = [...comingGameListStore?.games];

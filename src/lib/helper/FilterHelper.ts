@@ -5,10 +5,11 @@ export const filterByPlatform = (games: IGame[], platform: string) => {
   try {
     let data = games;
     if (platform === "Windows") {
+      data = data.filter((game) => game?.releaseMeta?.platforms?.windows_amd64 || game?.releaseMeta?.platforms?.windows_arm64);
     } else if (platform === "macOS") {
-      data = data.filter((game) => game?.projectMeta?.wine_support?.mac);
+      data = data.filter((game) => game?.releaseMeta?.platforms?.darwin_amd64 || game?.releaseMeta?.platforms?.darwin_arm64);
     } else if (platform === "Linux") {
-      data = data.filter((game) => game?.projectMeta?.wine_support?.linux);
+      data = data.filter((game) => game?.releaseMeta?.platforms?.linux_amd64 || game?.releaseMeta?.platforms?.linux_arm64);
     }
     return data;
   } catch (err) {

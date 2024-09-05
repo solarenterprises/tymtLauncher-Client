@@ -7,7 +7,6 @@ import StoreGameCard from "./StoreGameCard";
 import AnimatedComponent from "../AnimatedComponent";
 
 import { getGameList } from "../../features/store/GameListSlice";
-import { getComingGameList } from "../../features/store/ComingGameListSlice";
 
 import { IGame, IGameList } from "../../types/GameTypes";
 
@@ -25,7 +24,13 @@ export interface IPropsStoreGameItems {
 
 const StoreGameItems = ({ platform, genre, rank, type, keyword }: IPropsStoreGameItems) => {
   const gameListStore: IGameList = useSelector(getGameList);
-  const comingGameListStore: IGameList = useSelector(getComingGameList);
+  const comingGameListStore: IGameList = useMemo(() => {
+    const data = gameListStore?.games?.filter((one) => one?.visibilityState === "coming soon");
+    const res: IGameList = {
+      games: data,
+    };
+    return res;
+  }, [gameListStore]);
 
   const allGames: IGame[] = useMemo(() => [...BasicGameList, ...gameListStore?.games], [gameListStore]);
 

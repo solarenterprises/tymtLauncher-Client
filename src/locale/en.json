@@ -202,7 +202,7 @@
     "set-93_seconds": "second(s)",
     "set-94_secure-passphrase-password": "Secure Passphrase and create password.",
     "set-95_you-should-secure": "You receive funds, you should secure your account in few steps: Secure Passphrase and create password.",
-    "set-96_chain_address_copied": "Your wallet address has been copied!",
+    "set-96_chain_address_copied": "Your wallet address has been copied to clipboard. If you would like to switch to the network, please DOUBLE CLICK on it.",
     "ncr-1_reset-wallet": "Reset Wallet",
     "ncr-2_please-write-secret": "Please Write Secret Recovery Phrase",
     "ncr-3_restore": "Restore",

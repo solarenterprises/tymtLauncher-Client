@@ -14,7 +14,6 @@ import GameOverViewHeader from "./GameOverViewHeader";
 
 import { Grid } from "@mui/material";
 
-import { getComingGameList } from "../../features/store/ComingGameListSlice";
 import { getGameList } from "../../features/store/GameListSlice";
 
 import AnimatedComponent from "../AnimatedComponent";
@@ -34,8 +33,15 @@ const ComingGameOverview = () => {
   const [type, setType] = useState<string>("");
   const [currentImageIndex, setCurrentImageIndex] = useState<number>(0);
 
-  const comingGameListStore: IGameList = useSelector(getComingGameList);
   const gameListStore: IGameList = useSelector(getGameList);
+
+  const comingGameListStore: IGameList = useMemo(() => {
+    const data = gameListStore?.games?.filter((one) => one?.visibilityState === "coming soon");
+    const res: IGameList = {
+      games: data,
+    };
+    return res;
+  }, [gameListStore]);
 
   const game = useMemo(
     () => [...BasicGameList, ...gameListStore?.games, ...comingGameListStore?.games]?.find((game) => game?._id === gameid),

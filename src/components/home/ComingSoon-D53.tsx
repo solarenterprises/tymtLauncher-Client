@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 
@@ -12,7 +12,7 @@ import foxhead from "../../assets/main/foxhead-comingsoon.png";
 import ComingGameCard from "./ComingGameCard";
 import ComingGameSwiperButtonGroup from "./ComingGameSwiperButtonGroup";
 
-import { getComingGameList } from "../../features/store/ComingGameListSlice";
+import { getGameList } from "../../features/store/GameListSlice";
 
 import { IGameList } from "../../types/GameTypes";
 
@@ -20,7 +20,16 @@ import ellipse from "../../assets/main/ellipse.svg";
 
 const ComingSoonD53 = () => {
   const { t } = useTranslation();
-  const comingGameList: IGameList = useSelector(getComingGameList);
+
+  const gameListStore: IGameList = useSelector(getGameList);
+
+  const comingGameListStore: IGameList = useMemo(() => {
+    const data = gameListStore?.games?.filter((one) => one?.visibilityState === "coming soon");
+    const res: IGameList = {
+      games: data,
+    };
+    return res;
+  }, [gameListStore]);
 
   const swiperRef = useRef<any | null>(null);
 
@@ -69,7 +78,7 @@ const ComingSoonD53 = () => {
             {t("hom-11_coming-soon")}
           </Box>
         </Grid>
-        {comingGameList.games.length === 0 ? (
+        {comingGameListStore?.games?.length === 0 ? (
           <>
             <Box sx={{ justifyContent: "center", display: "flex", marginTop: "32px" }}>
               <img src={foxhead} width={"220px"} />
@@ -89,9 +98,9 @@ const ComingSoonD53 = () => {
                 marginTop: "32px",
               }}
             >
-              {comingGameList.games.map((game, index) => (
+              {comingGameListStore?.games?.map((game, index) => (
                 <SwiperSlide style={{ width: "300px" }} key={index}>
-                  <ComingGameCard key={game._id} game={game} />
+                  <ComingGameCard key={game?._id} game={game} />
                 </SwiperSlide>
               ))}
             </Swiper>
