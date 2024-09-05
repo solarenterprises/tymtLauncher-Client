@@ -27,7 +27,6 @@ import { getAccountList, setAccountList } from "../features/account/AccountListS
 import { IAccount, IAccountList, IMnemonic, ISaltToken } from "../types/accountTypes";
 import { IGetAccountReq, IGetBalanceReq, ISendContractReq, ISignMessageReq, IVerifyMessageReq } from "../types/eventParamTypes";
 import { ICurrentChain, ICurrentToken, IWallet, IWalletList } from "../types/walletTypes";
-import { setLogin } from "../features/account/LoginSlice";
 import { fetchAccountListAvatar } from "../features/account/AccountApi";
 
 const TransactionProvider = () => {
@@ -56,7 +55,6 @@ const TransactionProvider = () => {
     const newWallet: IWallet = walletListStore?.list?.find((one) => one?.solar === accountStore?.sxpAddress);
     if (!newWallet) return;
     dispatch(setWallet(newWallet));
-    dispatch(setLogin(false));
   }, [accountStore, walletListStore]);
 
   useEffect(() => {

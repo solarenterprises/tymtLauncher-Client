@@ -1,16 +1,17 @@
-import { useMemo } from "react";
-import { useDispatch } from "react-redux";
+import { useCallback, useMemo } from "react";
+import { useDispatch, useSelector } from "react-redux";
 
 import { Button, Stack, Box } from "@mui/material";
 
 import Avatar from "../home/Avatar";
 import CompleteButton from "./CompleteButton";
 
-import { setAccount } from "../../features/account/AccountSlice";
+import { getAccount, setAccount } from "../../features/account/AccountSlice";
 
 import { getKeccak256Hash } from "../../lib/api/Encrypt";
 
 import { IAccount } from "../../types/accountTypes";
+import { setLogin } from "../../features/account/LoginSlice";
 
 export interface IPropsProfileCard {
   account: IAccount;
@@ -19,11 +20,16 @@ export interface IPropsProfileCard {
 const ProfileCard = ({ account }: IPropsProfileCard) => {
   const dispatch = useDispatch();
 
+  const accountStore: IAccount = useSelector(getAccount);
+
   const isGuest: boolean = useMemo(() => account?.nickName === "Guest" && account?.password === getKeccak256Hash(""), [account]);
 
-  const handleClick = () => {
-    dispatch(setAccount(account));
-  };
+  const handleClick = useCallback(() => {
+    if (account?.uid !== accountStore?.uid) {
+      dispatch(setAccount(account));
+      dispatch(setLogin(false));
+    }
+  }, [accountStore]);
 
   return (
     <>
