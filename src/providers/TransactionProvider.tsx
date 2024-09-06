@@ -25,7 +25,7 @@ import { fetchTransactionListAsync } from "../features/wallet/TransactionListSli
 import { getAccountList, setAccountList } from "../features/account/AccountListSlice";
 
 import { IAccount, IAccountList, IMnemonic, ISaltToken } from "../types/accountTypes";
-import { IGetAccountReq, IGetBalanceReq, ISendContractReq, ISignMessageReq, IVerifyMessageReq } from "../types/eventParamTypes";
+import { IGetAccountReq, IGetBalanceReq, ISendContractReq, ISignMessageReq, IVerifyMessageReq } from "../types/TauriEventPayloadTypes";
 import { ICurrentChain, ICurrentToken, IWallet, IWalletList } from "../types/walletTypes";
 import { fetchAccountListAvatar } from "../features/account/AccountApi";
 

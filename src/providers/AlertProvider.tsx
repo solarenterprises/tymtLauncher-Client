@@ -2,8 +2,10 @@ import { useCallback, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Outlet } from "react-router-dom";
 
-import { AppDispatch } from "../store";
+import MoneyReceivedSnackbar from "../components/snackbars/MoneyReceivedSnackbar";
+import GuestCompleteSnackbar from "../components/snackbars/GuestCompleteSnackbar";
 
+import { AppDispatch } from "../store";
 import { fetchGlobalChatroomListAsync } from "../features/chat/GlobalChatroomListSlice";
 import { fetchPublicChatroomListAsync } from "../features/chat/PublicChatroomListSlice";
 import { fetchBalanceListAsync } from "../features/wallet/BalanceListSlice";
@@ -36,6 +38,7 @@ import { IChatroom, IParticipant } from "../types/ChatroomAPITypes";
 import { IMyInfo, IRsa } from "../types/chatTypes";
 import { ICurrentChain, IWallet } from "../types/walletTypes";
 import { IAccount, ILogin } from "../types/accountTypes";
+import FirstFundModal from "../components/modals/FirstFundModal";
 
 const AlertProvider = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -133,6 +136,9 @@ const AlertProvider = () => {
   return (
     <>
       <Outlet />
+      <GuestCompleteSnackbar />
+      <MoneyReceivedSnackbar />
+      <FirstFundModal />
     </>
   );
 };

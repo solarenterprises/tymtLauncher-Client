@@ -5,7 +5,7 @@ import { IRecipient } from "../../features/wallet/CryptoApi";
 import { INotification } from "../../features/wallet/CryptoSlice";
 import * as multichainWallet from "multichain-crypto-wallet";
 import { translateString } from "../api/Translate";
-import { ISendContractReq } from "../../types/eventParamTypes";
+import { ISendContractReq } from "../../types/TauriEventPayloadTypes";
 import { ISmartContractCallPayload } from "multichain-crypto-wallet/dist/common/utils/types";
 import { getRPCUrlFromChainName } from "../helper";
 

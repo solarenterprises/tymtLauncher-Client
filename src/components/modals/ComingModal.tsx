@@ -1,15 +1,18 @@
-import { Box, Stack, Modal, Fade } from "@mui/material";
-import closeIcon from "../assets/settings/x-icon.svg";
-import cardImg from "../assets/main/card1.png";
 import { useTranslation } from "react-i18next";
+
+import { Box, Stack, Modal, Fade } from "@mui/material";
+
+import closeIcon from "../../assets/settings/x-icon.svg";
+import logo from "../../assets/main/foxhead-comingsoon.png";
+// import { tymt_release_date, tymt_version } from "../configs";
 
 interface props {
   open: boolean;
   setOpen: (status: boolean) => void;
 }
-
-const CardModal = ({ open, setOpen }: props) => {
+const ComingModal = ({ open, setOpen }: props) => {
   const { t } = useTranslation();
+
   const modalStyle = {
     display: "flex",
     alignItems: "center",
@@ -30,11 +33,12 @@ const CardModal = ({ open, setOpen }: props) => {
           <img src={closeIcon} alt="close icon" className="close-icon" onClick={() => setOpen(false)} />
           <Stack direction={"column"} justifyContent={"center"} alignItems={"center"} textAlign={"center"} gap={"10px"}>
             <Box className="center-align">
-              <img width={400} src={cardImg} />
+              <img width={200} src={logo} />
             </Box>
             <Stack direction={"column"} justifyContent={"center"} alignItems={"center"} textAlign={"center"} gap={"10px"}>
-              <Box className="fs-h2 white">{`Solar Card`}</Box>
-              <Box className="fs-h3 white">{t("hom-16_coming-soon")}</Box>
+              <Box className="fs-h3 blue">{t("hom-16_coming-soon")}</Box>
+              {/* <Box className="fs-h3 white">{`tymtLauncher v${tymt_version}`}</Box>
+              <Box className="fs-h3 white">{`(${tymt_release_date} released)`}</Box> */}
             </Stack>
           </Stack>
         </Box>
@@ -43,4 +47,4 @@ const CardModal = ({ open, setOpen }: props) => {
   );
 };
 
-export default CardModal;
+export default ComingModal;

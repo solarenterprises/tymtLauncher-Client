@@ -53,7 +53,7 @@ import {
 } from "../../types/walletTypes";
 import { IAccount } from "../../types/accountTypes";
 import { IWalletSetting, languageType } from "../../types/settingTypes";
-import { ISendTransactionReq } from "../../types/eventParamTypes";
+import { ISendTransactionReq } from "../../types/TauriEventPayloadTypes";
 import { ChainNames } from "../../consts/Chains";
 
 const WalletD53Transaction = () => {

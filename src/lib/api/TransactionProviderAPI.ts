@@ -13,8 +13,8 @@ import { IRecipient } from "../../features/wallet/CryptoApi";
 import { decrypt } from "./Encrypt";
 import { getSupportChainByName, getSupportTokenByAddress, getTokenPriceByCmc } from "../helper/WalletHelper";
 
-import { IAccount, IMnemonic, ISaltToken } from "../../types/accountTypes";
-import { IGetAccountReq, IGetBalanceReq, ISendContractReq, ISendTransactionReq, ISignMessageReq, IVerifyMessageReq } from "../../types/eventParamTypes";
+import { IAccount, ILogin, IMnemonic, ISaltToken } from "../../types/accountTypes";
+import { IGetAccountReq, IGetBalanceReq, ISendContractReq, ISendTransactionReq, ISignMessageReq, IVerifyMessageReq } from "../../types/TauriEventPayloadTypes";
 import { IPriceList, ISupportNative, ISupportToken, IWallet } from "../../types/walletTypes";
 import { IMyInfo } from "../../types/chatTypes";
 import { IWalletSetting } from "../../types/settingTypes";
@@ -148,7 +148,8 @@ export default class TransactionProviderAPI {
   private static validateTymtAccount = async (json_data: ISendTransactionReq) => {
     const accountStore: IAccount = JSON.parse(tymtStorage.get(`account`));
     const myInfoStore: IMyInfo = JSON.parse(sessionStorage.getItem(`myInfo`));
-    if (accountStore?.mnemonic === "" || accountStore?.password === "" || myInfoStore?._id !== json_data.requestUserId) {
+    const loginStore: ILogin = JSON.parse(sessionStorage.getItem(`login`));
+    if (accountStore?.mnemonic === "" || accountStore?.password === "" || myInfoStore?._id !== json_data.requestUserId || !loginStore?.isLoggedIn) {
       return false;
     }
     return true;

@@ -88,7 +88,6 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
                     <Route path="/" element={<SocketProvider />}>
                       <Route path="/" element={<ChatProvider />}>
                         <Route path="/" element={<AlertProvider />}>
-                          <Route path="/d53-transaction" element={<WalletD53Transaction />} />
                           <Route element={<AuthProvider />}>
                             <Route path="/" element={<Layout />}>
                               <Route path="/wallet" element={<Wallet />} />
@@ -111,6 +110,7 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
                         </Route>
                       </Route>
                     </Route>
+                    <Route path="/d53-transaction" element={<WalletD53Transaction />} />
                   </Route>
                 </Route>
               </Routes>

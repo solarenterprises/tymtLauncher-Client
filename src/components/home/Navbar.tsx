@@ -9,8 +9,8 @@ import { Grid, Button, TextField, InputAdornment, Stack, Box, Tooltip } from "@m
 
 import Chatindex from "../../pages/chat";
 import Settings from "../../pages/settings";
-import ComingModal from "../ComingModal";
-import CardModal from "../CardModal";
+import ComingModal from "../modals/ComingModal";
+import CardModal from "../modals/CardModal";
 import Alertindex from "../../pages/alert";
 
 import { selectNotification } from "../../features/settings/NotificationSlice";

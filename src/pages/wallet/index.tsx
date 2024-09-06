@@ -15,7 +15,7 @@ import SwitchComp from "../../components/SwitchComp";
 import WalletCard from "../../components/wallet/WalletCard";
 import TransCard from "../../components/wallet/TransCard";
 import Loading from "../../components/Loading";
-import ComingModal from "../../components/ComingModal";
+import ComingModal from "../../components/modals/ComingModal";
 import AnimatedComponent from "../../components/AnimatedComponent";
 
 import { AppDispatch } from "../../store";

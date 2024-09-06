@@ -5,4 +5,5 @@ export class TauriEventNames {
   static NOTIFICATION = "notification";
   static FS_REMOVE_DIR = "fs-remove-dir";
   static GUEST_MODAL_VIEW = "guest-modal-view";
+  static MONEY_RECEIVED_MODAL_VIEW = "money-received-modal-view";
 }

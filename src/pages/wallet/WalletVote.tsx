@@ -8,7 +8,7 @@ import { ChainNames } from "../../consts/Chains";
 
 import { useNotification } from "../../providers/NotificationProvider";
 
-import PasswordModal from "../../components/PasswordModal";
+import PasswordModal from "../../components/modals/PasswordModal";
 import InputVoteBox from "../../components/wallet/InputVoteBox";
 import AnimatedComponent from "../../components/AnimatedComponent";
 

@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 
 import { Box, Button, Divider, Stack } from "@mui/material";
 
-import ComingModal from "../../components/ComingModal";
+import ComingModal from "../../components/modals/ComingModal";
 
 import { getAccount } from "../../features/account/AccountSlice";
 

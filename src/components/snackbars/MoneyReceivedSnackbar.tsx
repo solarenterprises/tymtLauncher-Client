@@ -31,6 +31,7 @@ import NotiIcon from "../../assets/main/32x32.png";
 
 import { IAccount } from "../../types/accountTypes";
 import { IWallet } from "../../types/walletTypes";
+import { IMoneyReceivedEventPayload } from "../../types/TauriEventPayloadTypes";
 
 function SlideTransition(props) {
   return <Slide {...props} direction="left" />;
@@ -48,11 +49,6 @@ const MoneyReceivedSnackbar = () => {
   const accountStore: IAccount = useSelector(getAccount);
   const walletStore: IWallet = useSelector(getWallet);
 
-  const isGuest: boolean = useMemo(() => {
-    if (accountStore?.nickName === "Guest" && accountStore?.password === getKeccak256Hash("")) return true;
-    return false;
-  }, [accountStore]);
-
   const [open, setOpen] = useState<boolean>(false);
   const [sender, setSender] = useState<string>("");
   const [amount, setAmount] = useState<number>(0);
@@ -65,29 +61,34 @@ const MoneyReceivedSnackbar = () => {
     setAmount(0);
   };
 
-  const subscribeForTransactions = useCallback(async () => {
-    await client.connect();
-
-    const sxpAddress = getCurrentChainWalletAddress(walletStore, ChainNames.SOLAR);
-
-    client.subscribe(`transaction.applied`, async (data) => {
+  const handleTransactionApplied = useCallback(
+    async (data) => {
       try {
+        const sxpAddress = getCurrentChainWalletAddress(walletStore, ChainNames.SOLAR);
         const response = JSON.parse(JSON.stringify(data));
         const transferArray: Array<{ amount: string; recipientId: string }> = response?.data?.asset?.transfers;
+        const isGuest: boolean = accountStore?.nickName === "Guest" && accountStore?.password === getKeccak256Hash("");
+
         if (!transferArray || !isArray(transferArray)) return;
+
         const target = transferArray?.find((one) => one?.recipientId === sxpAddress);
         if (target) {
-          if (isGuest) emit(TauriEventNames.GUEST_MODAL_VIEW, true);
-          else {
+          await dispatch(
+            fetchChainBalanceAsync({
+              walletStore: walletStore,
+              chainName: ChainNames.SOLAR,
+            })
+          );
+          if (isGuest) {
+            const noti: IMoneyReceivedEventPayload = {
+              view: true,
+              amount: parseFloat(target?.amount) / 1e8,
+            };
+            emit(TauriEventNames.MONEY_RECEIVED_MODAL_VIEW, noti);
+          } else if (!isGuest) {
             setSender(target?.recipientId);
             setAmount(parseFloat(target?.amount));
             setOpen(true);
-            dispatch(
-              fetchChainBalanceAsync({
-                walletStore: walletStore,
-                chainName: ChainNames.SOLAR,
-              })
-            );
 
             let permissionGranted = await isPermissionGranted();
             const windowIsVisible = await invoke<boolean>("is_window_visible");
@@ -100,7 +101,7 @@ const MoneyReceivedSnackbar = () => {
             if (permissionGranted && !windowIsVisible) {
               sendNotification({
                 title: t("wal-71_SXP-received"),
-                body: `${target?.recipientId}${t("wal-72_sent-you-sxp-1")}${numeral(parseFloat(target?.amount) / 1e8).format("0,0.00")}SXP${t(
+                body: `${target?.recipientId}${t("wal-72_sent-you-sxp-1")}${numeral(parseFloat(target?.amount) / 1e8).format("0,0.[0000]")}SXP${t(
                   "wal-73_sent-you-sxp-2"
                 )}`,
                 icon: NotiIcon,
@@ -112,8 +113,14 @@ const MoneyReceivedSnackbar = () => {
         console.log("Failed at client.subscribe: ", err);
         handleClose();
       }
-    });
-  }, [walletStore, isGuest]);
+    },
+    [walletStore, accountStore]
+  );
+
+  const subscribeForTransactions = useCallback(async () => {
+    await client.connect();
+    client.subscribe(`transaction.applied`, handleTransactionApplied);
+  }, [handleTransactionApplied]);
 
   useEffect(() => {
     subscribeForTransactions();
