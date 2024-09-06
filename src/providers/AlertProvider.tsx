@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Outlet } from "react-router-dom";
 
@@ -47,7 +47,25 @@ const AlertProvider = () => {
   const loginStore: ILogin = useSelector(getLogin);
   const accountStore: IAccount = useSelector(getAccount);
 
-  const timerAction = async () => {
+  const getSKeyArray = (chatroomArray: IChatroom[]) => {
+    const newSKeyArray: ISKey[] = chatroomArray?.map((chatroom) => {
+      if (chatroom?.isGlobal) {
+        return {
+          roomId: chatroom?._id,
+          sKey: "",
+        };
+      }
+      const mySelf: IParticipant = chatroom?.participants?.find((participant) => participant?.userId === myInfoStore?._id);
+      const sKey: ISKey = {
+        roomId: chatroom._id,
+        sKey: rsaDecrypt(mySelf?.userKey, rsaStore?.privateKey),
+      };
+      return sKey;
+    });
+    return newSKeyArray;
+  };
+
+  const timerAction = useCallback(async () => {
     try {
       // Wallet
       dispatch(fetchBalanceListAsync(walletStore));
@@ -82,21 +100,7 @@ const AlertProvider = () => {
         try {
           if (action.type.endsWith("/fulfilled")) {
             const newChatroomList = action.payload as IChatroom[];
-
-            const newSKeyArray = newChatroomList?.map((chatroom) => {
-              if (chatroom?.isGlobal) {
-                return {
-                  roomId: chatroom?._id,
-                  sKey: "",
-                };
-              }
-              const mySelf: IParticipant = chatroom?.participants?.find((participant) => participant?.userId === myInfoStore?._id);
-              const sKey: ISKey = {
-                roomId: chatroom._id,
-                sKey: rsaDecrypt(mySelf?.userKey, rsaStore?.privateKey),
-              };
-              return sKey;
-            });
+            const newSKeyArray = getSKeyArray(newChatroomList);
             dispatch(setSKeyList(newSKeyArray));
           }
         } catch (err) {
@@ -107,7 +111,7 @@ const AlertProvider = () => {
     } catch (err) {
       console.log("Failed to timerAction: ", err);
     }
-  };
+  }, [walletStore, currentChainStore, myInfoStore]);
 
   useEffect(() => {
     let intervalId: NodeJS.Timeout;
@@ -123,7 +127,7 @@ const AlertProvider = () => {
   }, [loginStore]);
 
   useEffect(() => {
-    dispatch(fetchMyInfoAsync(myInfoStore?._id));
+    dispatch(fetchMyInfoAsync(accountStore?.uid));
   }, [accountStore]);
 
   return (

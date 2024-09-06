@@ -148,7 +148,7 @@ export default class TransactionProviderAPI {
   private static validateTymtAccount = async (json_data: ISendTransactionReq) => {
     const accountStore: IAccount = JSON.parse(tymtStorage.get(`account`));
     const myInfoStore: IMyInfo = JSON.parse(sessionStorage.getItem(`myInfo`));
-    if (accountStore?.mnemonic === "" || accountStore?.password === "" || myInfoStore._id !== json_data.requestUserId) {
+    if (accountStore?.mnemonic === "" || accountStore?.password === "" || myInfoStore?._id !== json_data.requestUserId) {
       return false;
     }
     return true;

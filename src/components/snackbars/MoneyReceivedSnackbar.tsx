@@ -2,22 +2,25 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { listen } from "@tauri-apps/api/event";
+import { emit, listen } from "@tauri-apps/api/event";
+import { Client } from "@alessiodf/wsapi-client";
+import { isArray } from "lodash";
+
+import { solar_wss_url } from "../../configs";
+import { ChainNames } from "../../consts/Chains";
 
 import { TauriEventNames } from "../../consts/TauriEventNames";
 
 import { Snackbar, Stack, Box } from "@mui/material";
 import Slide from "@mui/material/Slide";
 
-import RedStrokeSmallButton from "../account/RedStrokeSmallButton";
-import RedFullSmallButton from "../account/RedFullSmallButton";
-
-import { setTempAccount } from "../../features/account/TempAccountSlice";
-import { setTempWallet } from "../../features/wallet/TempWalletSlice";
+import { AppDispatch } from "../../store";
 import { getAccount } from "../../features/account/AccountSlice";
 import { getWallet } from "../../features/wallet/WalletSlice";
+import { fetchChainBalanceAsync } from "../../features/wallet/BalanceListSlice";
 
 import { getKeccak256Hash } from "../../lib/api/Encrypt";
+import { getCurrentChainWalletAddress } from "../../lib/helper/WalletHelper";
 
 import CloseIcon from "../../assets/settings/x-icon.svg";
 import BellIcon from "../../assets/bell.svg";
@@ -33,10 +36,10 @@ export interface IPropsGuestCompleteSnackbar {
   open: boolean;
 }
 
-const GuestCompleteSnackbar = () => {
+const MoneyReceivedSnackbar = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
 
   const accountStore: IAccount = useSelector(getAccount);
   const walletStore: IWallet = useSelector(getWallet);
@@ -47,30 +50,47 @@ const GuestCompleteSnackbar = () => {
   }, [accountStore]);
 
   const [open, setOpen] = useState<boolean>(false);
+  const [sender, setSender] = useState<string>("");
+  const [amount, setAmount] = useState<number>(0);
 
-  const handleDoNowClick = useCallback(async () => {
-    dispatch(setTempAccount(accountStore));
-    dispatch(setTempWallet(walletStore));
+  const client = new Client(solar_wss_url);
 
-    navigate("/guest/complete/password");
-  }, [accountStore, walletStore]);
-
-  const handleLaterClick = useCallback(async () => {
+  const handleClose = () => {
     setOpen(false);
-    setTimeout(() => {
-      if (isGuest) {
-        setOpen(true);
+    setSender("");
+    setAmount(0);
+  };
+
+  const subscribeForTransactions = useCallback(async () => {
+    await client.connect();
+
+    const sxpAddress = getCurrentChainWalletAddress(walletStore, ChainNames.SOLAR);
+
+    client.subscribe(`transaction.applied`, (data) => {
+      const response = JSON.parse(JSON.stringify(data));
+      const transferArray: Array<{ amount: string; recipientId: string }> = response?.data?.asset?.transfers;
+      if (!transferArray || !isArray(transferArray)) return;
+      const target = transferArray?.find((one) => one?.recipientId === sxpAddress);
+      if (target) {
+        if (isGuest) emit(TauriEventNames.GUEST_MODAL_VIEW, true);
+        else {
+          setSender(target?.recipientId);
+          setAmount(parseFloat(target?.amount));
+          setOpen(true);
+          dispatch(
+            fetchChainBalanceAsync({
+              walletStore: walletStore,
+              chainName: ChainNames.SOLAR,
+            })
+          );
+        }
       }
-    }, 60 * 60 * 1e3); // Show the snackbar after 1 hour
-  }, [isGuest]);
+    });
+  }, [walletStore, isGuest]);
 
   useEffect(() => {
-    if (isGuest) {
-      setTimeout(() => {
-        setOpen(true);
-      }, 60 * 1e3);
-    }
-  }, [isGuest]);
+    subscribeForTransactions();
+  }, []);
 
   useEffect(() => {
     const unlisten_guest_modal_view = listen(TauriEventNames.GUEST_MODAL_VIEW, async (event) => {
@@ -82,6 +102,14 @@ const GuestCompleteSnackbar = () => {
       unlisten_guest_modal_view.then((unlistenFn) => unlistenFn());
     };
   }, []);
+
+  useEffect(() => {
+    if (open) {
+      setTimeout(() => {
+        handleClose();
+      }, 5 * 1e3);
+    }
+  }, [open]);
 
   return (
     <>
@@ -98,6 +126,10 @@ const GuestCompleteSnackbar = () => {
             transform: "scale(0.9)",
           },
         }}
+        onClick={() => {
+          handleClose();
+          navigate("/wallet");
+        }}
       >
         <Box
           sx={{
@@ -113,14 +145,10 @@ const GuestCompleteSnackbar = () => {
             <Stack direction={"row"} alignItems={"center"} gap={"12px"}>
               <Box component="img" src={BellIcon} width={"32px"} height={"32px"} />
               <Stack gap={"8px"}>
-                <Box className="fs-h4 white">{t("set-94_secure-passphrase-password")}</Box>
-                <Box className="fs-16-regular white">{t("set-95_you-should-secure")}</Box>
+                <Box className="fs-h4 white">{t("wal-71_SXP-received")}</Box>
+                <Box className="fs-16-regular white">{`${sender}${t("wal-72_sent-you-sxp-1")}${amount}SXP${t("wal-73_sent-you-sxp-2")}`}</Box>
               </Stack>
-              <Box component="img" src={CloseIcon} width={"32px"} height={"32px"} onClick={handleLaterClick} />
-            </Stack>
-            <Stack direction={"row"} gap={"16px"} justifyContent={"flex-end"}>
-              <RedFullSmallButton text={t("hom-29_do-it-now")} onClick={handleDoNowClick} />
-              <RedStrokeSmallButton text={t("hom-30_later")} onClick={handleLaterClick} />
+              <Box component="img" src={CloseIcon} width={"32px"} height={"32px"} onClick={handleClose} />
             </Stack>
           </Stack>
         </Box>
@@ -128,4 +156,4 @@ const GuestCompleteSnackbar = () => {
     </>
   );
 };
-export default GuestCompleteSnackbar;
+export default MoneyReceivedSnackbar;
