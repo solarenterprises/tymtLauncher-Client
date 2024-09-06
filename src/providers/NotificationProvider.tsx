@@ -72,6 +72,8 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
     const init = async () => {
       let permissionGranted = await isPermissionGranted();
       const windowIsVisible = await invoke<boolean>("is_window_visible");
+      console.log("permissionGranted", permissionGranted);
+      console.log("windowIsVisible", windowIsVisible);
       if (!permissionGranted) {
         const permission = await requestPermission();
         permissionGranted = permission === "granted";

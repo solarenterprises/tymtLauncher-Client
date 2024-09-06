@@ -2,9 +2,12 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { emit, listen } from "@tauri-apps/api/event";
+import { emit } from "@tauri-apps/api/event";
+import { invoke } from "@tauri-apps/api/tauri";
+import { isPermissionGranted, requestPermission, sendNotification } from "@tauri-apps/api/notification";
 import { Client } from "@alessiodf/wsapi-client";
 import { isArray } from "lodash";
+import numeral from "numeral";
 
 import { solar_wss_url } from "../../configs";
 import { ChainNames } from "../../consts/Chains";
@@ -24,6 +27,7 @@ import { getCurrentChainWalletAddress } from "../../lib/helper/WalletHelper";
 
 import CloseIcon from "../../assets/settings/x-icon.svg";
 import BellIcon from "../../assets/bell.svg";
+import NotiIcon from "../../assets/main/32x32.png";
 
 import { IAccount } from "../../types/accountTypes";
 import { IWallet } from "../../types/walletTypes";
@@ -66,41 +70,53 @@ const MoneyReceivedSnackbar = () => {
 
     const sxpAddress = getCurrentChainWalletAddress(walletStore, ChainNames.SOLAR);
 
-    client.subscribe(`transaction.applied`, (data) => {
-      const response = JSON.parse(JSON.stringify(data));
-      const transferArray: Array<{ amount: string; recipientId: string }> = response?.data?.asset?.transfers;
-      if (!transferArray || !isArray(transferArray)) return;
-      const target = transferArray?.find((one) => one?.recipientId === sxpAddress);
-      if (target) {
-        if (isGuest) emit(TauriEventNames.GUEST_MODAL_VIEW, true);
-        else {
-          setSender(target?.recipientId);
-          setAmount(parseFloat(target?.amount));
-          setOpen(true);
-          dispatch(
-            fetchChainBalanceAsync({
-              walletStore: walletStore,
-              chainName: ChainNames.SOLAR,
-            })
-          );
+    client.subscribe(`transaction.applied`, async (data) => {
+      try {
+        const response = JSON.parse(JSON.stringify(data));
+        const transferArray: Array<{ amount: string; recipientId: string }> = response?.data?.asset?.transfers;
+        if (!transferArray || !isArray(transferArray)) return;
+        const target = transferArray?.find((one) => one?.recipientId === sxpAddress);
+        if (target) {
+          if (isGuest) emit(TauriEventNames.GUEST_MODAL_VIEW, true);
+          else {
+            setSender(target?.recipientId);
+            setAmount(parseFloat(target?.amount));
+            setOpen(true);
+            dispatch(
+              fetchChainBalanceAsync({
+                walletStore: walletStore,
+                chainName: ChainNames.SOLAR,
+              })
+            );
+
+            let permissionGranted = await isPermissionGranted();
+            const windowIsVisible = await invoke<boolean>("is_window_visible");
+            console.log("permissionGranted", permissionGranted);
+            console.log("windowIsVisible", windowIsVisible);
+            if (!permissionGranted) {
+              const permission = await requestPermission();
+              permissionGranted = permission === "granted";
+            }
+            if (permissionGranted && !windowIsVisible) {
+              sendNotification({
+                title: t("wal-71_SXP-received"),
+                body: `${target?.recipientId}${t("wal-72_sent-you-sxp-1")}${numeral(parseFloat(target?.amount) / 1e8).format("0,0.00")}SXP${t(
+                  "wal-73_sent-you-sxp-2"
+                )}`,
+                icon: NotiIcon,
+              });
+            }
+          }
         }
+      } catch (err) {
+        console.log("Failed at client.subscribe: ", err);
+        handleClose();
       }
     });
   }, [walletStore, isGuest]);
 
   useEffect(() => {
     subscribeForTransactions();
-  }, []);
-
-  useEffect(() => {
-    const unlisten_guest_modal_view = listen(TauriEventNames.GUEST_MODAL_VIEW, async (event) => {
-      const data: boolean = event.payload as boolean;
-      setOpen(data);
-    });
-
-    return () => {
-      unlisten_guest_modal_view.then((unlistenFn) => unlistenFn());
-    };
   }, []);
 
   useEffect(() => {
@@ -146,7 +162,9 @@ const MoneyReceivedSnackbar = () => {
               <Box component="img" src={BellIcon} width={"32px"} height={"32px"} />
               <Stack gap={"8px"}>
                 <Box className="fs-h4 white">{t("wal-71_SXP-received")}</Box>
-                <Box className="fs-16-regular white">{`${sender}${t("wal-72_sent-you-sxp-1")}${amount}SXP${t("wal-73_sent-you-sxp-2")}`}</Box>
+                <Box className="fs-16-regular white">{`${sender}${t("wal-72_sent-you-sxp-1")}${numeral(amount / 1e8).format("0,0.00")}SXP${t(
+                  "wal-73_sent-you-sxp-2"
+                )}`}</Box>
               </Stack>
               <Box component="img" src={CloseIcon} width={"32px"} height={"32px"} onClick={handleClose} />
             </Stack>
