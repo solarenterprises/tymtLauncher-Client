@@ -43,7 +43,7 @@ const Tymtshow = ({ image }: any) => {
                   loading="lazy"
                 />
                 <Box className={"fs-14-light white t-center"} textTransform={"none"} sx={{ whiteSpace: "nowrap", padding: "0px 20px" }}>
-                  {basicGame?.project_name}
+                  {basicGame?.title}
                 </Box>
               </Stack>
             </Button>
