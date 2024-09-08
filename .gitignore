@@ -11,6 +11,7 @@ node_modules/*
 !node_modules/@solar-network/crypto/package.json
 dist
 dist-ssr
+src/consts/testMnemonics.ts
 .env
 .env.prod
 .env.dev

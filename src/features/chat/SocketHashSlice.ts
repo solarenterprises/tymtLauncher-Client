@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import tymtStorage from "../../lib/Storage";
 import { ISocketHash } from "../../types/chatTypes";
-import { compareJSONStructure } from "../../lib/api/JSONHelper";
+import { compareJSONStructure } from "../../lib/helper/JSONHelper";
 
 const init: ISocketHash = {
   socketHash: "",
@@ -9,17 +9,11 @@ const init: ISocketHash = {
 
 const load: () => ISocketHash = () => {
   const data = tymtStorage.get(`socketHash`);
-  if (data === null || data === "" || data === undefined) {
+  if (!data || !compareJSONStructure(JSON.parse(data), init)) {
     tymtStorage.set(`socketHash`, JSON.stringify(init));
     return init;
-  } else {
-    if (compareJSONStructure(JSON.parse(data), init)) {
-      return JSON.parse(data);
-    } else {
-      tymtStorage.set(`socketHash`, JSON.stringify(init));
-      return init;
-    }
   }
+  return JSON.parse(data);
 };
 
 const initialState = {
@@ -33,8 +27,8 @@ export const socketHashSlice = createSlice({
   initialState,
   reducers: {
     setSocketHash: (state, action) => {
-      state.data = action.payload;
-      tymtStorage.set(`socketHash`, JSON.stringify(action.payload));
+      state.data.socketHash = action.payload;
+      tymtStorage.set(`socketHash`, JSON.stringify(state.data));
     },
   },
 });

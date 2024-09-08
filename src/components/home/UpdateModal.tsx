@@ -1,7 +1,7 @@
 import { Box, Stack, Modal, Fade } from "@mui/material";
 import closeIcon from "../../assets/settings/x-icon.svg";
 import logo from "../../assets/main/foxhead-comingsoon.png";
-import { openLink } from "../../lib/api/Downloads";
+import { openLink } from "../../lib/helper/DownloadHelper";
 import { useTranslation } from "react-i18next";
 
 interface props {

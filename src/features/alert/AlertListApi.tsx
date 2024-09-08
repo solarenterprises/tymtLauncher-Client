@@ -3,6 +3,8 @@ import { tymt_backend_url } from "../../configs";
 import { ISaltToken } from "../../types/accountTypes";
 import tymtStorage from "../../lib/Storage";
 import { IAlertList, IFetchAlertListParam, IUpdateFriendRequest } from "../../types/alertTypes";
+import { IReqReadMultipleAlerts } from "../../types/AlertAPITypes";
+import AlertAPI from "../../lib/api/AlertAPI";
 
 export const fetchUnreadAlertList = async ({ userId, page, limit }: IFetchAlertListParam) => {
   try {
@@ -27,7 +29,7 @@ export const fetchUnreadAlertList = async ({ userId, page, limit }: IFetchAlertL
       };
     }
   } catch (err) {
-    console.error("Failed to fetchUnreadAlertList: ", err);
+    console.log("Failed to fetchUnreadAlertList: ", err);
     return {
       unread: [],
       unreadCount: 0,
@@ -202,62 +204,17 @@ export const updateFriendRequest = async ({ alertId, status }: IUpdateFriendRequ
   }
 };
 
-// export const approveFriendRequest = async (
-//   alert_id: string,
-//   userid: string
-// ) => {
-//   try {
-//     const saltTokenStore: ISaltToken = JSON.parse(tymtStorage.get(`saltToken`));
-//     const res = await axios.put(
-//       `${tymt_backend_url}/alerts/${alert_id}`,
-//       {
-//         note: { status: "accepted" },
-//         reads: [`${userid}`],
-//         readAts: { userid: Date.now() },
-//       },
-//       {
-//         headers: {
-//           "x-token": saltTokenStore.token,
-//           "Content-Type": "application/json",
-//         },
-//       }
-//     );
-//     if (res.status === 200) {
-//       console.log("approveFriendRequest");
-//     } else {
-//       console.log("approveFriendRequest res.status !== 200");
-//     }
-//   } catch (err) {
-//     console.error("Failed to approveFriendRequest: ", err);
-//   }
-// };
-
-// export const declineFriendRequest = async (
-//   alert_id: string,
-//   userid: string
-// ) => {
-//   try {
-//     const saltTokenStore: ISaltToken = JSON.parse(tymtStorage.get(`saltToken`));
-//     const res = await axios.put(
-//       `${tymt_backend_url}/alerts/${alert_id}`,
-//       {
-//         note: { status: "rejected" },
-//         reads: [`${userid}`],
-//         readAts: { userid: Date.now() },
-//       },
-//       {
-//         headers: {
-//           "x-token": saltTokenStore.token,
-//           "Content-Type": "application/json",
-//         },
-//       }
-//     );
-//     if (res.status === 200) {
-//       console.log("declineFriendRequest");
-//     } else {
-//       console.log("declineFriendRequest res.status !== 200");
-//     }
-//   } catch (err) {
-//     console.error("Failed to declineFriendRequest: ", err);
-//   }
-// };
+export const readMultipleAlerts = async (body: IReqReadMultipleAlerts) => {
+  try {
+    const res = await AlertAPI.readMultipleAlerts(body);
+    if (!res || res.status !== 200) {
+      console.error("Failed to readMultipleAlerts: response undefined! ", res);
+      return null;
+    }
+    console.log("readMultipleAlerts", res);
+    return null;
+  } catch (err) {
+    console.error("Failed to readMultipleAlerts: ", err);
+    return null;
+  }
+};

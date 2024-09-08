@@ -5,3 +5,7 @@ export interface IReqCreateMutedList {
 export interface IReqDeleteMutedList {
   muted: string;
 }
+
+export interface IReqUpdateUser {
+  nickName?: string;
+}

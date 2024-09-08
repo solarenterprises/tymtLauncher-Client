@@ -1,6 +1,6 @@
 import { PayloadAction, createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { IRsa } from "../../types/chatTypes";
-import { compareJSONStructure } from "../../lib/api/JSONHelper";
+import { compareJSONStructure } from "../../lib/helper/JSONHelper";
 import { getRsaKeyPair } from "./RsaApi";
 
 const init: IRsa = {
@@ -32,7 +32,7 @@ export const rsaSlice = createSlice({
   reducers: {
     setRsa: (state, action) => {
       state.data = action.payload;
-      sessionStorage.setItem(`rsa`, JSON.stringify(action.payload));
+      sessionStorage.setItem(`rsa`, JSON.stringify(state.data));
     },
   },
   extraReducers(builder) {

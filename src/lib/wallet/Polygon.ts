@@ -3,7 +3,7 @@ import { ethers } from "ethers";
 import * as ethereumjsWallet from "ethereumjs-wallet";
 import * as bip39 from "bip39";
 import { matic_api_key, matic_api_url, matic_rpc_url, net_name } from "../../configs";
-import { IToken, IGetTokenBalanceRes } from "../../types/walletTypes";
+import { ISupportToken, IBalance } from "../../types/walletTypes";
 
 class Polygon implements IWallet {
   address: string;
@@ -31,6 +31,7 @@ class Polygon implements IWallet {
 
   static async getBalance(addr: string): Promise<number> {
     try {
+      if (net_name === "testnet") return 0;
       const result = (await (await fetch(`${matic_api_url}?module=account&action=balance&address=${addr}&apikey=${matic_api_key}`)).json()).result;
       return (result as number) / 1e9 / 1e9;
     } catch {
@@ -38,18 +39,18 @@ class Polygon implements IWallet {
     }
   }
 
-  static async getTokenBalance(addr: string, tokens: IToken[]): Promise<IGetTokenBalanceRes[]> {
+  static async getTokenBalance(addr: string, tokens: ISupportToken[]): Promise<IBalance[]> {
     try {
-      let result: IGetTokenBalanceRes[] = [];
+      let result: IBalance[] = [];
       for (let i = 0; i < tokens.length; i++) {
         if (net_name === "testnet") {
           result.push({
-            cmc: tokens[i].cmc,
+            symbol: tokens[i].symbol,
             balance: 0,
           });
         } else {
           result.push({
-            cmc: tokens[i].cmc,
+            symbol: tokens[i].symbol,
             balance:
               ((
                 await (
@@ -64,7 +65,7 @@ class Polygon implements IWallet {
       }
       return result;
     } catch (err) {
-      console.log(err);
+      console.log("Failed to POLYGON getTokenBalance: ", err);
       return [];
     }
   }

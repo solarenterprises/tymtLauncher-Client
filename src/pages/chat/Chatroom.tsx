@@ -1,31 +1,15 @@
 import { useSelector, useDispatch } from "react-redux";
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import InfiniteScroll from "react-infinite-scroll-component";
 import _ from "lodash";
-
-import Bubble from "../../components/chat/Bubble";
-
-import { Box, Grid, Divider, Button, Stack } from "@mui/material";
-import { ThemeProvider, createTheme } from "@mui/material/styles";
-
-import ChatStyle from "../../styles/ChatStyles";
-import x from "../../assets/chat/x.svg";
-import Avatar from "../../components/home/Avatar";
-
-import { AppDispatch } from "../../store";
-import { selectNotification } from "../../features/settings/NotificationSlice";
-import { selectChat } from "../../features/settings/ChatSlice";
-import { setMountedFalse, setMountedTrue } from "../../features/chat/IntercomSupportSlice";
-import { getAccount } from "../../features/account/AccountSlice";
-import { getChatHistory, setChatHistory } from "../../features/chat/ChatHistorySlice";
-import { getContactList } from "../../features/chat/ContactListSlice";
-import { getCurrentChatroom } from "../../features/chat/CurrentChatroomSlice";
-import { ICurrentChatroomMembers, getCurrentChatroomMembers } from "../../features/chat/CurrentChatroomMembersSlice";
+import { listen } from "@tauri-apps/api/event";
 
 import { useSocket } from "../../providers/SocketProvider";
+import TooltipComponent from "../../components/TooltipComponent";
+import Bubble from "../../components/chat/Bubble";
 import GroupAvatar from "../../components/chat/GroupAvatar";
 import ChatGroupMemberListRoom from "./ChatGroupMemberListRoom";
 import ChatSettinginRoom from "./ChatsettinginRoom";
@@ -33,14 +17,31 @@ import ChatMainRoom from "./ChatMainRoom";
 import ChatMsginRoom from "./Chatsetting-MsginRoom";
 import ChatInputField from "../../components/chat/Chatinputfield";
 import ChatGroupEditRoom from "./ChatGroupEditRoom";
+import Avatar from "../../components/home/Avatar";
+
+import { Box, Grid, Divider, Button, Stack } from "@mui/material";
+import { ThemeProvider, createTheme } from "@mui/material/styles";
 import EditIcon from "@mui/icons-material/Edit";
 
-import { addChatHistory } from "../../lib/api/JSONHelper";
+import ChatStyle from "../../styles/ChatStyles";
+import x from "../../assets/chat/x.svg";
 
-import { ChatHistoryType, IContactList } from "../../types/chatTypes";
-import { chatType, notificationType } from "../../types/settingTypes";
-import { accountType } from "../../types/accountTypes";
+import { AppDispatch } from "../../store";
+import { selectNotification } from "../../features/settings/NotificationSlice";
+import { selectChat } from "../../features/settings/ChatSlice";
+import { setMountedFalse, setMountedTrue } from "../../features/chat/IntercomSupportSlice";
+import { getChatHistory, setChatHistory, setChatHistoryAsync } from "../../features/chat/ChatHistorySlice";
+import { getContactList } from "../../features/chat/ContactListSlice";
+import { fetchCurrentChatroomAsync, getCurrentChatroom } from "../../features/chat/CurrentChatroomSlice";
+import { ICurrentChatroomMembers, fetchCurrentChatroomMembersAsync, getCurrentChatroomMembers } from "../../features/chat/CurrentChatroomMembersSlice";
+import { fetchHistoricalChatroomMembersAsync } from "../../features/chat/HistoricalChatroomMembersSlice";
+import { getMyInfo } from "../../features/account/MyInfoSlice";
 import { IActiveUserList, getActiveUserList } from "../../features/chat/ActiveUserListSlice";
+
+import { addChatHistory } from "../../lib/helper/JSONHelper";
+
+import { ChatHistoryType, IContactList, IMyInfo } from "../../types/chatTypes";
+import { chatType, notificationType } from "../../types/settingTypes";
 import { IChatroom } from "../../types/ChatroomAPITypes";
 
 const theme = createTheme({
@@ -61,6 +62,7 @@ const Chatroom = () => {
   const { socket } = useSocket();
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
+  const { chatroomId } = useParams();
   const classes = ChatStyle();
 
   const [panel, setPanel] = useState("chatMainRoom");
@@ -75,20 +77,25 @@ const Chatroom = () => {
 
   const activeUserListStore: IActiveUserList = useSelector(getActiveUserList);
   const chatStore: chatType = useSelector(selectChat);
-  const accountStore: accountType = useSelector(getAccount);
   const chatHistoryStore: ChatHistoryType = useSelector(getChatHistory);
   const contactListStore: IContactList = useSelector(getContactList);
   const notificationStore: notificationType = useSelector(selectNotification);
   const currentChatroomStore: IChatroom = useSelector(getCurrentChatroom);
   const currentChatroomMembersStore: ICurrentChatroomMembers = useSelector(getCurrentChatroomMembers);
+  const myInfoStore: IMyInfo = useSelector(getMyInfo);
 
-  const isDM = currentChatroomStore?.room_name ? false : true;
-  const currentPartner = isDM ? currentChatroomMembersStore?.members?.find((member) => member._id !== accountStore.uid) : null;
-  const displayChatroomName = currentChatroomStore?.room_name ? currentChatroomStore?.room_name : currentPartner?.nickName;
-  const displayChatroomSubName = currentChatroomStore?.room_name ? `${currentChatroomStore?.participants?.length ?? 0} Joined` : currentPartner?.sxpAddress;
+  const isDM = useMemo(() => {
+    return currentChatroomStore?.room_name ? false : true;
+  }, [currentChatroomStore]);
+  const isGlobal = useMemo(() => {
+    return currentChatroomStore?.isGlobal;
+  }, [currentChatroomStore]);
+
+  const currentPartner = isDM ? currentChatroomMembersStore?.members?.find((member) => member._id !== myInfoStore?._id) : null;
+  const displayChatroomName = !isDM ? currentChatroomStore?.room_name : currentPartner?.nickName;
+  const displayChatroomSubName = isGlobal ? "Public channel" : !isDM ? `${currentChatroomStore?.participants?.length ?? 0} Joined` : currentPartner?.sxpAddress;
 
   const chatStoreRef = useRef(chatStore);
-  const accountStoreRef = useRef(accountStore);
   const chatHistoryStoreRef = useRef(chatHistoryStore);
   const contactListStoreRef = useRef(contactListStore);
   const notificationStoreRef = useRef(notificationStore);
@@ -97,9 +104,6 @@ const Chatroom = () => {
   useEffect(() => {
     chatStoreRef.current = chatStore;
   }, [chatStore]);
-  useEffect(() => {
-    accountStoreRef.current = accountStore;
-  }, [accountStore]);
   useEffect(() => {
     chatHistoryStoreRef.current = chatHistoryStore;
   }, [chatHistoryStore]);
@@ -113,16 +117,23 @@ const Chatroom = () => {
     currentChatroomStoreRef.current = currentChatroomStore;
   }, [currentChatroomStore]);
 
-  useEffect(() => {
-    console.log("NOTICE: currentPartnerStore changed: ", currentChatroomStore?._id);
-    if (currentChatroomStore?._id) {
-      dispatch(setChatHistory({ messages: [] }));
-    }
-  }, [currentChatroomStore]);
+  const refresh = async () => {
+    await dispatch(setChatHistoryAsync({ messages: [] }));
+    fetchMessages();
+  };
 
-  const fetchMessages = async () => {
+  useEffect(() => {
+    if (chatroomId) {
+      console.log("chatroomId: ", chatroomId);
+      dispatch(fetchCurrentChatroomAsync(chatroomId));
+      dispatch(fetchCurrentChatroomMembersAsync(chatroomId));
+      dispatch(fetchHistoricalChatroomMembersAsync(chatroomId));
+    }
+  }, [chatroomId]);
+
+  const fetchMessages = useCallback(async () => {
     try {
-      if (accountStoreRef.current.uid && currentChatroomStoreRef?.current._id) {
+      if (myInfoStore?._id && currentChatroomStoreRef?.current._id) {
         const query = {
           room_id: currentChatroomStoreRef?.current._id,
           pagination: { page: Math.floor(chatHistoryStoreRef.current.messages.length / 20) + 1, pageSize: 20 },
@@ -134,13 +145,12 @@ const Chatroom = () => {
     } catch (err) {
       console.error("Failed to fetchMessages: ", err);
     }
-  };
+  }, [myInfoStore]);
 
   // Fetch chat history of the first page
   useEffect(() => {
     if (socket.current) {
-      dispatch(setChatHistory({ messages: [] }));
-      fetchMessages();
+      refresh();
     }
   }, [socket.current, currentChatroomStore]);
 
@@ -208,6 +218,18 @@ const Chatroom = () => {
     if (scrollref.current && valueRef.current === "") Scroll();
   }, [valueRef.current]);
 
+  useEffect(() => {
+    const unlisten_scroll_to_end = listen("scroll_to_end", (_event) => {
+      console.log("scroll_to_end");
+      const { scrollHeight } = scrollref.current as HTMLDivElement;
+      scrollref.current?.scrollTo(0, scrollHeight);
+    });
+
+    return () => {
+      unlisten_scroll_to_end.then((unlistenFn) => unlistenFn());
+    };
+  }, []);
+
   return (
     <>
       <ThemeProvider theme={theme}>
@@ -246,46 +268,49 @@ const Chatroom = () => {
                 }}
               >
                 <Stack flexDirection={"row"} alignItems={"center"} justifyContent={"space-between"}>
-                  <Stack
-                    alignItems={"center"}
-                    flexDirection={"row"}
-                    gap={"16px"}
-                    sx={{
-                      cursor: "pointer",
-                      width: "500px",
-                      borderRadius: "4px",
-                      "&:hover": {
-                        backgroundColor: "#ffffff33",
-                      },
-                    }}
-                    onClick={() => {
-                      if (!isDM) setPanel("chatGroupMemberListRoom");
-                    }}
-                  >
-                    {isDM && currentPartner && (
-                      <Avatar
-                        onlineStatus={activeUserListStore.users.some((user) => user === currentPartner._id)}
-                        url={currentPartner.avatar}
-                        size={40}
-                        status={currentPartner.notificationStatus}
-                      />
-                    )}
-                    {!isDM && <GroupAvatar size={40} url={currentChatroomStore.room_image} />}
-                    <Stack marginLeft={"16px"} justifyContent={"flex-start"} direction={"column"} spacing={1} width={"444px"}>
-                      <Box
-                        className={"fs-18-bold white"}
-                        sx={{ WebkitBoxOrient: "vertical", WebkitLineClamp: 1, overflow: "hidden", textOverflow: "ellipsis" }}
-                      >
-                        {displayChatroomName}
-                      </Box>
-                      <Box
-                        className={"fs-12-regular gray"}
-                        sx={{ WebkitBoxOrient: "vertical", WebkitLineClamp: 1, overflow: "hidden", textOverflow: "ellipsis" }}
-                      >
-                        {displayChatroomSubName}
-                      </Box>
+                  <TooltipComponent text={t("cha-65_click-for-participants")}>
+                    <Stack
+                      alignItems={"center"}
+                      flexDirection={"row"}
+                      gap={"16px"}
+                      sx={{
+                        cursor: "pointer",
+                        width: "500px",
+                        borderRadius: "4px",
+                        "&:hover": {
+                          backgroundColor: "#ffffff33",
+                        },
+                      }}
+                      onClick={() => {
+                        if (!isDM) setPanel("chatGroupMemberListRoom");
+                      }}
+                    >
+                      {isDM && currentPartner && (
+                        <Avatar
+                          onlineStatus={activeUserListStore.users.some((user) => user === currentPartner._id)}
+                          url={currentPartner.avatar}
+                          size={40}
+                          status={currentPartner.notificationStatus}
+                        />
+                      )}
+                      {!isDM && <GroupAvatar size={40} url={currentChatroomStore?.room_image} />}
+                      <Stack marginLeft={"16px"} justifyContent={"flex-start"} direction={"column"} spacing={1} width={"444px"}>
+                        <Box
+                          className={"fs-18-bold white"}
+                          sx={{ WebkitBoxOrient: "vertical", WebkitLineClamp: 1, overflow: "hidden", textOverflow: "ellipsis" }}
+                        >
+                          {displayChatroomName}
+                        </Box>
+                        <Box
+                          className={"fs-12-regular gray"}
+                          sx={{ WebkitBoxOrient: "vertical", WebkitLineClamp: 1, overflow: "hidden", textOverflow: "ellipsis" }}
+                        >
+                          {displayChatroomSubName}
+                        </Box>
+                      </Stack>
                     </Stack>
-                  </Stack>
+                  </TooltipComponent>
+
                   <Stack direction={"row"} gap={"10px"} alignItems={"center"}>
                     <Button className={"setting-back-button"} onClick={() => setPanel("chatGroupEditRoom")}>
                       <EditIcon className="icon-button" />
@@ -304,30 +329,36 @@ const Chatroom = () => {
                 />
               </Box>
 
-              <Box className={"scroll_bar_chatbox"} ref={scrollref} display={"flex"} flexDirection={"column"}>
-                <Box sx={{ width: "100%", flex: "1 1 auto" }} />
+              <Box className={"scroll_bar_chatbox"} ref={scrollref} id={"scroll_container_room"}>
+                {/* <Box sx={{ width: "100%", flex: "1 1 auto" }} /> */}
                 <InfiniteScroll
                   style={{
                     minHeight: "50px",
+                    height: "100%",
+                    display: "flex",
+                    flexDirection: "column-reverse",
+                    overflow: "none",
                   }}
                   dataLength={chatHistoryStore.messages.length} //This is important field to render the next data
                   next={fetchMessages}
                   hasMore={true}
+                  inverse={true}
                   loader={<Box className={"fs-14-regular white t-center"}>{t("cha-32_loading")}</Box>}
+                  scrollableTarget={"scroll_container_room"}
                   // endMessage={
                   //   <Box className={"fs-14-regular white t-center"}>
                   //     {t("cha-33_you-seen-all")}
                   //   </Box>
                   // }
                   // below props only if you need pull down functionality
-                  refreshFunction={fetchMessages}
-                  pullDownToRefresh
-                  pullDownToRefreshThreshold={50}
-                  pullDownToRefreshContent={<Box className={"fs-14-regular white t-center"}>&#8595; {t("cha-34_pull-down")}</Box>}
-                  releaseToRefreshContent={<Box className={"fs-14-regular white t-center"}>&#8593; {t("cha-35_release-to-refresh")}</Box>}
+                  // refreshFunction={fetchMessages}
+                  // pullDownToRefresh
+                  // pullDownToRefreshThreshold={50}
+                  // pullDownToRefreshContent={<Box className={"fs-14-regular white t-center"}>&#8595; {t("cha-34_pull-down")}</Box>}
+                  // releaseToRefreshContent={<Box className={"fs-14-regular white t-center"}>&#8593; {t("cha-35_release-to-refresh")}</Box>}
                 >
-                  {[...chatHistoryStore.messages].reverse()?.map((message, index) => (
-                    <Bubble roomMode={true} screenExpanded={screenexpanded} message={message} index={index} />
+                  {chatHistoryStore.messages?.map((message, index) => (
+                    <Bubble roomMode={true} screenExpanded={screenexpanded} message={message} index={index} isDM={isDM} />
                   ))}
                 </InfiniteScroll>
               </Box>

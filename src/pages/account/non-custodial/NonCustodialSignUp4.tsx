@@ -1,27 +1,31 @@
 import { useNavigate } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
-import { AppDispatch } from "../../../store";
-import { getTempNonCustodial, setTempNonCustodial } from "../../../features/account/TempNonCustodialSlice";
+import { motion } from "framer-motion";
+
 import { useFormik } from "formik";
 import * as Yup from "yup";
+
+import "../../../global.css";
+
 import { Grid, Box, Stack } from "@mui/material";
+
 import Back from "../../../components/account/Back";
 import AccountHeader from "../../../components/account/AccountHeader";
 import InputText from "../../../components/account/InputText";
 import AccountNextButton from "../../../components/account/AccountNextButton";
 import Stepper from "../../../components/account/Stepper";
-import HaveAccount from "../../../components/account/HaveAccount";
+
 import tymt3 from "../../../assets/account/tymt3.png";
-import "../../../global.css";
-import { nonCustodialType } from "../../../types/accountTypes";
-import { motion } from "framer-motion";
+import { IAccount } from "../../../types/accountTypes";
+import { useDispatch, useSelector } from "react-redux";
+import { getTempAccount, setTempAccount } from "../../../features/account/TempAccountSlice";
 
 const NonCustodialSignUp4 = () => {
-  const navigate = useNavigate();
   const { t } = useTranslation();
-  const dispatch = useDispatch<AppDispatch>();
-  const tempNonCustodialStore: nonCustodialType = useSelector(getTempNonCustodial);
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  const tempAccountStore: IAccount = useSelector(getTempAccount);
 
   const formik = useFormik({
     initialValues: {
@@ -35,13 +39,14 @@ const NonCustodialSignUp4 = () => {
         .matches(/^[a-zA-Z0-9_ !@#$%^&*()\-+=,.?]+$/, t("ncca-61_invalid-characters")),
     }),
     onSubmit: async () => {
+      const newNickName = formik.values.nickname;
       dispatch(
-        setTempNonCustodial({
-          ...tempNonCustodialStore,
-          nickname: formik.values.nickname,
+        setTempAccount({
+          ...tempAccountStore,
+          nickName: newNickName,
         })
       );
-      navigate("/confirm-information");
+      navigate("/confirm-information/signup");
     },
   });
 
@@ -74,7 +79,7 @@ const NonCustodialSignUp4 = () => {
                   >
                     <Grid item xs={12} container justifyContent={"space-between"}>
                       <Back onClick={handleBackClick} />
-                      <Stepper all={4} now={4} texts={["", "", "", t("ncca-39_create-nickname")]} />
+                      <Stepper all={4} now={4} text={t("ncca-39_create-nickname")} />
                     </Grid>
 
                     <Grid item xs={12} mt={"80px"}>
@@ -104,9 +109,6 @@ const NonCustodialSignUp4 = () => {
                         <AccountNextButton isSubmit={true} text={t("ncca-44_verify-and-complete")} disabled={formik.errors.nickname ? true : false} />
                       </Grid>
                     </form>
-                    <Grid item xs={12} mt={"50px"}>
-                      <HaveAccount />
-                    </Grid>
                   </Grid>
                 </Grid>
               </Stack>

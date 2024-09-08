@@ -2,7 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 import tymtStorage from "../../lib/Storage";
 import { ITymt } from "../../types/accountTypes";
 import { tymt_version } from "../../configs";
-import { compareJSONStructure } from "../../lib/api/JSONHelper";
+import { compareJSONStructure } from "../../lib/helper/JSONHelper";
 
 const init: ITymt = {
   version: tymt_version,

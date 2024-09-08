@@ -1,33 +1,41 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { debounce } from "lodash";
+
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import { Grid, Button, TextField, InputAdornment, Stack, Box, Tooltip } from "@mui/material";
+
 import Chatindex from "../../pages/chat";
-import newlogo from "../../assets/main/newlogo.png";
-import newlogohead from "../../assets/main/newlogohead.png";
-import searchlg from "../../assets/main/searchlg.svg";
 import Settings from "../../pages/settings";
-import Back from "./Back";
-import Avatar from "./Avatar";
+import ComingModal from "../modals/ComingModal";
+import CardModal from "../modals/CardModal";
+import Alertindex from "../../pages/alert";
+
+import { selectNotification } from "../../features/settings/NotificationSlice";
+import { getAlertList } from "../../features/alert/AlertListSlice";
+import { getMyInfo } from "../../features/account/MyInfoSlice";
+import { getCurrentChain } from "../../features/wallet/CurrentChainSlice";
+import { getWallet } from "../../features/wallet/WalletSlice";
+
+import { getCurrentLogo } from "../../features/home/Tymtlogo";
+import { getCurrentPage, setCurrentPage } from "../../features/home/Navigation";
+
+import { IAlertList } from "../../types/alertTypes";
+import { IMyInfo } from "../../types/chatTypes";
 import { notificationType } from "../../types/settingTypes";
 import { PaginationType } from "../../types/homeTypes";
 import { TymtlogoType } from "../../types/homeTypes";
-import { accountType, custodialType, nonCustodialType, walletEnum } from "../../types/accountTypes";
-import { IChain } from "../../types/walletTypes";
-import { getAccount } from "../../features/account/AccountSlice";
-import { getNonCustodial } from "../../features/account/NonCustodialSlice";
-import { getCustodial } from "../../features/account/CustodialSlice";
-import { getCurrentLogo } from "../../features/home/Tymtlogo";
-import { getCurrentPage, setCurrentPage } from "../../features/home/Navigation";
-import { getChain } from "../../features/wallet/ChainSlice";
-import ComingModal from "../ComingModal";
-import CardModal from "../CardModal";
-import Alertindex from "../../pages/alert";
-import { selectNotification } from "../../features/settings/NotificationSlice";
-import { getAlertList } from "../../features/alert/AlertListSlice";
-import { IAlertList } from "../../types/alertTypes";
+import { ICurrentChain, IWallet } from "../../types/walletTypes";
+
+import { getCurrentChainWalletAddress } from "../../lib/helper/WalletHelper";
+
+import Back from "./Back";
+import Avatar from "./Avatar";
+import newlogo from "../../assets/main/newlogo.png";
+import newlogohead from "../../assets/main/newlogohead.png";
+import searchlg from "../../assets/main/searchlg.svg";
 
 const theme = createTheme({
   palette: {
@@ -46,22 +54,33 @@ const Navbar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const { t } = useTranslation();
+
   const notification: notificationType = useSelector(selectNotification);
   const currentpage: PaginationType = useSelector(getCurrentPage);
   const currentlogo: TymtlogoType = useSelector(getCurrentLogo);
-  const account: accountType = useSelector(getAccount);
-  const nonCustodialStore: nonCustodialType = useSelector(getNonCustodial);
-  const custodialStore: custodialType = useSelector(getCustodial);
-  const chain: IChain = useSelector(getChain);
-  const userStore = account.wallet === walletEnum.noncustodial ? nonCustodialStore : custodialStore;
   const alertListStore: IAlertList = useSelector(getAlertList);
-  const { t } = useTranslation();
+  const myInfoStore: IMyInfo = useSelector(getMyInfo);
+  const walletStore: IWallet = useSelector(getWallet);
+  const currentChainStore: ICurrentChain = useSelector(getCurrentChain);
+
+  const currentWallet = useMemo(() => getCurrentChainWalletAddress(walletStore, currentChainStore?.chain), [walletStore, currentChainStore]);
+
   const [showSetting, setShowSetting] = useState(false);
   const [showChat, setShowChat] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
   const [value, setValue] = useState<string>("");
   const [cardModalOpen, setCardModalOpen] = useState<boolean>(false);
   const [coming, setComing] = useState<boolean>(false);
+
+  const handleChange = useCallback(
+    (value) => {
+      navigate(`/store?key=${value}`);
+    },
+    [setValue, navigate]
+  );
+
+  const debouncedChangeHandler = useCallback(debounce(handleChange, 1000), [handleChange]);
 
   const setView = useCallback(
     (view: boolean) => {
@@ -127,7 +146,7 @@ const Navbar = () => {
           )}
           <ThemeProvider theme={theme}>
             <TextField
-              disabled
+              // disabled
               className="searchbar"
               color="secondary"
               placeholder={t("hom-4_search")}
@@ -141,7 +160,13 @@ const Navbar = () => {
                 endAdornment: (
                   <InputAdornment position="end">
                     {value !== "" && (
-                      <Button className={"clear_filter"} onClick={() => setValue("")}>
+                      <Button
+                        className={"clear_filter"}
+                        onClick={() => {
+                          setValue("");
+                          navigate(`/store`);
+                        }}
+                      >
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                           <path d="M17 7L7 17M7 7L17 17" stroke="white" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
@@ -153,6 +178,13 @@ const Navbar = () => {
               }}
               onChange={(e) => {
                 if (setValue) setValue(e.target.value);
+                debouncedChangeHandler(e.target.value);
+              }}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  console.log("Enter key pressed");
+                  navigate(`/store?key=${value}`);
+                }
               }}
             />
           </ThemeProvider>
@@ -201,8 +233,8 @@ const Navbar = () => {
                 <path
                   d="M22 10H2M2 8.2L2 15.8C2 16.9201 2 17.4802 2.21799 17.908C2.40973 18.2843 2.71569 18.5903 3.09202 18.782C3.51984 19 4.07989 19 5.2 19L18.8 19C19.9201 19 20.4802 19 20.908 18.782C21.2843 18.5903 21.5903 18.2843 21.782 17.908C22 17.4802 22 16.9201 22 15.8V8.2C22 7.0799 22 6.51984 21.782 6.09202C21.5903 5.7157 21.2843 5.40974 20.908 5.21799C20.4802 5 19.9201 5 18.8 5L5.2 5C4.0799 5 3.51984 5 3.09202 5.21799C2.7157 5.40973 2.40973 5.71569 2.21799 6.09202C2 6.51984 2 7.07989 2 8.2Z"
                   stroke="#AFAFAF"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
                 />
               </svg>
             </Button>
@@ -388,12 +420,12 @@ const Navbar = () => {
           </Tooltip>
           <Button className="button_navbar_profile" onClick={() => setShowSetting(!showSetting)}>
             <Stack direction={"row"} alignItems={"center"} marginLeft={"0px"} justifyContent={"left"} spacing={"8px"} height={"32px"}>
-              <Avatar url={account.avatar} size={32} ischain={true} onlineStatus={true} status={!notification.alert ? "donotdisturb" : "online"} />
+              <Avatar url={myInfoStore?.avatar} size={32} ischain={true} onlineStatus={true} status={!notification?.alert ? "donotdisturb" : "online"} />
               <Stack direction={"column"} width={"110px"} alignItems={"flex-start"}>
-                <Box className={"fs-16-regular white"}>{userStore.nickname.length > 11 ? `${userStore.nickname.substring(0, 10)}...` : userStore.nickname}</Box>
-                <Box className={"fs-14-regular light"}>
-                  {`${chain?.chain.wallet.substring(0, 5)}...${chain?.chain.wallet.substring(chain?.chain.wallet.length - 4)}`}
+                <Box className={"fs-16-regular white"}>
+                  {myInfoStore?.nickName?.length > 11 ? `${myInfoStore?.nickName?.substring(0, 10)}...` : myInfoStore?.nickName}
                 </Box>
+                <Box className={"fs-14-regular light"}>{`${currentWallet?.substring(0, 5)}...${currentWallet?.substring(currentWallet?.length - 4)}`}</Box>
               </Stack>
             </Stack>
           </Button>

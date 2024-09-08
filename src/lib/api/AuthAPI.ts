@@ -4,7 +4,7 @@ import { tymt_backend_url } from "../../configs/index";
 import { INonCustodyBeforeSignInReq, INonCustodySignInReq, INonCustodySignUpReq } from "../../types/AuthAPITypes";
 
 class AuthAPI {
-  static async nonCustodySignup(body: INonCustodySignUpReq): Promise<AxiosResponse<any, any>> {
+  static async nonCustodySignUp(body: INonCustodySignUpReq): Promise<AxiosResponse<any, any>> {
     return await axios.post(`${tymt_backend_url}/auth/non-custody/signup`, body);
   }
 

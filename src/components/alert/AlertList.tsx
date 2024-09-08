@@ -10,18 +10,17 @@ import Avatar from "../home/Avatar";
 import { useSocket } from "../../providers/SocketProvider";
 
 import { AppDispatch } from "../../store";
-import { getAccount } from "../../features/account/AccountSlice";
-import { updateAlertReadStatusAsync } from "../../features/alert/AlertListSlice";
+import { fetchAlertListAsync, updateAlertReadStatusAsync } from "../../features/alert/AlertListSlice";
 import { getContactList } from "../../features/chat/ContactListSlice";
-import { setCurrentPartner } from "../../features/chat/CurrentPartnerSlice";
 import { IActiveUserList, getActiveUserList } from "../../features/chat/ActiveUserListSlice";
 import { ISKeyList, getSKeyList } from "../../features/chat/SKeyListSlice";
+import { fetchCurrentChatroomAsync } from "../../features/chat/CurrentChatroomSlice";
+import { fetchCurrentChatroomMembersAsync } from "../../features/chat/CurrentChatroomMembersSlice";
 
 import { Chatdecrypt } from "../../lib/api/ChatEncrypt";
 
 import { propsAlertListType } from "../../types/alertTypes";
-import { IContactList } from "../../types/chatTypes";
-import { accountType } from "../../types/accountTypes";
+import { IContactList, IMyInfo } from "../../types/chatTypes";
 
 import failedIcon from "../../assets/alert/failed-icon.svg";
 import successIcon from "../../assets/alert/success-icon.svg";
@@ -31,13 +30,18 @@ import messageIcon from "../../assets/alert/message-icon.svg";
 import unreaddot from "../../assets/alert/unreaddot.svg";
 import readdot from "../../assets/alert/readdot.svg";
 
+import AlertAPI from "../../lib/api/AlertAPI";
+import { fetchUnreadMessageListAsync } from "../../features/chat/UnreadMessageListSlice";
+import { fetchHistoricalChatroomMembersAsync } from "../../features/chat/HistoricalChatroomMembersSlice";
+import { getMyInfo } from "../../features/account/MyInfoSlice";
+
 const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
   const { t } = useTranslation();
   const { approveFriendRequest, declineFriendRequest } = useSocket();
   const navigate = useNavigate();
 
   const dispatch = useDispatch<AppDispatch>();
-  const accountStore: accountType = useSelector(getAccount);
+  const myInfoStore: IMyInfo = useSelector(getMyInfo);
   const contactListStore: IContactList = useSelector(getContactList);
   const senderUser = contactListStore.contacts.find((user) => user._id === detail.note?.sender);
   const activeUserListStore: IActiveUserList = useSelector(getActiveUserList);
@@ -75,40 +79,29 @@ const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
     }
   }, [status]);
 
-  const handleAlertClick = useCallback(() => {
+  const handleAlertClick = useCallback(async () => {
     try {
       if (title === "chat") {
-        navigate(`/chat?senderId=${detail.note?.sender}`);
-        dispatch(
-          setCurrentPartner({
-            _id: senderUser?._id,
-            nickName: senderUser?.nickName,
-            avatar: senderUser?.avatar,
-            lang: senderUser?.lang,
-            sxpAddress: senderUser?.sxpAddress,
-            // onlineStatus: senderUser?.onlineStatus,
-            onlineStatus: activeUserListStore.users.some((user) => user === senderUser?._id),
-            notificationStatus: senderUser?.notificationStatus,
-          })
-        );
-        dispatch(
-          updateAlertReadStatusAsync({
-            alertId: detail?._id,
-            userId: accountStore.uid,
-          })
-        );
+        navigate(`/chat/${detail.note?.room_id}`);
+        dispatch(fetchCurrentChatroomAsync(detail.note?.room_id));
+        dispatch(fetchCurrentChatroomMembersAsync(detail.note?.room_id));
+        dispatch(fetchHistoricalChatroomMembersAsync(detail.note?.room_id));
+
+        await AlertAPI.readAllUnreadAlertsForChatroom({ userId: myInfoStore?._id, roomId: detail.note?.room_id });
+        dispatch(fetchAlertListAsync(myInfoStore?._id));
+        dispatch(fetchUnreadMessageListAsync(myInfoStore?._id));
       } else if (title === "Friend Request") {
         dispatch(
           updateAlertReadStatusAsync({
             alertId: detail?._id,
-            userId: accountStore.uid,
+            userId: myInfoStore?._id,
           })
         );
       }
     } catch (err) {
       console.error("Failed to click on alertList: ", err);
     }
-  }, [title, detail, senderUser, accountStore]);
+  }, [title, detail, senderUser, myInfoStore]);
 
   return (
     <>
@@ -128,7 +121,7 @@ const AlertList = ({ status, title, detail, read }: propsAlertListType) => {
             <Stack direction={"row"} gap={"8px"} alignItems={"center"}>
               <img src={logo} />
               <Box className={"fs-h4 white"}>
-                {title === "chat" ? senderUser?.nickName ?? "Deleted Contact" : title === "Friend Request" ? t("not-9_friend-request") : title}
+                {title === "chat" ? detail?.note?.nickName ?? "Unknown" : title === "Friend Request" ? t("not-9_friend-request") : title}
               </Box>
             </Stack>
             {read === "unread" && <img src={unreaddot} width={"12px"} height={"12px"} />}

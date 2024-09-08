@@ -1,3 +1,5 @@
+import { ICurrentChatroomMemberWallet } from "../features/chat/CurrentChatroomMembersSlice";
+
 export interface propsType {
   view: string;
   setView: (panel: string) => void;
@@ -79,6 +81,31 @@ export interface userType {
   friend: boolean;
 }
 
+export interface IMyInfo {
+  _id: string;
+  nickName: string;
+  avatar?: string;
+  wallet?: ICurrentChatroomMemberWallet[];
+  lang?: string;
+  twoFactor?: boolean;
+  contact?: string[];
+  sxpAddress: string;
+  status: number;
+  isDeleted: boolean;
+  isAdmin: boolean;
+  onlineStatus: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+  __v?: number;
+  lastAvailable: string;
+  solarPubKey?: string;
+  notificationStatus: string;
+  friend?: string[];
+  block?: string[];
+  rsa_pub_key?: string;
+  roles: string[];
+}
+
 export interface IContact {
   _id: string;
   nickName: string;
@@ -135,6 +162,7 @@ export interface scrollDownType {
 export interface INote {
   message?: string;
   sender?: string;
+  nickName?: string;
   room_id?: string;
   status?: string;
   detail?: string;

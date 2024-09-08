@@ -1,9 +1,11 @@
-import { useState } from "react";
-import { SelectChangeEvent } from "@mui/material/Select";
 import { useTranslation } from "react-i18next";
+
+import { SelectChangeEvent } from "@mui/material/Select";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import { Box, MenuItem, FormControl, Select } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+
+import { FilterOptionNames } from "../../consts/FilterOptionNames";
 
 const MenuProps = {
   MenuListProps: {
@@ -14,9 +16,9 @@ const MenuProps = {
   },
   PaperProps: {
     style: {
+      minWidth: "0px",
       marginTop: "5px",
       maxHeight: "none",
-      width: "80px",
       display: "flex",
       alignItems: "center",
       borderRadius: "16px",
@@ -51,22 +53,33 @@ const theme = createTheme({
   },
 });
 
-const Genre = ["sto-20_action", "sto-21_adventure", "sto-22_strategy"];
+const Genre = [
+  FilterOptionNames.GENRE_ALL,
+  FilterOptionNames.GENRE_ACTION,
+  FilterOptionNames.GENRE_ADVENTURE,
+  FilterOptionNames.GENRE_ROLE_PLAYING,
+  FilterOptionNames.GENRE_SIMULATION,
+];
 
 var selectedshow: boolean = false;
 
-const Genrebtn = () => {
+export interface IPropsGenrebtn {
+  genre: string;
+  setGenre: (_: string) => void;
+}
+
+const Genrebtn = ({ genre, setGenre }: IPropsGenrebtn) => {
   const { t } = useTranslation();
-  const [releasedate, setReleaseDate] = useState<string>("");
+
   const handleChange = (event: SelectChangeEvent) => {
-    setReleaseDate(event.target.value);
+    setGenre(event.target.value);
   };
 
   return (
     <FormControl>
       <ThemeProvider theme={theme}>
         <Select
-          disabled
+          // disabled
           sx={{
             height: "40px",
             display: "flex",
@@ -89,7 +102,7 @@ const Genrebtn = () => {
           }}
           fullWidth
           displayEmpty
-          value={releasedate}
+          value={genre}
           onChange={handleChange}
           MenuProps={MenuProps}
           IconComponent={ExpandMoreIcon}
@@ -103,26 +116,25 @@ const Genrebtn = () => {
           {Genre.map((one) => (
             <MenuItem
               sx={{
-                width: "130px",
                 display: "flex",
                 justifyContent: "space-between",
                 borderBottom: "1px solid var(--bg-stroke-white-10-stroke-default, rgba(255, 255, 255, 0.10))",
+                backdropFilter: "blur(10px)",
                 "&:hover": {
                   background: "var(--bg-stroke-blue-stroke-default-10, rgba(82, 225, 242, 0.10))",
                 },
                 "&.Mui-selected": {
                   background: "var(--bg-stroke-blue-stroke-default-10, rgba(82, 225, 242, 0.10))",
+                  backdropFilter: "blur(10px)",
                   "&:hover": {
                     background: "var(--bg-stroke-blue-stroke-default-10, rgba(82, 225, 242, 0.10))",
                   },
-                  backdropFilter: "blur(10px)",
                 },
-                backdropFilter: "blur(10px)",
               }}
               key={one}
-              value={t(`${one}`)}
+              value={one}
             >
-              <Box className={"fs-16 white"} sx={{ marginLeft: "8px" }}>
+              <Box className={"fs-16 white"} sx={{ margin: "0px 8px" }}>
                 {t(`${one}`)}
               </Box>
             </MenuItem>

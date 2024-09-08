@@ -38,11 +38,11 @@
   &.MuiButtonBase-root {
     padding: 2px;
     background-color: transparent;
-    &:hover {
-      background-color: #ffffff1a;
-    }
     text-transform: none;
     justify-content: center;
     align-items: center;
+    &:hover {
+      background-color: #ffffff1a;
+    }
   }
 }

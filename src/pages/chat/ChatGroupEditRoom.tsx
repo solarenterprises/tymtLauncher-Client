@@ -1,13 +1,15 @@
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
+import { emit } from "@tauri-apps/api/event";
+
+import { SyncEventNames } from "../../consts/SyncEventNames";
+import { TauriEventNames } from "../../consts/TauriEventNames";
 
 import { Box, Button, Divider, Stack, Tooltip } from "@mui/material";
 
 import InputText from "../../components/account/InputText";
 import GroupAvatar from "../../components/chat/GroupAvatar";
-
-import { useNotification } from "../../providers/NotificationProvider";
 
 import { AppDispatch } from "../../store";
 import { getCurrentChatroom, setCurrentChatroom } from "../../features/chat/CurrentChatroomSlice";
@@ -19,15 +21,22 @@ import editIcon from "../../assets/settings/edit-icon.svg";
 
 import { propsType } from "../../types/settingTypes";
 import { IChatroom, IReqChatroomUpdateGroupName } from "../../types/ChatroomAPITypes";
+import { useSocket } from "../../providers/SocketProvider";
+import { ISocketParamsSyncEventsAll } from "../../types/SocketTypes";
+import { INotificationParams } from "../../types/NotificationTypes";
+import { IMyInfo } from "../../types/chatTypes";
+import { getMyInfo } from "../../features/account/MyInfoSlice";
 
 const ChatGroupEditRoom = ({ view, setView }: propsType) => {
   const classname = SettingStyle();
+  const { socket } = useSocket();
   const { t } = useTranslation();
   const dispatch = useDispatch<AppDispatch>();
-  const currentChatroomStore: IChatroom = useSelector(getCurrentChatroom);
-  const [groupName, setGroupName] = useState<string>("");
 
-  const { setNotificationStatus, setNotificationTitle, setNotificationDetail, setNotificationOpen, setNotificationLink } = useNotification();
+  const currentChatroomStore: IChatroom = useSelector(getCurrentChatroom);
+  const myInfoStore: IMyInfo = useSelector(getMyInfo);
+
+  const [groupName, setGroupName] = useState<string>("");
 
   const handleBrowseClick = () => {
     try {
@@ -47,56 +56,121 @@ const ChatGroupEditRoom = ({ view, setView }: propsType) => {
       const file = fileInput.files ? fileInput.files[0] : null;
       const formData = new FormData();
       formData.append("file", file);
-      formData.append("room_id", currentChatroomStore._id);
+      formData.append("room_id", currentChatroomStore?._id);
       dispatch(updateGroupAvatarAsync(formData)).then((action) => {
         if (action.type.endsWith("/fulfilled")) {
           const newCurrentChatroom = action.payload as IChatroom;
+          if (!newCurrentChatroom) {
+            const data: INotificationParams = {
+              status: "failed",
+              title: "Error",
+              message: "Error at updating the group image async",
+              link: null,
+              translate: true,
+            };
+            emit(TauriEventNames.NOTIFICATION, data);
+            return;
+          }
           dispatch(setCurrentChatroom(newCurrentChatroom));
-          setNotificationStatus("success");
-          setNotificationTitle(t("alt-32_avatar-saved"));
-          setNotificationDetail(t("alt-33_avatar-saved-intro"));
-          setNotificationOpen(true);
-          setNotificationLink(null);
+
+          const data: INotificationParams = {
+            status: "success",
+            title: "Success",
+            message: "Group image has been updated.",
+            link: null,
+            translate: true,
+          };
+          emit(TauriEventNames.NOTIFICATION, data);
+
+          if (socket.current && socket.current.connected) {
+            const data: ISocketParamsSyncEventsAll = {
+              sender_id: myInfoStore?._id,
+              instructions: [SyncEventNames.UPDATE_IMAGE_RENDER_TIME],
+              is_to_self: true,
+            };
+            socket.current.emit("sync-events-all", JSON.stringify(data));
+            console.log("socket.current.emit > sync-events-all", data);
+          }
         }
       });
-      console.log("uploadGroupAvatar", file, currentChatroomStore._id);
+      console.log("uploadGroupAvatar", file, currentChatroomStore?._id);
     } catch (err) {
       console.error("Failed to uploadGroupAvatar: ", err);
-      setNotificationStatus("failed");
-      setNotificationTitle(t("alt-34_avatar-notsaved"));
-      setNotificationDetail(err.toString());
-      setNotificationOpen(true);
-      setNotificationLink(null);
+      const data: INotificationParams = {
+        status: "failed",
+        title: "Error",
+        message: err.toString(),
+        link: null,
+        translate: true,
+      };
+      emit(TauriEventNames.NOTIFICATION, data);
     }
-  }, [currentChatroomStore]);
+  }, [socket.current, currentChatroomStore, myInfoStore]);
 
   const handleSaveClick = useCallback(() => {
     try {
+      if (!groupName) {
+        const data: INotificationParams = {
+          status: "failed",
+          title: "Error",
+          message: "The group name mustn't be empty.",
+          link: null,
+          translate: true,
+        };
+        emit(TauriEventNames.NOTIFICATION, data);
+        return;
+      }
       const body: IReqChatroomUpdateGroupName = {
-        room_id: currentChatroomStore._id,
+        room_id: currentChatroomStore?._id,
         room_name: groupName,
       };
       dispatch(updateGroupNameAsync(body)).then((action) => {
         if (action.type.endsWith("/fulfilled")) {
           const newCurrentChatroom: IChatroom = action.payload as IChatroom;
+          if (!newCurrentChatroom) {
+            console.error("Failed to updateGroupNameAsync: newCurrentChatroom undefined!");
+            return;
+          }
           dispatch(setCurrentChatroom(newCurrentChatroom));
-          setNotificationStatus("success");
-          setNotificationTitle(t("cha-56_group-image-saved"));
-          setNotificationDetail(t("cha-57_group-image-success"));
-          setNotificationOpen(true);
-          setNotificationLink(null);
+
+          const data: INotificationParams = {
+            status: "success",
+            title: "Success",
+            message: "Group detail has been updated.",
+            link: null,
+            translate: true,
+          };
+          emit(TauriEventNames.NOTIFICATION, data);
+
+          if (socket.current && socket.current.connected) {
+            const data: ISocketParamsSyncEventsAll = {
+              sender_id: myInfoStore?._id,
+              instructions: [SyncEventNames.UPDATE_CHATROOM_LIST],
+              is_to_self: true,
+            };
+            socket.current.emit("sync-events-all", JSON.stringify(data));
+            console.log("socket.current.emit > sync-events-all", data);
+          }
         }
       });
 
-      console.log("handleSaveClick", groupName, currentChatroomStore._id);
+      console.log("handleSaveClick", groupName, currentChatroomStore?._id);
     } catch (err) {
       console.error("Failed to handleSaveClick:", err);
+      const data: INotificationParams = {
+        status: "failed",
+        title: "Error",
+        message: err.toString(),
+        link: null,
+        translate: true,
+      };
+      emit(TauriEventNames.NOTIFICATION, data);
     }
-  }, [groupName, currentChatroomStore]);
+  }, [socket.current, groupName, currentChatroomStore]);
 
   useEffect(() => {
     if (view === "chatGroupEditRoom") {
-      setGroupName(currentChatroomStore.room_name);
+      setGroupName(currentChatroomStore?.room_name);
     }
   }, [view]);
 
@@ -116,7 +190,7 @@ const ChatGroupEditRoom = ({ view, setView }: propsType) => {
             <Stack direction={"row"} justifyContent={"space-between"} textAlign={"center"} padding={"30px"}>
               <Stack direction={"row"} justifyContent={"center"} textAlign={"right"} alignItems={"center"} gap={"10px"}>
                 <Box className="center-align">
-                  <GroupAvatar size={92} url={currentChatroomStore.room_image} />
+                  <GroupAvatar size={92} url={currentChatroomStore?.room_image} />
                 </Box>
                 <Box className="fs-h5 white">{t("set-68_change-avatar")}</Box>
               </Stack>

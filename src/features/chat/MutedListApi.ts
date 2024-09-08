@@ -8,7 +8,6 @@ export const fetchMutedList = async () => {
       console.error("Failed to fetchMutedList: ", res);
       return null;
     }
-    console.log("fetchMutedList", res);
     return res.data.muted_rooms;
   } catch (err) {
     console.error("Failed to fetchMutedList: ", err);

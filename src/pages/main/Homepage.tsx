@@ -6,17 +6,17 @@ import { tymt_backend_url } from "../../configs";
 import { ISaltToken, ITymt } from "../../types/accountTypes";
 import Tymtshow from "../../components/home/Tymtshow";
 import Bottom from "../../components/home/Bottom";
-import Games from "../../lib/game/Game";
 import ComingsoonD53 from "../../components/home/ComingSoon-D53";
 import District53intro from "../../components/home/District53intro";
-import RecentlyAddedD53 from "../../components/home/RecentlyAdded-D53";
+import RecentlyAddedD53 from "../../components/home/RecentlyAdded";
 import UpdateModal from "../../components/home/UpdateModal";
 import { getTymt } from "../../features/account/TymtSlice";
 import { getSaltToken } from "../../features/account/SaltTokenSlice";
 import AnimatedComponent from "../../components/AnimatedComponent";
+import { District53 } from "../../lib/game/district 53/District53";
 
 const Homepage = () => {
-  const [image, setImage] = useState(Games["district53"].images[0]);
+  const [image, setImage] = useState<string>(District53?.imageUrl);
   const saltTokenStore: ISaltToken = useSelector(getSaltToken);
   const tymtStore: ITymt = useSelector(getTymt);
   const [updateModal, setUpdateModal] = useState<boolean>(false);
@@ -36,7 +36,6 @@ const Homepage = () => {
   }, []);
 
   return (
-    // <AnimatePresence mode="wait">
     <>
       <AnimatedComponent>
         <Grid
@@ -51,7 +50,7 @@ const Homepage = () => {
           <District53intro setImage={setImage} />
         </Grid>
       </AnimatedComponent>
-      <Grid container xs={12} sx={{ marginTop: "80px" }}>
+      <Grid container sx={{ marginTop: "80px" }}>
         <AnimatedComponent>
           <RecentlyAddedD53 />
         </AnimatedComponent>
@@ -64,8 +63,6 @@ const Homepage = () => {
       </Grid>
       <UpdateModal open={updateModal} setOpen={setUpdateModal} />
     </>
-
-    // </AnimatePresence>
   );
 };
 

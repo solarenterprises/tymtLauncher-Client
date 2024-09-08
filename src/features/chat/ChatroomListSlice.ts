@@ -1,6 +1,6 @@
 import { PayloadAction, createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import tymtStorage from "../../lib/Storage";
-import { compareJSONStructure } from "../../lib/api/JSONHelper";
+import { compareJSONStructure } from "../../lib/helper/JSONHelper";
 import { IChatroomList } from "../../types/ChatroomAPITypes";
 import {
   createDM,
@@ -13,6 +13,7 @@ import {
   addOneToChatroomList,
   updateGroupAvatar,
   updateGroupName,
+  removeChatroom,
 } from "./ChatroomListApi";
 
 const init: IChatroomList = {
@@ -45,6 +46,7 @@ export const joinPublicGroupAsync = createAsyncThunk("chatroomList/joinPublicGro
 export const leaveGroupAsync = createAsyncThunk("chatroomList/leaveGroupAsync", leaveGroup);
 export const updateGroupAvatarAsync = createAsyncThunk("chatroomList/updateGroupAvatarAsync", updateGroupAvatar);
 export const updateGroupNameAsync = createAsyncThunk("chatroomList/updateGrounNameAsync", updateGroupName);
+export const removeChatroomAsync = createAsyncThunk("chatroomList/removeChatroomAsync", removeChatroom);
 
 export const chatroomListSlice = createSlice({
   name: "chatroomList",
@@ -184,6 +186,19 @@ export const chatroomListSlice = createSlice({
       .addCase(updateGroupNameAsync.fulfilled, (state, action: PayloadAction<any>) => {
         if (!action.payload) {
           console.error("Failed to updateGroupNameAsync: ", action.payload);
+          return;
+        }
+        const restOfChatrooms = state.data.chatrooms.filter((element) => element._id !== action.payload?._id);
+        state.data.chatrooms = [...restOfChatrooms, action.payload];
+        tymtStorage.set(`chatroomList`, JSON.stringify(state.data));
+        state.status = "chatroomList";
+      })
+      .addCase(removeChatroomAsync.pending, (state) => {
+        state.status = "pending";
+      })
+      .addCase(removeChatroomAsync.fulfilled, (state, action: PayloadAction<any>) => {
+        if (!action.payload) {
+          console.error("Failed to removeChatroomAsync: ", action.payload);
           return;
         }
         const restOfChatrooms = state.data.chatrooms.filter((element) => element._id !== action.payload?._id);

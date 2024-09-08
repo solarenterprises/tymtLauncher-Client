@@ -16,33 +16,58 @@ import { Chatdecrypt } from "../../lib/api/ChatEncrypt";
 import { getChatHistory } from "../../features/chat/ChatHistorySlice";
 import { getCurrentChatroom } from "../../features/chat/CurrentChatroomSlice";
 import { getSKeyList, ISKeyList } from "../../features/chat/SKeyListSlice";
-import { getAccount } from "../../features/account/AccountSlice";
 import { getActiveUserList, IActiveUserList } from "../../features/chat/ActiveUserListSlice";
 import { getCurrentChatroomMembers, ICurrentChatroomMembers } from "../../features/chat/CurrentChatroomMembersSlice";
 import { selectNotification } from "../../features/settings/NotificationSlice";
 
-import { ChatHistoryType, ChatMessageType } from "../../types/chatTypes";
+import { ChatHistoryType, ChatMessageType, IMyInfo } from "../../types/chatTypes";
 import { IChatroom } from "../../types/ChatroomAPITypes";
-import { accountType } from "../../types/accountTypes";
 import { notificationType } from "../../types/settingTypes";
+import { getAdminList, IAdminList } from "../../features/chat/AdminListSlice";
+import { isArray } from "lodash";
+import { getMyInfo } from "../../features/account/MyInfoSlice";
+import { getHistoricalChatroomMembers } from "../../features/chat/HistoricalChatroomMembersSlice";
 
 export interface IParamsBubble {
   message: ChatMessageType;
   index: number;
   screenExpanded: boolean;
   roomMode: boolean;
+  isDM: boolean;
 }
 
-const Bubble = ({ roomMode, screenExpanded, message, index }: IParamsBubble) => {
-  const accountStore: accountType = useSelector(getAccount);
+const Bubble = ({ roomMode, screenExpanded, message, index, isDM }: IParamsBubble) => {
   const chatHistoryStore: ChatHistoryType = useSelector(getChatHistory);
   const currentChatroomStore: IChatroom = useSelector(getCurrentChatroom);
+  const historicalChatroomMembersStore: ICurrentChatroomMembers = useSelector(getHistoricalChatroomMembers);
   const sKeyListStore: ISKeyList = useSelector(getSKeyList);
   const activeUserListStore: IActiveUserList = useSelector(getActiveUserList);
   const currentChatroomMembersStore: ICurrentChatroomMembers = useSelector(getCurrentChatroomMembers);
   const notificationStore: notificationType = useSelector(selectNotification);
+  const adminListStore: IAdminList = useSelector(getAdminList);
+  const myInfoStore: IMyInfo = useSelector(getMyInfo);
 
-  const sKey = sKeyListStore.sKeys.find((element) => element.roomId === currentChatroomStore?._id)?.sKey;
+  const displayNickname: string = useMemo(() => {
+    if (myInfoStore?._id === message?.sender_id) {
+      return myInfoStore?.nickName ?? "Deleted";
+    }
+    const sender = currentChatroomMembersStore?.members?.find((member) => member?._id === message?.sender_id);
+    if (sender) return sender?.nickName ?? "Deleted";
+    const history = historicalChatroomMembersStore?.members?.find((member) => member?._id === message?.sender_id);
+    if (history) return history?.nickName ?? "Deleted";
+    const admin = adminListStore?.admins?.find((admin) => admin?._id === message?.sender_id);
+    if (admin) return admin?.nickName ?? "Deleted";
+    return "Deleted";
+  }, [currentChatroomMembersStore, myInfoStore, historicalChatroomMembersStore]);
+
+  const displayRole: string = useMemo(() => {
+    const sender = adminListStore?.admins?.find((admin) => admin?._id === message?.sender_id);
+    if (!sender && !isArray(sender?.roles)) return "";
+    if (sender.roles.length === 0) return "";
+    return sender.roles[0];
+  }, [adminListStore]);
+
+  const sKey = sKeyListStore?.sKeys?.find((element) => element.roomId === currentChatroomStore?._id)?.sKey;
 
   const formatDateDifference = (date) => {
     const today: any = new Date(Date.now());
@@ -66,15 +91,15 @@ const Bubble = ({ roomMode, screenExpanded, message, index }: IParamsBubble) => 
   };
 
   const isFirstMessageOfDay = useCallback(() => {
-    if (index === 0) return true;
-    const previousMessageDate = new Date([...chatHistoryStore.messages].reverse()[index - 1]?.createdAt);
+    if (index === chatHistoryStore.messages?.length - 1) return true;
+    const previousMessageDate = new Date(chatHistoryStore.messages[index + 1]?.createdAt);
     const currentMessageDate = new Date(message.createdAt);
     return !isSameDay(previousMessageDate, currentMessageDate);
   }, [chatHistoryStore]);
 
   const detectLastMessageofStack = useCallback(() => {
-    const nextMessageSender = [...chatHistoryStore.messages].reverse()[index + 1]?.sender_id;
-    const currentMessageSender = [...chatHistoryStore.messages].reverse()[index]?.sender_id;
+    const nextMessageSender = chatHistoryStore.messages[index - 1]?.sender_id;
+    const currentMessageSender = chatHistoryStore.messages[index]?.sender_id;
     return nextMessageSender !== currentMessageSender;
   }, [chatHistoryStore]);
 
@@ -90,7 +115,7 @@ const Bubble = ({ roomMode, screenExpanded, message, index }: IParamsBubble) => 
 
   const timeline = isFirstMessageOfDay() ? formatDateDifference(message.createdAt) : null;
   const isLastMessageOfStack = detectLastMessageofStack();
-  const isSender = message.sender_id === accountStore.uid;
+  const isSender = message.sender_id === myInfoStore?._id;
   const decryptedMessage = useMemo(() => {
     try {
       const res = decryptMessage(message.message);
@@ -112,10 +137,10 @@ const Bubble = ({ roomMode, screenExpanded, message, index }: IParamsBubble) => 
         alignItems={"flex-end"}
         marginTop={"10px"}
         gap={"15px"}
-        justifyContent={!screenExpanded ? (message.sender_id === accountStore.uid ? "flex-end" : "flex-start") : "flex-start"}
+        justifyContent={!screenExpanded ? (message.sender_id === myInfoStore?._id ? "flex-end" : "flex-start") : "flex-start"}
       >
         {roomMode && screenExpanded && isLastMessageOfStack && isSender && (
-          <Avatar onlineStatus={true} url={accountStore.avatar} size={40} status={!notificationStore.alert ? "donotdisturb" : "online"} />
+          <Avatar onlineStatus={true} url={myInfoStore?.avatar} size={40} status={!notificationStore.alert ? "donotdisturb" : "online"} />
         )}
         {roomMode && screenExpanded && isLastMessageOfStack && !isSender && (
           <Avatar
@@ -127,19 +152,64 @@ const Bubble = ({ roomMode, screenExpanded, message, index }: IParamsBubble) => 
         )}
         {roomMode && screenExpanded && !isLastMessageOfStack && <div style={{ width: "40px", height: "40px" }} />}
         {(!message.type || message.type === "text") && (
-          <BubbleText roomMode={roomMode} message={message} decryptedMessage={decryptedMessage} isLastMessage={isLastMessageOfStack} isSender={isSender} />
+          <BubbleText
+            roomMode={roomMode}
+            message={message}
+            decryptedMessage={decryptedMessage}
+            isLastMessage={isLastMessageOfStack}
+            isSender={isSender}
+            displayNickname={displayNickname}
+            isDM={isDM}
+            displayRole={displayRole}
+          />
         )}
         {message.type === "audio" && (
-          <BubbleAudio roomMode={roomMode} message={message} decryptedMessage={decryptedMessage} isLastMessage={isLastMessageOfStack} isSender={isSender} />
+          <BubbleAudio
+            roomMode={roomMode}
+            message={message}
+            decryptedMessage={decryptedMessage}
+            isLastMessage={isLastMessageOfStack}
+            isSender={isSender}
+            displayNickname={displayNickname}
+            isDM={isDM}
+            displayRole={displayRole}
+          />
         )}
         {message.type === "image" && (
-          <BubbleImage roomMode={roomMode} message={message} decryptedMessage={decryptedMessage} isLastMessage={isLastMessageOfStack} isSender={isSender} />
+          <BubbleImage
+            roomMode={roomMode}
+            message={message}
+            decryptedMessage={decryptedMessage}
+            isLastMessage={isLastMessageOfStack}
+            isSender={isSender}
+            displayNickname={displayNickname}
+            isDM={isDM}
+            displayRole={displayRole}
+          />
         )}
         {message.type === "video" && (
-          <BubbleVideo roomMode={roomMode} message={message} decryptedMessage={decryptedMessage} isLastMessage={isLastMessageOfStack} isSender={isSender} />
+          <BubbleVideo
+            roomMode={roomMode}
+            message={message}
+            decryptedMessage={decryptedMessage}
+            isLastMessage={isLastMessageOfStack}
+            isSender={isSender}
+            displayNickname={displayNickname}
+            isDM={isDM}
+            displayRole={displayRole}
+          />
         )}
         {message.type === "file" && (
-          <BubbleFile roomMode={roomMode} message={message} decryptedMessage={decryptedMessage} isLastMessage={isLastMessageOfStack} isSender={isSender} />
+          <BubbleFile
+            roomMode={roomMode}
+            message={message}
+            decryptedMessage={decryptedMessage}
+            isLastMessage={isLastMessageOfStack}
+            isSender={isSender}
+            displayNickname={displayNickname}
+            isDM={isDM}
+            displayRole={displayRole}
+          />
         )}
       </Stack>
     </Box>

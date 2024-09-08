@@ -6,8 +6,14 @@ import closeIcon from "../../assets/settings/x-icon.svg";
 import encryptIcon from "../../assets/account/encrypt-icon.svg";
 import benefitIcon from "../../assets/account/benefit-icon.svg";
 import benefitImg from "../../assets/account/benefit.svg";
-import { benefitModalType } from "../../types/accountTypes";
-const BenefitModal = ({ open, setOpen, path }: benefitModalType) => {
+
+export interface IPropsBenefitModal {
+  open: boolean;
+  setOpen: (_: boolean) => void;
+  path: string;
+}
+
+const BenefitModal = ({ open, setOpen, path }: IPropsBenefitModal) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const modalStyle = {

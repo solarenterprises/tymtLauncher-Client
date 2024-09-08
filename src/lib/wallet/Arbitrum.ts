@@ -3,7 +3,7 @@ import { ethers } from "ethers";
 import * as ethereumjsWallet from "ethereumjs-wallet";
 import * as bip39 from "bip39";
 import { arb_api_key, arb_api_url, arb_rpc_url, net_name } from "../../configs";
-import { IToken, IGetTokenBalanceRes } from "../../types/walletTypes";
+import { ISupportToken, IBalance } from "../../types/walletTypes";
 
 class Arbitrum implements IWallet {
   address: string;
@@ -38,18 +38,18 @@ class Arbitrum implements IWallet {
     }
   }
 
-  static async getTokenBalance(addr: string, tokens: IToken[]): Promise<IGetTokenBalanceRes[]> {
+  static async getTokenBalance(addr: string, tokens: ISupportToken[]): Promise<IBalance[]> {
     try {
-      let result: IGetTokenBalanceRes[] = [];
-      for (let i = 0; i < tokens.length; i++) {
+      let result: IBalance[] = [];
+      for (let i = 0; i < tokens?.length; i++) {
         if (net_name === "testnet") {
           result.push({
-            cmc: tokens[i].cmc,
-            balance: 0,
+            symbol: tokens[i].symbol,
+            balance: 0.0,
           });
         } else {
           result.push({
-            cmc: tokens[i].cmc,
+            symbol: tokens[i].symbol,
             balance:
               ((
                 await (
@@ -64,7 +64,7 @@ class Arbitrum implements IWallet {
       }
       return result;
     } catch (err) {
-      console.log(err);
+      console.log("Failed to ARBITRUM getTokenBalance: ", err);
       return [];
     }
   }

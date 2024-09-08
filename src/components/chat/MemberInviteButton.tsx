@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { Button } from "@mui/material";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 
+import { useNotification } from "../../providers/NotificationProvider";
 import { useSocket } from "../../providers/SocketProvider";
 
 import { AppDispatch } from "../../store";
@@ -14,23 +15,31 @@ import { getCurrentChatroom, setCurrentChatroom } from "../../features/chat/Curr
 import { IChatroom, IChatroomList } from "../../types/ChatroomAPITypes";
 import { ISocketParamsJoinMessageGroup } from "../../types/SocketTypes";
 
+import { translateString } from "../../lib/api/Translate";
+import { useTranslation } from "react-i18next";
+import { fetchHistoricalChatroomMembersAsync } from "../../features/chat/HistoricalChatroomMembersSlice";
+
 export interface IPropsMemberInviteButton {
   member: ICurrentChatroomMember;
 }
 
 const MemberInviteButton = ({ member }: IPropsMemberInviteButton) => {
+  const { t } = useTranslation();
   const { socket } = useSocket();
+  const { setNotificationStatus, setNotificationTitle, setNotificationDetail, setNotificationOpen, setNotificationLink } = useNotification();
   const dispatch = useDispatch<AppDispatch>();
+
   const chatroomListStore: IChatroomList = useSelector(getChatroomList);
   const currentChatroomStore: IChatroom = useSelector(getCurrentChatroom);
 
-  const handleMemberInviteButtonClick = useCallback(() => {
+  const handleMemberInviteButtonClick = useCallback(async () => {
     try {
       dispatch(addParticipantAsync(member)).then((action) => {
         if (action.type.endsWith("/fulfilled")) {
           const newCurrentChatroom = action.payload as IChatroom;
           dispatch(setCurrentChatroom(newCurrentChatroom));
           dispatch(fetchCurrentChatroomMembersAsync(newCurrentChatroom._id));
+          dispatch(fetchHistoricalChatroomMembersAsync(newCurrentChatroom._id));
 
           if (socket.current && socket.current.connected) {
             const data: ISocketParamsJoinMessageGroup = {
@@ -45,6 +54,12 @@ const MemberInviteButton = ({ member }: IPropsMemberInviteButton) => {
       console.log("handleMemberInviteButtonClick");
     } catch (err) {
       console.error("Failed to handleMemberInviteButtonClick: ", err);
+
+      setNotificationStatus("failed");
+      setNotificationTitle(t("hom-23_error"));
+      setNotificationDetail(await translateString(err.toString()));
+      setNotificationOpen(true);
+      setNotificationLink(null);
     }
   }, [chatroomListStore, currentChatroomStore, socket.current]);
 

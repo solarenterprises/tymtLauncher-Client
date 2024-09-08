@@ -1,13 +1,8 @@
 import { useTranslation } from "react-i18next";
-import { useSelector, useDispatch } from "react-redux";
 import { Box, Stack, Button, Grid } from "@mui/material";
-import { getAccount, setAccount } from "../../features/account/AccountSlice";
-import { loginEnum, accountType } from "../../types/accountTypes";
 
 const SwitchButton = () => {
   const { t } = useTranslation();
-  const dispatch = useDispatch();
-  const accountStore: accountType = useSelector(getAccount);
 
   return (
     <Grid container>
@@ -20,34 +15,24 @@ const SwitchButton = () => {
           }}
           spacing={"6px"}
         >
-          <Button
-            className={accountStore.mode === loginEnum.signup ? "switch-button-checked" : "switch-button"}
-            onClick={() => {
-              dispatch(setAccount({ ...accountStore, mode: loginEnum.signup }));
-            }}
-          >
+          <Button className={"switch-button"} onClick={() => {}}>
             <Box
               className={"fs-18-regular"}
               sx={{
                 padding: "8px 16px",
-                color: accountStore.mode === loginEnum.signup ? "#52E1F2" : "white",
+                color: "white",
                 fontFeatureSettings: "'calt' off",
               }}
             >
               {t("wc-10_sign-up")}
             </Box>
           </Button>
-          <Button
-            className={accountStore.mode === loginEnum.login ? "switch-button-checked" : "switch-button"}
-            onClick={() => {
-              dispatch(setAccount({ ...accountStore, mode: loginEnum.login }));
-            }}
-          >
+          <Button className={"switch-button"} onClick={() => {}}>
             <Box
               className={"fs-18-regular"}
               sx={{
                 padding: "8px 16px",
-                color: accountStore.mode === loginEnum.login ? "#52E1F2" : "white",
+                color: "white",
                 fontFeatureSettings: "'calt' off",
               }}
             >

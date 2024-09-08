@@ -1,530 +1,175 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
-import { useEffect, useRef, useState } from "react";
-import createKeccakHash from "keccak";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { motion } from "framer-motion";
+
+import "../../global.css";
+
 import { Grid, Box, Stack } from "@mui/material";
+
 import Back from "../../components/account/Back";
 import AccountHeader from "../../components/account/AccountHeader";
 import AccountNextButton from "../../components/account/AccountNextButton";
 import Stepper from "../../components/account/Stepper";
 import WalletList from "../../components/account/WalletList";
-import tymt2 from "../../assets/account/tymt2.png";
-import "../../global.css";
-import { getAccount, setAccount } from "../../features/account/AccountSlice";
-import { getNonCustodial, setNonCustodial } from "../../features/account/NonCustodialSlice";
-import { setCustodial } from "../../features/account/CustodialSlice";
-import { getTempNonCustodial, setTempNonCustodial } from "../../features/account/TempNonCustodialSlice";
-import { getTempCustodial } from "../../features/account/TempCustodialSlice";
-import { loginEnum, accountType, walletEnum, nonCustodialType, custodialType, IMnemonic, ISaltToken, IMachineId } from "../../types/accountTypes";
-import { getMultiWallet, refreshBalancesAsync, setMultiWallet } from "../../features/wallet/MultiWalletSlice";
-import { setChainAsync } from "../../features/wallet/ChainSlice";
-import { ID53Password, multiWalletType } from "../../types/walletTypes";
-import { getTempMultiWallet } from "../../features/wallet/TempMultiWalletSlice";
-import { encrypt } from "../../lib/api/Encrypt";
+
 import AuthAPI from "../../lib/api/AuthAPI";
+
+import { encrypt, getKeccak256Hash } from "../../lib/api/Encrypt";
+import {
+  getNonCustodySignInToken,
+  getReqBodyNonCustodyBeforeSignIn,
+  getReqBodyNonCustodySignIn,
+  getReqBodyNonCustodySignUp,
+} from "../../lib/helper/AuthAPIHelper";
+
 import { AppDispatch } from "../../store";
-import { getD53Password, setD53Password } from "../../features/wallet/D53PasswordSlice";
-import tymtStorage from "../../lib/Storage";
-import { useNotification } from "../../providers/NotificationProvider";
-import { selectWallet, setWallet } from "../../features/settings/WalletSlice";
-import { walletType } from "../../types/settingTypes";
-import { translateString } from "../../lib/api/Translate";
-import { generateSocketHash } from "../../features/chat/SocketHashApi";
-import { getSocketHash, setSocketHash } from "../../features/chat/SocketHashSlice";
-import { IRsa, ISocketHash } from "../../types/chatTypes";
-import tymtCore from "../../lib/core/tymtCore";
-import { getSaltToken, setSaltToken } from "../../features/account/SaltTokenSlice";
-import { INonCustodyBeforeSignInReq, INonCustodySignInReq } from "../../types/AuthAPITypes";
-import { getMnemonic } from "../../features/account/MnemonicSlice";
-import { refreshCurrencyAsync } from "../../features/wallet/CurrencySlice";
-import { motion } from "framer-motion";
-import { setRsa } from "../../features/chat/RsaSlice";
-import { getRsaKeyPair } from "../../features/chat/RsaApi";
+import { addAccountList } from "../../features/account/AccountListSlice";
+import { getTempAccount } from "../../features/account/TempAccountSlice";
+import { setWallet } from "../../features/wallet/WalletSlice";
 import { getMachineId } from "../../features/account/MachineIdSlice";
+import { setAccount } from "../../features/account/AccountSlice";
+import { getSaltToken, setSaltToken } from "../../features/account/SaltTokenSlice";
+import { addWalletList } from "../../features/wallet/WalletListSlice";
+import { getTempWallet } from "../../features/wallet/TempWalletSlice";
+import { setLogin } from "../../features/account/LoginSlice";
+
+import tymt2 from "../../assets/account/tymt2.png";
+
+import { IWallet } from "../../types/walletTypes";
+import { ISaltToken, IMachineId, IAccount } from "../../types/accountTypes";
+import { INonCustodySignUpReq } from "../../types/AuthAPITypes";
+import { fetchMyInfoAsync } from "../../features/account/MyInfoSlice";
+import { generateSocketHash } from "../../features/chat/SocketHashApi";
+import { setMnemonic } from "../../features/account/MnemonicSlice";
+import { setSocketHash } from "../../features/chat/SocketHashSlice";
+import { getRsaKeyPairAsync } from "../../features/chat/RsaSlice";
+import UserAPI from "../../lib/api/UserAPI";
+import { IReqUpdateUser } from "../../types/UserAPITypes";
 
 const ConfirmInformation = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
   const { t } = useTranslation();
-  const walletStore: walletType = useSelector(selectWallet);
-  const accountStore: accountType = useSelector(getAccount);
-  const nonCustodialStore: nonCustodialType = useSelector(getNonCustodial);
-  const tempNonCustodialStore: nonCustodialType = useSelector(getTempNonCustodial);
-  const tempCustodialStore: custodialType = useSelector(getTempCustodial);
-  const tempMultiWallet: multiWalletType = useSelector(getTempMultiWallet);
-  const multiWalletStore: multiWalletType = useSelector(getMultiWallet);
-  const tempD53PasswordStore: ID53Password = JSON.parse(tymtStorage.get(`tempD53Password`));
-  const d53PasswordStore: ID53Password = useSelector(getD53Password);
-  const socketHashStore: ISocketHash = useSelector(getSocketHash);
-  const mnemonicStore: IMnemonic = useSelector(getMnemonic);
+  const { mode } = useParams();
+
+  const tempAccountStore: IAccount = useSelector(getTempAccount);
+  const tempWalletStore: IWallet = useSelector(getTempWallet);
   const saltTokenStore: ISaltToken = useSelector(getSaltToken);
-  const saltTokenRef = useRef(saltTokenStore);
   const machineIdStore: IMachineId = useSelector(getMachineId);
+
+  const tempAccountStoreRef = useRef(tempAccountStore);
+  const tempWalletStoreRef = useRef(tempWalletStore);
+  const saltTokenStoreRef = useRef(saltTokenStore);
   const machineIdStoreRef = useRef(machineIdStore);
-  const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
-    saltTokenRef.current = saltTokenStore;
+    tempAccountStoreRef.current = tempAccountStore;
+  }, [tempAccountStore]);
+  useEffect(() => {
+    tempWalletStoreRef.current = tempWalletStore;
+  }, [tempWalletStore]);
+  useEffect(() => {
+    saltTokenStoreRef.current = saltTokenStore;
   }, [saltTokenStore]);
   useEffect(() => {
     machineIdStoreRef.current = machineIdStore;
   }, [machineIdStore]);
 
-  const { setNotificationStatus, setNotificationTitle, setNotificationDetail, setNotificationOpen, setNotificationLink } = useNotification();
+  const [loading, setLoading] = useState<boolean>(false);
 
-  useEffect(() => {
-    dispatch(
-      setWallet({
-        ...walletStore,
-        refreshed: false,
-      })
-    );
-  }, []);
+  const displayWallet: IWallet = useMemo(() => {
+    if (mode === "signup" || mode === "guest") return tempWalletStore;
+  }, [tempWalletStore]);
 
   const handleBackClick = () => {
     navigate("/start");
   };
 
-  const handleConfirmClick = async () => {
-    if (accountStore.wallet === walletEnum.custodial) {
-      if (accountStore.mode === loginEnum.login) {
-        navigate("/home");
-      } else if (accountStore.mode === loginEnum.signup) {
-        dispatch(setCustodial(tempCustodialStore));
-        navigate("/custodial/login/1");
-      } else if (accountStore.mode === loginEnum.reset) {
-        dispatch(setCustodial(tempCustodialStore));
-        navigate("/custodial/login/1");
-      }
-    } else if (accountStore.wallet === walletEnum.noncustodial) {
-      if (accountStore.mode === loginEnum.login) {
-        try {
-          setLoading(true);
-          const publicKey: string = tymtCore.Blockchains.solar.wallet.getPublicKey(mnemonicStore.mnemonic);
-          const signature: string = tymtCore.Blockchains.solar.wallet.signMessage("tymt", mnemonicStore.mnemonic);
-          const rsaKeyPair: IRsa = await getRsaKeyPair(mnemonicStore.mnemonic);
-          const body0: INonCustodyBeforeSignInReq = {
-            sxpAddress: multiWalletStore.Solar.chain.wallet,
-            publicKey: publicKey,
-            signature: signature,
-          };
-          const res0 = await AuthAPI.nonCustodyBeforeSignin(body0);
-          const salt = res0?.data?.salt;
-          let token: string;
-          if (salt != saltTokenRef.current.salt) {
-            console.log(salt, "SALT", saltTokenRef.current.salt);
-            token = tymtCore.Blockchains.solar.wallet.signToken(salt, mnemonicStore.mnemonic);
-            dispatch(
-              setSaltToken({
-                salt: salt,
-                token: token,
-              })
-            );
-          } else {
-            token = saltTokenRef.current.token;
-          }
-          const body1: INonCustodySignInReq = {
-            sxpAddress: multiWalletStore.Solar.chain.wallet,
-            token: token,
-            rsa_pub_key: rsaKeyPair.publicKey,
-            deviceID: machineIdStoreRef.current.machineId,
-          };
-          await AuthAPI.nonCustodySignin(body1);
-          dispatch(
-            setAccount({
-              ...accountStore,
-              isLoggedIn: true, // ??? res?.data?.valid
-            })
-          );
-          const data = multiWalletStore.Solar;
-          const updateData = { ...data, currentToken: "chain" };
-          dispatch(setChainAsync(updateData));
-          navigate("/home");
-          dispatch(
-            refreshBalancesAsync({
-              _multiWalletStore: multiWalletStore,
-            })
-          ).then(() => {
-            dispatch(refreshCurrencyAsync()).then(() => {});
-          });
-          dispatch(setRsa(rsaKeyPair));
-        } catch (err) {
-          console.error("Failed to Non-custodial Login: ", err);
-          setNotificationStatus("failed");
-          setNotificationTitle(t("hom-23_error"));
-          setNotificationDetail(await translateString(err.toString()));
-          setNotificationOpen(true);
-          setNotificationLink(null);
-        }
-        setLoading(false);
-      } else if (accountStore.mode === loginEnum.import) {
-        dispatch(setMultiWallet(tempMultiWallet));
-        try {
-          const _mnemonic = await encrypt(tempNonCustodialStore.mnemonic.toString(), tempNonCustodialStore.password.toString());
-          const _password = createKeccakHash("keccak256").update(tempNonCustodialStore.password).digest("hex");
-          const _nickname = tempNonCustodialStore.nickname;
-          const _avatar = tempNonCustodialStore.avatar;
-          const _length = tempNonCustodialStore.mnemonicLength;
-          const _publicKey: string = tymtCore.Blockchains.solar.wallet.getPublicKey(tempNonCustodialStore.mnemonic);
-          const _rsaKeyPair: IRsa = await getRsaKeyPair(tempNonCustodialStore.mnemonic.toString());
-          dispatch(
-            setNonCustodial({
-              ...nonCustodialStore,
-              mnemonic: _mnemonic,
-              mnemonicLength: _length,
-              password: _password,
-              nickname: _nickname,
-              avatar: _avatar,
-            })
-          );
-          dispatch(
-            setD53Password({
-              ...d53PasswordStore,
-              password: tempD53PasswordStore.password,
-            })
-          );
-          const newSocketHash: string = generateSocketHash(tempNonCustodialStore.mnemonic.toString());
-          dispatch(
-            setSocketHash({
-              ...socketHashStore,
-              socketHash: newSocketHash,
-            })
-          );
-          dispatch(
-            setTempNonCustodial({
-              mnemonic: "",
-              mnemonicLength: 12,
-              avatar: "",
-              nickname: "",
-              password: "",
-            })
-          );
-          setLoading(true);
-          const userExist = await AuthAPI.getUserBySolarAddress(tempMultiWallet.Solar.chain.wallet);
-          if (userExist.data.users.length === 0) {
-            const res = await AuthAPI.nonCustodySignup({
-              nickName: tempNonCustodialStore.nickname,
-              password: _password,
-              wallet: [
-                {
-                  chainId: tempMultiWallet.Arbitrum.chain.chainId,
-                  chainName: tempMultiWallet.Arbitrum.chain.name,
-                  address: tempMultiWallet.Arbitrum.chain.wallet,
-                },
-                {
-                  chainId: tempMultiWallet.Avalanche.chain.chainId,
-                  chainName: tempMultiWallet.Avalanche.chain.name,
-                  address: tempMultiWallet.Avalanche.chain.wallet,
-                },
-                {
-                  chainId: tempMultiWallet.Binance.chain.chainId,
-                  chainName: tempMultiWallet.Binance.chain.name,
-                  address: tempMultiWallet.Binance.chain.wallet,
-                },
-                {
-                  chainId: tempMultiWallet.Bitcoin.chain.chainId,
-                  chainName: tempMultiWallet.Bitcoin.chain.name,
-                  address: tempMultiWallet.Bitcoin.chain.wallet,
-                },
-                {
-                  chainId: tempMultiWallet.Ethereum.chain.chainId,
-                  chainName: tempMultiWallet.Ethereum.chain.name,
-                  address: tempMultiWallet.Ethereum.chain.wallet,
-                },
-                {
-                  chainId: tempMultiWallet.Optimism.chain.chainId,
-                  chainName: tempMultiWallet.Optimism.chain.name,
-                  address: tempMultiWallet.Optimism.chain.wallet,
-                },
-                {
-                  chainId: tempMultiWallet.Polygon.chain.chainId,
-                  chainName: tempMultiWallet.Polygon.chain.name,
-                  address: tempMultiWallet.Polygon.chain.wallet,
-                },
-                {
-                  chainId: tempMultiWallet.Solana.chain.chainId,
-                  chainName: tempMultiWallet.Solana.chain.name,
-                  address: tempMultiWallet.Solana.chain.wallet,
-                },
-                {
-                  chainId: tempMultiWallet.Solar.chain.chainId,
-                  chainName: tempMultiWallet.Solar.chain.name,
-                  address: tempMultiWallet.Solar.chain.wallet,
-                },
-              ],
-              sxpAddress: tempMultiWallet.Solar.chain.wallet,
-              publicKey: _publicKey,
-              rsa_pub_key: _rsaKeyPair.publicKey,
-            });
-            dispatch(
-              setAccount({
-                ...accountStore,
-                uid: res.data._id,
-                avatar: "",
-              })
-            );
-          } else {
-            dispatch(
-              setAccount({
-                ...accountStore,
-                uid: userExist.data.users[0]._id,
-                avatar: userExist.data.users[0].avatar ?? "",
-              })
-            );
-          }
-          setLoading(false);
-          navigate("/non-custodial/login/1");
-        } catch (err) {
-          console.log(err);
-          setNotificationStatus("failed");
-          setNotificationTitle(t("hom-23_error"));
-          setNotificationDetail(await translateString(err.toString()));
-          setNotificationOpen(true);
-          setNotificationLink(null);
-        }
-      } else if (accountStore.mode === loginEnum.reset) {
-        try {
-          dispatch(setMultiWallet(tempMultiWallet));
-          const _mnemonic = await encrypt(tempNonCustodialStore.mnemonic.toString(), tempNonCustodialStore.password.toString());
-          const _password = createKeccakHash("keccak256").update(tempNonCustodialStore.password).digest("hex");
-          const _nickname = tempNonCustodialStore.nickname;
-          const _avatar = tempNonCustodialStore.avatar;
-          const _length = tempNonCustodialStore.mnemonicLength;
-          const _publicKey: string = tymtCore.Blockchains.solar.wallet.getPublicKey(tempNonCustodialStore.mnemonic);
-          const _rsaKeyPair: IRsa = await getRsaKeyPair(tempNonCustodialStore.mnemonic.toString());
-          dispatch(
-            setNonCustodial({
-              ...nonCustodialStore,
-              mnemonic: _mnemonic,
-              mnemonicLength: _length,
-              password: _password,
-              nickname: _nickname,
-              avatar: _avatar,
-            })
-          );
-          dispatch(
-            setD53Password({
-              ...d53PasswordStore,
-              password: tempD53PasswordStore.password,
-            })
-          );
-          const newSocketHash: string = generateSocketHash(tempNonCustodialStore.mnemonic.toString());
-          dispatch(
-            setSocketHash({
-              ...socketHashStore,
-              socketHash: newSocketHash,
-            })
-          );
-          dispatch(
-            setTempNonCustodial({
-              mnemonic: "",
-              mnemonicLength: 12,
-              avatar: "",
-              nickname: "",
-              password: "",
-            })
-          );
+  const handleSignUp = async () => {
+    try {
+      let newAccount: IAccount = {
+        ...tempAccountStoreRef.current,
+        password: getKeccak256Hash(tempAccountStoreRef.current?.password),
+        mnemonic: await encrypt(tempAccountStoreRef.current?.mnemonic, tempAccountStoreRef.current?.password),
+      };
 
-          setLoading(true);
-          const userExist = await AuthAPI.getUserBySolarAddress(tempMultiWallet.Solar.chain.wallet);
-          if (userExist.data.users.length === 0) {
-            const res = await AuthAPI.nonCustodySignup({
-              nickName: tempNonCustodialStore.nickname,
-              password: _password,
-              wallet: [
-                {
-                  chainId: tempMultiWallet.Arbitrum.chain.chainId,
-                  chainName: tempMultiWallet.Arbitrum.chain.name,
-                  address: tempMultiWallet.Arbitrum.chain.wallet,
-                },
-                {
-                  chainId: tempMultiWallet.Avalanche.chain.chainId,
-                  chainName: tempMultiWallet.Avalanche.chain.name,
-                  address: tempMultiWallet.Avalanche.chain.wallet,
-                },
-                {
-                  chainId: tempMultiWallet.Binance.chain.chainId,
-                  chainName: tempMultiWallet.Binance.chain.name,
-                  address: tempMultiWallet.Binance.chain.wallet,
-                },
-                {
-                  chainId: tempMultiWallet.Bitcoin.chain.chainId,
-                  chainName: tempMultiWallet.Bitcoin.chain.name,
-                  address: tempMultiWallet.Bitcoin.chain.wallet,
-                },
-                {
-                  chainId: tempMultiWallet.Ethereum.chain.chainId,
-                  chainName: tempMultiWallet.Ethereum.chain.name,
-                  address: tempMultiWallet.Ethereum.chain.wallet,
-                },
-                {
-                  chainId: tempMultiWallet.Optimism.chain.chainId,
-                  chainName: tempMultiWallet.Optimism.chain.name,
-                  address: tempMultiWallet.Optimism.chain.wallet,
-                },
-                {
-                  chainId: tempMultiWallet.Polygon.chain.chainId,
-                  chainName: tempMultiWallet.Polygon.chain.name,
-                  address: tempMultiWallet.Polygon.chain.wallet,
-                },
-                {
-                  chainId: tempMultiWallet.Solana.chain.chainId,
-                  chainName: tempMultiWallet.Solana.chain.name,
-                  address: tempMultiWallet.Solana.chain.wallet,
-                },
-                {
-                  chainId: tempMultiWallet.Solar.chain.chainId,
-                  chainName: tempMultiWallet.Solar.chain.name,
-                  address: tempMultiWallet.Solar.chain.wallet,
-                },
-              ],
-              sxpAddress: tempMultiWallet.Solar.chain.wallet,
-              publicKey: _publicKey,
-              rsa_pub_key: _rsaKeyPair.publicKey,
-            });
-            dispatch(
-              setAccount({
-                ...accountStore,
-                uid: res.data._id,
-                avatar: "",
-              })
-            );
-          } else {
-            dispatch(
-              setAccount({
-                ...accountStore,
-                uid: userExist.data.users[0]._id,
-                avatar: userExist.data.users[0].avatar ?? "",
-              })
-            );
-          }
-          setLoading(false);
-          navigate("/non-custodial/login/1");
-        } catch (err) {
-          console.log(err);
-          setNotificationStatus("failed");
-          setNotificationTitle(t("hom-23_error"));
-          setNotificationDetail(await translateString(err.toString()));
-          setNotificationOpen(true);
-          setNotificationLink(null);
-        }
-      } else if (accountStore.mode === loginEnum.signup) {
-        try {
-          dispatch(setMultiWallet(tempMultiWallet));
-          const _mnemonic = await encrypt(tempNonCustodialStore.mnemonic.toString(), tempNonCustodialStore.password.toString());
-          const _password = createKeccakHash("keccak256").update(tempNonCustodialStore.password).digest("hex");
-          const _nickname = tempNonCustodialStore.nickname;
-          const _avatar = tempNonCustodialStore.avatar;
-          const _length = tempNonCustodialStore.mnemonicLength;
-          const _publicKey: string = tymtCore.Blockchains.solar.wallet.getPublicKey(tempNonCustodialStore.mnemonic);
-          const _rsaKeyPair: IRsa = await getRsaKeyPair(tempNonCustodialStore.mnemonic.toString());
-          dispatch(
-            setNonCustodial({
-              ...nonCustodialStore,
-              mnemonic: _mnemonic,
-              mnemonicLength: _length,
-              password: _password,
-              nickname: _nickname,
-              avatar: _avatar,
-            })
-          );
-          dispatch(
-            setD53Password({
-              ...d53PasswordStore,
-              password: tempD53PasswordStore.password,
-            })
-          );
-          const newSocketHash: string = generateSocketHash(tempNonCustodialStore.mnemonic.toString());
-          dispatch(
-            setSocketHash({
-              ...socketHashStore,
-              socketHash: newSocketHash,
-            })
-          );
-          dispatch(
-            setTempNonCustodial({
-              mnemonic: "",
-              mnemonicLength: 12,
-              avatar: "",
-              nickname: "",
-              password: "",
-            })
-          );
-          setLoading(true);
-          const res = await AuthAPI.nonCustodySignup({
-            nickName: tempNonCustodialStore.nickname,
-            password: _password,
-            wallet: [
-              {
-                chainId: tempMultiWallet.Arbitrum.chain.chainId,
-                chainName: tempMultiWallet.Arbitrum.chain.name,
-                address: tempMultiWallet.Arbitrum.chain.wallet,
-              },
-              {
-                chainId: tempMultiWallet.Avalanche.chain.chainId,
-                chainName: tempMultiWallet.Avalanche.chain.name,
-                address: tempMultiWallet.Avalanche.chain.wallet,
-              },
-              {
-                chainId: tempMultiWallet.Binance.chain.chainId,
-                chainName: tempMultiWallet.Binance.chain.name,
-                address: tempMultiWallet.Binance.chain.wallet,
-              },
-              {
-                chainId: tempMultiWallet.Bitcoin.chain.chainId,
-                chainName: tempMultiWallet.Bitcoin.chain.name,
-                address: tempMultiWallet.Bitcoin.chain.wallet,
-              },
-              {
-                chainId: tempMultiWallet.Ethereum.chain.chainId,
-                chainName: tempMultiWallet.Ethereum.chain.name,
-                address: tempMultiWallet.Ethereum.chain.wallet,
-              },
-              {
-                chainId: tempMultiWallet.Optimism.chain.chainId,
-                chainName: tempMultiWallet.Optimism.chain.name,
-                address: tempMultiWallet.Optimism.chain.wallet,
-              },
-              {
-                chainId: tempMultiWallet.Polygon.chain.chainId,
-                chainName: tempMultiWallet.Polygon.chain.name,
-                address: tempMultiWallet.Polygon.chain.wallet,
-              },
-              {
-                chainId: tempMultiWallet.Solana.chain.chainId,
-                chainName: tempMultiWallet.Solana.chain.name,
-                address: tempMultiWallet.Solana.chain.wallet,
-              },
-              {
-                chainId: tempMultiWallet.Solar.chain.chainId,
-                chainName: tempMultiWallet.Solar.chain.name,
-                address: tempMultiWallet.Solar.chain.wallet,
-              },
-            ],
-            sxpAddress: tempMultiWallet.Solar.chain.wallet,
-            publicKey: _publicKey,
-            rsa_pub_key: _rsaKeyPair.publicKey,
-          });
-          setLoading(false);
-          dispatch(
-            setAccount({
-              ...accountStore,
-              uid: res.data._id,
-              avatar: "",
-            })
-          );
-          navigate("/non-custodial/login/1");
-        } catch (err) {
-          console.log(err);
-          setNotificationStatus("failed");
-          setNotificationTitle(t("hom-23_error"));
-          setNotificationDetail(await translateString(err.toString()));
-          setNotificationOpen(true);
-          setNotificationLink(null);
-        }
-      }
+      const body: INonCustodySignUpReq = getReqBodyNonCustodySignUp(newAccount, tempWalletStoreRef.current, tempAccountStoreRef.current?.mnemonic);
+      const res = await AuthAPI.nonCustodySignUp(body);
+
+      newAccount = {
+        ...newAccount,
+        uid: res?.data?._id,
+      };
+
+      dispatch(setAccount(newAccount));
+      dispatch(addAccountList(newAccount));
+      dispatch(setWallet(tempWalletStoreRef.current));
+      dispatch(addWalletList(tempWalletStoreRef.current));
+    } catch (err) {
+      console.log("Failed to handleSignUp: ", err);
     }
+  };
+
+  const handleGuestComplete = async () => {
+    try {
+      const newAccount: IAccount = {
+        ...tempAccountStoreRef.current,
+        password: getKeccak256Hash(tempAccountStoreRef.current?.password),
+        mnemonic: await encrypt(tempAccountStoreRef.current?.mnemonic, tempAccountStoreRef.current?.password),
+      };
+
+      const body: IReqUpdateUser = {
+        nickName: tempAccountStoreRef.current.nickName,
+      };
+      await UserAPI.updateUser(newAccount?.uid, body);
+
+      dispatch(setAccount(newAccount));
+      dispatch(addAccountList(newAccount));
+    } catch (err) {
+      console.log("Failed to handleGuestComplete: ", err);
+    }
+  };
+
+  const handleLogin = async () => {
+    try {
+      const body1 = getReqBodyNonCustodyBeforeSignIn(tempAccountStoreRef.current, tempAccountStoreRef.current?.mnemonic);
+      const res1 = await AuthAPI.nonCustodyBeforeSignin(body1);
+
+      const salt: string = res1?.data?.salt;
+      const token: string = getNonCustodySignInToken(salt, saltTokenStoreRef.current, tempAccountStoreRef.current?.mnemonic);
+      dispatch(
+        setSaltToken({
+          salt: salt,
+          token: token,
+        })
+      );
+
+      const body2 = getReqBodyNonCustodySignIn(tempAccountStoreRef.current, machineIdStoreRef.current, token);
+      const res2 = await AuthAPI.nonCustodySignin(body2);
+
+      const uid = res2?.data?._id;
+      await dispatch(fetchMyInfoAsync(uid));
+
+      const newSocketHash = generateSocketHash(tempAccountStoreRef.current?.mnemonic);
+      dispatch(setSocketHash(newSocketHash));
+      dispatch(setMnemonic(tempAccountStoreRef?.current?.mnemonic));
+      dispatch(getRsaKeyPairAsync(tempAccountStoreRef?.current?.mnemonic));
+
+      dispatch(setLogin(true));
+      navigate("/home");
+    } catch (err) {
+      console.log("Failed to handleLogin: ", err);
+    }
+  };
+
+  const handleConfirmClick = async () => {
+    setLoading(true);
+    if (mode === "signup") await handleSignUp();
+    else if (mode === "guest") await handleGuestComplete();
+    await handleLogin();
+    setLoading(false);
   };
 
   return (
@@ -552,14 +197,14 @@ const ConfirmInformation = () => {
                   >
                     <Grid item xs={12} container justifyContent={"space-between"}>
                       <Back onClick={handleBackClick} />
-                      <Stepper all={0} now={0} texts={[t("ncca-48_almost-done-confirm")]} />
+                      <Stepper all={0} now={0} text={t("ncca-48_almost-done-confirm")} />
                     </Grid>
                     <Grid item xs={12}></Grid>
                     <Grid item xs={12} mt={"80px"}>
                       <AccountHeader title={t("ncca-49_confirm-information")} text={t("ncca-50_welcome-to-kingdom")} />
                     </Grid>
                     <Grid item xs={12} mt={"48px"}>
-                      <WalletList mode={accountStore.mode === loginEnum.login ? "login" : "signup"} />
+                      <WalletList wallet={displayWallet} />
                     </Grid>
                     <Grid item xs={12} mt={"40px"}>
                       <AccountNextButton text={t("ncca-51_confirm")} onClick={handleConfirmClick} disabled={loading} loading={loading} />

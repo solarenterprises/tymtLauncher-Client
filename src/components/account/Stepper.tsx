@@ -5,10 +5,12 @@ import enableStep from "../../assets/account/enable-step.svg";
 interface props {
   all: number;
   now: number;
-  texts: string[];
+  text: string;
 }
 
-const Stepper = ({ all, now, texts }: props) => {
+const Stepper = ({ all, now, text }: props) => {
+  const items = Array.from({ length: all });
+
   return (
     <Stack direction={"row"} alignItems={"center"} padding={"10px"} spacing={"8px"}>
       {all === 0 && (
@@ -19,7 +21,7 @@ const Stepper = ({ all, now, texts }: props) => {
             fontFeatureSettings: "'calt' off",
           }}
         >
-          {texts[0]}
+          {text}
         </Box>
       )}
       {all !== 0 && (
@@ -52,15 +54,15 @@ const Stepper = ({ all, now, texts }: props) => {
                 fontFeatureSettings: "'calt' off",
               }}
             >
-              {texts[now - 1]}
+              {text}
             </Box>
           </Stack>
           <Stack direction={"row"}>
-            {texts.map((_value, index) =>
+            {items.map((_value, index) =>
               index === now - 1 ? (
-                <Box component={"img"} src={enableStep} width={"20px"} height={"5px"} />
+                <Box component={"img"} src={enableStep} width={"20px"} height={"5px"} key={index} />
               ) : (
-                <Box component={"img"} src={disableStep} width={"5px"} height={"5px"} />
+                <Box component={"img"} src={disableStep} width={"5px"} height={"5px"} key={index} />
               )
             )}
           </Stack>

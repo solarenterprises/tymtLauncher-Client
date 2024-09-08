@@ -151,7 +151,6 @@ const storeStyles = makeStyles({
     backdropFilter: "blur(50px)",
   },
   box_gameoption: {
-    height: "42px",
     paddingTop: "12px",
     paddingBottom: "12px",
     borderBottom: "1px solid rgba(255, 255, 255, 0.10)",

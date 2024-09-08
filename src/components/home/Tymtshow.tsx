@@ -1,12 +1,12 @@
 import { useNavigate } from "react-router-dom";
 import { Grid, Button, Box, Stack } from "@mui/material";
-import Games from "../../lib/game/Game";
+import { BasicGameList } from "../../lib/game/BasicGameList";
 
 const Tymtshow = ({ image }: any) => {
   const navigate = useNavigate();
 
   return (
-    <Grid item xs={8} container>
+    <div style={{ width: "calc(100% - 353px)" }}>
       <Grid item xs={12}>
         <img
           className="District53"
@@ -22,18 +22,18 @@ const Tymtshow = ({ image }: any) => {
         />
       </Grid>
       <Grid item xs={12} container spacing={"32px"} mt={"0px"}>
-        {Object.keys(Games).map((rowKey) => (
-          <Grid item>
+        {BasicGameList?.map((basicGame, index) => (
+          <Grid item key={index}>
             <Button
               className="button_gamecontent"
-              key={Games[rowKey].name}
+              key={basicGame?.project_name}
               onClick={() => {
-                navigate(`/store/${rowKey}`);
+                navigate(`/coming/${basicGame?._id}`);
               }}
             >
               <Stack direction={"row"} alignItems={"center"} width={"100%"}>
                 <img
-                  src={Games[rowKey].card}
+                  src={basicGame?.imageUrl}
                   width={"60px"}
                   height={"60px"}
                   style={{
@@ -43,14 +43,14 @@ const Tymtshow = ({ image }: any) => {
                   loading="lazy"
                 />
                 <Box className={"fs-14-light white t-center"} textTransform={"none"} sx={{ whiteSpace: "nowrap", padding: "0px 20px" }}>
-                  {Games[rowKey].name}
+                  {basicGame?.title}
                 </Box>
               </Stack>
             </Button>
           </Grid>
         ))}
       </Grid>
-    </Grid>
+    </div>
   );
 };
 

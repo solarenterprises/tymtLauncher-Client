@@ -60,7 +60,7 @@ const CustodialReset2 = () => {
                 >
                   <Grid item xs={12} container justifyContent={"space-between"}>
                     <Back onClick={handleBackClick} />
-                    <Stepper all={2} now={1} texts={[t("cca-35_email-password"), ""]} />
+                    <Stepper all={2} now={1} text={t("cca-35_email-password")} />
                   </Grid>
                   <Grid item xs={12} mt={"80px"}>
                     <AccountHeader title={t("cca-42_google-2fa")} text={t("cca-43_code-sent-google")} />

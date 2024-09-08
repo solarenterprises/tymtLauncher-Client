@@ -1,7 +1,8 @@
-import { useCallback, useState, useRef, ChangeEvent } from "react";
+import { useCallback, useState, useRef, ChangeEvent, useMemo, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector, useDispatch } from "react-redux";
 import { ThreeDots } from "react-loader-spinner";
+import { listen } from "@tauri-apps/api/event";
 
 import EmojiPicker, { SkinTones } from "emoji-picker-react";
 
@@ -13,10 +14,10 @@ import TextareaAutosize from "@mui/material/TextareaAutosize";
 import { useSocket } from "../../providers/SocketProvider";
 
 import { AppDispatch } from "../../store";
-import { getAccount } from "../../features/account/AccountSlice";
 import { getCurrentChatroom } from "../../features/chat/CurrentChatroomSlice";
 import { ISKeyList, getSKeyList } from "../../features/chat/SKeyListSlice";
 import { getChatHistory, setChatHistory } from "../../features/chat/ChatHistorySlice";
+import { getMyInfo } from "../../features/account/MyInfoSlice";
 
 import { encrypt, generateRandomString } from "../../lib/api/Encrypt";
 
@@ -24,11 +25,11 @@ import ChatStyle from "../../styles/ChatStyles";
 import emotion from "../../assets/chat/emotion.svg";
 import send from "../../assets/chat/chatframe.svg";
 
-import { ChatHistoryType, propsChatInputFieldType } from "../../types/chatTypes";
-import { accountType } from "../../types/accountTypes";
+import { ChatHistoryType, IMyInfo, propsChatInputFieldType } from "../../types/chatTypes";
 import { IChatroom } from "../../types/ChatroomAPITypes";
+
 import MessageAPI from "../../lib/api/MessageAPI";
-import { shortenFileName } from "../../lib/api/URLHelper";
+import { shortenFileName } from "../../lib/helper/URLHelper";
 
 const theme = createTheme({
   palette: {
@@ -46,21 +47,118 @@ const theme = createTheme({
 const ChatInputField = ({ value, setValue }: propsChatInputFieldType) => {
   const { socket } = useSocket();
   const { t } = useTranslation();
+  const inputRef = useRef(null);
+
   const classes = ChatStyle();
 
   const dispatch = useDispatch<AppDispatch>();
-  const accountStore: accountType = useSelector(getAccount);
   const chatHistoryStore: ChatHistoryType = useSelector(getChatHistory);
   const currentChatroomStore: IChatroom = useSelector(getCurrentChatroom);
   const sKeyListStore: ISKeyList = useSelector(getSKeyList);
+  const myInfoStore: IMyInfo = useSelector(getMyInfo);
 
-  const currentSKey: string = sKeyListStore.sKeys.find((element) => element.roomId === currentChatroomStore._id)?.sKey;
+  const currentSKey: string = sKeyListStore?.sKeys?.find((element) => element?.roomId === currentChatroomStore?._id)?.sKey;
+  const isDisabled: boolean = useMemo(() => {
+    return currentChatroomStore?.isGlobal && !myInfoStore?.roles?.some((role) => role === "admin") && !myInfoStore?.roles?.some((role) => role === "moderator");
+  }, [myInfoStore, currentChatroomStore]);
 
   const [anchorEl, setAnchorEl] = useState(null);
   const [EmojiLibraryOpen, setIsEmojiLibraryOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
 
   const fileInputRef = useRef(null);
+
+  useEffect(() => {
+    const unlisten_focus_chat_input_field = listen("focus_chat_input_field", (_event) => {
+      console.log("focus_chat_input_field");
+      inputRef.current.focus();
+    });
+
+    return () => {
+      unlisten_focus_chat_input_field.then((unlistenFn) => unlistenFn());
+    };
+  }, []);
+
+  const onDrop = useCallback(
+    async (acceptedFiles) => {
+      if (socket.current && socket.current.connected) {
+        try {
+          setLoading(true);
+
+          const files = acceptedFiles;
+
+          if (files && files.length > 0) {
+            const file = files[0];
+            const shortName = shortenFileName(file.name);
+            const storeName = currentSKey ? await encrypt(`${shortName}${generateRandomString(32)}`, currentSKey) : `${shortName}${generateRandomString(32)}`;
+            let type: string = "";
+
+            if (file.type.startsWith("image/")) {
+              type = "image";
+            } else if (file.type.startsWith("audio/")) {
+              type = "audio";
+            } else if (file.type.startsWith("video/")) {
+              type = "video";
+            } else {
+              type = "file";
+            }
+
+            const formData = new FormData();
+            formData.append("type", type);
+            formData.append("sender_id", myInfoStore?._id);
+            formData.append("room_id", currentChatroomStore?._id);
+            formData.append("message", storeName);
+            formData.append("file", file);
+
+            const res = await MessageAPI.fileUpload(formData);
+            if (!res || res.status !== 200) {
+              throw new Error("response error!");
+            }
+
+            const message = {
+              sender_id: myInfoStore?._id,
+              room_id: currentChatroomStore?._id,
+              message: storeName,
+              createdAt: Date.now(),
+              type: type,
+            };
+            socket.current.emit("post-message", JSON.stringify(message));
+            console.log("socket.current.emit > post-message", message);
+
+            const fullName = currentSKey ? await encrypt(`${file.name}`, currentSKey) : `${file.name}`;
+            const data = {
+              alertType: "chat",
+              note: {
+                sender: myInfoStore?._id,
+                nickName: myInfoStore?.nickName,
+                room_id: currentChatroomStore?._id,
+                message: fullName,
+              },
+              receivers: currentChatroomStore?.participants?.filter((element) => element.userId !== myInfoStore?._id)?.map((element_2) => element_2.userId),
+            };
+            socket.current.emit("post-alert", JSON.stringify(data));
+            console.log("socket.current.emit > post-alert");
+
+            const updatedHistory = [message, ...chatHistoryStore.messages];
+            dispatch(
+              setChatHistory({
+                messages: updatedHistory,
+              })
+            );
+
+            console.log("handleFileInputChange", type, myInfoStore?._id, currentChatroomStore?._id, message, file);
+
+            setLoading(false);
+          }
+        } catch (err) {
+          console.error("Failed to handleFileInputChange: ", err);
+          setLoading(false);
+        }
+      }
+    },
+    [myInfoStore, myInfoStore, currentChatroomStore, chatHistoryStore, socket.current]
+  );
 
   const handleUploadClick = () => {
     if (fileInputRef.current) {
@@ -94,8 +192,8 @@ const ChatInputField = ({ value, setValue }: propsChatInputFieldType) => {
 
             const formData = new FormData();
             formData.append("type", type);
-            formData.append("sender_id", accountStore.uid);
-            formData.append("room_id", currentChatroomStore._id);
+            formData.append("sender_id", myInfoStore?._id);
+            formData.append("room_id", currentChatroomStore?._id);
             formData.append("message", storeName);
             formData.append("file", file);
 
@@ -105,7 +203,7 @@ const ChatInputField = ({ value, setValue }: propsChatInputFieldType) => {
             }
 
             const message = {
-              sender_id: accountStore?.uid,
+              sender_id: myInfoStore?._id,
               room_id: currentChatroomStore?._id,
               message: storeName,
               createdAt: Date.now(),
@@ -118,11 +216,12 @@ const ChatInputField = ({ value, setValue }: propsChatInputFieldType) => {
             const data = {
               alertType: "chat",
               note: {
-                sender: accountStore?.uid,
+                sender: myInfoStore?._id,
+                nickName: myInfoStore?.nickName,
                 room_id: currentChatroomStore?._id,
                 message: fullName,
               },
-              receivers: currentChatroomStore?.participants?.filter((element) => element.userId !== accountStore.uid)?.map((element_2) => element_2.userId),
+              receivers: currentChatroomStore?.participants?.filter((element) => element.userId !== myInfoStore?._id)?.map((element_2) => element_2.userId),
             };
             socket.current.emit("post-alert", JSON.stringify(data));
             console.log("socket.current.emit > post-alert");
@@ -134,7 +233,7 @@ const ChatInputField = ({ value, setValue }: propsChatInputFieldType) => {
               })
             );
 
-            console.log("handleFileInputChange", type, accountStore.uid, currentChatroomStore._id, message, file);
+            console.log("handleFileInputChange", type, myInfoStore?._id, currentChatroomStore?._id, message, file);
 
             setLoading(false);
           }
@@ -144,7 +243,7 @@ const ChatInputField = ({ value, setValue }: propsChatInputFieldType) => {
         }
       }
     },
-    [accountStore, currentChatroomStore, chatHistoryStore, socket.current]
+    [myInfoStore, myInfoStore, currentChatroomStore, chatHistoryStore, socket.current]
   );
 
   const handleEmojiClick = (event: any) => {
@@ -167,7 +266,7 @@ const ChatInputField = ({ value, setValue }: propsChatInputFieldType) => {
           // Encrypt & send the message
           const encryptedMessage = currentChatroomStore?.isPrivate ? await encrypt(value, currentSKey) : value;
           const message = {
-            sender_id: accountStore?.uid,
+            sender_id: myInfoStore?._id,
             room_id: currentChatroomStore?._id,
             message: encryptedMessage,
             createdAt: Date.now(),
@@ -179,11 +278,12 @@ const ChatInputField = ({ value, setValue }: propsChatInputFieldType) => {
           const data = {
             alertType: "chat",
             note: {
-              sender: accountStore?.uid,
+              sender: myInfoStore?._id,
+              nickName: myInfoStore?.nickName,
               room_id: currentChatroomStore?._id,
               message: encryptedMessage,
             },
-            receivers: currentChatroomStore?.participants?.filter((element) => element.userId !== accountStore.uid)?.map((element_2) => element_2.userId),
+            receivers: currentChatroomStore?.participants?.filter((element) => element.userId !== myInfoStore?._id)?.map((element_2) => element_2.userId),
           };
           socket.current.emit("post-alert", JSON.stringify(data));
           console.log("socket.current.emit > post-alert");
@@ -203,7 +303,7 @@ const ChatInputField = ({ value, setValue }: propsChatInputFieldType) => {
         console.error("Failed to sendMessage: ", err);
       }
     }
-  }, [socket.current, accountStore, currentChatroomStore, sKeyListStore, value]);
+  }, [socket.current, myInfoStore, currentChatroomStore, sKeyListStore, myInfoStore, value]);
 
   const handleEnter = useCallback(
     async (e: any) => {
@@ -241,6 +341,8 @@ const ChatInputField = ({ value, setValue }: propsChatInputFieldType) => {
         <Box sx={{ position: "relative" }}>
           <ThemeProvider theme={theme}>
             <TextField
+              inputRef={inputRef}
+              disabled={isDisabled}
               className={classes.chat_input}
               color="secondary"
               value={value}
@@ -255,7 +357,7 @@ const ChatInputField = ({ value, setValue }: propsChatInputFieldType) => {
                 ),
                 endAdornment: (
                   <InputAdornment position="start">
-                    <Button className={classes.emoji_button} onClick={handleEmojiClick}>
+                    <Button className={classes.emoji_button} onClick={handleEmojiClick} disabled={isDisabled}>
                       <img
                         src={emotion}
                         style={{
@@ -264,25 +366,25 @@ const ChatInputField = ({ value, setValue }: propsChatInputFieldType) => {
                         }}
                       />
                     </Button>
-
                     <Button
                       className="send_button"
                       sx={{
                         display: value ? "block" : "none",
                       }}
                       onClick={sendMessage}
+                      disabled={isDisabled}
                     >
                       <Box className={"center-align"}>
                         <img src={send} />
                       </Box>
                     </Button>
-
                     <Button
                       className="upload_button"
                       sx={{
                         display: value ? "none" : "block",
                       }}
                       onClick={handleUploadClick}
+                      disabled={isDisabled}
                     >
                       <Box className={"center-align"}>
                         <FileUploadIcon sx={{ color: "#ffffff" }} />
@@ -297,6 +399,25 @@ const ChatInputField = ({ value, setValue }: propsChatInputFieldType) => {
               }}
               onKeyDown={(e: any) => {
                 handleEnter(e);
+              }}
+              style={{
+                backgroundColor: isDragging ? "rgba(76, 175, 80, 0.1)" : "transparent",
+                border: isDragging ? "1px dashed #4caf50" : "none",
+                borderRadius: "50ch",
+                zIndex: 999,
+              }}
+              onDragEnter={() => setIsDragging(true)}
+              onDragLeave={() => setIsDragging(false)}
+              onDragOver={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                setIsDragging(true);
+              }}
+              onDrop={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                setIsDragging(false);
+                onDrop([...event.dataTransfer.files]);
               }}
             />
           </ThemeProvider>

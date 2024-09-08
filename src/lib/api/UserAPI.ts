@@ -1,12 +1,22 @@
 import axios from "axios";
 import { tymt_backend_url } from "../../configs/index";
 import tymtStorage from "../Storage";
-import { IReqCreateMutedList, IReqDeleteMutedList } from "../../types/UserAPITypes";
+import { IReqCreateMutedList, IReqDeleteMutedList, IReqUpdateUser } from "../../types/UserAPITypes";
 import { ISaltToken } from "../../types/accountTypes";
 
 class UserAPI {
   static async getUserById(id: string) {
     return await axios.get(`${tymt_backend_url}/users/${id}`);
+  }
+
+  static async getUsersByRoles(body: string[]) {
+    const saltTokenStore: ISaltToken = JSON.parse(tymtStorage.get(`saltToken`));
+    return await axios.post(`${tymt_backend_url}/users/by-roles`, body, {
+      headers: {
+        "x-token": saltTokenStore.token,
+        "Content-Type": "application/json",
+      },
+    });
   }
 
   static async createMutedList(body: IReqCreateMutedList) {
@@ -43,6 +53,16 @@ class UserAPI {
   static async fetchAvatar(user_id: string) {
     const saltTokenStore: ISaltToken = JSON.parse(tymtStorage.get(`saltToken`));
     return await axios.get(`${tymt_backend_url}/users/get-avatar/${user_id}?${Date.now()}`, {
+      headers: {
+        "x-token": saltTokenStore.token,
+        "Content-Type": "application/json",
+      },
+    });
+  }
+
+  static async updateUser(userId: string, body: IReqUpdateUser) {
+    const saltTokenStore: ISaltToken = JSON.parse(tymtStorage.get(`saltToken`));
+    return await axios.put(`${tymt_backend_url}/users/${userId}`, body, {
       headers: {
         "x-token": saltTokenStore.token,
         "Content-Type": "application/json",

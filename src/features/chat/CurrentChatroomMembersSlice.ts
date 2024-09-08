@@ -30,6 +30,7 @@ export interface ICurrentChatroomMember {
   friend?: string[];
   block?: string[];
   rsa_pub_key?: string;
+  roles: string[];
 }
 
 export interface ICurrentChatroomMembers {
@@ -41,7 +42,7 @@ const init: ICurrentChatroomMembers = {
 };
 
 const loadCurrentChatroomMembers: () => ICurrentChatroomMembers = () => {
-  const data = sessionStorage.getItem("currentChatroom");
+  const data = sessionStorage.getItem("currentChatroomMembers");
   return data ? JSON.parse(data) : init;
 };
 

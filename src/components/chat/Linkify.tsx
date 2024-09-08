@@ -1,4 +1,4 @@
-import { openLink } from "../../lib/api/Downloads";
+import { openLink } from "../../lib/helper/DownloadHelper";
 
 const Linkify = ({ children }) => {
   const isUrl = (word) => {

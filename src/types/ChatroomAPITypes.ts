@@ -1,6 +1,7 @@
 export interface IReqChatroomCreateChatroom {
   room_name: string;
   isPrivate: boolean;
+  participantsHistorical?: string[];
 }
 
 export interface IReqChatroomAddParticipant {
@@ -38,6 +39,7 @@ export interface IChatroom {
   participants: IParticipant[];
   isDeleted: boolean;
   isPrivate: boolean;
+  isGlobal: boolean;
   room_name: string;
   createdAt: string;
   updatedAt: string;

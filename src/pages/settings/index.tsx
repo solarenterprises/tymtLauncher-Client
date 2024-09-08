@@ -1,7 +1,7 @@
-import { Box, SwipeableDrawer } from "@mui/material";
 import { useState } from "react";
-import SettingStyle from "../../styles/SettingStyle";
-import closeImg from "../../assets/settings/collaps-close-btn.svg";
+
+import { Box, SwipeableDrawer } from "@mui/material";
+
 import Main from "./Main";
 import Chain from "./Chain";
 import General from "./General";
@@ -19,8 +19,14 @@ import Profile from "./Profile";
 import Security from "./Security";
 import Password from "./Password";
 import Address from "./Address";
+import Backup from "./Backup";
+import ChooseProfile from "./ChooseProfile";
+
+import SettingStyle from "../../styles/SettingStyle";
 
 import { propsSettingType } from "../../types/settingTypes";
+
+import closeImg from "../../assets/settings/collaps-close-btn.svg";
 
 type Anchor = "right";
 
@@ -72,6 +78,8 @@ const Settings = ({ view, setView }: propsSettingType) => {
         <Security view={panel} setView={setPanel} />
         <Password view={panel} setView={setPanel} />
         <Address view={panel} setView={setPanel} />
+        <Backup view={panel} setView={setPanel} />
+        <ChooseProfile view={panel} setView={setPanel} />
       </Box>
     </SwipeableDrawer>
   );

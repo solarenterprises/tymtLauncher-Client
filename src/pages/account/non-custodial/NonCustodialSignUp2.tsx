@@ -1,33 +1,66 @@
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { motion } from "framer-motion";
+
+import "../../../global.css";
+
 import { Grid, Box, Stack } from "@mui/material";
+
 import Back from "../../../components/account/Back";
 import AccountHeader from "../../../components/account/AccountHeader";
 import AccountNextButton from "../../../components/account/AccountNextButton";
 import Stepper from "../../../components/account/Stepper";
-import HaveAccount from "../../../components/account/HaveAccount";
 import MnemonicComboBox from "../../../components/account/MnemonicComboBox";
 import MnemonicPad from "../../../components/account/MnemonicPad";
-import tymt3 from "../../../assets/account/tymt3.png";
-import "../../../global.css";
 import PassphraseModal from "../../../components/account/PassphraseModal";
-import { motion } from "framer-motion";
+
+import { getTempAccount, setTempAccount } from "../../../features/account/TempAccountSlice";
+
+import { getRsaKeyPair } from "../../../features/chat/RsaApi";
+
+import { getMnemonic } from "../../../lib/helper/WalletHelper";
+
+import tymt3 from "../../../assets/account/tymt3.png";
+
+import { IAccount } from "../../../types/accountTypes";
 
 const NonCustodialSignUp2 = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const dispatch = useDispatch();
+
+  const tempAccountStore: IAccount = useSelector(getTempAccount);
+
   const [open, setOpen] = useState(false);
-  const [path, setPath] = useState("");
+  const [length, setLength] = useState<number>(12);
+  const [passphrase, setPassphrase] = useState<string>(getMnemonic(12));
+
+  useEffect(() => {
+    setPassphrase(getMnemonic(length));
+  }, [length]);
 
   const handleBackClick = () => {
     navigate("/start");
   };
 
-  const handleNextClick = () => {
-    setPath("/non-custodial/signup/3");
-    setOpen(true);
-  };
+  const handleNextClick = useCallback(async () => {
+    try {
+      if (!passphrase) return;
+      const newRsaPubKey = (await getRsaKeyPair(passphrase))?.publicKey;
+      dispatch(
+        setTempAccount({
+          ...tempAccountStore,
+          mnemonic: passphrase,
+          rsaPubKey: newRsaPubKey,
+        })
+      );
+      setOpen(true);
+    } catch (err) {
+      console.log("Failed to handleNextClick: ", err);
+    }
+  }, [passphrase, tempAccountStore]);
 
   return (
     <>
@@ -54,23 +87,19 @@ const NonCustodialSignUp2 = () => {
                   >
                     <Grid item xs={12} container justifyContent={"space-between"}>
                       <Back onClick={handleBackClick} />
-                      <Stepper all={4} now={2} texts={["", t("ncca-12_secure-wallet"), "", ""]} />
+                      <Stepper all={4} now={2} text={t("ncca-12_secure-wallet")} />
                     </Grid>
-
                     <Grid item xs={12} mt={"80px"}>
                       <AccountHeader title={t("ncca-13_secure-passphrase")} text={t("ncca-14_here-your-mnemonic")} />
                     </Grid>
                     <Grid item xs={12} mt={"48px"}>
-                      <MnemonicComboBox text="want" />
+                      <MnemonicComboBox text="want" length={length} setLength={setLength} />
                     </Grid>
                     <Grid item xs={12} mt={"24px"}>
-                      <MnemonicPad editable={true} />
+                      <MnemonicPad editable={true} length={length} passphrase={passphrase} setPassphrase={setPassphrase} />
                     </Grid>
                     <Grid item xs={12} mt={"48px"}>
                       <AccountNextButton text={t("ncl-6_next")} onClick={handleNextClick} />
-                    </Grid>
-                    <Grid item xs={12} mt={length === 12 ? "91px" : "40px"}>
-                      <HaveAccount />
                     </Grid>
                   </Grid>
                 </Grid>
@@ -86,7 +115,7 @@ const NonCustodialSignUp2 = () => {
           </motion.div>
         </Grid>
       </Grid>
-      <PassphraseModal open={open} setOpen={setOpen} path={path} />
+      <PassphraseModal open={open} setOpen={setOpen} />
     </>
   );
 };

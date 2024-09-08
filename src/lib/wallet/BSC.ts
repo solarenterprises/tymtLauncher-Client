@@ -4,7 +4,7 @@ import * as ethereumjsWallet from "ethereumjs-wallet";
 import * as bip39 from "bip39";
 import { bsc_api_key, bsc_api_url, bsc_rpc_url, net_name } from "../../configs";
 import { ERC20ABI } from "../../abis/ERC20API";
-import { IToken, IGetTokenBalanceRes } from "../../types/walletTypes";
+import { ISupportToken, IBalance } from "../../types/walletTypes";
 
 class BSC implements IWallet {
   address: string;
@@ -53,18 +53,18 @@ class BSC implements IWallet {
     }
   }
 
-  static async getTokenBalance(addr: string, tokens: IToken[]): Promise<IGetTokenBalanceRes[]> {
+  static async getTokenBalance(addr: string, tokens: ISupportToken[]): Promise<IBalance[]> {
     try {
-      let result: IGetTokenBalanceRes[] = [];
+      let result: IBalance[] = [];
       for (let i = 0; i < tokens.length; i++) {
         if (net_name === "testnet") {
           result.push({
-            cmc: tokens[i].cmc,
-            balance: 0,
+            symbol: tokens[i].symbol,
+            balance: 0.0,
           });
         } else {
           result.push({
-            cmc: tokens[i].cmc,
+            symbol: tokens[i].symbol,
             balance:
               ((
                 await (
@@ -77,7 +77,7 @@ class BSC implements IWallet {
       }
       return result;
     } catch (err) {
-      console.log(err);
+      console.log("Failed to BSC getTokenBalance: ", err);
       return [];
     }
   }

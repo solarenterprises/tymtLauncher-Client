@@ -10,13 +10,22 @@ export enum walletEnum {
   "custodial",
 }
 
-export interface accountType {
-  mode: loginEnum;
-  wallet: walletEnum;
-  agreedTerms: boolean;
+export interface ILogin {
+  isLoggedIn: boolean;
+}
+
+export interface IAccount {
   uid: string;
   avatar: string;
-  isLoggedIn: boolean;
+  nickName: string;
+  password: string;
+  sxpAddress: string;
+  mnemonic: string;
+  rsaPubKey: string;
+}
+
+export interface IAccountList {
+  list: IAccount[];
 }
 
 export interface nonCustodialType {
@@ -54,12 +63,6 @@ export interface connectModalType {
   src: any;
   open: boolean;
   setOpen: (status: boolean) => void;
-}
-
-export interface benefitModalType {
-  open: boolean;
-  setOpen: (status: boolean) => void;
-  path: string;
 }
 
 export interface ITymt {

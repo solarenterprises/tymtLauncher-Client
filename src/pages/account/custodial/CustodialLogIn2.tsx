@@ -61,7 +61,7 @@ const CustodialLogin2 = () => {
                 >
                   <Grid item xs={12} container justifyContent={"space-between"}>
                     <Back onClick={handleBackClick} />
-                    <Stepper all={2} now={2} texts={["", t("cca-56_google-2fa")]} />
+                    <Stepper all={2} now={2} text={t("cca-56_google-2fa")} />
                   </Grid>
                   <Grid item xs={12} mt={"80px"}>
                     <AccountHeader title={t("cca-42_google-2fa")} text={t("cca-43_code-sent-google")} />

@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import { Outlet } from "react-router-dom";
 import { appWindow } from "@tauri-apps/api/window";
+import { emit } from "@tauri-apps/api/event";
 import { io, Socket } from "socket.io-client";
 
 import { socket_backend_url, tymt_version } from "../configs";
@@ -10,33 +11,43 @@ import { socket_backend_url, tymt_version } from "../configs";
 import { useNotification } from "./NotificationProvider";
 
 import { AppDispatch } from "../store";
-import { getAccount } from "../features/account/AccountSlice";
 import { getCurrentChatroom, setCurrentChatroom } from "../features/chat/CurrentChatroomSlice";
-import { getCurrentPartner } from "../features/chat/CurrentPartnerSlice";
-import { createContactAsync, getContactList, updateOneInContactList } from "../features/chat/ContactListSlice";
+import { createContactAsync, fetchContactListAsync, getContactList, updateOneInContactList } from "../features/chat/ContactListSlice";
 import { addOneToUnreadList, fetchAlertListAsync, updateFriendRequestInAlertList } from "../features/alert/AlertListSlice";
-import { getBlockList } from "../features/chat/BlockListSlice";
-import { addOneToChatroomListAsync, delOneFromChatroomList, getChatroomList } from "../features/chat/ChatroomListSlice";
+import { fetchBlockListAsync, getBlockList } from "../features/chat/BlockListSlice";
+import { addOneToChatroomListAsync, delOneFromChatroomList, fetchChatroomListAsync, getChatroomList } from "../features/chat/ChatroomListSlice";
 import { selectNotification } from "../features/settings/NotificationSlice";
 import { fetchFriendListAsync, getFriendList } from "../features/chat/FriendListSlice";
 import { selectChat } from "../features/settings/ChatSlice";
-import { setChatHistory, getChatHistory } from "../features/chat/ChatHistorySlice";
+import { setChatHistory, getChatHistory, setChatHistoryAsync } from "../features/chat/ChatHistorySlice";
 import { getSocketHash } from "../features/chat/SocketHashSlice";
 import { fetchCurrentChatroomMembersAsync, setCurrentChatroomMembers } from "../features/chat/CurrentChatroomMembersSlice";
-import { ISKey, ISKeyList, addOneSKeyList, delOneSkeyList, getSKeyList } from "../features/chat/SKeyListSlice";
+import { ISKey, ISKeyList, addOneSKeyList, delOneSkeyList, getSKeyList, setSKeyList } from "../features/chat/SKeyListSlice";
 import { getRsa } from "../features/chat/RsaSlice";
 import { addOneActiveUserList, delOneActiveUserList, setActiveUserList } from "../features/chat/ActiveUserListSlice";
 import { getMutedList } from "../features/chat/MutedListSlice";
 import { getMachineId } from "../features/account/MachineIdSlice";
 import { rsaDecrypt } from "../features/chat/RsaApi";
 
-import { IChatroom, IChatroomList } from "../types/ChatroomAPITypes";
-import { ISocketParamsActiveUsers, ISocketParamsJoinedMessageGroup, ISocketParamsLeftMessageGroup, ISocketParamsPostMessage } from "../types/SocketTypes";
-import { accountType, IMachineId } from "../types/accountTypes";
+import { IChatroom, IChatroomList, IParticipant } from "../types/ChatroomAPITypes";
+import {
+  ISocketParamsActiveUsers,
+  ISocketParamsJoinedMessageGroup,
+  ISocketParamsLeftMessageGroup,
+  ISocketParamsPostMessage,
+  ISocketParamsSyncEvent,
+} from "../types/SocketTypes";
+import { IMachineId } from "../types/accountTypes";
 import { chatType, notificationType } from "../types/settingTypes";
-import { ChatHistoryType, ISocketHash, IAlert, IContact, IContactList, IRsa } from "../types/chatTypes";
+import { ChatHistoryType, ISocketHash, IAlert, IContactList, IRsa, IMyInfo } from "../types/chatTypes";
 
 import { Chatdecrypt } from "../lib/api/ChatEncrypt";
+import { SyncEventNames } from "../consts/SyncEventNames";
+import { fetchUnreadMessageListAsync } from "../features/chat/UnreadMessageListSlice";
+import { setRenderTime } from "../features/account/RenderTimeSlice";
+import { isArray } from "lodash";
+import { fetchHistoricalChatroomMembersAsync, setHistoricalChatroomMembers } from "../features/chat/HistoricalChatroomMembersSlice";
+import { getMyInfo } from "../features/account/MyInfoSlice";
 
 interface SocketContextType {
   socket: MutableRefObject<Socket>;
@@ -58,12 +69,10 @@ export const SocketProvider = () => {
   const { setNotificationStatus, setNotificationTitle, setNotificationDetail, setNotificationOpen, setNotificationLink } = useNotification();
 
   const dispatch = useDispatch<AppDispatch>();
-  const accountStore: accountType = useSelector(getAccount);
   const socketHashStore: ISocketHash = useSelector(getSocketHash);
   const contactListStore: IContactList = useSelector(getContactList);
   const friendListStore: IContactList = useSelector(getFriendList);
   const blockListStore: IContactList = useSelector(getBlockList);
-  const currentPartnerStore: IContact = useSelector(getCurrentPartner);
   const currentChatroomStore: IChatroom = useSelector(getCurrentChatroom);
   const chatStore: chatType = useSelector(selectChat);
   const chatHistoryStore: ChatHistoryType = useSelector(getChatHistory);
@@ -73,13 +82,12 @@ export const SocketProvider = () => {
   const sKeyListStore: ISKeyList = useSelector(getSKeyList);
   const mutedListStore: IChatroomList = useSelector(getMutedList);
   const machineIdStore: IMachineId = useSelector(getMachineId);
+  const myInfoStore: IMyInfo = useSelector(getMyInfo);
 
-  const accountStoreRef = useRef(accountStore);
   const socketHashStoreRef = useRef(socketHashStore);
   const contactListStoreRef = useRef(contactListStore);
   const friendListStoreRef = useRef(friendListStore);
   const blockListStoreRef = useRef(blockListStore);
-  const currentPartnerStoreRef = useRef(currentPartnerStore);
   const currentChatroomStoreRef = useRef(currentChatroomStore);
   const chatStoreRef = useRef(chatStore);
   const chatHistoryStoreRef = useRef(chatHistoryStore);
@@ -89,10 +97,11 @@ export const SocketProvider = () => {
   const sKeyListStoreRef = useRef(sKeyListStore);
   const mutedListStoreRef = useRef(mutedListStore);
   const machineIdStoreRef = useRef(machineIdStore);
+  const myInfoStoreRef = useRef(myInfoStore);
 
   useEffect(() => {
-    accountStoreRef.current = accountStore;
-  }, [accountStore]);
+    myInfoStoreRef.current = myInfoStore;
+  }, [myInfoStore]);
   useEffect(() => {
     socketHashStoreRef.current = socketHashStore;
   }, [socketHashStore]);
@@ -105,9 +114,6 @@ export const SocketProvider = () => {
   useEffect(() => {
     blockListStoreRef.current = blockListStore;
   }, [blockListStore]);
-  useEffect(() => {
-    currentPartnerStoreRef.current = currentPartnerStore;
-  }, [currentPartnerStore]);
   useEffect(() => {
     currentChatroomStoreRef.current = currentChatroomStore;
   }, [currentChatroomStore]);
@@ -139,12 +145,12 @@ export const SocketProvider = () => {
   const socket = useRef<Socket>(null);
 
   useEffect(() => {
-    if (accountStore.uid && socketHashStore.socketHash) {
+    if (myInfoStoreRef.current._id && socketHashStore.socketHash) {
       appWindow.title().then((res) => {
-        if (res === `tymtLauncher ${tymt_version}`) {
+        if (res === `tymtLauncherDebug ${tymt_version}`) {
           socket.current = io(socket_backend_url as string, {
             auth: {
-              userId: accountStoreRef.current.uid,
+              userId: myInfoStoreRef.current._id,
               socketHash: socketHashStoreRef.current.socketHash,
               deviceId: machineIdStoreRef.current.machineId,
             },
@@ -184,18 +190,25 @@ export const SocketProvider = () => {
                         messages: updatedHistory,
                       })
                     );
-                  } else {
-                    const senderName = senderInContactList?.nickName;
-                    const roomName = roomInChatroomList?.room_name;
-                    const sKey = sKeyListStoreRef.current.sKeys.find((element) => element.roomId === data.room_id)?.sKey;
-                    const decryptedMessage = sKey ? Chatdecrypt(data.message, sKey) : data.message;
-                    if (!roomInMutedList) {
-                      setNotificationOpen(true);
-                      setNotificationStatus("message");
-                      setNotificationTitle(senderName ? senderName : roomName);
-                      setNotificationDetail(decryptedMessage);
-                      setNotificationLink(`/chat?senderId=${data.sender_id}`);
+
+                    setTimeout(() => {
+                      emit("scroll_to_end");
+                    }, 200);
+                  }
+                  const senderName = senderInContactList?.nickName;
+                  const roomName = roomInChatroomList?.room_name;
+                  const sKey = sKeyListStoreRef?.current?.sKeys?.find((element) => element?.roomId === data?.room_id)?.sKey;
+                  const decryptedMessage = sKey ? Chatdecrypt(data.message, sKey) : data.message;
+                  if (!roomInMutedList) {
+                    let notiMessage: string = decryptedMessage;
+                    if (data.type === "image" || data.type === "audio" || data.type === "file" || data.type === "video") {
+                      notiMessage = decryptedMessage.slice(0, -32);
                     }
+                    setNotificationOpen(true);
+                    setNotificationStatus("message");
+                    setNotificationTitle(senderName ? senderName : roomName);
+                    setNotificationDetail(notiMessage);
+                    setNotificationLink(`/chat/${data.room_id}`);
                   }
                 }
               });
@@ -255,9 +268,9 @@ export const SocketProvider = () => {
                 // if (alert.alertType === "friend-request") {
                 //   // Update the friend lists of both him and me
                 //   dispatch(fetchFriendListAsync());
-                //   if (alert.note.to === accountStoreRef.current.uid) {
+                //   if (alert.note.to === myInfoStoreRef.current._id) {
                 //     // If I accepted the friend request, synchronize the alert lists of all my other login sessions
-                //     dispatch(fetchAlertListAsync(accountStoreRef.current.uid));
+                //     dispatch(fetchAlertListAsync(myInfoStoreRef.current._id));
                 //     return;
                 //   }
                 //   setNotificationOpen(true);
@@ -272,7 +285,7 @@ export const SocketProvider = () => {
             if (!socket.current.hasListeners("friend-request-accepted")) {
               socket.current.on("friend-request-accepted", async (alert: IAlert) => {
                 console.log("socket.current.on > friend-request-accepted", alert);
-                dispatch(fetchAlertListAsync(accountStoreRef.current.uid));
+                dispatch(fetchAlertListAsync(myInfoStoreRef.current._id));
                 dispatch(fetchFriendListAsync());
               });
             }
@@ -280,7 +293,7 @@ export const SocketProvider = () => {
             if (!socket.current.hasListeners("friend-request-rejected")) {
               socket.current.on("friend-request-rejected", async (alert: IAlert) => {
                 console.log("socket.current.on > friend-request-rejected", alert);
-                dispatch(fetchAlertListAsync(accountStoreRef.current.uid));
+                dispatch(fetchAlertListAsync(myInfoStoreRef.current._id));
                 dispatch(fetchFriendListAsync());
               });
             }
@@ -295,11 +308,11 @@ export const SocketProvider = () => {
                     if (action.type.endsWith("/fulfilled")) {
                       const newAddedChatroom = action.payload as IChatroom;
 
-                      if (joined_user_id === accountStoreRef.current.uid) {
+                      if (joined_user_id === myInfoStoreRef.current._id) {
                         const newSkey: ISKey = {
                           roomId: newAddedChatroom._id,
                           sKey: rsaDecrypt(
-                            newAddedChatroom.participants.find((participant) => participant.userId === accountStoreRef.current.uid).userKey,
+                            newAddedChatroom.participants.find((participant) => participant.userId === myInfoStoreRef.current._id).userKey,
                             rsaStoreRef.current.privateKey
                           ),
                         };
@@ -307,7 +320,7 @@ export const SocketProvider = () => {
 
                         // Create the contact when invited to a new DM with a new partner
                         if (!newAddedChatroom.room_name) {
-                          const partner = newAddedChatroom.participants.find((participant) => participant.userId !== accountStoreRef.current.uid);
+                          const partner = newAddedChatroom.participants.find((participant) => participant.userId !== myInfoStoreRef.current._id);
                           if (!contactListStoreRef.current.contacts.some((contact) => contact._id === partner.userId)) {
                             dispatch(createContactAsync(partner.userId));
                           }
@@ -316,6 +329,7 @@ export const SocketProvider = () => {
                         if (currentChatroomStoreRef.current?._id === room_id) {
                           dispatch(setCurrentChatroom(newAddedChatroom));
                           dispatch(fetchCurrentChatroomMembersAsync(newAddedChatroom._id));
+                          dispatch(fetchHistoricalChatroomMembersAsync(newAddedChatroom._id));
                         }
                       }
                     }
@@ -331,12 +345,13 @@ export const SocketProvider = () => {
                 console.log("socket.current.on > left-message-group", data);
                 try {
                   const { room_id, left_user_id } = data;
-                  if (left_user_id === accountStoreRef.current.uid) {
+                  if (left_user_id === myInfoStoreRef.current._id) {
                     dispatch(delOneFromChatroomList(room_id));
                     dispatch(delOneSkeyList(room_id));
                     if (currentChatroomStoreRef.current?._id === room_id) {
                       dispatch(setCurrentChatroom(null));
                       dispatch(setCurrentChatroomMembers([]));
+                      dispatch(setHistoricalChatroomMembers([]));
                     }
                   } else {
                     dispatch(addOneToChatroomListAsync(room_id)).then((action) => {
@@ -345,6 +360,7 @@ export const SocketProvider = () => {
                         if (currentChatroomStoreRef.current?._id === room_id) {
                           dispatch(setCurrentChatroom(newChatroom));
                           dispatch(fetchCurrentChatroomMembersAsync(newChatroom._id));
+                          dispatch(fetchHistoricalChatroomMembersAsync(newChatroom._id));
                         }
                       }
                     });
@@ -355,17 +371,107 @@ export const SocketProvider = () => {
               });
             }
 
-            if (!socket.current.hasListeners("user-online")) {
-              socket.current.on("user-online", async (userId: string) => {
-                console.log("socket.current.on > user-online", userId);
-                dispatch(addOneActiveUserList(userId));
-              });
-            }
+            if (!socket.current.hasListeners("sync-events-all")) {
+              socket.current.on("sync-events-all", async (data: any) => {
+                try {
+                  console.log("socket.current.on > sync-events-all", data);
 
-            if (!socket.current.hasListeners("user-offline")) {
-              socket.current.on("user-offline", async (userId: string) => {
-                console.log("socket.current.on > user-offline", userId);
-                dispatch(delOneActiveUserList(userId));
+                  if (data.event_identifier) {
+                    if (data.event_identifier === "user-online") {
+                      console.log("socket.current.on > sync-events-all > user-online", data.userId);
+                      dispatch(addOneActiveUserList(data.userId));
+                    } else if (data.event_identifier === "user-offline") {
+                      console.log("socket.current.on > sync-events-all > user-offline", data.userId);
+                      dispatch(delOneActiveUserList(data.userId));
+                    } else if (data.event_identifier === "alert-posted") {
+                      console.log("socket.current.on > sync-events-all > alert-posted", data.newAlert);
+                      const alert = data.newAlert as IAlert;
+                      if (!alert || !alert.alertType) {
+                        console.error("Alert wrong format!", alert);
+                        return;
+                      }
+
+                      const senderId = alert.note?.sender ?? "";
+                      const senderInBlockList = blockListStoreRef.current.contacts.find((element) => element._id === senderId);
+                      const senderInFriendList = friendListStoreRef.current.contacts.find((element) => element._id === senderId);
+
+                      // Block if the alert is from someone in the block list
+                      if (senderInBlockList) {
+                        console.log("Blocked the alert from someone in the block list!", alert);
+                        return;
+                      }
+
+                      // Friend request alert
+                      if (alert.alertType === "friend-request") {
+                        if (senderInFriendList) {
+                          console.log("Sender is already in my friend list!");
+                          return;
+                        }
+                        dispatch(addOneToUnreadList(alert));
+                        setNotificationOpen(true);
+                        setNotificationStatus("alert");
+                        setNotificationTitle(t("not-9_friend-request"));
+                        setNotificationDetail(t("not-10_fr-intro"));
+                        setNotificationLink(null);
+                      }
+                      // General alert
+                      else if (alert.alertType !== "chat") {
+                        dispatch(addOneToUnreadList(alert));
+                        setNotificationOpen(true);
+                        setNotificationStatus("alert");
+                        setNotificationTitle(`${alert.alertType}`);
+                        setNotificationDetail(`${alert.note.detail}`);
+                        setNotificationLink(null);
+                      }
+                      // Chat alert
+                      else if (alert.alertType === "chat") {
+                        dispatch(addOneToUnreadList(alert));
+                      }
+                    } else if (data.event_identifier === "alert-updated") {
+                      console.log("socket.current.on > sync-events-all > alert-udpated", data.updatedAlert);
+                    }
+                  } else if (data.instructions && isArray(data.instructions)) {
+                    data.instructions.map((instruction: string) => {
+                      if (instruction === SyncEventNames.UPDATE_IMAGE_RENDER_TIME) {
+                        console.log(instruction);
+                        dispatch(setRenderTime({ renderTime: Date.now() }));
+                      } else if (instruction === SyncEventNames.UPDATE_CHATROOM_LIST) {
+                        console.log(instruction);
+                        dispatch(fetchChatroomListAsync(myInfoStoreRef.current._id)).then((action) => {
+                          try {
+                            if (action.type.endsWith("/fulfilled")) {
+                              const newChatroomList = action.payload as IChatroom[];
+                              const newSKeyArray = newChatroomList.map((chatroom) => {
+                                const mySelf: IParticipant = chatroom.participants.find((participant) => participant.userId === myInfoStore?._id);
+                                const sKey: ISKey = {
+                                  roomId: chatroom._id,
+                                  sKey: rsaDecrypt(mySelf.userKey, rsaStore.privateKey),
+                                };
+                                return sKey;
+                              });
+                              dispatch(setSKeyList(newSKeyArray));
+
+                              const newCurrentChatroom = newChatroomList.find((element) => element._id === currentChatroomStoreRef.current._id);
+                              if (newCurrentChatroom) {
+                                dispatch(setCurrentChatroom(newCurrentChatroom));
+                                dispatch(fetchCurrentChatroomMembersAsync(newCurrentChatroom._id));
+                                dispatch(fetchHistoricalChatroomMembersAsync(newCurrentChatroom._id));
+                              } else {
+                                dispatch(setCurrentChatroom(null));
+                                dispatch(setCurrentChatroomMembers([]));
+                                dispatch(setChatHistoryAsync({ messages: [] }));
+                              }
+                            }
+                          } catch (err) {
+                            console.error("Failed to newSKeyArray: ", err);
+                          }
+                        });
+                      }
+                    });
+                  }
+                } catch (err) {
+                  console.error("Failed to sync-events-all: ", err);
+                }
               });
             }
 
@@ -373,6 +479,57 @@ export const SocketProvider = () => {
               socket.current.on("active-users", async (data: ISocketParamsActiveUsers) => {
                 console.log("socket.current.on > active-users", data);
                 dispatch(setActiveUserList(data.users));
+              });
+            }
+
+            if (!socket.current.hasListeners("sync-event")) {
+              socket.current.on("sync-event", async (data: string) => {
+                try {
+                  console.log("socket.current.on > sync-event", data);
+                  const { instructions } = JSON.parse(data) as ISocketParamsSyncEvent;
+                  instructions.map(async (instruction) => {
+                    if (instruction === SyncEventNames.UPDATE_CONTACT_LIST) {
+                      dispatch(fetchContactListAsync());
+                    } else if (instruction === SyncEventNames.UPDATE_FRIEND_LIST) {
+                      dispatch(fetchFriendListAsync());
+                    } else if (instruction === SyncEventNames.UPDATE_BLOCK_LIST) {
+                      dispatch(fetchBlockListAsync());
+                    } else if (instruction === SyncEventNames.UPDATE_ALERT_LIST) {
+                      dispatch(fetchAlertListAsync(myInfoStoreRef.current._id));
+                    } else if (instruction === SyncEventNames.UPDATE_UNREAD_MESSAGE_LIST) {
+                      dispatch(fetchUnreadMessageListAsync(myInfoStoreRef.current._id));
+                    } else if (instruction === SyncEventNames.UPDATE_CHATROOM_LIST) {
+                      dispatch(fetchChatroomListAsync(myInfoStoreRef.current._id)).then((action) => {
+                        try {
+                          if (action.type.endsWith("/fulfilled")) {
+                            const newChatroomList = action.payload as IChatroom[];
+                            const newSKeyArray = newChatroomList.map((chatroom) => {
+                              const mySelf: IParticipant = chatroom.participants.find((participant) => participant.userId === myInfoStore?._id);
+                              const sKey: ISKey = {
+                                roomId: chatroom._id,
+                                sKey: rsaDecrypt(mySelf.userKey, rsaStore.privateKey),
+                              };
+                              return sKey;
+                            });
+                            dispatch(setSKeyList(newSKeyArray));
+
+                            if (!newChatroomList.some((element) => element._id === currentChatroomStoreRef.current._id)) {
+                              dispatch(setCurrentChatroom(null));
+                              dispatch(setCurrentChatroomMembers([]));
+                              dispatch(setChatHistoryAsync({ messages: [] }));
+                            }
+                          }
+                        } catch (err) {
+                          console.error("Failed to newSKeyArray: ", err);
+                        }
+                      });
+                    } else if (instruction === SyncEventNames.UPDATE_IMAGE_RENDER_TIME) {
+                      dispatch(setRenderTime({ renderTime: Date.now() }));
+                    }
+                  });
+                } catch (err) {
+                  console.error("Failed to socket.current.on > sync-event: ", err);
+                }
               });
             }
 
@@ -413,12 +570,13 @@ export const SocketProvider = () => {
         socket.current.disconnect();
       }
     };
-  }, [accountStore.uid, socketHashStore.socketHash]);
+  }, [myInfoStore?._id, socketHashStore.socketHash]);
 
   const approveFriendRequest = useCallback(
-    (alert: IAlert) => {
+    async (alert: IAlert) => {
       try {
         console.log("approveFriendRequest");
+
         if (socket.current && socket.current.connected) {
           const data = {
             id: alert._id,
@@ -434,13 +592,12 @@ export const SocketProvider = () => {
 
           dispatch(updateFriendRequestInAlertList(data));
           dispatch(createContactAsync(alert.note.sender));
-          dispatch(fetchFriendListAsync());
         }
       } catch (err) {
         console.error("Failed to approveFriendRequest: ", err);
       }
     },
-    [accountStore, socket.current]
+    [myInfoStore, socket.current]
   );
 
   const declineFriendRequest = useCallback(
@@ -468,7 +625,7 @@ export const SocketProvider = () => {
         console.error("Failed to declineFriendRequest: ", err);
       }
     },
-    [accountStore, socket.current]
+    [myInfoStore, socket.current]
   );
 
   return (

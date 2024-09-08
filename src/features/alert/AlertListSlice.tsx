@@ -1,12 +1,13 @@
 import { PayloadAction, createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import tymtStorage from "../../lib/Storage";
 import { IAlertList } from "../../types/alertTypes";
-import { addAlertHistory, compareJSONStructure } from "../../lib/api/JSONHelper";
+import { addAlertHistory, compareJSONStructure } from "../../lib/helper/JSONHelper";
 import {
   fetchAlertList,
   fetchCountUnreadAlertList,
   fetchReadAlertList,
   fetchUnreadAlertList,
+  readMultipleAlerts,
   updateAlertReadStatus,
   updateAllAlertReadStatus,
   updateFriendRequest,
@@ -46,6 +47,7 @@ export const fetchCountUnreadAlertListAsync = createAsyncThunk("alertList/fetchC
 export const updateAlertReadStatusAsync = createAsyncThunk("alertList/updateAlertReadStatusAsync", updateAlertReadStatus);
 export const updateAllAlertReadStatusAsync = createAsyncThunk("alertList/updateAllAlertReadStatusAsync", updateAllAlertReadStatus);
 export const updateFriendRequestAsync = createAsyncThunk("alertList/updateFriendRequestAsync", updateFriendRequest);
+export const readMultiplAlertsAsync = createAsyncThunk("alertList/readMultipleAlertsAsync", readMultipleAlerts);
 
 export const alertListSlice = createSlice({
   name: "alertList",
@@ -98,7 +100,7 @@ export const alertListSlice = createSlice({
       })
       .addCase(fetchUnreadAlertListAsync.fulfilled, (state, action: PayloadAction<any>) => {
         if (!action.payload && !action.payload.read) {
-          console.error("Failed to fetchUnreadAlertListSync: action.payload.read undefined");
+          console.log("Failed to fetchUnreadAlertListSync: action.payload.read undefined");
         }
         state.data = { ...state.data, unread: addAlertHistory([...action.payload.unread], [...state.data.unread]), unreadCount: action.payload.unreadCount };
         tymtStorage.set(`alertList`, JSON.stringify(state.data));
@@ -147,6 +149,12 @@ export const alertListSlice = createSlice({
         state.data.read = [...state.data.read, target];
         state.data.readCount = state.data.readCount + 1;
         tymtStorage.set(`alertList`, JSON.stringify(state.data));
+        state.status = "alertList";
+      })
+      .addCase(readMultiplAlertsAsync.pending, (state) => {
+        state.status = "pending";
+      })
+      .addCase(readMultiplAlertsAsync.fulfilled, (state, _action: PayloadAction<any>) => {
         state.status = "alertList";
       });
   },

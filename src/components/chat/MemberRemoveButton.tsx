@@ -1,9 +1,11 @@
 import { useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 
 import { Button } from "@mui/material";
 import PersonRemoveIcon from "@mui/icons-material/PersonRemove";
 
+import { useNotification } from "../../providers/NotificationProvider";
 import { useSocket } from "../../providers/SocketProvider";
 
 import { AppDispatch } from "../../store";
@@ -14,18 +16,23 @@ import { getCurrentChatroom, setCurrentChatroom } from "../../features/chat/Curr
 import { IChatroom, IChatroomList } from "../../types/ChatroomAPITypes";
 import { ISocketParamsLeaveMessageGroup } from "../../types/SocketTypes";
 
+import { translateString } from "../../lib/api/Translate";
+import { fetchHistoricalChatroomMembersAsync } from "../../features/chat/HistoricalChatroomMembersSlice";
+
 export interface IPropsMemberRemoveButton {
   member: ICurrentChatroomMember;
 }
 
 const MemberRemoveButton = ({ member }: IPropsMemberRemoveButton) => {
+  const { t } = useTranslation();
   const { socket } = useSocket();
+  const { setNotificationStatus, setNotificationTitle, setNotificationDetail, setNotificationOpen, setNotificationLink } = useNotification();
 
   const dispatch = useDispatch<AppDispatch>();
   const chatroomListStore: IChatroomList = useSelector(getChatroomList);
   const currentChatroomStore: IChatroom = useSelector(getCurrentChatroom);
 
-  const handleMemberRemoveButtonClick = useCallback(() => {
+  const handleMemberRemoveButtonClick = useCallback(async () => {
     if (socket.current && socket.current.connected) {
       try {
         dispatch(removeParticipantAsync(member)).then((action) => {
@@ -33,6 +40,7 @@ const MemberRemoveButton = ({ member }: IPropsMemberRemoveButton) => {
             const newCurrentChatroom = action.payload as IChatroom;
             dispatch(setCurrentChatroom(newCurrentChatroom));
             dispatch(fetchCurrentChatroomMembersAsync(newCurrentChatroom._id));
+            dispatch(fetchHistoricalChatroomMembersAsync(newCurrentChatroom._id));
 
             if (socket.current && socket.current.connected) {
               const data: ISocketParamsLeaveMessageGroup = {
@@ -48,9 +56,21 @@ const MemberRemoveButton = ({ member }: IPropsMemberRemoveButton) => {
         console.log("handleMemberRemoveButtonClick");
       } catch (err) {
         console.error("Failed to handleMemberRemoveButtonClick: ", err);
+
+        setNotificationStatus("failed");
+        setNotificationTitle(t("hom-23_error"));
+        setNotificationDetail(await translateString(err.toString()));
+        setNotificationOpen(true);
+        setNotificationLink(null);
       }
     } else {
       console.error("Failed to handleMemberRemoveButtonClick: socket not connected!");
+
+      setNotificationStatus("failed");
+      setNotificationTitle(t("hom-23_error"));
+      setNotificationDetail(await translateString("Socket is not connected!"));
+      setNotificationOpen(true);
+      setNotificationLink(null);
     }
   }, [chatroomListStore, currentChatroomStore, socket.current]);
 

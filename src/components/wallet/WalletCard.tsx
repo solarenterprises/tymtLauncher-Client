@@ -1,6 +1,18 @@
-import { useCallback } from "react";
+import { useState, useMemo } from "react";
+import { useDispatch, useSelector } from "react-redux";
+
+import { currencySymbols } from "../../consts/SupportCurrency";
 
 import { Stack, Box, Button } from "@mui/material";
+
+import QrModal from "./QrModal";
+
+import { getCurrencyList } from "../../features/wallet/CurrencyListSlice";
+import { getCurrentCurrency } from "../../features/wallet/CurrentCurrencySlice";
+import { getBalanceList } from "../../features/wallet/BalanceListSlice";
+import { getPriceList } from "../../features/wallet/PriceListSlice";
+
+import { formatBalance } from "../../lib/helper";
 
 import CommonStyles from "../../styles/commonStyles";
 
@@ -15,69 +27,42 @@ import walletImg8 from "../../assets/wallet/wallet-card-8.png";
 import walletImg9 from "../../assets/wallet/wallet-card-9.png";
 import qrIcon from "../../assets/wallet/qr-icon.svg";
 
-import { propsWalletCard } from "../../types/commonTypes";
-import QrModal from "./QrModal";
-import { useState } from "react";
-import { formatBalance } from "../../lib/helper";
-import { setChainAsync } from "../../features/wallet/ChainSlice";
-import { setTransasctions } from "../../features/wallet/CryptoSlice";
+import { IBalanceList, ICurrencyList, ICurrentCurrency, IPriceList, ISupportChain } from "../../types/walletTypes";
+import { getTokenBalanceBySymbol, getTokenPriceByCmc } from "../../lib/helper/WalletHelper";
+import { setCurrentChain } from "../../features/wallet/CurrentChainSlice";
 
-import { IChain, ICurrency } from "../../types/walletTypes";
-import { useDispatch, useSelector } from "react-redux";
-import { AppDispatch } from "../../store";
-import { getCurrency } from "../../features/wallet/CurrencySlice";
-import { currencySymbols } from "../../consts/currency";
+const backgrounds = [walletImg1, walletImg2, walletImg3, walletImg4, walletImg5, walletImg6, walletImg7, walletImg8, walletImg9];
 
-import { useNotification } from "../../providers/NotificationProvider";
-import { useTranslation } from "react-i18next";
+export interface IPropsWalletCard {
+  supportChain: ISupportChain;
+  index: number;
+  setLoading: (_: boolean) => void;
+}
 
-const backgrounds = [
-  walletImg1,
-  walletImg2,
-  walletImg3,
-  walletImg4,
-  walletImg5,
-  walletImg6,
-  walletImg7,
-  walletImg8,
-  walletImg9,
-];
+const WalletCard = ({ supportChain, index }: IPropsWalletCard) => {
+  const dispatch = useDispatch();
 
-const WalletCard = ({ data, index, setLoading }: propsWalletCard) => {
-  const [open, setOpen] = useState(false);
   const background = backgrounds[index];
   const common = CommonStyles();
-  const dispatch = useDispatch<AppDispatch>();
-  const currencyStore: ICurrency = useSelector(getCurrency);
-  const reserve: number = currencyStore.data[currencyStore.current] as number;
-  const symbol: string = currencySymbols[currencyStore.current];
-  const { t } = useTranslation();
 
-  const {
-    setNotificationStatus,
-    setNotificationTitle,
-    setNotificationDetail,
-    setNotificationOpen,
-    setNotificationLink,
-  } = useNotification();
+  const currencyListStore: ICurrencyList = useSelector(getCurrencyList);
+  const currentCurrencyStore: ICurrentCurrency = useSelector(getCurrentCurrency);
+  const balanceListStore: IBalanceList = useSelector(getBalanceList);
+  const priceListStore: IPriceList = useSelector(getPriceList);
 
-  const selectChain = useCallback((data: IChain) => {
-    const udpateData = { ...data, currentToken: "chain" };
-    setLoading(true);
-    dispatch(setTransasctions());
-    dispatch(setChainAsync(udpateData)).then(() => {
-      setNotificationOpen(true);
-      setNotificationTitle(
-        `${t("alt-11_switched-network")} ${data?.chain?.name}`
-      );
-      setNotificationDetail(
-        `${t("alt-12_switched-network-intro")} ${data?.chain?.name}`
-      );
-      setNotificationStatus("success");
-      setNotificationLink(null);
-      setLoading(false);
-    });
-  }, []);
+  const reserve: number = useMemo(
+    () => currencyListStore?.list?.find((one) => one?.name === currentCurrencyStore?.currency)?.reserve,
+    [currencyListStore, currentCurrencyStore]
+  );
+  const symbol: string = useMemo(() => currencySymbols[currentCurrencyStore?.currency], [currentCurrencyStore]);
+  const balance = useMemo(() => getTokenBalanceBySymbol(balanceListStore, supportChain?.chain?.symbol), [balanceListStore]);
+  const price = useMemo(() => getTokenPriceByCmc(priceListStore, supportChain?.chain?.cmc), [priceListStore]);
+
+  const [open, setOpen] = useState(false);
+
+  const handleWalletCardClick = () => {
+    dispatch(setCurrentChain(supportChain?.chain?.name));
+  };
 
   return (
     <>
@@ -98,36 +83,18 @@ const WalletCard = ({ data, index, setLoading }: propsWalletCard) => {
             transform: "scale(0.95)",
           },
         }}
-        onClick={() => {
-          selectChain(data);
-        }}
+        onClick={handleWalletCardClick}
       >
-        <Stack
-          direction={"row"}
-          gap={3}
-          justifyContent={"space-between"}
-          width={"100%"}
-        >
+        <Stack direction={"row"} gap={3} justifyContent={"space-between"} width={"100%"}>
           <Stack direction={"row"} justifyContent={"flex-start"} gap={"16px"}>
-            <Box
-              component={"img"}
-              src={data?.chain?.logo}
-              width={"40px"}
-              height={"40px"}
-            />
+            <Box component={"img"} src={supportChain?.chain?.logo} width={"40px"} height={"40px"} />
             <Stack gap={1}>
-              <Box className={"fs-h3 white t-left"}>{data?.chain?.name}</Box>
+              <Box className={"fs-h3 white t-left"}>{supportChain?.chain?.name}</Box>
               <Box className={"fs-18-regular white"}>
-                {data?.chain?.symbol}
-                {` ${formatBalance(data?.chain?.balance, 4)}`}
+                {supportChain?.chain?.symbol}
+                {` ${formatBalance(balance, 4)}`}
               </Box>
-              <Box className={"fs-16-regular light t-left"}>
-                {`${symbol} ${formatBalance(
-                  Number(data?.chain?.price ?? 0) *
-                    Number(data?.chain?.balance ?? 0) *
-                    reserve
-                )}`}
-              </Box>
+              <Box className={"fs-16-regular light t-left"}>{`${symbol} ${formatBalance(Number(price ?? 0) * Number(balance ?? 0) * reserve)}`}</Box>
             </Stack>
           </Stack>
           <Box
@@ -142,7 +109,7 @@ const WalletCard = ({ data, index, setLoading }: propsWalletCard) => {
           </Box>
         </Stack>
       </Button>
-      <QrModal data={data} open={open} setOpen={setOpen} />
+      <QrModal supportChain={supportChain} open={open} setOpen={setOpen} />
     </>
   );
 };

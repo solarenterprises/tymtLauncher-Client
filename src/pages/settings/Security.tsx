@@ -1,14 +1,43 @@
-import { Box, Button, Divider, Stack } from "@mui/material";
+import { useMemo, useState } from "react";
+import { useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
+
+import { Box, Button, Divider, Stack } from "@mui/material";
+
+import ComingModal from "../../components/modals/ComingModal";
+
+import { getAccount } from "../../features/account/AccountSlice";
+
+import { getKeccak256Hash } from "../../lib/api/Encrypt";
+
 import backIcon from "../../assets/settings/back-icon.svg";
 import arrowImg from "../../assets/settings/arrow-right.svg";
+
 import { propsType } from "../../types/settingTypes";
-import ComingModal from "../../components/ComingModal";
-import { useState } from "react";
+import { IAccount } from "../../types/accountTypes";
+import { emit } from "@tauri-apps/api/event";
+import { TauriEventNames } from "../../consts/TauriEventNames";
 
 const Security = ({ view, setView }: propsType) => {
   const { t } = useTranslation();
+
+  const accountStore: IAccount = useSelector(getAccount);
+
+  const isGuest = useMemo(() => accountStore?.nickName === "Guest" && accountStore?.password === getKeccak256Hash(""), [accountStore]);
+
   const [coming, setComing] = useState<boolean>(false);
+
+  const handleBackupClick = () => {
+    try {
+      if (isGuest) {
+        emit(TauriEventNames.GUEST_MODAL_VIEW, true);
+        return;
+      }
+      setView("backup");
+    } catch (err) {
+      console.log("Failed to handleBackupClick: ", err);
+    }
+  };
 
   return (
     <>
@@ -26,6 +55,15 @@ const Security = ({ view, setView }: propsType) => {
             <Button className="common-btn" sx={{ padding: "20px" }} onClick={() => setView("password")}>
               <Stack direction={"row"} justifyContent={"space-between"} textAlign={"center"}>
                 <Box className="fs-h4 white">{t("set-71_change-password")}</Box>
+                <Box className="center-align">
+                  <img src={arrowImg} />
+                </Box>
+              </Stack>
+            </Button>
+            <Divider variant="fullWidth" sx={{ backgroundColor: "#FFFFFF1A" }} />
+            <Button className="common-btn" sx={{ padding: "20px" }} onClick={handleBackupClick}>
+              <Stack direction={"row"} justifyContent={"space-between"} textAlign={"center"}>
+                <Box className="fs-h4 white">{t("set-89_backup-passphrase")}</Box>
                 <Box className="center-align">
                   <img src={arrowImg} />
                 </Box>

@@ -1,21 +1,51 @@
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
+
 import { Grid, Box, Stack, Button } from "@mui/material";
+
 import InputBox from "../../components/wallet/InputBox";
+import ChooseChainDrawer from "../../components/wallet/ChooseChainDrawer";
+
+import { getCurrentChain } from "../../features/wallet/CurrentChainSlice";
+import { getCurrentToken } from "../../features/wallet/CurrentTokenSlice";
+import { getBalanceList } from "../../features/wallet/BalanceListSlice";
+import { getPriceList } from "../../features/wallet/PriceListSlice";
+import { getWallet } from "../../features/wallet/WalletSlice";
+
 import walletIcon from "../../assets/wallet.svg";
 import usdIcon from "../../assets/wallet/usd-icon.svg";
-import ChooseChainDrawer from "../../components/wallet/ChooseChainDrawer";
-import { useState } from "react";
-import { getChain } from "../../features/wallet/ChainSlice";
+
+import {
+  getCurrentChainWalletAddress,
+  getNativeTokenBalanceByChainName,
+  getNativeTokenPriceByChainName,
+  getSupportChainByName,
+} from "../../lib/helper/WalletHelper";
+
+import { IBalanceList, ICurrentChain, ICurrentToken, IPriceList, ISupportChain, IWallet } from "../../types/walletTypes";
 
 const WalletBuyCrypto = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const chain = useSelector(getChain);
+
+  const currentChainStore: ICurrentChain = useSelector(getCurrentChain);
+  const currentTokenStore: ICurrentToken = useSelector(getCurrentToken);
+  const balanceListStore: IBalanceList = useSelector(getBalanceList);
+  const priceListStore: IPriceList = useSelector(getPriceList);
+  const walletStore: IWallet = useSelector(getWallet);
+
+  const currentSupportChain: ISupportChain = useMemo(() => getSupportChainByName(currentChainStore?.chain), [currentChainStore]);
+  // const currentNativeOrTokenInfo: ISupportToken | ISupportNative = useMemo(
+  //   () => getSupportNativeOrTokenBySymbol(currentTokenStore?.token),
+  //   [currentTokenStore]
+  // );
+
   const [usd, setUsd] = useState("");
   const [sxp, setSxp] = useState("");
   const [chooseChainView, setChooseChainView] = useState<boolean>(false);
+
   return (
     <>
       <Grid container mb={"30px"}>
@@ -26,15 +56,15 @@ const WalletBuyCrypto = () => {
             </Box>
             <Box className={"wallet-form-card-hover p-24-16 br-16"} mb={"32px"} onClick={() => setChooseChainView(true)}>
               <Stack direction="row" alignItems={"center"} spacing={"16px"}>
-                <Box component={"img"} src={chain.icon} width={"36px"} height={"36px"} />
+                <Box component={"img"} src={currentSupportChain?.chain?.logo} width={"36px"} height={"36px"} />
                 <Stack>
                   <Stack direction={"row"} spacing={"10px"}>
                     <Box className={"fs-18-regular light"}>{t("wal-8_from")}</Box>
-                    <Box className={"fs-18-regular white"}>{chain.name}</Box>
+                    <Box className={"fs-18-regular white"}>{currentSupportChain?.chain?.name}</Box>
                   </Stack>
                   <Stack direction={"row"} alignItems={"center"} spacing={"8px"}>
                     <Box component={"img"} src={walletIcon} width={"12px"} height={"12px"} />
-                    <Box className={"fs-14-regular light"}>{chain.address}</Box>
+                    <Box className={"fs-14-regular light"}>{getCurrentChainWalletAddress(walletStore, currentChainStore?.chain)}</Box>
                   </Stack>
                 </Stack>
               </Stack>
@@ -44,14 +74,18 @@ const WalletBuyCrypto = () => {
                 <Box className={"fs-18-regular light"}>{t("wal-31_you-spend")}</Box>
                 <Stack direction={"row"} alignItems={"center"} spacing={"8px"}>
                   <Box component={"img"} src={walletIcon} width={"18px"} height={"18px"} />
-                  <Box className={"fs-12-light light"}>{chain.count}</Box>
+                  <Box className={"fs-12-light light"}>{getNativeTokenBalanceByChainName(balanceListStore, currentChainStore?.chain)}</Box>
                   <Box className={"fs-14-bold blue"}>{t("wal-10_max")}</Box>
                 </Stack>
               </Stack>
               <Stack direction={"row"} alignItems={"center"} justifyContent={"space-between"}>
                 <Stack width={"100%"}>
                   <InputBox id={"send-amount"} label="" placeholder="0.0" align="left" value={usd} onChange={(value: string) => setUsd(value)}></InputBox>
-                  <Box className={"fs-12-light light"}>~${chain.value * chain.count}</Box>
+                  <Box className={"fs-12-light light"}>
+                    ~$
+                    {getNativeTokenPriceByChainName(priceListStore, currentChainStore?.chain) *
+                      getNativeTokenBalanceByChainName(balanceListStore, currentChainStore?.chain)}
+                  </Box>
                 </Stack>
                 <Stack direction={"row"} alignItems={"center"} padding={"4px 8px"} spacing={"8px"}>
                   <Box component={"img"} src={usdIcon} />
@@ -74,8 +108,8 @@ const WalletBuyCrypto = () => {
                   <Box className={"fs-12-light light"}>~$1.00</Box>
                 </Stack>
                 <Stack direction={"row"} alignItems={"center"} padding={"4px 8px"} spacing={"8px"}>
-                  <Box component={"img"} src={chain.icon} />
-                  <Box className={"fs-18-regular white"}>{chain.token}</Box>
+                  <Box component={"img"} src={currentSupportChain?.chain?.logo} />
+                  <Box className={"fs-18-regular white"}>{currentTokenStore?.token}</Box>
                 </Stack>
               </Stack>
             </Box>
@@ -84,7 +118,8 @@ const WalletBuyCrypto = () => {
                 <Box className={"fs-16-regular light"}>{t("wal-33_exchange-rate")}</Box>
                 <Stack direction={"row"} alignItems={"center"} spacing={"8px"}>
                   <Box className={"fs-16-regular white"}>
-                    1 {chain.token} ~ {chain.value} USD
+                    1 {getNativeTokenPriceByChainName(priceListStore, currentChainStore?.chain)} ~
+                    {getNativeTokenBalanceByChainName(balanceListStore, currentChainStore?.chain)} USD
                   </Box>
                 </Stack>
               </Stack>

@@ -16,7 +16,7 @@ export interface INonCustodySignInReq {
 }
 
 export interface INonCustodySignUpReqWallet {
-  chainId: Number;
+  chainId: number;
   chainName: string;
   address: string;
 }
@@ -25,7 +25,7 @@ export interface INonCustodySignUpReq {
   nickName: string;
   password: string;
   sxpAddress: string;
+  rsa_pub_key: string;
   publicKey: string;
   wallet: INonCustodySignUpReqWallet[];
-  rsa_pub_key: string;
 }

@@ -8,7 +8,12 @@ interface props {
 
 const MnemonicWord = ({ number, word, focus }: props) => {
   return (
-    <Box className={focus ? "mnemonic-word-box-focus" : "mnemonic-word-box"}>
+    <Box
+      className={focus ? "mnemonic-word-box-focus" : "mnemonic-word-box"}
+      sx={{
+        transition: "all 0.3s ease",
+      }}
+    >
       <Stack
         direction={"row"}
         alignItems={"center"}
@@ -19,7 +24,7 @@ const MnemonicWord = ({ number, word, focus }: props) => {
         spacing={"8px"}
       >
         <Box className={"fs-16-regular light"}>{number}</Box>
-        <Box className={"fs-18-regular white"}>{word}</Box>
+        <Box className={"fs-14-regular white"}>{word}</Box>
       </Stack>
     </Box>
   );

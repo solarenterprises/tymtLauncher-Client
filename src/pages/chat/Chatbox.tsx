@@ -1,38 +1,40 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { useTranslation } from "react-i18next";
 import InfiniteScroll from "react-infinite-scroll-component";
+import { listen } from "@tauri-apps/api/event";
 import _ from "lodash";
 import "firebase/database";
 
 import { Box, Divider, Button, Stack } from "@mui/material";
 
-import { addChatHistory } from "../../lib/api/JSONHelper";
+import { addChatHistory } from "../../lib/helper/JSONHelper";
 
 import { AppDispatch } from "../../store";
-import { getAccount } from "../../features/account/AccountSlice";
-import { getChatHistory, setChatHistory, setChatHistoryAsync } from "../../features/chat/ChatHistorySlice";
+import { getChatHistory, setChatHistory } from "../../features/chat/ChatHistorySlice";
 import { selectChat } from "../../features/settings/ChatSlice";
 import { setMountedFalse, setMountedTrue } from "../../features/chat/IntercomSupportSlice";
 import { getCurrentChatroom } from "../../features/chat/CurrentChatroomSlice";
 import { ICurrentChatroomMembers, getCurrentChatroomMembers } from "../../features/chat/CurrentChatroomMembersSlice";
+import { IActiveUserList, getActiveUserList } from "../../features/chat/ActiveUserListSlice";
+import { getMyInfo } from "../../features/account/MyInfoSlice";
 
 import { useSocket } from "../../providers/SocketProvider";
 import ChatInputField from "../../components/chat/Chatinputfield";
 import GroupAvatar from "../../components/chat/GroupAvatar";
 import Avatar from "../../components/home/Avatar";
 
-import { ChatHistoryType, propsType } from "../../types/chatTypes";
-import { accountType } from "../../types/accountTypes";
+import { ChatHistoryType, IMyInfo, propsType } from "../../types/chatTypes";
 import { chatType } from "../../types/settingTypes";
 import { IChatroom } from "../../types/ChatroomAPITypes";
+import Bubble from "../../components/chat/Bubble";
 
 import maximize from "../../assets/chat/maximize.svg";
 import backIcon from "../../assets/settings/back-icon.svg";
+
 import ChatStyle from "../../styles/ChatStyles";
-import { IActiveUserList, getActiveUserList } from "../../features/chat/ActiveUserListSlice";
-import Bubble from "../../components/chat/Bubble";
+import TooltipComponent from "../../components/TooltipComponent";
 
 const Chatbox = ({ view, setView }: propsType) => {
   const { t } = useTranslation();
@@ -49,26 +51,31 @@ const Chatbox = ({ view, setView }: propsType) => {
     valueRef.current = value;
   }, [value]);
 
-  const accountStore: accountType = useSelector(getAccount);
+  const myInfoStore: IMyInfo = useSelector(getMyInfo);
   const currentChatroomStore: IChatroom = useSelector(getCurrentChatroom);
   const chatHistoryStore: ChatHistoryType = useSelector(getChatHistory);
   const chatStore: chatType = useSelector(selectChat);
   const currentChatroomMembersStore: ICurrentChatroomMembers = useSelector(getCurrentChatroomMembers);
   const activeUserListStore: IActiveUserList = useSelector(getActiveUserList);
 
-  const isDM = currentChatroomStore?.room_name ? false : true;
-  const currentPartner = isDM ? currentChatroomMembersStore?.members?.find((member) => member._id !== accountStore.uid) : null;
-  const displayChatroomName = currentChatroomStore?.room_name ? currentChatroomStore?.room_name : currentPartner?.nickName;
-  const displayChatroomSubName = currentChatroomStore?.room_name ? `${currentChatroomStore?.participants?.length ?? 0} Joined` : currentPartner?.sxpAddress;
+  const isDM = useMemo(() => {
+    return currentChatroomStore?.room_name ? false : true;
+  }, [currentChatroomStore]);
+  const isGlobal = useMemo(() => {
+    return currentChatroomStore?.isGlobal;
+  }, [currentChatroomStore]);
+  const currentPartner = isDM ? currentChatroomMembersStore?.members?.find((member) => member._id !== myInfoStore?._id) : null;
+  const displayChatroomName = !isDM ? currentChatroomStore?.room_name : currentPartner?.nickName;
+  const displayChatroomSubName = isGlobal ? "Public channel" : !isDM ? `${currentChatroomStore?.participants?.length ?? 0} Joined` : currentPartner?.sxpAddress;
 
-  const accountStoreRef = useRef(accountStore);
+  const myInfoStoreRef = useRef(myInfoStore);
   const currentChatroomStoreRef = useRef(currentChatroomStore);
   const chatHistoryStoreRef = useRef(chatHistoryStore);
   const chatStoreRef = useRef(chatStore);
 
   useEffect(() => {
-    accountStoreRef.current = accountStore;
-  }, [accountStore]);
+    myInfoStoreRef.current = myInfoStore;
+  }, [myInfoStore]);
   useEffect(() => {
     currentChatroomStoreRef.current = currentChatroomStore;
   }, [currentChatroomStore]);
@@ -81,7 +88,7 @@ const Chatbox = ({ view, setView }: propsType) => {
 
   const fetchMessages = async () => {
     try {
-      if (accountStoreRef.current.uid && currentChatroomStoreRef?.current._id) {
+      if (myInfoStoreRef.current._id && currentChatroomStoreRef?.current._id) {
         const query = {
           room_id: currentChatroomStoreRef.current?._id,
           pagination: { page: Math.floor(chatHistoryStoreRef.current.messages.length / 20) + 1, pageSize: 20 },
@@ -98,9 +105,7 @@ const Chatbox = ({ view, setView }: propsType) => {
   // Fetch chat history of the first page
   useEffect(() => {
     if (socket.current && view === "chatbox") {
-      dispatch(setChatHistoryAsync({ messages: [] })).then(() => {
-        fetchMessages();
-      });
+      fetchMessages();
     }
   }, [socket.current, view]);
 
@@ -152,6 +157,18 @@ const Chatbox = ({ view, setView }: propsType) => {
     if (scrollref.current && valueRef.current === "" && view === "chatbox") Scroll();
   }, [valueRef.current, view]);
 
+  useEffect(() => {
+    const unlisten_scroll_to_end = listen("scroll_to_end", (_event) => {
+      console.log("scroll_to_end");
+      const { scrollHeight } = scrollref.current as HTMLDivElement;
+      scrollref.current?.scrollTo(0, scrollHeight);
+    });
+
+    return () => {
+      unlisten_scroll_to_end.then((unlistenFn) => unlistenFn());
+    };
+  }, []);
+
   return (
     <>
       {view === "chatbox" && (
@@ -168,49 +185,54 @@ const Chatbox = ({ view, setView }: propsType) => {
                 <Button className={"setting-back-button"} onClick={() => setView("chatmain")}>
                   <Box component={"img"} src={backIcon}></Box>
                 </Button>
-                <Stack
-                  alignItems={"center"}
-                  flexDirection={"row"}
-                  gap={"16px"}
-                  sx={{
-                    cursor: "pointer",
-                    width: "300px",
-                    borderRadius: "4px",
-                    "&:hover": {
-                      backgroundColor: "#ffffff33",
-                    },
-                  }}
-                  onClick={() => {
-                    if (!isDM) setView("chatGroupMemberList");
-                  }}
-                >
-                  {isDM && currentPartner && (
-                    <Avatar
-                      onlineStatus={activeUserListStore.users.some((user) => user === currentPartner._id)}
-                      url={currentPartner.avatar}
-                      size={40}
-                      status={currentPartner.notificationStatus}
-                    />
-                  )}
-                  {!isDM && <GroupAvatar size={40} url={currentChatroomStore.room_image} />}
-                  <Stack justifyContent={"flex-start"} direction={"column"} spacing={1} width={"244px"}>
-                    <Box className={"fs-18-bold white"} sx={{ WebkitBoxOrient: "vertical", WebkitLineClamp: 1, overflow: "hidden", textOverflow: "ellipsis" }}>
-                      {displayChatroomName}
-                    </Box>
-                    <Box
-                      className={"fs-12-regular gray"}
-                      sx={{ WebkitBoxOrient: "vertical", WebkitLineClamp: 1, overflow: "hidden", textOverflow: "ellipsis" }}
-                    >
-                      {displayChatroomSubName}
-                    </Box>
+                <TooltipComponent text={t("cha-65_click-for-participants")}>
+                  <Stack
+                    alignItems={"center"}
+                    flexDirection={"row"}
+                    gap={"16px"}
+                    sx={{
+                      cursor: "pointer",
+                      width: "300px",
+                      borderRadius: "4px",
+                      "&:hover": {
+                        backgroundColor: "#ffffff33",
+                      },
+                    }}
+                    onClick={() => {
+                      if (!isDM) setView("chatGroupMemberList");
+                    }}
+                  >
+                    {isDM && currentPartner && (
+                      <Avatar
+                        onlineStatus={activeUserListStore.users.some((user) => user === currentPartner._id)}
+                        url={currentPartner.avatar}
+                        size={40}
+                        status={currentPartner.notificationStatus}
+                      />
+                    )}
+                    {!isDM && <GroupAvatar size={40} url={currentChatroomStore?.room_image} />}
+                    <Stack justifyContent={"flex-start"} direction={"column"} spacing={1} width={"244px"}>
+                      <Box
+                        className={"fs-18-bold white"}
+                        sx={{ WebkitBoxOrient: "vertical", WebkitLineClamp: 1, overflow: "hidden", textOverflow: "ellipsis" }}
+                      >
+                        {displayChatroomName}
+                      </Box>
+                      <Box
+                        className={"fs-12-regular gray"}
+                        sx={{ WebkitBoxOrient: "vertical", WebkitLineClamp: 1, overflow: "hidden", textOverflow: "ellipsis" }}
+                      >
+                        {displayChatroomSubName}
+                      </Box>
+                    </Stack>
                   </Stack>
-                </Stack>
+                </TooltipComponent>
               </Stack>
               <Button
                 className={"setting-back-button"}
                 onClick={() => {
-                  navigate("/chat");
-                  dispatch(setChatHistory({ messages: [] }));
+                  navigate(`/chat/${currentChatroomStore?._id}`);
+                  // dispatch(setChatHistory({ messages: [] }));
                 }}
               >
                 <Box component={"img"} src={maximize}></Box>
@@ -226,33 +248,38 @@ const Chatbox = ({ view, setView }: propsType) => {
           </Box>
 
           {/* Message inbox */}
-          <Box className={"scroll_bar_chatbox"} display={"flex"} flexDirection={"column"} ref={scrollref} id={"container"}>
-            <Box sx={{ width: "100%", flex: "1 1 auto" }}></Box>
+          <Box className={"scroll_bar_chatbox"} ref={scrollref} id={"scroll_container"}>
+            {/* <Box sx={{ width: "100%", flex: "1 1 auto" }} /> */}
             <InfiniteScroll
               style={{
                 minHeight: "50px",
+                height: "100%",
+                display: "flex",
+                flexDirection: "column-reverse",
+                overflow: "none",
               }}
               dataLength={chatHistoryStore.messages.length} //This is important field to render the next data
               next={fetchMessages}
               hasMore={true}
+              inverse={true}
               loader={<Box className={"fs-14-regular white t-center"}>{t("cha-32_loading")}</Box>}
+              scrollableTarget={"scroll_container"}
               // endMessage={
               //   <Box className={"fs-14-regular white t-center"}>
               //     {t("cha-33_you-seen-all")}
               //   </Box>
               // }
               // below props only if you need pull down functionality
-              refreshFunction={fetchMessages}
-              pullDownToRefresh
-              pullDownToRefreshThreshold={50}
-              pullDownToRefreshContent={<Box className={"fs-14-regular white t-center"}>&#8595; {t("cha-34_pull-down")}</Box>}
-              releaseToRefreshContent={<Box className={"fs-14-regular white t-center"}>&#8593; {t("cha-35_release-to-refresh")}</Box>}
+              // refreshFunction={fetchMessages}
+              // pullDownToRefresh
+              // pullDownToRefreshThreshold={50}
+              // pullDownToRefreshContent={<Box className={"fs-14-regular white t-center"}>&#8595; {t("cha-34_pull-down")}</Box>}
+              // releaseToRefreshContent={<Box className={"fs-14-regular white t-center"}>&#8593; {t("cha-35_release-to-refresh")}</Box>}
             >
-              {[...chatHistoryStore.messages].reverse()?.map((message, index) => (
-                <Bubble roomMode={false} screenExpanded={false} message={message} index={index} />
+              {chatHistoryStore.messages?.map((message, index) => (
+                <Bubble roomMode={false} screenExpanded={false} message={message} index={index} isDM={isDM} />
               ))}
             </InfiniteScroll>
-            <div id={"emptyblock"}></div>
           </Box>
 
           {/* Input field section */}

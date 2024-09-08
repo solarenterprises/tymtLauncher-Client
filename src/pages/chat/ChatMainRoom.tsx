@@ -16,7 +16,6 @@ import ChatStyle from "../../styles/ChatStyles";
 
 import { IContactList, propsType, userType } from "../../types/chatTypes";
 
-// import { getAlertList } from "../../features/alert/AlertListSlice";
 import { getFriendList } from "../../features/chat/FriendListSlice";
 import { getBlockList } from "../../features/chat/BlockListSlice";
 import { getChatroomList } from "../../features/chat/ChatroomListSlice";
@@ -24,7 +23,6 @@ import { searchUsers } from "../../features/chat/ContactListApi";
 import { searchGroups } from "../../features/chat/ChatroomListApi";
 
 import { IChatroom, IChatroomList } from "../../types/ChatroomAPITypes";
-// import { IAlertList } from "../../types/alertTypes";
 
 import nocontact from "../../assets/chat/nocontact.png";
 import settingicon from "../../assets/chat/settings.svg";
@@ -35,7 +33,6 @@ const ChatMainRoom = ({ view, setView }: propsType) => {
   const classes = ChatStyle();
   const otheme = useTheme();
 
-  // const alertListStore: IAlertList = useSelector(getAlertList);
   const friendListStore: IContactList = useSelector(getFriendList);
   const blockListStore: IContactList = useSelector(getBlockList);
   const chatroomListStore: IChatroomList = useSelector(getChatroomList);
@@ -222,11 +219,7 @@ const ChatMainRoom = ({ view, setView }: propsType) => {
                 ) : (
                   <>
                     {(!value ? groupList : searchedGroupList)?.map((group, index) => {
-                      // const count =
-                      //   !value ? alertListStore.unread?.filter((alert) => alert.note.sender === group._id && alert.alertType === "chat").length : 0;
-                      // const numberofunreadmessages = count;
-
-                      return <GroupListItem group={group} index={index} />;
+                      return <GroupListItem group={group} index={index} roomMode={true} />;
                     })}
                   </>
                 )}
@@ -247,11 +240,11 @@ const ChatMainRoom = ({ view, setView }: propsType) => {
                   <>
                     {!value &&
                       DMList.map((DM, index) => {
-                        return <DMListItem DM={DM} index={index} numberOfUnreadMessages={0} />;
+                        return <DMListItem DM={DM} index={index} roomMode={true} />;
                       })}
                     {value &&
                       searchedUserList.map((user, index) => {
-                        return <UserListItem user={user} index={index} numberOfUnreadMessages={0} page={"DM"} />;
+                        return <UserListItem user={user} index={index} page={"DM"} />;
                       })}
                   </>
                 )}
@@ -271,9 +264,7 @@ const ChatMainRoom = ({ view, setView }: propsType) => {
                 ) : (
                   <>
                     {(!value ? friendListStore?.contacts : searchedUserList)?.map((user, index) => {
-                      // const count = !value ? alertListStore.unread?.filter((alert) => alert.note.sender === user._id && alert.alertType === "chat").length : 0;
-                      // const numberofunreadmessages = count;
-                      return <UserListItem user={user} index={index} numberOfUnreadMessages={0} page={value ? "DM" : "friend"} />;
+                      return <UserListItem user={user} index={index} page={value ? "DM" : "friend"} />;
                     })}
                   </>
                 )}
@@ -293,10 +284,7 @@ const ChatMainRoom = ({ view, setView }: propsType) => {
                 ) : (
                   <>
                     {(!value ? blockListStore?.contacts : searchedUserList)?.map((user, index) => {
-                      // const count = !value ? alertListStore.unread?.filter((alert) => alert.note.sender === user._id && alert.alertType === "chat").length : 0;
-                      // const numberofunreadmessages = count;
-
-                      return <UserListItem user={user} index={index} numberOfUnreadMessages={0} page={value ? "DM" : "block"} />;
+                      return <UserListItem user={user} index={index} page={value ? "DM" : "block"} />;
                     })}
                   </>
                 )}

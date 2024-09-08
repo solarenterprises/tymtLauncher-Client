@@ -2,7 +2,7 @@ import { Box, Rating, Button, Stack } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import StarIcon from "@mui/icons-material/Star";
 import storeStyles from "../../styles/StoreStyles";
-import ComingModal from "../ComingModal";
+import ComingModal from "../modals/ComingModal";
 import { useState } from "react";
 import noreviews from "../../assets/main/noreviews.png";
 

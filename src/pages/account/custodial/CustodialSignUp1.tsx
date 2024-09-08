@@ -1,11 +1,10 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { useDispatch, useSelector } from "react-redux";
-
-import createKeccakHash from "keccak";
-
 import { useFormik } from "formik";
 import * as Yup from "yup";
+
+import "../../../global.css";
 
 import { Grid, Box, Stack } from "@mui/material";
 
@@ -16,25 +15,15 @@ import AccountNextButton from "../../../components/account/AccountNextButton";
 import Stepper from "../../../components/account/Stepper";
 import HaveAccount from "../../../components/account/HaveAccount";
 import SecurityLevel from "../../../components/account/SecurityLevel";
-import IAgreeTerms from "../../../components/account/IAgreeTerms";
+import BenefitModal from "../../../components/account/BenefitModal";
 
 import tymt3 from "../../../assets/account/tymt3.png";
 
-import "../../../global.css";
-import { accountType, custodialType } from "../../../types/accountTypes";
-import { getTempCustodial, setTempCustodial } from "../../../features/account/TempCustodialSlice";
-import BenefitModal from "../../../components/account/BenefitModal";
-import { getAccount } from "../../../features/account/AccountSlice";
-import { useState } from "react";
-
 const CustodialSignUp1 = () => {
   const navigate = useNavigate();
-  const dispatch = useDispatch();
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [path, setPath] = useState("");
-  const tempCustodialStore: custodialType = useSelector(getTempCustodial);
-  const accountStore: accountType = useSelector(getAccount);
 
   const formik = useFormik({
     initialValues: {
@@ -69,13 +58,6 @@ const CustodialSignUp1 = () => {
         .oneOf([Yup.ref("password")], t("cca-64_password-must-match")),
     }),
     onSubmit: () => {
-      dispatch(
-        setTempCustodial({
-          ...tempCustodialStore,
-          email: formik.values.email,
-          password: createKeccakHash("keccak256").update(formik.values.password).digest("hex"),
-        })
-      );
       setPath("/custodial/signup/1/verify-email");
       setOpen(true);
     },
@@ -102,7 +84,7 @@ const CustodialSignUp1 = () => {
                 >
                   <Grid item xs={12} container justifyContent={"space-between"}>
                     <Back onClick={handleBackClick} />
-                    <Stepper all={3} now={1} texts={[t("ncca-1_create-account"), "", ""]} />
+                    <Stepper all={3} now={1} text={t("ncca-1_create-account")} />
                   </Grid>
                   <Grid item xs={12} mt={"80px"}>
                     <AccountHeader title={t("ncca-1_create-account")} text={t("cca-1_not-feel-ready")} />
@@ -168,12 +150,12 @@ const CustodialSignUp1 = () => {
                       {formik.touched.passwordMatch && formik.errors.passwordMatch && <Box className={"fs-16-regular red"}>{formik.errors.passwordMatch}</Box>}
                     </Grid>
                     <Grid item xs={12} mt={"40px"}>
-                      <IAgreeTerms />
+                      {/* <IAgreeTerms /> */}
                     </Grid>
                     <Grid item xs={12} mt={"48px"}>
                       <AccountNextButton
                         isSubmit={true}
-                        disabled={formik.errors.email || formik.errors.password || formik.errors.passwordMatch || !accountStore.agreedTerms ? true : false}
+                        disabled={formik.errors.email || formik.errors.password || formik.errors.passwordMatch ? true : false}
                         text={t("ncca-1_create-account")}
                       />
                     </Grid>

@@ -120,6 +120,7 @@
     z-index: 11;
     background: var(--bg-stroke-icon-button-bg-10, rgba(128, 128, 128, 0.1));
     background-blend-mode: luminosity;
+    position: relative;
     backdrop-filter: blur(50px);
     &:hover {
       background-color: var(--bg-stroke-icon-button-bg-10, rgba(128, 128, 128, 0.1));
@@ -127,7 +128,6 @@
     &:active {
       background: var(--bg-stroke-icon-button-bg-active-30, rgba(128, 128, 128, 0.3));
     }
-    position: relative;
   }
 }
 
@@ -324,7 +324,7 @@
 // Coming soon card container
 .card_coming_container {
   width: 94%;
-  height: 361px;
+  height: 297px;
   padding: 32px;
   flex-shrink: 0;
   border-radius: 16px;

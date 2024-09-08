@@ -150,3 +150,16 @@ button {
 .navbar.scrolled {
   background-color: rgba(0, 0, 0, 0.8); /* Change background color when scrolled */
 }
+
+.react-player {
+  position: absolute;
+  top: 0;
+  left: 0;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.react-player-jumbo {
+  border-radius: 16px;
+  overflow: hidden;
+}

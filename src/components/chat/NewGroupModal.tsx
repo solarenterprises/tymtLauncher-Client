@@ -10,15 +10,14 @@ import InputText from "../account/InputText";
 
 import { AppDispatch } from "../../store";
 import { createGroupAsync } from "../../features/chat/ChatroomListSlice";
-import { getAccount } from "../../features/account/AccountSlice";
 import { addOneSKeyList } from "../../features/chat/SKeyListSlice";
 import { getRsa } from "../../features/chat/RsaSlice";
+import { getMyInfo } from "../../features/account/MyInfoSlice";
 import { rsaDecrypt } from "../../features/chat/RsaApi";
 
 import { IChatroom } from "../../types/ChatroomAPITypes";
-import { IRsa } from "../../types/chatTypes";
+import { IMyInfo, IRsa } from "../../types/chatTypes";
 import { ISocketParamsJoinMessageGroup } from "../../types/SocketTypes";
-import { accountType } from "../../types/accountTypes";
 
 export interface IPropsNewGroupModal {
   open: boolean;
@@ -31,7 +30,7 @@ const NewGroupModal = ({ open, setOpen, roomMode }: IPropsNewGroupModal) => {
   const { socket } = useSocket();
 
   const dispatch = useDispatch<AppDispatch>();
-  const accountStore: accountType = useSelector(getAccount);
+  const myInfoStore: IMyInfo = useSelector(getMyInfo);
   const rsaStore: IRsa = useSelector(getRsa);
   const [newGroupMode, setNewGroupMode] = useState<string>("public");
   const [newGroupName, setNewGroupName] = useState<string>("");
@@ -51,7 +50,8 @@ const NewGroupModal = ({ open, setOpen, roomMode }: IPropsNewGroupModal) => {
         dispatch(
           createGroupAsync({
             room_name: newGroupName,
-            isPrivate: newGroupMode === "private",
+            isPrivate: myInfoStore.isAdmin ? newGroupMode === "private" : true,
+            participantsHistorical: [],
           })
         ).then((action) => {
           if (action.type.endsWith("/fulfilled")) {
@@ -59,7 +59,7 @@ const NewGroupModal = ({ open, setOpen, roomMode }: IPropsNewGroupModal) => {
 
             const data_1: ISocketParamsJoinMessageGroup = {
               room_id: newChatroom._id,
-              joined_user_id: accountStore.uid,
+              joined_user_id: myInfoStore?._id,
             };
             socket.current.emit("join-message-group", JSON.stringify(data_1));
             console.log("socket.current.emit > join-message-group", data_1);
@@ -79,7 +79,7 @@ const NewGroupModal = ({ open, setOpen, roomMode }: IPropsNewGroupModal) => {
     } else {
       console.error("Failed to handleCreateClick: socket not connected!");
     }
-  }, [newGroupName, newGroupMode, rsaStore, accountStore, socket.current]);
+  }, [myInfoStore, newGroupName, newGroupMode, rsaStore, socket.current]);
 
   return (
     <>
@@ -90,9 +90,11 @@ const NewGroupModal = ({ open, setOpen, roomMode }: IPropsNewGroupModal) => {
               {t("cha-45_create-new-group")}
             </Box>
             <Stack width={"100%"} justifyContent={"center"} gap={"5px"} mt={"25px"}>
-              <Box className="center-align">
-                <NewGroupSwitch value={newGroupMode} setValue={setNewGroupMode} />
-              </Box>
+              {myInfoStore.isAdmin && (
+                <Box className="center-align">
+                  <NewGroupSwitch value={newGroupMode} setValue={setNewGroupMode} />
+                </Box>
+              )}
               <InputText
                 id="groupName"
                 label={t("cha-49_group-name")}

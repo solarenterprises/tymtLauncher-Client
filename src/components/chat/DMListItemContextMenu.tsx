@@ -11,16 +11,16 @@ import { useSocket } from "../../providers/SocketProvider";
 import { AppDispatch } from "../../store";
 import { deleteFriendAsync } from "../../features/chat/FriendListSlice";
 import { leaveGroupAsync } from "../../features/chat/ChatroomListSlice";
-import { getAccount } from "../../features/account/AccountSlice";
 import { delOneSkeyList } from "../../features/chat/SKeyListSlice";
 import { createBlockAsync, deleteBlockAsync } from "../../features/chat/BlockListSlice";
 import { createContactAsync, deleteContactAsync } from "../../features/chat/ContactListSlice";
+import { getMyInfo } from "../../features/account/MyInfoSlice";
 
-import { ISocketParamsLeaveMessageGroup } from "../../types/SocketTypes";
+import { ISocketParamsLeaveMessageGroup, ISocketParamsSyncEvent } from "../../types/SocketTypes";
 import { IChatroom, IParamsLeaveGroup } from "../../types/ChatroomAPITypes";
 import { IPoint } from "../../types/homeTypes";
-import { accountType } from "../../types/accountTypes";
-import { IAlert } from "../../types/chatTypes";
+import { IAlert, IMyInfo } from "../../types/chatTypes";
+import { SyncEventNames } from "../../consts/SyncEventNames";
 
 export interface IPropsDMListItemContextMenu {
   view: boolean;
@@ -34,60 +34,80 @@ const DMListItemContextMenu = ({ view, setView, DM, contextMenuPosition }: IProp
 
   const { t } = useTranslation();
   const dispatch = useDispatch<AppDispatch>();
-  const accountStore: accountType = useSelector(getAccount);
+  const myInfoStore: IMyInfo = useSelector(getMyInfo);
 
   const [openExportModal, setOpenExportModal] = useState<boolean>(false);
 
-  const handleFriendRequestClick = useCallback(() => {
+  const handleFriendRequestClick = useCallback(async () => {
     try {
-      const partner = DM.participants.find((participant) => participant.userId !== accountStore.uid);
+      const partner = DM.participants.find((participant) => participant.userId !== myInfoStore?._id);
+
+      console.log("handleFriendRequestClick", partner.userId);
+
       if (!partner) {
         console.error("Failed to handleSendFriendRequestClick: partner already left DM!");
         return;
       }
-      dispatch(deleteBlockAsync(partner.userId)).then(() => {
-        dispatch(createContactAsync(partner.userId)).then(() => {
-          if (socket.current && socket.current.connected) {
-            const data: IAlert = {
-              alertType: "friend-request",
-              note: {
-                sender: accountStore.uid,
-                to: partner.userId,
-                status: "pending",
-              },
-              receivers: [partner.userId],
-            };
-            socket.current.emit("post-alert", JSON.stringify(data));
-            console.log("socket.current.emit > post-alert", data);
 
-            console.log("handleFriendRequestClick", partner.userId);
-          }
-        });
-      });
+      await dispatch(deleteBlockAsync(partner.userId));
+      await dispatch(createContactAsync(partner.userId));
+
+      if (socket.current && socket.current.connected) {
+        const data: IAlert = {
+          alertType: "friend-request",
+          note: {
+            sender: myInfoStore?._id,
+            to: partner.userId,
+            status: "pending",
+          },
+          receivers: [partner.userId],
+        };
+        socket.current.emit("post-alert", JSON.stringify(data));
+        console.log("socket.current.emit > post-alert", data);
+
+        const data_2: ISocketParamsSyncEvent = {
+          sender_id: myInfoStore?._id,
+          recipient_id: myInfoStore?._id,
+          instructions: [SyncEventNames.UPDATE_BLOCK_LIST, SyncEventNames.UPDATE_CONTACT_LIST],
+          is_to_self: true,
+        };
+        socket.current.emit("sync-event", JSON.stringify(data_2));
+        console.log("socket.current.emit > sync-event", data_2);
+      }
+
       setView(false);
     } catch (err) {
       console.error("Failed to handleFriendRequestClick: ", err);
     }
-  }, [accountStore, DM, socket.current]);
+  }, [myInfoStore, DM, socket.current]);
 
   const handleBlockClick = useCallback(async () => {
     try {
-      const partner = DM.participants.find((participant) => participant.userId !== accountStore.uid);
+      const partner = DM.participants.find((participant) => participant.userId !== myInfoStore?._id);
       if (!partner) {
         console.error("Failed to handleSendFriendRequestClick: partner already left DM!");
         return;
       }
-      dispatch(deleteFriendAsync(partner.userId)).then(() => {
-        dispatch(deleteContactAsync(partner.userId)).then(() => {
-          dispatch(createBlockAsync(partner.userId)).then(() => {
-            console.log("handleBlockClick", partner.userId);
-          });
-        });
-      });
+
+      await dispatch(deleteFriendAsync(partner.userId));
+      await dispatch(deleteContactAsync(partner.userId));
+      await dispatch(createBlockAsync(partner.userId));
+
+      if (socket.current && socket.current.connected) {
+        const data: ISocketParamsSyncEvent = {
+          sender_id: myInfoStore?._id,
+          recipient_id: myInfoStore?._id,
+          instructions: [SyncEventNames.UPDATE_CONTACT_LIST, SyncEventNames.UPDATE_FRIEND_LIST, SyncEventNames.UPDATE_BLOCK_LIST],
+          is_to_self: true,
+        };
+
+        socket.current.emit("sync-event", JSON.stringify(data));
+        console.log("socket.current.emit > sync-event", data);
+      }
     } catch (err) {
       console.error("Failed to handleBlockClick: ", err);
     }
-  }, []);
+  }, [socket.current, myInfoStore]);
 
   const handleExportClick = () => {
     setView(false);
@@ -98,14 +118,14 @@ const DMListItemContextMenu = ({ view, setView, DM, contextMenuPosition }: IProp
     try {
       const data: IParamsLeaveGroup = {
         _groupId: DM._id,
-        _userId: accountStore.uid,
+        _userId: myInfoStore?._id,
       };
       dispatch(leaveGroupAsync(data)).then(() => {
         dispatch(delOneSkeyList(DM._id));
 
         const data_2: ISocketParamsLeaveMessageGroup = {
           room_id: DM._id,
-          joined_user_id: accountStore.uid,
+          joined_user_id: myInfoStore?._id,
         };
         socket.current.emit("leave-message-group", JSON.stringify(data_2));
       });
@@ -115,7 +135,7 @@ const DMListItemContextMenu = ({ view, setView, DM, contextMenuPosition }: IProp
     } catch (err) {
       console.error("Failed to handleLeaveDMClick: ", err);
     }
-  }, [accountStore, socket.current]);
+  }, [myInfoStore, socket.current]);
 
   const handleOnClose = () => {
     setView(false);

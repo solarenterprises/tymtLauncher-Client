@@ -103,7 +103,17 @@ class ChatroomAPI {
 
   static async fetchCurrentChatroomMembers(_chatroomId: string): Promise<AxiosResponse<any, any>> {
     const saltTokenStore: ISaltToken = JSON.parse(tymtStorage.get(`saltToken`));
-    return await axios.get(`${tymt_backend_url}/chatroom/get-room-members/${_chatroomId}`, {
+    return await axios.get(`${tymt_backend_url}/chatroom/get-active-room-members/${_chatroomId}`, {
+      headers: {
+        "x-token": saltTokenStore.token,
+        "Content-Type": "application/json",
+      },
+    });
+  }
+
+  static async fetchHistoricalChatroomMembers(_chatroomId: string): Promise<AxiosResponse<any, any>> {
+    const saltTokenStore: ISaltToken = JSON.parse(tymtStorage.get(`saltToken`));
+    return await axios.get(`${tymt_backend_url}/chatroom/get-historical-room-members/${_chatroomId}`, {
       headers: {
         "x-token": saltTokenStore.token,
         "Content-Type": "application/json",
@@ -162,6 +172,38 @@ class ChatroomAPI {
         },
       }
     );
+  }
+
+  static async removeChatroom(chatroom_id: string): Promise<AxiosResponse<any, any>> {
+    const saltTokenStore: ISaltToken = JSON.parse(tymtStorage.get(`saltToken`));
+    return await axios.put(
+      `${tymt_backend_url}/chatroom/delete-chat-room/${chatroom_id}`,
+      {},
+      {
+        headers: {
+          "x-token": saltTokenStore.token,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+  }
+
+  static async fetchGlobalChatrooms(): Promise<AxiosResponse<any, any>> {
+    return await axios.get(`${tymt_backend_url}/chatroom/global-chatrooms`, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+  }
+
+  static async fetchAllPublicChatrooms(): Promise<AxiosResponse<any, any>> {
+    const saltTokenStore: ISaltToken = JSON.parse(tymtStorage.get(`saltToken`));
+    return await axios.get(`${tymt_backend_url}/chatroom/public-chatrooms`, {
+      headers: {
+        "x-token": saltTokenStore.token,
+        "Content-Type": "application/json",
+      },
+    });
   }
 }
 

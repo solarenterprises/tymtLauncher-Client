@@ -1,27 +1,65 @@
-import { Box, Button, Divider, Stack } from "@mui/material";
+import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { useSelector, useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+
+import { supportChains } from "../../consts/SupportTokens";
+
+import { Box, Button, Divider, Stack } from "@mui/material";
+
+import ChainBox from "../../components/ChainBox";
+
+import { AppDispatch } from "../../store";
+import { setCurrentChain } from "../../features/wallet/CurrentChainSlice";
+import { getWallet } from "../../features/wallet/WalletSlice";
 
 import backIcon from "../../assets/settings/back-icon.svg";
 
-import ChainBox from "../../components/ChainBox";
-import { useCallback } from "react";
+import { getCurrentChainWalletAddress } from "../../lib/helper/WalletHelper";
+
+import { ISupportChain, IWallet } from "../../types/walletTypes";
 import { propsType } from "../../types/settingTypes";
-import { getMultiWallet } from "../../features/wallet/MultiWalletSlice";
-import { setChainAsync } from "../../features/wallet/ChainSlice";
-import { AppDispatch } from "../../store";
-import { setTransasctions } from "../../features/wallet/CryptoSlice";
+import { INotificationParams } from "../../types/NotificationTypes";
+import { TauriEventNames } from "../../consts/TauriEventNames";
+import { emit } from "@tauri-apps/api/event";
 
 const Chain = ({ view, setView }: propsType) => {
   const { t } = useTranslation();
-  const wallets = useSelector(getMultiWallet);
   const dispatch = useDispatch<AppDispatch>();
 
-  const selectChain = useCallback((data: any) => {
-    dispatch(setTransasctions());
-    const updateData = { ...data, currentToken: "chain" };
-    dispatch(setChainAsync(updateData));
-  }, []);
+  const walletStore: IWallet = useSelector(getWallet);
+
+  const handleChainBoxClick = (one: ISupportChain) => {
+    dispatch(setCurrentChain(one?.chain?.name));
+    const chainName = one?.chain?.name;
+
+    const noti: INotificationParams = {
+      status: "success",
+      title: t("set-85_success"),
+      message: `${t("alt-12_switched-network-intro")}: ${chainName}`,
+      link: null,
+      translate: false,
+    };
+    emit(TauriEventNames.NOTIFICATION, noti);
+  };
+
+  const copyAddress = useCallback(
+    (one: ISupportChain) => {
+      const chainName = one?.chain?.name;
+      const address = getCurrentChainWalletAddress(walletStore, chainName);
+
+      navigator.clipboard.writeText(address);
+
+      const noti: INotificationParams = {
+        status: "success",
+        title: t("set-85_success"),
+        message: t("set-96_chain_address_copied"),
+        link: null,
+        translate: false,
+      };
+      emit(TauriEventNames.NOTIFICATION, noti);
+    },
+    [walletStore]
+  );
 
   return (
     <>
@@ -31,13 +69,12 @@ const Chain = ({ view, setView }: propsType) => {
             <Button className={"setting-back-button"} onClick={() => setView("main")}>
               <Box component={"img"} src={backIcon}></Box>
             </Button>
-
             <Box className="fs-h3 white">{t("set-5_choose-chain")}</Box>
           </Stack>
           <Divider variant="middle" sx={{ backgroundColor: "#FFFFFF1A" }} />
           <Stack>
-            {Object.keys(wallets).map((rowKey, index) => (
-              <ChainBox data={wallets[rowKey]} key={index} onClick={selectChain} />
+            {supportChains?.map((one, index) => (
+              <ChainBox supportChain={one} key={index} onClick={() => copyAddress(one)} onDoubleClick={() => handleChainBoxClick(one)} />
             ))}
           </Stack>
         </Stack>

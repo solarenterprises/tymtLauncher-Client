@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 
@@ -11,13 +11,13 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DateField } from "@mui/x-date-pickers/DateField";
 
-import { getAccount } from "../../features/account/AccountSlice";
+import { getMyInfo } from "../../features/account/MyInfoSlice";
 
 import ChatroomAPI from "../../lib/api/ChatroomAPI";
 
 import { IChatroom, IReqChatroomExportMessageHistory } from "../../types/ChatroomAPITypes";
-import { accountType } from "../../types/accountTypes";
 import { getSKeyList, ISKeyList } from "../../features/chat/SKeyListSlice";
+import { IMyInfo } from "../../types/chatTypes";
 
 export interface IPropsExportChatModal {
   view: boolean;
@@ -28,10 +28,10 @@ export interface IPropsExportChatModal {
 const ExportChatModal = ({ view, setView, group }: IPropsExportChatModal) => {
   const { t } = useTranslation();
 
-  const accountStore: accountType = useSelector(getAccount);
   const sKeyListStore: ISKeyList = useSelector(getSKeyList);
+  const myInfoStore: IMyInfo = useSelector(getMyInfo);
 
-  const currentSKey = sKeyListStore.sKeys.find((element) => element.roomId === group._id)?.sKey;
+  const currentSKey = useMemo(() => sKeyListStore.sKeys.find((element) => element.roomId === group._id)?.sKey, [sKeyListStore]);
 
   const [fromDate, setFromDate] = useState<Dayjs>();
   const [toDate, setToDate] = useState<Dayjs>();
@@ -39,7 +39,7 @@ const ExportChatModal = ({ view, setView, group }: IPropsExportChatModal) => {
   const handleExportClick = useCallback(async () => {
     try {
       const body: IReqChatroomExportMessageHistory = {
-        userId: accountStore.uid,
+        userId: myInfoStore?._id,
         chatroomId: group._id,
         fromDate: fromDate.format("YYYY-MM-DD"),
         toDate: toDate.format("YYYY-MM-DD"),
@@ -51,7 +51,7 @@ const ExportChatModal = ({ view, setView, group }: IPropsExportChatModal) => {
         return;
       }
       const dataToFile = {
-        userId: accountStore.uid,
+        userId: myInfoStore?._id,
         chatroomId: group._id,
         fromDate: fromDate.format("YYYY-MM-DD"),
         toDate: toDate.format("YYYY-MM-DD"),
@@ -68,7 +68,7 @@ const ExportChatModal = ({ view, setView, group }: IPropsExportChatModal) => {
     } catch (err) {
       console.error("Failed to handleExportClick: ", err);
     }
-  }, [accountStore, group, fromDate, toDate]);
+  }, [myInfoStore, group, fromDate, toDate]);
 
   const handleCancelClick = () => {
     setView(false);

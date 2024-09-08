@@ -9,6 +9,7 @@ import { IRecipient } from "../../features/wallet/CryptoApi";
 import { Body, fetch as tauriFetch, ResponseType } from "@tauri-apps/api/http";
 import * as bs58 from "bs58";
 import { translateString } from "../api/Translate";
+import { net_name } from "../../configs";
 
 class Solana implements IWallet {
   address: string;
@@ -48,6 +49,7 @@ class Solana implements IWallet {
 
   static async getBalance(addr: string): Promise<number> {
     try {
+      if (net_name === "testnet") return 0;
       const apiURL = "https://api.mainnet-beta.solana.com";
       const pbKey = new PublicKey(addr).toBase58();
       const bodyContent = {
@@ -66,7 +68,7 @@ class Solana implements IWallet {
       const sols = response?.data?.result?.value / 1e9;
       return sols;
     } catch (err) {
-      console.error("Failed to SOLANA getBalance: ", err);
+      console.log("Failed to SOLANA getBalance: ", err);
       return 0;
     }
   }

@@ -1,6 +1,12 @@
 import { Box } from "@mui/material";
+
+import { useSelector } from "react-redux";
+
+import { getRenderTime, IRenderTime } from "../../features/account/RenderTimeSlice";
+
 import mask from "../../assets/account/mask.png";
 import accountIcon from "../../assets/wallet/account.svg";
+
 import { tymt_avatar_url } from "../../configs";
 
 export interface IPropsGroupAvatar {
@@ -9,6 +15,8 @@ export interface IPropsGroupAvatar {
 }
 
 const GroupAvatar = ({ size, url }: IPropsGroupAvatar) => {
+  const renderTimeStore: IRenderTime = useSelector(getRenderTime);
+
   return (
     <>
       <div
@@ -23,7 +31,8 @@ const GroupAvatar = ({ size, url }: IPropsGroupAvatar) => {
         <Box
           component={"img"}
           key={`${url}-${new Date().getTime()}`}
-          src={`${tymt_avatar_url}/public/upload/room-image/${url}?${Date.now()}`}
+          src={`${tymt_avatar_url}/public/upload/room-image/${url ? url : "default.png"}?${renderTimeStore.renderTime}`}
+          loading="lazy"
           sx={{
             position: "absolute",
             top: "50%",

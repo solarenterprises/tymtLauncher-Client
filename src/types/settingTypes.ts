@@ -32,7 +32,7 @@ export interface propsSettingType {
   setView: (param: boolean) => void;
 }
 
-export interface walletType {
+export interface IWalletSetting {
   refreshed: boolean;
   hidde: boolean;
   currency: string;

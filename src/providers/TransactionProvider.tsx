@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { Outlet } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -10,72 +10,103 @@ import tymtCore from "../lib/core/tymtCore";
 import TransactionProviderAPI from "../lib/api/TransactionProviderAPI";
 
 import { AppDispatch } from "../store";
-import { getNonCustodial } from "../features/account/NonCustodialSlice";
-import { getChain } from "../features/wallet/ChainSlice";
-import { selectWallet, setWallet } from "../features/settings/WalletSlice";
 import { getSaltToken } from "../features/account/SaltTokenSlice";
-import { getMultiWallet } from "../features/wallet/MultiWalletSlice";
 import { getMnemonic } from "../features/account/MnemonicSlice";
+import { getWallet, setWallet } from "../features/wallet/WalletSlice";
+import { getAccount, setAccount } from "../features/account/AccountSlice";
+import { getWalletList } from "../features/wallet/WalletListSlice";
+import { getCurrentChain } from "../features/wallet/CurrentChainSlice";
+import { getCurrentToken, setCurrentToken } from "../features/wallet/CurrentTokenSlice";
+import { fetchBalanceListAsync } from "../features/wallet/BalanceListSlice";
+import { fetchPriceListAsync } from "../features/wallet/PriceListSlice";
+import { fetchCurrencyListAsync } from "../features/wallet/CurrencyListSlice";
+import { getNativeSymbolByChainName } from "../lib/helper/WalletHelper";
+import { fetchTransactionListAsync } from "../features/wallet/TransactionListSlice";
+import { getAccountList, setAccountList } from "../features/account/AccountListSlice";
 
-import { walletType } from "../types/settingTypes";
-import { IMnemonic, ISaltToken, nonCustodialType } from "../types/accountTypes";
-import { IGetAccountReq, IGetBalanceReq, ISendContractReq, ISignMessageReq, IVerifyMessageReq } from "../types/eventParamTypes";
-import { IChain, multiWalletType } from "../types/walletTypes";
+import { IAccount, IAccountList, IMnemonic, ISaltToken } from "../types/accountTypes";
+import { IGetAccountReq, IGetBalanceReq, ISendContractReq, ISignMessageReq, IVerifyMessageReq } from "../types/TauriEventPayloadTypes";
+import { ICurrentChain, ICurrentToken, IWallet, IWalletList } from "../types/walletTypes";
+import { fetchAccountListAvatar } from "../features/account/AccountApi";
 
 const TransactionProvider = () => {
-  const nonCustodialStore: nonCustodialType = useSelector(getNonCustodial);
-  const multiWalletStore: multiWalletType = useSelector(getMultiWallet);
-  const chainStore: IChain = useSelector(getChain);
-  const walletStore: walletType = useSelector(selectWallet);
-  const saltTokenStore: ISaltToken = useSelector(getSaltToken);
-  const mnemonicStore: IMnemonic = useSelector(getMnemonic);
   const dispatch = useDispatch<AppDispatch>();
 
-  const chainStoreRef = useRef(chainStore);
-  const walletStoreRef = useRef(walletStore);
-  const nonCustodialStoreRef = useRef(nonCustodialStore);
+  const saltTokenStore: ISaltToken = useSelector(getSaltToken);
+  const mnemonicStore: IMnemonic = useSelector(getMnemonic);
+  const walletListStore: IWalletList = useSelector(getWalletList);
+  const accountStore: IAccount = useSelector(getAccount);
+  const accountListStore: IAccountList = useSelector(getAccountList);
+  const currentChainStore: ICurrentChain = useSelector(getCurrentChain);
+  const currentTokenStore: ICurrentToken = useSelector(getCurrentToken);
+  const walletStore: IWallet = useSelector(getWallet);
+
   const saltTokenStoreRef = useRef(saltTokenStore);
   const mnemonicStoreRef = useRef(mnemonicStore);
-  const multiWalletStoreRef = useRef(multiWalletStore);
 
-  useEffect(() => {
-    chainStoreRef.current = chainStore;
-  }, [chainStore]);
-  useEffect(() => {
-    walletStoreRef.current = walletStore;
-  }, [walletStore]);
-  useEffect(() => {
-    nonCustodialStoreRef.current = nonCustodialStore;
-  }, [nonCustodialStore]);
   useEffect(() => {
     saltTokenStoreRef.current = saltTokenStore;
   }, [saltTokenStore]);
   useEffect(() => {
     mnemonicStoreRef.current = mnemonicStore;
   }, [mnemonicStore]);
-  useEffect(() => {
-    multiWalletStoreRef.current = multiWalletStore;
-  }, [multiWalletStore]);
 
   useEffect(() => {
-    if (chainStoreRef.current.chain.symbol === "SXP") {
-      dispatch(
-        setWallet({
-          ...walletStoreRef.current,
-          status: "minimum",
-          fee: "0.0183",
-        })
-      );
-    } else if (chainStoreRef.current.chain.symbol === "BTC") {
-      dispatch(
-        setWallet({
-          ...walletStoreRef.current,
-          status: "minimum",
-          fee: "7.5",
-        })
-      );
+    const newWallet: IWallet = walletListStore?.list?.find((one) => one?.solar === accountStore?.sxpAddress);
+    if (!newWallet) return;
+    dispatch(setWallet(newWallet));
+  }, [accountStore, walletListStore]);
+
+  useEffect(() => {
+    console.log("currentChainStore has been changed!");
+    dispatch(setCurrentToken(getNativeSymbolByChainName(currentChainStore?.chain)));
+    dispatch(fetchBalanceListAsync(walletStore));
+    dispatch(fetchPriceListAsync());
+    dispatch(fetchCurrencyListAsync());
+    dispatch(
+      fetchTransactionListAsync({
+        walletStore: walletStore,
+        chainName: currentChainStore?.chain,
+        tokenSymbol: getNativeSymbolByChainName(currentChainStore?.chain),
+        page: 1,
+      })
+    );
+  }, [currentChainStore]);
+
+  useEffect(() => {
+    console.log("currentTokenStore has been changed!");
+    dispatch(
+      fetchTransactionListAsync({
+        walletStore: walletStore,
+        chainName: currentChainStore?.chain,
+        tokenSymbol: currentTokenStore?.token,
+        page: 1,
+      })
+    );
+  }, [currentTokenStore]);
+
+  const refreshAccountListAvatar = useCallback(async () => {
+    try {
+      console.log("refreshAccountListAvatar");
+      const newAccountList = await fetchAccountListAvatar(accountListStore);
+      dispatch(setAccountList(newAccountList));
+    } catch (err) {
+      console.log("Failed to refreshAccountListAvatar: ", err);
     }
-  }, [chainStoreRef.current]);
+  }, [accountListStore]);
+
+  useEffect(() => {
+    refreshAccountListAvatar();
+  }, [accountListStore?.list?.length]);
+
+  useEffect(() => {
+    const newAccount = accountListStore?.list?.find((one) => one?.uid === accountStore?.uid);
+    if (!newAccount && accountListStore?.list?.length > 0) {
+      dispatch(setAccount(accountListStore?.list[0]));
+      return;
+    }
+    dispatch(setAccount(newAccount));
+  }, [accountListStore]);
 
   useEffect(() => {
     const unlisten_get_account = listen("POST-/get-account", async (event) => {

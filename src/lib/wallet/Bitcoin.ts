@@ -1,4 +1,4 @@
-import { IWallet } from "./IWallet";
+import { IWallet as IWallet_2 } from "./IWallet";
 import { mnemonicToSeed } from "bip39";
 import { BIP32Factory } from "bip32";
 import { payments, networks, Psbt } from "bitcoinjs-lib";
@@ -8,12 +8,14 @@ import { validate } from "bitcoin-address-validation";
 import * as ecc from "tiny-secp256k1";
 import { INotification } from "../../features/wallet/CryptoSlice";
 import { IRecipient } from "../../features/wallet/CryptoApi";
-import tymtStorage from "../Storage";
-import { multiWalletType } from "../../types/walletTypes";
 import { fetch as tauriFetch, ResponseType } from "@tauri-apps/api/http";
 import { translateString } from "../api/Translate";
+import tymtStorage from "../Storage";
+import { IPriceList, IWallet } from "../../types/walletTypes";
+import { getSupportChainByName, getTokenPriceByCmc } from "../helper/WalletHelper";
+import { ChainNames } from "../../consts/Chains";
 
-class Bitcoin implements IWallet {
+class Bitcoin implements IWallet_2 {
   address: string;
   ticker: "BTC" = "BTC";
 
@@ -154,8 +156,9 @@ class Bitcoin implements IWallet {
         });
 
         // Transaction fee calculation
-        const multiWalletStore: multiWalletType = JSON.parse(await tymtStorage.get(`multiWallet`));
-        const btcPriceUSD = multiWalletStore.Bitcoin.chain.price;
+        const walletStore: IWallet = JSON.parse(tymtStorage.get(`wallet`));
+        const priceListStore: IPriceList = JSON.parse(sessionStorage.getItem(`priceList`));
+        const btcPriceUSD = getTokenPriceByCmc(priceListStore, getSupportChainByName(ChainNames.BITCOIN)?.chain?.cmc);
         const feeSat = ((Number(tx.fee) / Number(btcPriceUSD)) * 1e8) as number;
         const sumUTXOSat = utxos.reduce((total, utxo) => total + utxo.amount, 0);
         if (feeSat >= sumUTXOSat) {
@@ -168,7 +171,7 @@ class Bitcoin implements IWallet {
         }
         const changeSat = sumUTXOSat - feeSat;
         psbt.addOutput({
-          address: multiWalletStore.Bitcoin.chain.wallet,
+          address: walletStore?.solar,
           value: changeSat as number,
         });
         // ~Transaction fee calculation
@@ -238,8 +241,9 @@ class Bitcoin implements IWallet {
         });
 
         // Transaction fee calculation
-        const multiWalletStore: multiWalletType = JSON.parse(await tymtStorage.get(`multiWallet`));
-        const btcPriceUSD = multiWalletStore.Bitcoin.chain.price;
+        const walletStore: IWallet = JSON.parse(tymtStorage.get(`wallet`));
+        const priceListStore: IPriceList = JSON.parse(sessionStorage.getItem(`priceList`));
+        const btcPriceUSD = getTokenPriceByCmc(priceListStore, getSupportChainByName(ChainNames.BITCOIN)?.chain?.cmc);
         const feeSat = ((Number(tx.fee) / Number(btcPriceUSD)) * 1e8) as number;
         const sumUTXOSat = utxos.reduce((total, utxo) => total + utxo.amount, 0);
         if (feeSat >= sumUTXOSat) {
@@ -252,7 +256,7 @@ class Bitcoin implements IWallet {
         }
         const changeSat = sumUTXOSat - feeSat;
         psbt.addOutput({
-          address: multiWalletStore.Bitcoin.chain.wallet,
+          address: walletStore?.solar,
           value: changeSat as number,
         });
         // ~Transaction fee calculation

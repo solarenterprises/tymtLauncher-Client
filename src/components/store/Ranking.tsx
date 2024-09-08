@@ -1,9 +1,11 @@
-import { useState } from "react";
-import { SelectChangeEvent } from "@mui/material/Select";
 import { useTranslation } from "react-i18next";
+
+import { SelectChangeEvent } from "@mui/material/Select";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import { Box, MenuItem, FormControl, Select } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+
+import { FilterOptionNames } from "../../consts/FilterOptionNames";
 
 const MenuProps = {
   MenuListProps: {
@@ -14,9 +16,9 @@ const MenuProps = {
   },
   PaperProps: {
     style: {
+      minWidth: "0px",
       marginTop: "5px",
       maxHeight: "none",
-      width: "200px",
       display: "flex",
       alignItems: "center",
       borderRadius: "16px",
@@ -51,17 +53,22 @@ const theme = createTheme({
   },
 });
 
-const Ranking = ["sto-26_any-rating", "sto-27_five-stars", "sto-28_four-stars", "sto-29_three-stars"];
+const Ranking = [FilterOptionNames.RANK_ALL, FilterOptionNames.RANK_10, FilterOptionNames.RANK_50, FilterOptionNames.RANK_100];
 
 var selectedshow: boolean = false;
 
-const Rankingbtn = () => {
+export interface IPropsRankingbtn {
+  rank: string;
+  setRank: (_: string) => void;
+}
+
+const Rankingbtn = ({ rank, setRank }: IPropsRankingbtn) => {
   const { t } = useTranslation();
-  const [releasedate, setReleaseDate] = useState<string>("");
+
   const handleChange = (event: SelectChangeEvent) => {
-    if (releasedate === event.target.value) {
-      setReleaseDate("");
-    } else setReleaseDate(event.target.value);
+    if (rank === event.target.value) {
+      setRank("");
+    } else setRank(event.target.value);
   };
 
   return (
@@ -69,7 +76,7 @@ const Rankingbtn = () => {
       <FormControl>
         <ThemeProvider theme={theme}>
           <Select
-            disabled
+            // disabled
             sx={{
               height: "40px",
               display: "flex",
@@ -92,7 +99,7 @@ const Rankingbtn = () => {
             }}
             fullWidth
             displayEmpty
-            value={releasedate}
+            value={rank}
             onChange={handleChange}
             MenuProps={MenuProps}
             IconComponent={ExpandMoreIcon}
@@ -106,26 +113,25 @@ const Rankingbtn = () => {
             {Ranking.map((one) => (
               <MenuItem
                 sx={{
-                  width: "200px",
                   display: "flex",
                   justifyContent: "space-between",
                   borderBottom: "1px solid var(--bg-stroke-white-10-stroke-default, rgba(255, 255, 255, 0.10))",
+                  backdropFilter: "blur(10px)",
                   "&:hover": {
                     background: "var(--bg-stroke-blue-stroke-default-10, rgba(82, 225, 242, 0.10))",
                   },
                   "&.Mui-selected": {
                     background: "var(--bg-stroke-blue-stroke-default-10, rgba(82, 225, 242, 0.10))",
+                    backdropFilter: "blur(10px)",
                     "&:hover": {
                       background: "var(--bg-stroke-blue-stroke-default-10, rgba(82, 225, 242, 0.10))",
                     },
-                    backdropFilter: "blur(10px)",
                   },
-                  backdropFilter: "blur(10px)",
                 }}
                 key={one}
-                value={t(`${one}`)}
+                value={one}
               >
-                <Box className={"fs-16 white"} sx={{ marginLeft: "8px" }}>
+                <Box className={"fs-16 white"} sx={{ margin: "0px 8px" }}>
                   {t(`${one}`)}
                 </Box>
               </MenuItem>

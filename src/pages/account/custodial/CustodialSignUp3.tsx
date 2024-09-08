@@ -1,11 +1,9 @@
 import { useNavigate } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
-
-import { getTempCustodial, setTempCustodial } from "../../../features/account/TempCustodialSlice";
-
 import { useFormik } from "formik";
 import * as Yup from "yup";
+
+import "../../../global.css";
 
 import { Grid, Box, Stack } from "@mui/material";
 
@@ -18,14 +16,9 @@ import HaveAccount from "../../../components/account/HaveAccount";
 
 import tymt3 from "../../../assets/account/tymt3.png";
 
-import "../../../global.css";
-import { custodialType } from "../../../types/accountTypes";
-
 const CustodialSignUp3 = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const dispatch = useDispatch();
-  const tempCustodialStore: custodialType = useSelector(getTempCustodial);
 
   const formik = useFormik({
     initialValues: {
@@ -35,12 +28,6 @@ const CustodialSignUp3 = () => {
       nickname: Yup.string().required(t("cca-63_required")),
     }),
     onSubmit: () => {
-      dispatch(
-        setTempCustodial({
-          ...tempCustodialStore,
-          nickname: formik.values.nickname,
-        })
-      );
       navigate("/confirm-information");
     },
   });
@@ -66,7 +53,7 @@ const CustodialSignUp3 = () => {
                 >
                   <Grid item xs={12} container justifyContent={"space-between"}>
                     <Back onClick={handleBackClick} />
-                    <Stepper all={3} now={3} texts={["", "", t("cca-24_create-nickname")]} />
+                    <Stepper all={3} now={3} text={t("cca-24_create-nickname")} />
                   </Grid>
 
                   <Grid item xs={12} mt={"80px"}>

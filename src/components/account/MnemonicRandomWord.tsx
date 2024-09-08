@@ -52,7 +52,7 @@ const MnemonicRandomWord = ({ number, word }: props) => {
         spacing={"8px"}
       >
         <Box className={"fs-16-regular light"}>{number}</Box>
-        <Box className={"fs-18-regular white"}>{word}</Box>
+        <Box className={"fs-14-regular white"}>{word}</Box>
       </Stack>
     </Box>
   );

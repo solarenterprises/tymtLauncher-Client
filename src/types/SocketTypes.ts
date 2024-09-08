@@ -28,3 +28,23 @@ export interface ISocketParamsLeftMessageGroup {
 export interface ISocketParamsActiveUsers {
   users: string[];
 }
+
+export interface ISocketParamsSyncEvent {
+  sender_id: string;
+  recipient_id: string;
+  instructions: string[];
+  is_to_self: boolean;
+}
+
+export interface ISocketParamsSyncEvents {
+  sender_id: string;
+  recipient_ids: string[];
+  instructions: string[];
+  is_to_self: boolean;
+}
+
+export interface ISocketParamsSyncEventsAll {
+  sender_id: string;
+  instructions: string[];
+  is_to_self: boolean;
+}
