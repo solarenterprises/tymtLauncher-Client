@@ -12,7 +12,9 @@ import { isInstalled } from "../../lib/helper/DownloadHelper";
 
 import NoGamePng from "../../assets/main/nogames.png";
 
-import { IGame } from "../../types/GameTypes";
+import { IGame, IGameList } from "../../types/GameTypes";
+import { useSelector } from "react-redux";
+import { getGameList } from "../../features/store/GameListSlice";
 
 export interface IPropsLibraryShow {
   status: number;
@@ -21,18 +23,23 @@ export interface IPropsLibraryShow {
 const LibraryShow = ({ status }: IPropsLibraryShow) => {
   const { t } = useTranslation();
 
+  const gameListStore: IGameList = useSelector(getGameList);
+
+  const activeGameList: IGame[] = useMemo(() => gameListStore?.games?.filter((one) => one?.visibilityState === "active"), [gameListStore]);
+  const displayGameList: IGame[] = useMemo(() => [...BasicGameList, ...activeGameList], [activeGameList, BasicGameList]);
+
   const [installedList, setInstalledList] = useState<IGame[]>([]);
 
   const uninstalledList: IGame[] = useMemo(
-    () => BasicGameList?.filter((game) => !installedList?.some((one) => one?._id === game?._id)),
-    [BasicGameList, installedList]
+    () => displayGameList?.filter((game) => !installedList?.some((one) => one?._id === game?._id)),
+    [displayGameList, installedList]
   );
 
   useEffect(() => {
     const fetchInstalledGames = async () => {
       // setLoading(true);
       const results = await Promise.all(
-        BasicGameList?.map(async (game) => {
+        displayGameList?.map(async (game) => {
           const installed = await isInstalled(game);
           return installed ? game : null;
         })
@@ -42,7 +49,7 @@ const LibraryShow = ({ status }: IPropsLibraryShow) => {
     };
 
     fetchInstalledGames();
-  }, [BasicGameList]);
+  }, [displayGameList]);
 
   return (
     <>

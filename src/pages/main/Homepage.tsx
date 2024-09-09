@@ -51,9 +51,7 @@ const Homepage = () => {
         </Grid>
       </AnimatedComponent>
       <Grid container sx={{ marginTop: "80px" }}>
-        <AnimatedComponent>
-          <RecentlyAddedD53 />
-        </AnimatedComponent>
+        <RecentlyAddedD53 />
         <AnimatedComponent>
           <ComingsoonD53 />
         </AnimatedComponent>
