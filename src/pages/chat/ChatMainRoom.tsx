@@ -119,7 +119,7 @@ const ChatMainRoom = ({ view, setView }: propsType) => {
                 className={classes.search_bar}
                 color="secondary"
                 value={value}
-                placeholder={t("cha-3_you-search-user")}
+                placeholder={tab === 0 ? t("cha-50_search-group") : t("cha-3_you-search-user")}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">

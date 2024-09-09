@@ -73,7 +73,19 @@ const StoreGameCard = ({ game, isComing }: IPropsStoreGameCard) => {
           />
 
           <Stack padding="16px" gap={"16px"}>
-            <Box className="fs-20-regular white">{game?.title}</Box>
+            <Box
+              className="fs-20-regular white"
+              sx={{
+                color: "white",
+                textOverflow: "ellipsis",
+                overflow: "hidden",
+                WebkitLineClamp: 7,
+                WebkitBoxOrient: "vertical",
+                display: "-webkit-box",
+              }}
+            >
+              {game?.title}
+            </Box>
 
             <Swiper
               spaceBetween={"4px"}

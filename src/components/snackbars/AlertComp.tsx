@@ -115,7 +115,8 @@ const AlertComp = ({ open, status, title, detail, setOpen, link }: propsAlertTyp
                   {status === "message" && (detail.length > 100 ? detail.substring(0, 100) + "..." : detail)}
                   {status === "alert" && title === t("not-9_friend-request") && detail}
                   {!(status === "message" || (status === "alert" && title === "Friend Request")) &&
-                    (detail.length > 100 ? detail.substring(0, 100) + "..." : detail)}
+                    // (detail.length > 100 ? detail.substring(0, 100) + "..." : detail)}
+                    detail}
                 </Box>
               </Stack>
             </Stack>
@@ -123,60 +124,6 @@ const AlertComp = ({ open, status, title, detail, setOpen, link }: propsAlertTyp
               <img src={closeIcon} />
             </Box>
           </Stack>
-          {/* {title === "Friend Request" && (
-            <>
-              <Stack
-                display={"flex"}
-                direction={"row"}
-                justifyContent={"space-between"}
-              >
-                <Stack
-                  direction={"row"}
-                  alignItems={"center"}
-                  gap={"7px"}
-                  marginLeft={"43px"}
-                >
-                  <Avatar
-                    onlineStatus={senderUser?.onlineStatus}
-                    userid={senderUser?._id}
-                    size={40}
-                    status={senderUser?.notificationStatus}
-                  />
-                  <Box className={"fs-18-regular white"}>
-                    {senderUser?.nickName.length > 14
-                      ? `${senderUser?.nickName.substring(0, 13)}...`
-                      : senderUser?.nickName}
-                  </Box>
-                </Stack>
-                <Stack direction={"row"} alignItems={"center"} gap={"16px"}>
-                  <Button
-                    className="modal_btn_right"
-                    onClick={() => {
-                      addFriend();
-                      approveFR();
-                      setOpen(false);
-                    }}
-                  >
-                    <Box className={"fs-18-bold white"}>{t("not-5_add")}</Box>
-                  </Button>
-                  <Button
-                    className="modal_btn_left_fr"
-                    onClick={() => {
-                      setOpen(false);
-                      declineFR();
-                    }}
-                  >
-                    <Box
-                      className={"fs-18-bold"}
-                      color={"var(--Main-Blue, #52E1F2)"}
-                    >
-                      {t("not-6_decline")}
-                    </Box>
-                  </Button>
-                </Stack>
-              </Stack>
-            </>
-          )} */}
         </Stack>
       </Snackbar>
     </>
