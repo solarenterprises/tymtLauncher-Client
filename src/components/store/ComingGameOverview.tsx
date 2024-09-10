@@ -2,6 +2,11 @@ import { useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 
+import { BasicGameList } from "../../lib/game/BasicGameList";
+
+import { Grid } from "@mui/material";
+
+import AnimatedComponent from "../AnimatedComponent";
 import GameOverViewPlatform from "./GameOverViewPlatform";
 import GameOverViewNative from "./GameOverViewNative";
 import GameOverViewSystemRequirement from "./GameOverViewSystemRequirement";
@@ -11,20 +16,18 @@ import GameOverViewShortDescription from "./GameOverViewShortDescription";
 import GameOverViewFollow from "./GameOverViewFollow";
 import GameOverViewSwiper from "./GameOverViewSwiper";
 import GameOverViewHeader from "./GameOverViewHeader";
-
-import { Grid } from "@mui/material";
+import GameOverViewDownloadSize from "./GameOverViewDownloadSize";
+import GameOverViewInstallSize from "./GameOverViewInstallSize";
+import GameOverViewJumbo from "./GameOverViewJumbo";
+import GameOverViewDescription from "./GameOverViewDescription";
 
 import { getGameList } from "../../features/store/GameListSlice";
 
-import AnimatedComponent from "../AnimatedComponent";
-
 import storeStyles from "../../styles/StoreStyles";
-import { IGameList } from "../../types/GameTypes";
 
 import gradient1 from "../../assets/main/gradient-gameoverview.svg";
-import GameOverViewJumbo from "./GameOverViewJumbo";
-import GameOverViewDescription from "./GameOverViewDescription";
-import { BasicGameList } from "../../lib/game/BasicGameList";
+
+import { IGameList } from "../../types/GameTypes";
 
 const ComingGameOverview = () => {
   const { gameid } = useParams();
@@ -94,6 +97,8 @@ const ComingGameOverview = () => {
               <GameOverViewPlatform game={game} />
               <GameOverViewNative game={game} />
               <GameOverViewReleaseName game={game} />
+              <GameOverViewDownloadSize game={game} />
+              <GameOverViewInstallSize game={game} />
               <GameOverViewSystemRequirement game={game} />
               <GameOverViewFollow game={game} />
             </Grid>

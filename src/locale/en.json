@@ -495,6 +495,8 @@
     "sto-46_native": "Native",
     "sto-47_browser": "Browser",
     "sto-48_type": "Type",
+    "sto-49_download-size": "Download Size",
+    "sto-50_install-size": "Install Size",
     "lib-1_your-games": "Your games",
     "lib-2_wishlist": "Wishlist",
     "lib-3_download": "Download",

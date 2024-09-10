@@ -74,52 +74,13 @@ export interface IGame {
     name: string;
     meta_url: string;
     platforms: {
-      windows_amd64?: {
-        name: string;
-        executable: string;
-        installSize: string;
-        downloadSize: string;
-        external_url: string;
-      };
-      windows_arm64?: {
-        name: string;
-        executable: string;
-        installSize: string;
-        downloadSize: string;
-        external_url: string;
-      };
-      darwin_amd64?: {
-        name: string;
-        executable: string;
-        installSize: string;
-        downloadSize: string;
-        external_url: string;
-      };
-      darwin_arm64?: {
-        name: string;
-        executable: string;
-        installSize: string;
-        downloadSize: string;
-        external_url: string;
-      };
-      linux_amd64?: {
-        name: string;
-        executable: string;
-        installSize: string;
-        downloadSize: string;
-        external_url: string;
-      };
-      linux_arm64?: {
-        name: string;
-        executable: string;
-        installSize: string;
-        downloadSize: string;
-        external_url: string;
-      };
-      web?: {
-        name: string;
-        external_url: string;
-      };
+      windows_amd64?: IGameReleaseNative;
+      windows_arm64?: IGameReleaseNative;
+      darwin_amd64?: IGameReleaseNative;
+      darwin_arm64?: IGameReleaseNative;
+      linux_amd64?: IGameReleaseNative;
+      linux_arm64?: IGameReleaseNative;
+      web?: IGameReleaseWeb;
     };
     project_id: string;
     release_id: string;
@@ -137,4 +98,17 @@ export interface IGame {
 
 export interface IGameList {
   games: IGame[];
+}
+
+export interface IGameReleaseNative {
+  name: string;
+  executable: string;
+  installSize: string;
+  downloadSize: string;
+  external_url: string;
+}
+
+export interface IGameReleaseWeb {
+  name: string;
+  external_url: string;
 }

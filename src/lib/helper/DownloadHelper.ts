@@ -11,7 +11,7 @@ import { District53 } from "../game/district 53/District53";
 import { local_server_port, tymt_version } from "../../configs";
 
 import { ISaltToken } from "../../types/accountTypes";
-import { IGame } from "../../types/GameTypes";
+import { IGame, IGameReleaseNative } from "../../types/GameTypes";
 
 export async function runUrlArgs(url: string, args: string[]) {
   return invoke("run_url_args", {
@@ -418,49 +418,76 @@ export const getDownloadFileNameNewGame = async (game: IGame) => {
   }
 };
 
-export const getDownloadSizeNewGame = async (game: IGame) => {
+export const getGameReleaseNative = async (game: IGame) => {
   try {
-    let res: string = "";
-    if (game?.projectMeta?.type === "browser") {
-      return res;
-    }
+    let res: IGameReleaseNative;
     const platform = await type();
     const cpu = await arch();
     switch (platform) {
       case "Linux":
         switch (cpu) {
           case "arm":
-            res = game?.releaseMeta?.platforms?.linux_arm64?.downloadSize;
+            res = game?.releaseMeta?.platforms?.linux_arm64;
             break;
           case "x86_64":
-            res = game?.releaseMeta?.platforms?.linux_amd64?.downloadSize;
+            res = game?.releaseMeta?.platforms?.linux_amd64;
             break;
         }
         break;
       case "Windows_NT":
         switch (cpu) {
           case "arm":
-            res = game?.releaseMeta?.platforms?.windows_arm64?.downloadSize;
+            res = game?.releaseMeta?.platforms?.windows_arm64;
             break;
           case "x86_64":
-            res = game?.releaseMeta?.platforms?.windows_amd64?.downloadSize;
+            res = game?.releaseMeta?.platforms?.windows_amd64;
             break;
         }
         break;
       case "Darwin":
         switch (cpu) {
           case "arm":
-            res = game?.releaseMeta?.platforms?.darwin_arm64?.downloadSize;
+            res = game?.releaseMeta?.platforms?.darwin_arm64;
             break;
           case "x86_64":
-            res = game?.releaseMeta?.platforms?.darwin_amd64?.downloadSize;
+            res = game?.releaseMeta?.platforms?.darwin_amd64;
             break;
         }
         break;
     }
     return res;
   } catch (err) {
+    console.log("Failed to getGameOsCpu: ", err);
+    return null;
+  }
+};
+
+export const getDownloadSizeNewGame = async (game: IGame) => {
+  try {
+    let res: string = "";
+    if (game?.projectMeta?.type === "browser") {
+      return res;
+    }
+    const gameReleaseNative = await getGameReleaseNative(game);
+    res = gameReleaseNative?.downloadSize;
+    return res;
+  } catch (err) {
     console.error("Failed to getDownloadSizeNewGame: ", err);
+    return "";
+  }
+};
+
+export const getInstallSizeNewGame = async (game: IGame) => {
+  try {
+    let res: string = "";
+    if (game?.projectMeta?.type === "browser") {
+      return res;
+    }
+    const gameReleaseNative = await getGameReleaseNative(game);
+    res = gameReleaseNative?.installSize;
+    return res;
+  } catch (err) {
+    console.error("Failed to getInstallSizeNewGame: ", err);
     return "";
   }
 };
