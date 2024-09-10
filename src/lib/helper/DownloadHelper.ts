@@ -418,8 +418,33 @@ export const getDownloadFileNameNewGame = async (game: IGame) => {
   }
 };
 
+export const getGameType = (game: IGame) => {
+  try {
+    const res = game?.projectMeta?.type;
+    return res;
+  } catch (err) {
+    console.log("Failed to getGameType: ", err);
+  }
+};
+
+export const getGameReleaseBrowser = (game: IGame) => {
+  try {
+    if (game?.projectMeta?.type !== "browser") {
+      return null;
+    }
+    const res = game?.releaseMeta?.platforms?.web;
+    return res;
+  } catch (err) {
+    console.log("Failed to getGameReleaseBrowser: ", err);
+    return null;
+  }
+};
+
 export const getGameReleaseNative = async (game: IGame) => {
   try {
+    if (game?.projectMeta?.type !== "native") {
+      return null;
+    }
     let res: IGameReleaseNative;
     const platform = await type();
     const cpu = await arch();

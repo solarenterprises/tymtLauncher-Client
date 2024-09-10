@@ -4,21 +4,28 @@ import { useSelector } from "react-redux";
 import { ThreeDots } from "react-loader-spinner";
 import { emit } from "@tauri-apps/api/event";
 
+import { District53 } from "../../lib/game/district 53/District53";
 import { TauriEventNames } from "../../consts/TauriEventNames";
 
 import { Button, Stack, Box } from "@mui/material";
 
 import D53Modal from "../home/D53Modal";
+import WarningModalNewGame from "../home/WarningModalNewGame";
 
 import { getDownloadStatus } from "../../features/home/DownloadStatusSlice";
 
+import {
+  checkOnline,
+  downloadAndInstallNewGame,
+  getFullExecutablePathNewGame,
+  getGameReleaseBrowser,
+  isInstalled,
+  openLink,
+} from "../../lib/helper/DownloadHelper";
+
 import { IGame } from "../../types/GameTypes";
 import { INotificationGameDownloadParams, INotificationParams } from "../../types/NotificationTypes";
-
-import { checkOnline, downloadAndInstallNewGame, getFullExecutablePathNewGame, isInstalled } from "../../lib/helper/DownloadHelper";
 import { IDownloadStatus } from "../../types/homeTypes";
-import WarningModalNewGame from "../home/WarningModalNewGame";
-import { District53 } from "../../lib/game/district 53/District53";
 
 export interface IPropsInstallButton {
   game: IGame;
@@ -35,6 +42,13 @@ const InstallButton = ({ game }: IPropsInstallButton) => {
   const [installed, setInstalled] = useState(false);
 
   const handleClick = useCallback(async () => {
+    if (game?.projectMeta?.type === "browser") {
+      const externalUrl = getGameReleaseBrowser(game)?.external_url;
+      if (!externalUrl) return;
+      openLink(externalUrl);
+      return;
+    }
+
     if (installed) {
       if (game?._id === District53?._id) setD53ModalView(true);
       else setModalView(true);
