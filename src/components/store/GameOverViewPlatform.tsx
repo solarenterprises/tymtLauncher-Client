@@ -20,14 +20,18 @@ const GameOverViewPlatform = ({ game }: IPropsGameOverViewPlatform) => {
   const supportOSList = useMemo(() => getSupportOSList(game), [game]);
 
   return (
-    <Box className={classes.box_gameoption}>
-      <Box className={"fs-14-regular gray"}>{t("sto-4_platform")}</Box>
-      <Stack direction={"row"} alignItems={"center"}>
-        {supportOSList?.some((one) => one === "windows") && <img src={platformIconMap.get(platformEnum.windows)} width={"16px"} className={classes.platform} />}
-        {supportOSList?.some((one) => one === "linux") && <img src={platformIconMap.get(platformEnum.linux)} width={"16px"} className={classes.platform} />}
-        {supportOSList?.some((one) => one === "darwin") && <img src={platformIconMap.get(platformEnum.mac)} width={"16px"} className={classes.platform} />}
-      </Stack>
-    </Box>
+    supportOSList?.length > 0 && (
+      <Box className={classes.box_gameoption}>
+        <Box className={"fs-14-regular gray"}>{t("sto-4_platform")}</Box>
+        <Stack direction={"row"} alignItems={"center"}>
+          {supportOSList?.some((one) => one === "windows") && (
+            <img src={platformIconMap.get(platformEnum.windows)} width={"16px"} className={classes.platform} />
+          )}
+          {supportOSList?.some((one) => one === "linux") && <img src={platformIconMap.get(platformEnum.linux)} width={"16px"} className={classes.platform} />}
+          {supportOSList?.some((one) => one === "darwin") && <img src={platformIconMap.get(platformEnum.mac)} width={"16px"} className={classes.platform} />}
+        </Stack>
+      </Box>
+    )
   );
 };
 

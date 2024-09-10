@@ -80,7 +80,7 @@ export interface IGame {
       darwin_arm64?: IGameReleaseNative;
       linux_amd64?: IGameReleaseNative;
       linux_arm64?: IGameReleaseNative;
-      web?: IGameReleaseWeb;
+      web?: IGameReleaseBrowser;
     };
     project_id: string;
     release_id: string;
@@ -108,7 +108,7 @@ export interface IGameReleaseNative {
   external_url: string;
 }
 
-export interface IGameReleaseWeb {
+export interface IGameReleaseBrowser {
   name: string;
   external_url: string;
 }
