@@ -3,8 +3,10 @@ import { useTranslation } from "react-i18next";
 
 import { Box, Button, Stack } from "@mui/material";
 
-import ComingModal from "../modals/ComingModal";
 import FeedbackCard from "./FeedbackCard";
+import ReviewRating from "./ReviewRating";
+import ReviewPagination from "./ReviewPagination";
+import ReviewModal from "../modals/ReviewModal";
 
 import ReviewAPI from "../../lib/api/ReviewAPI";
 
@@ -14,8 +16,6 @@ import storeStyles from "../../styles/StoreStyles";
 
 import { IGame } from "../../types/GameTypes";
 import { IResFetchReviewsByGameId } from "../../types/ReviewAPITypes";
-import ReviewRating from "./ReviewRating";
-import ReviewPagination from "./ReviewPagination";
 
 export interface IPropsGameReview {
   game: IGame;
@@ -109,7 +109,7 @@ const GameReview = ({ game }: IPropsGameReview) => {
           <ReviewPagination totalPage={totalPage} page={page} handlePageChange={handlePageChange} />
         </>
       )}
-      <ComingModal open={view} setOpen={setView} />
+      <ReviewModal open={view} setOpen={setView} />
     </>
   );
 };

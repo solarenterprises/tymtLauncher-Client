@@ -2,12 +2,13 @@ import { Button } from "@mui/material";
 
 export interface IPropsRedStrokeButton {
   text: string;
-  onClick: () => void;
+  onClick?: () => void;
+  isSubmit?: boolean;
 }
 
-const RedStrokeButton = ({ text, onClick }: IPropsRedStrokeButton) => {
+const RedStrokeButton = ({ text, onClick, isSubmit }: IPropsRedStrokeButton) => {
   return (
-    <Button onClick={onClick} className="red-border-button">
+    <Button onClick={onClick ? onClick : () => {}} className="red-border-button" type={isSubmit ? "submit" : undefined}>
       {text}
     </Button>
   );
