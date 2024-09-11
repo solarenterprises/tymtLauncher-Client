@@ -1,5 +1,6 @@
-import { Stack, Box } from "@mui/material";
+import { useTranslation } from "react-i18next";
 
+import { Stack, Box } from "@mui/material";
 import StarIcon from "@mui/icons-material/Star";
 
 export interface IPropsStarLabelPanel {
@@ -8,8 +9,10 @@ export interface IPropsStarLabelPanel {
 }
 
 const StarLabelPanel = ({ value, setValue }: IPropsStarLabelPanel) => {
+  const { t } = useTranslation();
+
   const items = Array.from({ length: 5 });
-  const labelList: string[] = ["Bad", "That's right", "Normally", "Good", "Excellent"];
+  const labelList: string[] = [t("ga-36_bad"), t("ga-37_thats-right"), t("ga-38_normally"), t("ga-39_good"), t("ga-40_excellent")];
 
   return (
     <>

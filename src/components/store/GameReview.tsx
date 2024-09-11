@@ -1,7 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import numeral from "numeral";
+import { listen } from "@tauri-apps/api/event";
 
-import { Box, Button, Stack } from "@mui/material";
+import { TauriEventNames } from "../../consts/TauriEventNames";
+
+import { Box, Button, Skeleton, Stack } from "@mui/material";
 
 import FeedbackCard from "./FeedbackCard";
 import ReviewRating from "./ReviewRating";
@@ -29,6 +33,7 @@ const GameReview = ({ game }: IPropsGameReview) => {
   const [view, setView] = useState(false);
   const [page, setPage] = useState<number>(1);
   const [reviewData, setReviewData] = useState<IResFetchReviewsByGameId>(null);
+  const [loading, setLoading] = useState<boolean>(false);
 
   const averageStar = useMemo(() => reviewData?.averageStar, [reviewData?.averageStar]);
   const feedbackList = useMemo(() => reviewData?.feedbacks, [reviewData?.feedbacks]);
@@ -39,10 +44,13 @@ const GameReview = ({ game }: IPropsGameReview) => {
 
   const fetchReviewData = async (currentPage: number) => {
     try {
+      setLoading(true);
       const data = await ReviewAPI.fetchReviewsByGameId(game?._id, currentPage, 5);
       setReviewData(data?.data);
+      setLoading(false);
     } catch (err) {
       console.log("Failed to fetchReviewData: ", err);
+      setLoading(false);
     }
   };
 
@@ -55,12 +63,24 @@ const GameReview = ({ game }: IPropsGameReview) => {
     fetchReviewData(1);
   }, []);
 
+  useEffect(() => {
+    const unlisten_fetch_review = listen(TauriEventNames.FETCH_REVIEW, (_event) => {
+      console.log("TauriEventNames.FETCH_REVIEW");
+      fetchReviewData(1);
+      setPage(1);
+    });
+
+    return () => {
+      unlisten_fetch_review.then((unlistenFn) => unlistenFn());
+    };
+  }, []);
+
   return (
     <>
       <Stack direction={"row"} alignItems={"center"} justifyContent={"space-between"} display={"flex"}>
         <Box className={"fs-40-bold white"}>
           {t("ga-11_review")}
-          {feedbackList?.length > 0 && (
+          {!loading && feedbackList?.length > 0 && (
             <Box
               sx={{
                 width: 200,
@@ -71,7 +91,7 @@ const GameReview = ({ game }: IPropsGameReview) => {
             >
               <ReviewRating value={averageStar} />
               <Box className={"fs-18-bold white"} marginLeft={"5px"}>
-                {averageStar}
+                {numeral(averageStar).format("0,0.[00]")}
               </Box>
             </Box>
           )}
@@ -82,7 +102,14 @@ const GameReview = ({ game }: IPropsGameReview) => {
           </Box>
         </Button>
       </Stack>
-      {feedbackList?.length === 0 && (
+      {loading && (
+        <Stack gap={"24px"} mt={"24px"}>
+          {Array.from({ length: 5 })?.map((_item, index) => (
+            <Skeleton variant="rounded" key={`${index}-review-skeleton`} height={"140px"} />
+          ))}
+        </Stack>
+      )}
+      {!loading && feedbackList?.length === 0 && (
         <Box
           sx={{
             justifyContent: "center",
@@ -99,7 +126,7 @@ const GameReview = ({ game }: IPropsGameReview) => {
           </Box>
         </Box>
       )}
-      {feedbackList?.length > 0 && (
+      {!loading && feedbackList?.length > 0 && (
         <>
           <Stack gap={"24px"} mt={"24px"}>
             {feedbackList?.map((one, index) => (
@@ -109,7 +136,7 @@ const GameReview = ({ game }: IPropsGameReview) => {
           <ReviewPagination totalPage={totalPage} page={page} handlePageChange={handlePageChange} />
         </>
       )}
-      <ReviewModal open={view} setOpen={setView} />
+      <ReviewModal open={view} setOpen={setView} game={game} />
     </>
   );
 };
