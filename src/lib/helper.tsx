@@ -44,6 +44,16 @@ export const formatDate = (unixTimestamp: number) => {
   return `${day}.${month}.${year} ; ${hours}:${minutes}`;
 };
 
+export const formatDateAsMMDDYYYY = (dateString: string) => {
+  try {
+    const date = new Date(dateString);
+    const formattedDate = `${String(date.getMonth() + 1).padStart(2, "0")}.${String(date.getDate()).padStart(2, "0")}.${date.getFullYear()}`;
+    return formattedDate;
+  } catch (err) {
+    console.log("Failed to formatDateAsMMDDYYYY: ", err);
+  }
+};
+
 export const formatDecimal = (number, count = 8) => {
   const cryptoAmount = formatUnits(number, count);
   return numeral(cryptoAmount).format("0,0.[00000000]");

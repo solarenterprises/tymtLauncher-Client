@@ -30,7 +30,8 @@ const GameOverViewJumbo = ({ type, src }: IPropsGameOverViewJumbo) => {
             alignContent: "center",
           }}
         >
-          <ReactPlayer playing className={"react-player-jumbo"} url={src} width={"100%"} height={"100%"} controls />
+          {/* <ReactPlayer playing className={"react-player-jumbo"} url={src} width={"100%"} height={"100%"} controls /> */}
+          <ReactPlayer className={"react-player-jumbo"} url={src} width={"100%"} height={"100%"} controls />
         </Box>
       )}
     </>

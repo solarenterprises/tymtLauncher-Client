@@ -52,11 +52,12 @@ class UserAPI {
 
   static async fetchAvatar(user_id: string) {
     const saltTokenStore: ISaltToken = JSON.parse(tymtStorage.get(`saltToken`));
-    return await axios.get(`${tymt_backend_url}/users/get-avatar/${user_id}?${Date.now()}`, {
+    return await axios.get(`${tymt_backend_url}/users/get-avatar/${user_id}`, {
       headers: {
         "x-token": saltTokenStore.token,
-        "Content-Type": "application/json",
+        "Cache-Control": "no-cache",
       },
+      responseType: "blob",
     });
   }
 
