@@ -1,47 +1,50 @@
-import { useTranslation } from "react-i18next";
-import { Box, Stack, Button, Grid } from "@mui/material";
+import { Stack, Box, Button } from "@mui/material";
 
-const SwitchButton = () => {
-  const { t } = useTranslation();
+import storeStyles from "../../styles/StoreStyles";
+
+export interface IPropsSwitchButton {
+  currentIndex: number;
+  setCurrentIndex: (_: number) => void;
+  texts: string[];
+}
+
+const SwitchButton = ({ currentIndex, setCurrentIndex, texts }: IPropsSwitchButton) => {
+  const classes = storeStyles();
 
   return (
-    <Grid container>
-      <Box className={"switch-button-group"}>
-        <Stack
-          direction={"row"}
-          alignItems={"center"}
-          sx={{
-            height: "40px",
+    <Stack
+      direction={"row"}
+      alignItems={"center"}
+      spacing={"2px"}
+      sx={{
+        padding: "2px",
+        borderRadius: "16px",
+        gap: "2px",
+        border: "1px solid",
+        borderColor: "#FFFFFF1A",
+        background: "#0B1718",
+      }}
+    >
+      {texts?.map((text, index) => (
+        <Button
+          key={`${index}-${text}`}
+          className={classes.library_switch_button}
+          onClick={() => {
+            setCurrentIndex(index);
           }}
-          spacing={"6px"}
+          sx={{
+            backgroundColor: currentIndex === index ? "rgba(82, 225, 242, 0.10)" : undefined,
+            "&:hover": {
+              backgroundColor: currentIndex === index ? "rgba(82, 225, 242, 0.10)" : undefined,
+            },
+          }}
         >
-          <Button className={"switch-button"} onClick={() => {}}>
-            <Box
-              className={"fs-18-regular"}
-              sx={{
-                padding: "8px 16px",
-                color: "white",
-                fontFeatureSettings: "'calt' off",
-              }}
-            >
-              {t("wc-10_sign-up")}
-            </Box>
-          </Button>
-          <Button className={"switch-button"} onClick={() => {}}>
-            <Box
-              className={"fs-18-regular"}
-              sx={{
-                padding: "8px 16px",
-                color: "white",
-                fontFeatureSettings: "'calt' off",
-              }}
-            >
-              {t("wc-11_log-in")}
-            </Box>
-          </Button>
-        </Stack>
-      </Box>
-    </Grid>
+          <Box className={classes.switch_btn} sx={{ color: currentIndex === index ? "#52E1F2" : "white" }}>
+            {text}
+          </Box>
+        </Button>
+      ))}
+    </Stack>
   );
 };
 

@@ -1,12 +1,14 @@
 import { useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
+import { useTranslation } from "react-i18next";
 
 import { BasicGameList } from "../../lib/game/BasicGameList";
 
 import { Grid } from "@mui/material";
 
 import AnimatedComponent from "../AnimatedComponent";
+import SwitchButton from "../account/SwitchButton";
 import GameOverViewPlatform from "./GameOverViewPlatform";
 import GameOverViewNative from "./GameOverViewNative";
 import GameOverViewSystemRequirement from "./GameOverViewSystemRequirement";
@@ -20,6 +22,7 @@ import GameOverViewDownloadSize from "./GameOverViewDownloadSize";
 import GameOverViewInstallSize from "./GameOverViewInstallSize";
 import GameOverViewJumbo from "./GameOverViewJumbo";
 import GameOverViewDescription from "./GameOverViewDescription";
+import GameReview from "./GameReview";
 
 import { getGameList } from "../../features/store/GameListSlice";
 
@@ -30,11 +33,13 @@ import gradient1 from "../../assets/main/gradient-gameoverview.svg";
 import { IGameList } from "../../types/GameTypes";
 
 const ComingGameOverview = () => {
+  const { t } = useTranslation();
   const { gameid } = useParams();
 
   const [src, setSrc] = useState<string>("");
   const [type, setType] = useState<string>("");
   const [currentImageIndex, setCurrentImageIndex] = useState<number>(0);
+  const [currentSwitchIndex, setCurrentSwitchIndex] = useState<number>(0);
 
   const gameListStore: IGameList = useSelector(getGameList);
 
@@ -52,6 +57,7 @@ const ComingGameOverview = () => {
   );
 
   const classes = storeStyles();
+  const textList: string[] = [t("ga-10_overview"), t("ga-11_review")];
 
   return (
     <>
@@ -87,8 +93,13 @@ const ComingGameOverview = () => {
                 />
               </Grid>
 
+              <Grid item xs={12} container mt={"32px"}>
+                <SwitchButton currentIndex={currentSwitchIndex} setCurrentIndex={setCurrentSwitchIndex} texts={textList} />
+              </Grid>
+
               <Grid item xs={12} marginTop={"32px"}>
-                <GameOverViewDescription game={game} />
+                {currentSwitchIndex === 0 && <GameOverViewDescription game={game} />}
+                {currentSwitchIndex === 1 && <GameReview game={game} />}
               </Grid>
             </Grid>
             <Grid item sx={{ width: "320px" }}>

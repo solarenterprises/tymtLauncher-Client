@@ -14,10 +14,9 @@ const storeStyles = makeStyles({
     border: "1px solid",
     borderColor: "#FFFFFF1A",
     background: "#0B1718",
-    display: "flex",
     alignItems: "center",
-    justifyContent: "center",
   },
+
   library_switch_button: {
     "&.MuiButtonBase-root, &.MuiBox-root": {
       display: "block",

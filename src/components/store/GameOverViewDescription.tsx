@@ -13,9 +13,7 @@ const GameOverViewDescription = ({ game }: IPropsGameOverViewDescription) => {
 
   return (
     <Stack>
-      <Box className={"fs-40-bold white"} marginTop={"24px"}>
-        {t("ga-10_overview")}
-      </Box>
+      <Box className={"fs-40-bold white"}>{t("ga-10_overview")}</Box>
       <Box
         className={"fs-16-regular white"}
         sx={{
