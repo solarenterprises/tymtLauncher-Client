@@ -3,8 +3,9 @@ import { useDispatch, useSelector } from "react-redux";
 
 import { Button, Stack, Box } from "@mui/material";
 
-import Avatar from "../home/Avatar";
 import CompleteButton from "./CompleteButton";
+// import UserAvatar from "../store/UserAvatar";
+import Avatar from "../home/Avatar";
 
 import { getAccount, setAccount } from "../../features/account/AccountSlice";
 
@@ -54,6 +55,7 @@ const ProfileCard = ({ account }: IPropsProfileCard) => {
         <Stack gap={"8px"} width={"100%"}>
           <Stack direction="row" alignItems="center" gap="12px" width={"100%"}>
             <Avatar url={account?.avatar} size={64} />
+            {/* <UserAvatar userId={account?.uid} size={64} /> */}
             <Stack>
               <Box className={"fs-16-regular white"}>{account?.nickName}</Box>
               <Box className={"fs-14-regular light"}>{`non custodial wallet account`}</Box>

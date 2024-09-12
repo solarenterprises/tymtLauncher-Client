@@ -1,9 +1,11 @@
 import { Button, Box, Stack } from "@mui/material";
 
+import Avatar from "../home/Avatar";
+// import UserAvatar from "../store/UserAvatar";
+
 import RightArrow from "../../assets/chevronright.svg";
 
 import { IAccount } from "../../types/accountTypes";
-import Avatar from "../home/Avatar";
 
 export interface IPropsChooseProfileButton {
   account: IAccount;
@@ -32,6 +34,7 @@ const ChooseProfileButton = ({ account, onClick }: IPropsChooseProfileButton) =>
         <Stack direction={"row"} alignItems={"center"} justifyContent={"space-between"} width={"100%"}>
           <Stack direction="row" alignItems="center" gap="16px">
             <Avatar url={account?.avatar} size={40} />
+            {/* <UserAvatar userId={account?.uid} size={40} /> */}
             <Box className={"fs-18-regular white"}>{account?.nickName}</Box>
           </Stack>
           <Box component={"img"} src={RightArrow} width={"24px"} height={"24px"} />

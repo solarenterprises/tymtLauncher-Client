@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 
-import { Box } from "@mui/material";
+import { Box, Skeleton } from "@mui/material";
 
 import { getActiveUserList, IActiveUserList } from "../../features/chat/ActiveUserListSlice";
 
@@ -20,24 +20,28 @@ export interface IPropsUserAvatar {
 const UserAvatar = ({ userId, size }: IPropsUserAvatar) => {
   const activeUserListStore: IActiveUserList = useSelector(getActiveUserList);
 
-  const isOnline: boolean = useMemo(() => activeUserListStore?.users?.some((one) => one === userId), [activeUserListStore]);
+  const isOnline: boolean = useMemo(() => activeUserListStore?.users?.some((one) => one === userId), [activeUserListStore, userId]);
 
   const [avatar, setAvatar] = useState(null);
+  const [loading, setLoading] = useState<boolean>(false);
 
   const fetchUserAvatar = async () => {
     try {
+      setLoading(true);
       const data = await UserAPI.fetchAvatar(userId);
       const imageUrl = URL.createObjectURL(data?.data);
       console.log("imageUrl", imageUrl);
       setAvatar(imageUrl);
+      setLoading(false);
     } catch (err) {
       console.log("Failed to fetchUserAvatar: ", err);
+      setLoading(false);
     }
   };
 
   useEffect(() => {
     fetchUserAvatar();
-  }, []);
+  }, [userId]);
 
   return (
     <div
@@ -49,44 +53,49 @@ const UserAvatar = ({ userId, size }: IPropsUserAvatar) => {
         border: "transparent",
       }}
     >
-      <Box
-        component={"img"}
-        src={isOnline ? OnlineFrame : OfflineFrame}
-        sx={{
-          position: "absolute",
-          width: "100%",
-          height: "100%",
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%, -50%)",
-          zIndex: 5,
-          overflow: "hidden",
-        }}
-      />
-      <Box
-        component={"img"}
-        src={avatar}
-        sx={{
-          position: "absolute",
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%, -50%)",
-          width: "100%",
-          height: "100%",
-          borderColor: "transparent",
-          maskImage: `url(${Mask})`,
-          maskPosition: "center",
-          maskSize: "cover",
-          zIndex: 1,
-          opacity: 0.9,
-          transition: "all 0.5s",
-        }}
-        loading="lazy"
-        onError={(e) => {
-          const target = e.target as HTMLImageElement;
-          target.src = AccountIcon;
-        }}
-      />
+      {loading && <Skeleton variant="circular" width={`${size}px`} height={`${size}px`} />}
+      {!loading && (
+        <>
+          <Box
+            component={"img"}
+            src={isOnline ? OnlineFrame : OfflineFrame}
+            sx={{
+              position: "absolute",
+              width: "100%",
+              height: "100%",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              zIndex: 5,
+              overflow: "hidden",
+            }}
+          />
+          <Box
+            component={"img"}
+            src={avatar}
+            sx={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              width: "100%",
+              height: "100%",
+              borderColor: "transparent",
+              maskImage: `url(${Mask})`,
+              maskPosition: "center",
+              maskSize: "cover",
+              zIndex: 1,
+              opacity: 0.9,
+              transition: "all 0.5s",
+            }}
+            loading="lazy"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              target.src = AccountIcon;
+            }}
+          />
+        </>
+      )}
     </div>
   );
 };

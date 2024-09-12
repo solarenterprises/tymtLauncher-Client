@@ -136,8 +136,9 @@ class ChatroomAPI {
     return await axios.get(`${tymt_backend_url}/chatroom/get-room-image/${room_id}`, {
       headers: {
         "x-token": saltTokenStore.token,
-        "Content-Type": "application/json",
+        "Cache-Control": "no-cache",
       },
+      responseType: "blob",
     });
   }
 

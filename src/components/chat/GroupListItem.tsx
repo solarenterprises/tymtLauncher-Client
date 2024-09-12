@@ -10,6 +10,7 @@ import { useSocket } from "../../providers/SocketProvider";
 import { useNotification } from "../../providers/NotificationProvider";
 
 import GroupAvatar from "./GroupAvatar";
+// import GroupImage from "./GroupImage";
 import GroupListItemContextMenu from "./GroupListItemContextMenu";
 import PublicBadge from "./PublicBadge";
 
@@ -59,7 +60,7 @@ const GroupListItem = ({ group, index, roomMode, setView, gray }: IPropsGroupLis
 
   const isGroupInvited: boolean = useMemo(() => {
     try {
-      return chatroomListStore.chatrooms.some((chatroom) => chatroom._id === group._id);
+      return chatroomListStore?.chatrooms?.some((chatroom) => chatroom?._id === group?._id);
     } catch (err) {
       console.error("Failed with isGroupInvited: ", err);
       return false;
@@ -77,27 +78,27 @@ const GroupListItem = ({ group, index, roomMode, setView, gray }: IPropsGroupLis
   const handleGroupListItemClick = useCallback(async () => {
     try {
       // When it is a new public group to me
-      if (!isGroupInvited && !group.isPrivate) {
+      if (!isGroupInvited && !group?.isPrivate) {
         dispatch(
           joinPublicGroupAsync({
             _userId: myInfoStore?._id,
-            _groupId: group._id,
+            _groupId: group?._id,
           })
         ).then(async (action) => {
           if (action.type.endsWith("/fulfilled")) {
-            const newChatroom = action.payload as IChatroom;
+            const newChatroom = action?.payload as IChatroom;
             if (roomMode) {
-              navigate(`/chat/${group._id}`);
+              navigate(`/chat/${group?._id}`);
             } else {
               dispatch(setCurrentChatroom(newChatroom));
               await dispatch(setChatHistoryAsync({ messages: [] }));
-              newChatroom.isGlobal ? dispatch(setCurrentChatroomMembers([])) : await dispatch(fetchCurrentChatroomMembersAsync(newChatroom._id));
-              await dispatch(fetchHistoricalChatroomMembersAsync(newChatroom._id));
+              newChatroom?.isGlobal ? dispatch(setCurrentChatroomMembers([])) : await dispatch(fetchCurrentChatroomMembersAsync(newChatroom?._id));
+              await dispatch(fetchHistoricalChatroomMembersAsync(newChatroom?._id));
             }
 
             if (socket.current && socket.current.connected) {
               const data: ISocketParamsJoinMessageGroup = {
-                room_id: group._id,
+                room_id: group?._id,
                 joined_user_id: myInfoStore?._id,
               };
               socket.current.emit("join-message-group", JSON.stringify(data));
@@ -113,12 +114,12 @@ const GroupListItem = ({ group, index, roomMode, setView, gray }: IPropsGroupLis
         });
       } else {
         if (roomMode) {
-          navigate(`/chat/${group._id}`);
+          navigate(`/chat/${group?._id}`);
         } else {
-          await dispatch(fetchCurrentChatroomAsync(group._id));
+          await dispatch(fetchCurrentChatroomAsync(group?._id));
           await dispatch(setChatHistoryAsync({ messages: [] }));
-          group.isGlobal ? dispatch(setCurrentChatroomMembers([])) : await dispatch(fetchCurrentChatroomMembersAsync(group._id));
-          await dispatch(fetchHistoricalChatroomMembersAsync(group._id));
+          group?.isGlobal ? dispatch(setCurrentChatroomMembers([])) : await dispatch(fetchCurrentChatroomMembersAsync(group?._id));
+          await dispatch(fetchHistoricalChatroomMembersAsync(group?._id));
         }
 
         if (setView) setView("chatbox");
@@ -138,7 +139,7 @@ const GroupListItem = ({ group, index, roomMode, setView, gray }: IPropsGroupLis
           console.log("socket.current.emit > sync-event", data_2);
         }
 
-        await AlertAPI.readAllUnreadAlertsForChatroom({ userId: myInfoStore?._id, roomId: group._id });
+        await AlertAPI.readAllUnreadAlertsForChatroom({ userId: myInfoStore?._id, roomId: group?._id });
         await dispatch(fetchUnreadMessageListAsync(myInfoStore?._id));
         await dispatch(fetchAlertListAsync(myInfoStore?._id));
       }
@@ -167,7 +168,7 @@ const GroupListItem = ({ group, index, roomMode, setView, gray }: IPropsGroupLis
   return (
     <>
       <Box
-        key={`${index}-${group._id}`}
+        key={`${index}-${group?._id}`}
         onClick={handleGroupListItemClick}
         onContextMenu={handleGroupListItemRightClick}
         sx={{
@@ -197,18 +198,19 @@ const GroupListItem = ({ group, index, roomMode, setView, gray }: IPropsGroupLis
             },
           }}
         >
-          <GroupAvatar size={40} url={group.room_image} />
+          <GroupAvatar size={40} url={group?.room_image} />
+          {/* <GroupImage groupId={group?._id} size={40} /> */}
           <Stack flexDirection={"row"} alignItems={"center"} justifyContent={"space-between"} display={"flex"} sx={{ marginLeft: "25px", width: "320px" }}>
             <Box>
               <Stack direction={"column"} justifyContent={"flex-start"} spacing={1}>
                 <Stack direction={"row"} alignItems={"center"} gap={"8px"}>
-                  <Box className={"fs-16 white"}>{group.room_name}</Box>
-                  {!group.isPrivate && <PublicBadge />}
+                  <Box className={"fs-16 white"}>{group?.room_name}</Box>
+                  {!group?.isPrivate && <PublicBadge />}
                 </Stack>
-                {group.isGlobal ? (
+                {group?.isGlobal ? (
                   <Box className={"fs-12-light gray"}>{`Global channel`}</Box>
                 ) : (
-                  <Box className={"fs-12-light gray"}>{`${group.participants.length} Joined`}</Box>
+                  <Box className={"fs-12-light gray"}>{`${group?.participants.length} Joined`}</Box>
                 )}
               </Stack>
             </Box>

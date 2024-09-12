@@ -24,7 +24,6 @@ export const AuthProvider = () => {
   return (
     <>
       <Outlet />
-     
     </>
   );
 };
