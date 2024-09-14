@@ -93,6 +93,14 @@
         "additionalBrowserArgs": "--disable-web-security",
         "alwaysOnTop": true,
         "focus": true
+      },
+      {
+        "label": "game_window",
+        "title": "Game Window",
+        "url": "",
+        "decorations": true,
+        "visible": false,
+        "additionalBrowserArgs": "--disable-web-security"
       }
     ],
     "systemTray": {
