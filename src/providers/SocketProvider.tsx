@@ -2,7 +2,7 @@ import { MutableRefObject, createContext, useCallback, useContext, useEffect, us
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import { Outlet } from "react-router-dom";
-import { appWindow } from "@tauri-apps/api/window";
+import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { emit } from "@tauri-apps/api/event";
 import { io, Socket } from "socket.io-client";
 
@@ -48,6 +48,7 @@ import { setRenderTime } from "../features/account/RenderTimeSlice";
 import { isArray } from "lodash";
 import { fetchHistoricalChatroomMembersAsync, setHistoricalChatroomMembers } from "../features/chat/HistoricalChatroomMembersSlice";
 import { getMyInfo } from "../features/account/MyInfoSlice";
+const appWindow = getCurrentWebviewWindow()
 
 interface SocketContextType {
   socket: MutableRefObject<Socket>;

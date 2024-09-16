@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import { useState } from "react";
-import { readText } from "@tauri-apps/api/clipboard";
+import { readText } from "@tauri-apps/plugin-clipboard-manager";
 import { emit } from "@tauri-apps/api/event";
 import { useFormik } from "formik";
 import * as Yup from "yup";

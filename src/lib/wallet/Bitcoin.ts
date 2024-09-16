@@ -8,7 +8,7 @@ import { validate } from "bitcoin-address-validation";
 import * as ecc from "tiny-secp256k1";
 import { INotification } from "../../features/wallet/CryptoSlice";
 import { IRecipient } from "../../features/wallet/CryptoApi";
-import { fetch as tauriFetch, ResponseType } from "@tauri-apps/api/http";
+import { fetch as tauriFetch } from "@tauri-apps/plugin-http";
 import { translateString } from "../api/Translate";
 import tymtStorage from "../Storage";
 import { IPriceList, IWallet } from "../../types/walletTypes";
@@ -94,11 +94,11 @@ class Bitcoin implements IWallet_2 {
     try {
       if (net_name === "mainnet") {
         const apiURL = `${btc_api_url}/rawaddr/${addr}?offset=${(page - 1) * 15}limit=15`;
-        const response: any = await tauriFetch(apiURL, {
+        let response: any = await tauriFetch(apiURL, {
           method: "GET",
-          timeout: 30,
-          responseType: ResponseType.JSON,
+          connectTimeout: 30
         });
+        response = await response.json();
         if (!response) return [];
         if (response.status === 429) {
           console.error("Failed to get BTC transactions: 429 error");
@@ -309,10 +309,9 @@ class Bitcoin implements IWallet_2 {
       const apiURL = `https://unisat.io/wallet-api-v4/address/btc-utxo?address=${address}`;
       const response: any = await tauriFetch(apiURL, {
         method: "GET",
-        timeout: 30,
-        responseType: ResponseType.JSON,
+        connectTimeout: 30
       });
-      const data = response?.data?.result;
+      const data = await response.json().data?.result;
       console.log(data);
       return data?.map((utxo: any) => ({
         txid: utxo.txId,

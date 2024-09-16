@@ -1,20 +1,19 @@
 import { useEffect } from "react";
 import { Outlet } from "react-router-dom";
 
-import { checkUpdate, installUpdate, onUpdaterEvent } from "@tauri-apps/api/updater";
-import { relaunch } from "@tauri-apps/api/process";
+import { check } from "@tauri-apps/plugin-updater";
+import { relaunch } from "@tauri-apps/plugin-process";
 
 const UpdateProvider = () => {
   useEffect(() => {
     const initUpdateCheck = async () => {
       try {
-        const { shouldUpdate, manifest } = await checkUpdate();
-        console.log("shouldUpdate", shouldUpdate, "manifest", manifest);
-
-        if (shouldUpdate) {
-          console.log(`Installing update ${manifest?.version}, ${manifest?.date}, ${manifest?.body}`);
-
-          await installUpdate();
+        const update = await check();
+        if (update?.available) {
+          console.log(`Update to ${update.version} available! Date: ${update.date}`);
+          console.log(`Release notes: ${update.body}`);
+          await update.downloadAndInstall();
+          // requires the `process` plugin
           await relaunch();
         }
       } catch (error) {
@@ -26,24 +25,24 @@ const UpdateProvider = () => {
   }, []);
 
   useEffect(() => {
-    let unlisten: () => void;
-    const initUpdaterEvent = async () => {
-      try {
-        unlisten = await onUpdaterEvent(({ error, status }) => {
-          console.log("Updater event: ", { error, status });
-        });
-      } catch (error) {
-        console.error("Failed to initialize updater event listener:", error);
-      }
-    };
+    // let unlisten: () => void;
+    // const initUpdaterEvent = async () => {
+    //   try {
+    //     unlisten = await onUpdaterEvent(({ error, status }) => {
+    //       console.log("Updater event: ", { error, status });
+    //     });
+    //   } catch (error) {
+    //     console.error("Failed to initialize updater event listener:", error);
+    //   }
+    // };
 
-    initUpdaterEvent();
+    // initUpdaterEvent();
 
-    return () => {
-      if (unlisten) {
-        unlisten();
-      }
-    };
+    // return () => {
+    //   if (unlisten) {
+    //     unlisten();
+    //   }
+    // };
   }, []);
 
   return (

@@ -1,5 +1,5 @@
 import { emit } from "@tauri-apps/api/event";
-import { Body, fetch as tauriFetch, ResponseType } from "@tauri-apps/api/http";
+import { fetch as tauriFetch } from "@tauri-apps/plugin-http";
 
 import { tymt_backend_url } from "../../configs";
 import { ChainIcons, ChainNames } from "../../consts/Chains";
@@ -352,15 +352,14 @@ export default class TransactionProviderAPI {
         status: "done",
         transaction: res?.transactionId,
       };
-      const body1 = Body.json(bodyContent1);
+      const body1 = JSON.stringify(bodyContent1);
       const res1: any = await tauriFetch(apiURL, {
         method: "PUT",
-        timeout: 30,
+        connectTimeout: 30,
         headers: headers,
-        body: body1,
-        responseType: ResponseType.JSON,
+        body: JSON.parse(body1)
       });
-      console.log("done", res1);
+      console.log("done", await res1.json());
     } else if (res?.status === "failed") {
       const apiURL = `${tymt_backend_url}/orders/update-order/${jsonData._id}`;
       const headers: Record<string, any> = {
@@ -371,15 +370,14 @@ export default class TransactionProviderAPI {
         status: "error",
         transaction: res?.message,
       };
-      const body1 = Body.json(bodyContent1);
+      const body1 = JSON.stringify(bodyContent1);
       const res1: any = await tauriFetch(apiURL, {
         method: "PUT",
-        timeout: 30,
+        connectTimeout: 30,
         headers: headers,
-        body: body1,
-        responseType: ResponseType.JSON,
+        body: JSON.parse(body1)
       });
-      console.log("error", res1);
+      console.log("error", await res1.json());
     }
     return res;
   };
@@ -398,7 +396,7 @@ export default class TransactionProviderAPI {
           status: status,
         };
       }
-      const body1 = Body.json(bodyContent1);
+      const body1 = JSON.stringify(bodyContent1);
       const apiURL = `${tymt_backend_url}/orders/update-order/${jsonData._id}`;
       const headers: Record<string, any> = {
         "Content-Type": "application/json",
@@ -406,10 +404,9 @@ export default class TransactionProviderAPI {
       };
       await tauriFetch(apiURL, {
         method: "PUT",
-        timeout: 30,
+        connectTimeout: 30,
         headers: headers,
-        body: body1,
-        responseType: ResponseType.JSON,
+        body: JSON.parse(body1)
       });
     } catch (err) {
       console.error("Failed to update tx status: ", err);

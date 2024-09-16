@@ -1,4 +1,4 @@
-import { readText } from "@tauri-apps/api/clipboard";
+import { readText } from "@tauri-apps/plugin-clipboard-manager";
 
 import { Grid, IconButton, Tooltip, Stack, Box } from "@mui/material";
 import { MuiOtpInput } from "mui-one-time-password-input";

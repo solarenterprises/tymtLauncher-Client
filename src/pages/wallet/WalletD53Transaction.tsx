@@ -2,8 +2,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { emit, listen } from "@tauri-apps/api/event";
-import { invoke } from "@tauri-apps/api/tauri";
-import { appWindow, LogicalSize } from "@tauri-apps/api/window";
+import { invoke } from "@tauri-apps/api/core";
+import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
+import { LogicalSize } from "@tauri-apps/api/dpi";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import numeral from "numeral";
@@ -55,6 +56,7 @@ import { IAccount } from "../../types/accountTypes";
 import { IWalletSetting, languageType } from "../../types/settingTypes";
 import { ISendTransactionReq } from "../../types/TauriEventPayloadTypes";
 import { ChainNames } from "../../consts/Chains";
+const appWindow = getCurrentWebviewWindow()
 
 const WalletD53Transaction = () => {
   const {

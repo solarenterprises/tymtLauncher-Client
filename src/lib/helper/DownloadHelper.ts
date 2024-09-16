@@ -1,9 +1,9 @@
-import { readDir } from "@tauri-apps/api/fs";
+import { readDir } from "@tauri-apps/plugin-fs";
 import { appDataDir } from "@tauri-apps/api/path";
-import { type, arch } from "@tauri-apps/api/os";
-import { invoke } from "@tauri-apps/api/tauri";
-import { open } from "@tauri-apps/api/shell";
-import { ResponseType, fetch as tauriFetch } from "@tauri-apps/api/http";
+import { type, arch } from "@tauri-apps/plugin-os";
+import { invoke } from "@tauri-apps/api/core";
+import { open } from "@tauri-apps/plugin-shell";
+import { fetch as tauriFetch } from "@tauri-apps/plugin-http";
 
 import tymtStorage from "../Storage";
 import { District53 } from "../game/district 53/District53";
@@ -38,14 +38,14 @@ export const runNewGame = async (game: IGame) => {
     const platform = await type();
 
     switch (platform) {
-      case "Linux":
+      case "linux":
         switch (gameExtension) {
           case "appimage":
             await runUrlArgs(fullExecutablePath, [`--appimage-extract-and-run`]);
             break;
         }
         break;
-      case "Windows_NT":
+      case "windows":
         switch (gameExtension) {
           case "exe":
             await runUrlArgs(fullExecutablePath, []);
@@ -55,7 +55,7 @@ export const runNewGame = async (game: IGame) => {
             break;
         }
         break;
-      case "Darwin":
+      case "macos":
         switch (gameExtension) {
           case "":
             await runUrlArgs(fullExecutablePath, []);
@@ -92,26 +92,26 @@ export const runD53 = async (serverIp: string, autoMode: boolean) => {
     let args: string[] = [];
 
     switch (platform) {
-      case "Linux":
+      case "linux":
         args = [`--appimage-extract-and-run`, `--launcher_url`, launcherUrl, `--token`, token];
         break;
-      case "Windows_NT":
+      case "windows":
         args = [`--launcher_url`, launcherUrl, `--token`, token];
         break;
-      case "Darwin":
+      case "macos":
         args = [`--launcher_url`, launcherUrl, `--token`, token];
         break;
     }
     if (autoMode) args.push(`--address`, d53_server, `--port`, d53_port, `--go`);
 
     switch (platform) {
-      case "Linux":
+      case "linux":
         await runUrlArgs(fullExePath, args);
         break;
-      case "Windows_NT":
+      case "windows":
         await runUrlArgs(fullExePath, args);
         break;
-      case "Darwin":
+      case "macos":
         await runUrlArgs("open", ["-a", fullExePath, "--args", ...args]);
         break;
     }
@@ -187,7 +187,7 @@ export const installGame = async (game: IGame) => {
     const platform = await type();
 
     switch (platform) {
-      case "Linux":
+      case "linux":
         switch (sourceExtension) {
           case "zip":
             await invoke("unzip_linux", {
@@ -207,7 +207,7 @@ export const installGame = async (game: IGame) => {
           executablePath: fullExecutablePath,
         });
         break;
-      case "Windows_NT":
+      case "windows":
         switch (sourceExtension) {
           case "zip":
             await invoke("unzip_windows", {
@@ -217,7 +217,7 @@ export const installGame = async (game: IGame) => {
             break;
         }
         break;
-      case "Darwin":
+      case "macos":
         switch (sourceExtension) {
           case "zip":
             await invoke("unzip_macos", {
@@ -270,7 +270,7 @@ export const getDownloadLinkNewGame = async (game: IGame) => {
     const platform = await type();
     const cpu = await arch();
     switch (platform) {
-      case "Linux":
+      case "linux":
         switch (cpu) {
           case "arm":
             res = game?.releaseMeta?.platforms?.linux_arm64?.external_url;
@@ -280,7 +280,7 @@ export const getDownloadLinkNewGame = async (game: IGame) => {
             break;
         }
         break;
-      case "Windows_NT":
+      case "windows":
         switch (cpu) {
           case "arm":
             res = game?.releaseMeta?.platforms?.windows_arm64?.external_url;
@@ -290,7 +290,7 @@ export const getDownloadLinkNewGame = async (game: IGame) => {
             break;
         }
         break;
-      case "Darwin":
+      case "macos":
         switch (cpu) {
           case "arm":
             res = game?.releaseMeta?.platforms?.darwin_arm64?.external_url;
@@ -333,7 +333,7 @@ export const getExecutablePathNewGame = async (game: IGame) => {
     const platform = await type();
     const cpu = await arch();
     switch (platform) {
-      case "Linux":
+      case "linux":
         switch (cpu) {
           case "arm":
             res = game?.releaseMeta?.platforms?.linux_arm64?.executable;
@@ -343,7 +343,7 @@ export const getExecutablePathNewGame = async (game: IGame) => {
             break;
         }
         break;
-      case "Windows_NT":
+      case "windows":
         switch (cpu) {
           case "arm":
             res = game?.releaseMeta?.platforms?.windows_arm64?.executable;
@@ -353,7 +353,7 @@ export const getExecutablePathNewGame = async (game: IGame) => {
             break;
         }
         break;
-      case "Darwin":
+      case "macos":
         switch (cpu) {
           case "arm":
             res = game?.releaseMeta?.platforms?.darwin_arm64?.executable;
@@ -380,7 +380,7 @@ export const getDownloadFileNameNewGame = async (game: IGame) => {
     const platform = await type();
     const cpu = await arch();
     switch (platform) {
-      case "Linux":
+      case "linux":
         switch (cpu) {
           case "arm":
             res = game?.releaseMeta?.platforms?.linux_arm64?.name;
@@ -390,7 +390,7 @@ export const getDownloadFileNameNewGame = async (game: IGame) => {
             break;
         }
         break;
-      case "Windows_NT":
+      case "windows":
         switch (cpu) {
           case "arm":
             res = game?.releaseMeta?.platforms?.windows_arm64?.name;
@@ -400,7 +400,7 @@ export const getDownloadFileNameNewGame = async (game: IGame) => {
             break;
         }
         break;
-      case "Darwin":
+      case "macos":
         switch (cpu) {
           case "arm":
             res = game?.releaseMeta?.platforms?.darwin_arm64?.name;
@@ -449,7 +449,7 @@ export const getGameReleaseNative = async (game: IGame) => {
     const platform = await type();
     const cpu = await arch();
     switch (platform) {
-      case "Linux":
+      case "linux":
         switch (cpu) {
           case "arm":
             res = game?.releaseMeta?.platforms?.linux_arm64;
@@ -459,7 +459,7 @@ export const getGameReleaseNative = async (game: IGame) => {
             break;
         }
         break;
-      case "Windows_NT":
+      case "windows":
         switch (cpu) {
           case "arm":
             res = game?.releaseMeta?.platforms?.windows_arm64;
@@ -469,7 +469,7 @@ export const getGameReleaseNative = async (game: IGame) => {
             break;
         }
         break;
-      case "Darwin":
+      case "macos":
         switch (cpu) {
           case "arm":
             res = game?.releaseMeta?.platforms?.darwin_arm64;
@@ -606,13 +606,13 @@ export const getOsCpu = async () => {
     let resCpu: string = "";
 
     switch (platform) {
-      case "Linux":
+      case "linux":
         resPlatform = "linux";
         break;
-      case "Windows_NT":
+      case "windows":
         resPlatform = "windows";
         break;
-      case "Darwin":
+      case "macos":
         resPlatform = "darwin";
 
         break;
@@ -638,10 +638,9 @@ export const fetchMetaUri = async (game) => {
     const metaUri = game?.releaseMeta?.meta_uri;
     const res1: any = await tauriFetch(metaUri, {
       method: "GET",
-      timeout: 30,
-      responseType: ResponseType.JSON,
+      connectTimeout: 30
     });
-    const res = res1?.data;
+    const res = await res1.json().data;
     return res;
   } catch (err) {
     console.log("Failed to fetchMetaUri: ", err);

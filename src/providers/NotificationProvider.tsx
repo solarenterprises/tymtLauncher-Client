@@ -3,11 +3,11 @@ import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { useLocation } from "react-router-dom";
 
-import { invoke } from "@tauri-apps/api/tauri";
+import { invoke } from "@tauri-apps/api/core";
 import { emit, listen } from "@tauri-apps/api/event";
-import { isPermissionGranted, requestPermission, sendNotification } from "@tauri-apps/api/notification";
+import { isPermissionGranted, requestPermission, sendNotification } from "@tauri-apps/plugin-notification";
 import { appDataDir } from "@tauri-apps/api/path";
-import { removeDir } from "@tauri-apps/api/fs";
+import { remove } from "@tauri-apps/plugin-fs";
 
 import { tymt_version } from "../configs";
 import { TauriEventNames } from "../consts/TauriEventNames";
@@ -213,7 +213,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
       dispatch(addRemoveStatus(game));
       try {
         const dirPath = (await appDataDir()) + `v${tymt_version}/games/${game?.project_name}`;
-        await removeDir(dirPath, {
+        await remove(dirPath, {
           recursive: true,
         });
       } catch (err) {

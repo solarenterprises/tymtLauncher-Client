@@ -1,6 +1,6 @@
 import { useCallback } from "react";
-import { save } from "@tauri-apps/api/dialog";
-import { invoke } from "@tauri-apps/api";
+import { save } from "@tauri-apps/plugin-dialog";
+import { invoke } from "@tauri-apps/api/core";
 import { emit } from "@tauri-apps/api/event";
 
 import { TauriEventNames } from "../../consts/TauriEventNames";

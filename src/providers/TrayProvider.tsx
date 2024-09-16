@@ -1,15 +1,16 @@
 import React, { createContext, useContext, useEffect, ReactNode, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { listen } from "@tauri-apps/api/event";
-import { open } from "@tauri-apps/api/shell";
-import { appWindow } from "@tauri-apps/api/window";
+import { open } from "@tauri-apps/plugin-shell";
+import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch } from "../store";
 import { selectNotification, setNotification } from "../features/settings/NotificationSlice";
 import { notificationType } from "../types/settingTypes";
-import { invoke } from "@tauri-apps/api/tauri";
+import { invoke } from "@tauri-apps/api/core";
 import { getInstallStatus, setInstallStatus } from "../features/home/InstallStatusSlice";
 import { IInstallStatus } from "../types/homeTypes";
+const appWindow = getCurrentWebviewWindow()
 
 interface TrayContextType {}
 
