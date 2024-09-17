@@ -6,11 +6,12 @@
 use actix_web::{ web, App, HttpRequest, HttpResponse, HttpServer };
 use actix_cors::Cors;
 use machineid_rs::{ Encryption, HWIDComponent, IdBuilder };
-use tauri::{Emitter, Listener, Manager};
+use tauri::{Builder, Emitter, Listener, Manager};
 use tauri_plugin_http::reqwest;
 use reqwest::header::ACCEPT;
 use reqwest::{ header, Client };
 use serde::{ Deserialize, Serialize };
+use std::borrow::BorrowMut;
 use std::cmp::min;
 use std::fs::File;
 use std::io::prelude::*;
@@ -19,10 +20,9 @@ use std::process::Command;
 use std::sync::OnceLock;
 use std::sync::Mutex;
 use std::time::{ Instant, Duration };
-use std::{ fs, io };
+use std::{ default, fs, io };
 #[cfg(target_family = "unix")]
 use std::os::unix::fs::PermissionsExt; // For Unix-specific permissions
-/// use tauri::Manager;
 use tauri::{
     menu::{MenuBuilder, MenuItemBuilder},
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
@@ -72,9 +72,10 @@ fn create_named_mutex(name: &str) -> std::io::Result<()> {
 }
 
 #[derive(Default)]
-struct AppState {
-  counter: u32,
-}
+struct AppData {
+    welcome_message: &'static str,
+  }
+
 
 pub fn main() -> std::io::Result<()> {
     let mutex_name = "tauri_single_instance";
@@ -96,12 +97,13 @@ pub fn main() -> std::io::Result<()> {
     }
 
     use tauri_plugin_cli::CliExt;
-    use tauri_plugin_clipboard_manager::ClipboardExt;
-    use tauri_plugin_updater::UpdaterExt;
+    
 
-    tauri::Builder
-        ::default()
-        .manage(Mutex::new(AppState::default()))
+    Builder::default()
+        //.manage(Mutex::new(AppState::default()))
+        .manage(AppData {
+            welcome_message: "Welcome to Tauri!",
+        })
         .plugin(tauri_plugin_clipboard_manager::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_http::init())
@@ -127,12 +129,14 @@ pub fn main() -> std::io::Result<()> {
             ]
         )
         .setup(|app| {
-            app.manage(Mutex::new(AppState::default()));
+            app.manage(AppData {
+                welcome_message: "Welcome to Tauri!",
+            });
             
             let app_handle = app.handle().clone();
-            _ = APPHANDLE.set(app_handle);
+            _ = APPHANDLE.set(app_handle.clone());
 
-            let cli_matches = app.cli().matches()?;
+            // let cli_matches = app.cli().matches()?;
 
             // app.clipboard().write(ClipKind::PlainText {
             //     label: None,
@@ -912,17 +916,17 @@ pub fn main() -> std::io::Result<()> {
 
             Ok(())
         })
-        // .on_window_event(|event| {
-        //     match event.event() {
-        //         tauri::WindowEvent::CloseRequested { api, .. } => {
-        //             event.window().hide().unwrap();
-        //             api.prevent_close();
-        //         }
-        //         _ => {}
-        //     }
-        // })
+        .on_window_event(|window, event| {
+            match event {
+                tauri::WindowEvent::CloseRequested { api, .. } => {
+                    window.hide().unwrap();
+                    api.prevent_close();
+                }
+                _ => {}
+            }
+        })
         .run(tauri::generate_context!())
-        .expect("error while running tymtLauncher");
+        .unwrap();//.expect("error while running tymtLauncher");
 
     Ok(())
 }
