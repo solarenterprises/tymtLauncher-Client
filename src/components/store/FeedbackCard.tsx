@@ -25,7 +25,7 @@ const FeedbackCard = ({ feedback }: IPropsFeedbackCard) => {
         <Stack direction={"row"} justifyContent={"space-between"} alignItems={"center"}>
           <Stack direction={"row"} gap={"10px"} alignItems={"center"}>
             <UserAvatar userId={feedback?.author?._id} size={40} />
-            <Box className={"fs-h4 white"}>{feedback?.author?.nickName}</Box>
+            <Box className={"fs-h4 white"}>{feedback?.author?.nickName ?? "Anonymous"}</Box>
           </Stack>
           <Stack direction={"row"} gap={"8px"} alignItems={"center"}>
             <Box component={"img"} src={TimerIcon} width={"12px"} height={"12px"} />

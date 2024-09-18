@@ -73,6 +73,7 @@ const ReviewModal = ({ open, setOpen, game }: IPropsReviewModal) => {
         setLoading(true);
         const body: IReqAddReviews = {
           author: myInfoStoreRef?.current?._id, // 6601b44c609740cfa3cebcee
+          isAnonymous: anonymousRef?.current,
           game_id: game?._id,
           title: formik.values.headline,
           feedback: formik.values.review,

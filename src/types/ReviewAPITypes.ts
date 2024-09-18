@@ -1,6 +1,6 @@
 export interface IFeedback {
   _id: string;
-  author: {
+  author?: {
     _id: string;
     nickName: string;
     sxpAddress: string;
@@ -22,6 +22,7 @@ export interface IResFetchReviewsByGameId {
 
 export interface IReqAddReviews {
   author: string; // 6601b44c609740cfa3cebcee
+  isAnonymous: boolean;
   game_id: string;
   title: string;
   feedback: string;
