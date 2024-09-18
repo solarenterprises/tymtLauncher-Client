@@ -26,7 +26,7 @@ export default defineConfig({
     port: 1420,
     watch: {
       ignored: ["**/src-tauri/**"],
-    },
+    }
   },
   build: {
     chunkSizeWarningLimit: 8192,

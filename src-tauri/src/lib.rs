@@ -76,30 +76,48 @@ struct AppData {
     welcome_message: &'static str,
   }
 
+fn show_window(app: &tauri::AppHandle) {
+    let windows = app.webview_windows();
+
+    windows
+        .values()
+        .next()
+        .expect("Sorry, no window found")
+        .set_focus()
+        .expect("Can't Bring Window to Focus");
+}
 
 pub fn main() -> std::io::Result<()> {
-    let mutex_name = "tauri_single_instance";
+    // let mutex_name = "tauri_single_instance";
 
-    if cfg!(target_os = "macos") {
-        // Do nothing for macOS
-    } else if cfg!(target_family = "unix") {
-        // This will apply to other Unix-like systems (Linux, etc.)
-        if create_named_mutex(mutex_name).is_err() {
-            println!("Another instance is already running.");
-            std::process::exit(1);
-        }
-    } else if cfg!(target_family = "windows") {
-        // This applies to Windows
-        if create_named_mutex(mutex_name).is_err() {
-            println!("Another instance is already running.");
-            std::process::exit(1);
-        }
-    }
+    // if cfg!(target_os = "macos") {
+    //     // Do nothing for macOS
+    // } else if cfg!(target_family = "unix") {
+    //     // This will apply to other Unix-like systems (Linux, etc.)
+    //     if create_named_mutex(mutex_name).is_err() {
+    //         println!("Another instance is already running.");
+    //         std::process::exit(1);
+    //     }
+    // } else if cfg!(target_family = "windows") {
+    //     // This applies to Windows
+    //     if create_named_mutex(mutex_name).is_err() {
+    //         println!("Another instance is already running.");
+    //         std::process::exit(1);
+    //     }
+    // }
 
     use tauri_plugin_cli::CliExt;
     
 
-    Builder::default()
+    let mut builder = tauri::Builder::default();
+    #[cfg(desktop)]
+    {
+        builder = builder.plugin(tauri_plugin_single_instance::init(|app, args, cwd| {
+            let _ = show_window(app);
+        }));
+    }
+
+    builder    
         //.manage(Mutex::new(AppState::default()))
         .manage(AppData {
             welcome_message: "Welcome to Tauri!",
@@ -107,6 +125,7 @@ pub fn main() -> std::io::Result<()> {
         .plugin(tauri_plugin_clipboard_manager::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_http::init())
+        .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .invoke_handler(
             tauri::generate_handler![
@@ -152,9 +171,16 @@ pub fn main() -> std::io::Result<()> {
             let quit = MenuItemBuilder::with_id("quit", "Quit").build(app)?;
             let disable_notifications = MenuItemBuilder::with_id("disable_notifications", "Disable Notifications").build(app)?;
             
-            let menu = MenuBuilder::new(app).items(&[&showvisible, &fullscreen, &games, &wallet, &about, &signout, &quit, &disable_notifications]).build()?;
+            let menu = MenuBuilder::new(app).items(&[&showvisible, &fullscreen, &games, &wallet, &about, &disable_notifications, &signout, &quit]).build()?;
+
+            #[cfg(debug_assertions)] // only include this code on debug builds
+            {
+                let window = app.get_webview_window("tymtLauncher").unwrap();
+                window.open_devtools();
+            }
 
             let _ = TrayIconBuilder::new()
+                .icon(app.default_window_icon().unwrap().clone())
                 .menu(&menu)
                 .on_menu_event(move |app, event| match event.id().as_ref() {
                     "quit" => {
@@ -217,8 +243,8 @@ pub fn main() -> std::io::Result<()> {
                             ..
                     } = event
                     {
-                        let app = tray.app_handle();
-                        if let Some(webview_window) = app.get_webview_window("tymtLauncher") {
+                        let apphandle = tray.app_handle();
+                        if let Some(webview_window) = apphandle.get_webview_window("tymtLauncher") {
                         let _ = webview_window.show();
                         let _ = webview_window.set_focus();
                         }
