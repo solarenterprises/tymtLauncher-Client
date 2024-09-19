@@ -22,7 +22,7 @@ export async function runUrlArgs(url: string, args: string[]) {
 
 export async function isInstalled(game: IGame) {
   try {
-    await readDir(`${await appDataDir()}v${tymt_version}/games/${game.project_name}`);
+    await readDir(`${await appDataDir()}/v${tymt_version}/games/${game.project_name}`);
     return true;
   } catch (err) {
     console.log("Failed to isInstalled: ", err);
@@ -315,7 +315,7 @@ export const getFullExecutablePathNewGame = async (game: IGame) => {
   try {
     const prefix: string = await appDataDir();
     const exePath: string = await getExecutablePathNewGame(game);
-    const fullPath = prefix + `v${tymt_version}/games/${game.project_name}/` + exePath;
+    const fullPath = prefix + `/v${tymt_version}/games/${game.project_name}/` + exePath;
     console.log("getFullExecutablePathNewGame", fullPath);
     return fullPath;
   } catch (err) {
@@ -539,7 +539,7 @@ export const getSupportOSList = (game: IGame) => {
 export const getDownloadFileFullPath = async (game: IGame) => {
   try {
     const fileName = await getDownloadFileNameNewGame(game);
-    const res = `${await appDataDir()}${fileName}`;
+    const res = `${await appDataDir()}/${fileName}`;
     console.log("getDownloadFileFullPath", res);
     return res;
   } catch (err) {
@@ -550,7 +550,7 @@ export const getDownloadFileFullPath = async (game: IGame) => {
 
 export const getInstallDir = async (game: IGame) => {
   try {
-    const res = `${await appDataDir()}v${tymt_version}/games/${game?.project_name}`;
+    const res = `${await appDataDir()}/v${tymt_version}/games/${game?.project_name}`;
     console.log("getInstallDir", res);
     return res;
   } catch (err) {

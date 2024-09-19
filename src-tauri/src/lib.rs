@@ -3,30 +3,30 @@
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 
-use actix_web::{ web, App, HttpRequest, HttpResponse, HttpServer };
 use actix_cors::Cors;
-use machineid_rs::{ Encryption, HWIDComponent, IdBuilder };
-use tauri::{Builder, Emitter, Listener, Manager};
-use tauri_plugin_http::reqwest;
+use actix_web::{web, App, HttpRequest, HttpResponse, HttpServer};
+use machineid_rs::{Encryption, HWIDComponent, IdBuilder};
 use reqwest::header::ACCEPT;
-use reqwest::{ header, Client };
-use serde::{ Deserialize, Serialize };
+use reqwest::{header, Client};
+use serde::{Deserialize, Serialize};
 use std::borrow::BorrowMut;
 use std::cmp::min;
 use std::fs::File;
 use std::io::prelude::*;
-use std::path::{ Path, PathBuf };
-use std::process::Command;
-use std::sync::OnceLock;
-use std::sync::Mutex;
-use std::time::{ Instant, Duration };
-use std::{ default, fs, io };
 #[cfg(target_family = "unix")]
 use std::os::unix::fs::PermissionsExt; // For Unix-specific permissions
+use std::path::{Path, PathBuf};
+use std::process::Command;
+use std::sync::Mutex;
+use std::sync::OnceLock;
+use std::time::{Duration, Instant};
+use std::{default, fs, io};
 use tauri::{
     menu::{MenuBuilder, MenuItemBuilder},
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
 };
+use tauri::{Builder, Emitter, Listener, Manager};
+use tauri_plugin_http::reqwest;
 
 use futures_util::stream::StreamExt;
 
@@ -42,7 +42,10 @@ fn create_named_mutex(name: &str) -> std::io::Result<std::os::unix::net::UnixLis
         match std::os::unix::net::UnixStream::connect(socket_path) {
             Ok(mut stream) => {
                 stream.write_all(b"ping")?;
-                return Err(io::Error::new(io::ErrorKind::AlreadyExists, "Socket already in use"));
+                return Err(io::Error::new(
+                    io::ErrorKind::AlreadyExists,
+                    "Socket already in use",
+                ));
             }
             Err(_) => {
                 // Previous instance did not clean up socket, remove it
@@ -55,9 +58,9 @@ fn create_named_mutex(name: &str) -> std::io::Result<std::os::unix::net::UnixLis
 
 #[cfg(target_family = "windows")]
 fn create_named_mutex(name: &str) -> std::io::Result<()> {
-    use winapi::um::synchapi::CreateMutexA;
-    use winapi::um::errhandlingapi::GetLastError;
     use winapi::shared::winerror::ERROR_ALREADY_EXISTS;
+    use winapi::um::errhandlingapi::GetLastError;
+    use winapi::um::synchapi::CreateMutexA;
 
     let mutex_name = std::ffi::CString::new(name).expect("CString::new failed");
     let handle = unsafe { CreateMutexA(std::ptr::null_mut(), 0, mutex_name.as_ptr()) };
@@ -66,7 +69,10 @@ fn create_named_mutex(name: &str) -> std::io::Result<()> {
         return Err(std::io::Error::last_os_error());
     }
     if (unsafe { GetLastError() }) == ERROR_ALREADY_EXISTS {
-        return Err(std::io::Error::new(std::io::ErrorKind::AlreadyExists, "Mutex already exists"));
+        return Err(std::io::Error::new(
+            std::io::ErrorKind::AlreadyExists,
+            "Mutex already exists",
+        ));
     }
     Ok(())
 }
@@ -74,7 +80,7 @@ fn create_named_mutex(name: &str) -> std::io::Result<()> {
 #[derive(Default)]
 struct AppData {
     welcome_message: &'static str,
-  }
+}
 
 fn show_window(app: &tauri::AppHandle) {
     let windows = app.webview_windows();
@@ -107,9 +113,8 @@ pub fn main() -> std::io::Result<()> {
     // }
 
     use tauri_plugin_cli::CliExt;
-    
 
-    let mut builder = tauri::Builder::default();
+    let mut builder = tauri::Builder::default().plugin(tauri_plugin_fs::init());
     #[cfg(desktop)]
     {
         builder = builder.plugin(tauri_plugin_single_instance::init(|app, args, cwd| {
@@ -117,7 +122,7 @@ pub fn main() -> std::io::Result<()> {
         }));
     }
 
-    builder    
+    builder
         //.manage(Mutex::new(AppState::default()))
         .manage(AppData {
             welcome_message: "Welcome to Tauri!",
@@ -127,31 +132,29 @@ pub fn main() -> std::io::Result<()> {
         .plugin(tauri_plugin_http::init())
         .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
-        .invoke_handler(
-            tauri::generate_handler![
-                download_to_app_dir,
-                unzip_windows,
-                unzip_macos,
-                untarbz2_macos,
-                unzip_linux,
-                move_appimage_linux,
-                delete_file,
-                run_url_args,
-                set_permission,
-                open_directory,
-                get_machine_id,
-                is_window_visible,
-                show_transaction_window,
-                hide_transaction_window,
-                set_tray_items_enabled,
-                write_file
-            ]
-        )
+        .invoke_handler(tauri::generate_handler![
+            download_to_app_dir,
+            unzip_windows,
+            unzip_macos,
+            untarbz2_macos,
+            unzip_linux,
+            move_appimage_linux,
+            delete_file,
+            run_url_args,
+            // set_permission,
+            open_directory,
+            get_machine_id,
+            is_window_visible,
+            show_transaction_window,
+            hide_transaction_window,
+            set_tray_items_enabled,
+            write_file
+        ])
         .setup(|app| {
             app.manage(AppData {
                 welcome_message: "Welcome to Tauri!",
             });
-            
+
             let app_handle = app.handle().clone();
             _ = APPHANDLE.set(app_handle.clone());
 
@@ -162,20 +165,35 @@ pub fn main() -> std::io::Result<()> {
             //     text: "tymt clipboard!".into(),
             // })?;
 
-            let showvisible = MenuItemBuilder::with_id("showVisible", "Show tymtLauncher").build(app)?;
-            let fullscreen = MenuItemBuilder::with_id("fullscreen", "Full-screen Mode  (F11)").build(app)?;
+            let showvisible =
+                MenuItemBuilder::with_id("showVisible", "Show tymtLauncher").build(app)?;
+            let fullscreen =
+                MenuItemBuilder::with_id("fullscreen", "Full-screen Mode  (F11)").build(app)?;
             let games = MenuItemBuilder::with_id("games", "Games").build(app)?;
             let wallet = MenuItemBuilder::with_id("wallet", "Wallet").build(app)?;
             let about = MenuItemBuilder::with_id("about", "About tymt").build(app)?;
             let signout = MenuItemBuilder::with_id("signout", "Sign Out").build(app)?;
             let quit = MenuItemBuilder::with_id("quit", "Quit").build(app)?;
-            let disable_notifications = MenuItemBuilder::with_id("disable_notifications", "Disable Notifications").build(app)?;
-            
-            let menu = MenuBuilder::new(app).items(&[&showvisible, &fullscreen, &games, &wallet, &about, &disable_notifications, &signout, &quit]).build()?;
+            let disable_notifications =
+                MenuItemBuilder::with_id("disable_notifications", "Disable Notifications")
+                    .build(app)?;
+
+            let menu = MenuBuilder::new(app)
+                .items(&[
+                    &showvisible,
+                    &fullscreen,
+                    &games,
+                    &wallet,
+                    &about,
+                    &disable_notifications,
+                    &signout,
+                    &quit,
+                ])
+                .build()?;
 
             #[cfg(debug_assertions)] // only include this code on debug builds
             {
-                let window = app.get_webview_window("tymtLauncher").unwrap();
+                let window = app.get_webview_window("tymtLauncherDebug").unwrap();
                 window.open_devtools();
             }
 
@@ -187,17 +205,17 @@ pub fn main() -> std::io::Result<()> {
                         std::process::exit(0);
                     }
                     "hide" => {
-                        let window = app.get_webview_window("tymtLauncher").unwrap();
+                        let window = app.get_webview_window("tymtLauncherDebug").unwrap();
                         window.hide().unwrap();
                     }
                     "showVisible" => {
                         println!("showVisible received a left click");
-                        let window = app.get_webview_window("tymtLauncher").unwrap();
+                        let window = app.get_webview_window("tymtLauncherDebug").unwrap();
                         window.show().unwrap();
                         window.set_focus().unwrap();
                     }
                     "fullscreen" => {
-                        let window = app.get_webview_window("tymtLauncher").unwrap();
+                        let window = app.get_webview_window("tymtLauncherDebug").unwrap();
                         window.show().unwrap();
                         window.set_focus().unwrap();
                         window
@@ -205,48 +223,49 @@ pub fn main() -> std::io::Result<()> {
                             .expect("failed to switch full-screen");
                     }
                     "wallet" => {
-                        app.emit("wallet", "wallet").expect("failed to emit event wallet");
-                        let window = app.get_webview_window("tymtLauncher").unwrap();
+                        app.emit("wallet", "wallet")
+                            .expect("failed to emit event wallet");
+                        let window = app.get_webview_window("tymtLauncherDebug").unwrap();
                         window.show().unwrap();
                         window.set_focus().unwrap();
                     }
                     "games" => {
-                        app.emit("games", "games").expect("failed to emit event games");
-                        let window = app.get_webview_window("tymtLauncher").unwrap();
+                        app.emit("games", "games")
+                            .expect("failed to emit event games");
+                        let window = app.get_webview_window("tymtLauncherDebug").unwrap();
                         window.show().unwrap();
                         window.set_focus().unwrap();
                     }
                     "about" => {
-                        app.emit("about-tymt", "about").expect(
-                            "failed to emit event about-tymt"
-                        );
+                        app.emit("about-tymt", "about")
+                            .expect("failed to emit event about-tymt");
                     }
                     "signout" => {
-                        app.emit("signout", "signout").expect(
-                            "failed to emit event signout"
-                        );
-                        let window = app.get_webview_window("tymtLauncher").unwrap();
+                        app.emit("signout", "signout")
+                            .expect("failed to emit event signout");
+                        let window = app.get_webview_window("tymtLauncherDebug").unwrap();
                         window.show().unwrap();
                         window.set_focus().unwrap();
                     }
                     "disable_notifications" => {
-                        app.emit("disable_notifications", "disable_notifications").expect(
-                            "failed to emit event disable_notifications"
-                        );
+                        app.emit("disable_notifications", "disable_notifications")
+                            .expect("failed to emit event disable_notifications");
                     }
                     _ => (),
                 })
                 .on_tray_icon_event(|tray, event| {
                     if let TrayIconEvent::Click {
-                            button: MouseButton::Left,
-                            button_state: MouseButtonState::Up,
-                            ..
+                        button: MouseButton::Left,
+                        button_state: MouseButtonState::Up,
+                        ..
                     } = event
                     {
                         let apphandle = tray.app_handle();
-                        if let Some(webview_window) = apphandle.get_webview_window("tymtLauncher") {
-                        let _ = webview_window.show();
-                        let _ = webview_window.set_focus();
+                        if let Some(webview_window) =
+                            apphandle.get_webview_window("tymtLauncherDebug")
+                        {
+                            let _ = webview_window.show();
+                            let _ = webview_window.set_focus();
                         }
                     }
                 })
@@ -316,16 +335,17 @@ pub fn main() -> std::io::Result<()> {
             }
 
             async fn validate_token(token: String) -> bool {
-                APPHANDLE.get()
+                APPHANDLE
+                    .get()
                     .expect("APPHANDLE is available")
                     .emit("validate-token", token)
                     .expect("failed to emit event validate-token");
 
                 let (tx, rx) = std::sync::mpsc::channel();
 
-                let response = APPHANDLE.get()
-                    .expect("APPHANDLE is available")
-                    .listen_any("res-validate-token", move |event| {
+                let response = APPHANDLE.get().expect("APPHANDLE is available").listen_any(
+                    "res-validate-token",
+                    move |event| {
                         let payload = event.payload().to_string();
                         match tx.send(payload) {
                             Ok(()) => {
@@ -335,12 +355,16 @@ pub fn main() -> std::io::Result<()> {
                                 println!("Error sending message: {:?}", err);
                             }
                         }
-                    });
+                    },
+                );
 
                 match rx.recv() {
                     Ok(received) => {
                         // println!("Received: {}", received);
-                        APPHANDLE.get().expect("APPHANDLE is available").unlisten(response);
+                        APPHANDLE
+                            .get()
+                            .expect("APPHANDLE is available")
+                            .unlisten(response);
                         let res = received == "true";
                         if !res {
                             println!("Invalid token");
@@ -349,23 +373,25 @@ pub fn main() -> std::io::Result<()> {
                     }
                     Err(err) => {
                         println!("Error receiving message: {:?}", err);
-                        APPHANDLE.get().expect("APPHANDLE is available").unlisten(response);
+                        APPHANDLE
+                            .get()
+                            .expect("APPHANDLE is available")
+                            .unlisten(response);
                         return false;
                     }
                 }
             }
 
             async fn validate_chain(name: String) -> bool {
-                if
-                    name != "solar" &&
-                    name != "bitcoin" &&
-                    name != "solana" &&
-                    name != "ethereum" &&
-                    name != "polygon" &&
-                    name != "binance" &&
-                    name != "avalanche" &&
-                    name != "arbitrum" &&
-                    name != "optimism"
+                if name != "solar"
+                    && name != "bitcoin"
+                    && name != "solana"
+                    && name != "ethereum"
+                    && name != "polygon"
+                    && name != "binance"
+                    && name != "avalanche"
+                    && name != "arbitrum"
+                    && name != "optimism"
                 {
                     println!("Invalid chain");
                     return false;
@@ -392,13 +418,20 @@ pub fn main() -> std::io::Result<()> {
 
             async fn get_account(
                 request: HttpRequest,
-                request_param: web::Json<GetAccountReqType>
+                request_param: web::Json<GetAccountReqType>,
             ) -> HttpResponse {
                 println!("-------> POST /get-account");
 
                 let is_valid_token = validate_token(
-                    request.headers().get("x-token").unwrap().to_str().unwrap().to_string()
-                ).await;
+                    request
+                        .headers()
+                        .get("x-token")
+                        .unwrap()
+                        .to_str()
+                        .unwrap()
+                        .to_string(),
+                )
+                .await;
                 if !is_valid_token {
                     return HttpResponse::InternalServerError().body("Invalid token");
                 }
@@ -408,21 +441,21 @@ pub fn main() -> std::io::Result<()> {
                     return HttpResponse::InternalServerError().body("Invalid chain");
                 }
 
-                let json_data = serde_json
-                    ::to_string(&request_param)
-                    .expect("Failed to serialize JSON data");
+                let json_data =
+                    serde_json::to_string(&request_param).expect("Failed to serialize JSON data");
                 println!("{}", json_data);
 
-                APPHANDLE.get()
+                APPHANDLE
+                    .get()
                     .expect("APPHANDLE is available")
                     .emit("POST-/get-account", json_data)
                     .expect("failed to emit event POST /get-account");
 
                 let (tx, rx) = std::sync::mpsc::channel();
 
-                let response = APPHANDLE.get()
-                    .expect("APPHANDLE is available")
-                    .listen_any("res-POST-/get-account", move |event| {
+                let response = APPHANDLE.get().expect("APPHANDLE is available").listen_any(
+                    "res-POST-/get-account",
+                    move |event| {
                         let payload = event.payload().to_string();
                         println!("!!!----> res POST /get-account");
                         println!("{}", payload);
@@ -434,17 +467,24 @@ pub fn main() -> std::io::Result<()> {
                                 println!("Error sending message: {:?}", err);
                             }
                         }
-                    });
+                    },
+                );
 
                 match rx.recv() {
                     Ok(received) => {
                         // println!("Received: {}", received);
-                        APPHANDLE.get().expect("APPHANDLE is available").unlisten(response);
+                        APPHANDLE
+                            .get()
+                            .expect("APPHANDLE is available")
+                            .unlisten(response);
                         return HttpResponse::Ok().body(received);
                     }
                     Err(err) => {
                         println!("Error receiving message: {:?}", err);
-                        APPHANDLE.get().expect("APPHANDLE is available").unlisten(response);
+                        APPHANDLE
+                            .get()
+                            .expect("APPHANDLE is available")
+                            .unlisten(response);
                         return HttpResponse::InternalServerError().finish();
                     }
                 }
@@ -452,13 +492,20 @@ pub fn main() -> std::io::Result<()> {
 
             async fn get_balance(
                 request: HttpRequest,
-                request_param: web::Json<GetBalanceReqType>
+                request_param: web::Json<GetBalanceReqType>,
             ) -> HttpResponse {
                 println!("-------> POST /get-balance");
 
                 let is_valid_token = validate_token(
-                    request.headers().get("x-token").unwrap().to_str().unwrap().to_string()
-                ).await;
+                    request
+                        .headers()
+                        .get("x-token")
+                        .unwrap()
+                        .to_str()
+                        .unwrap()
+                        .to_string(),
+                )
+                .await;
                 if !is_valid_token {
                     return HttpResponse::InternalServerError().body("Invalid token");
                 }
@@ -467,21 +514,21 @@ pub fn main() -> std::io::Result<()> {
                 if !is_valid_chain {
                     return HttpResponse::InternalServerError().body("Invalid chain");
                 }
-                let json_data = serde_json
-                    ::to_string(&request_param)
-                    .expect("Failed to serialize JSON data");
+                let json_data =
+                    serde_json::to_string(&request_param).expect("Failed to serialize JSON data");
                 println!("{}", json_data);
 
-                APPHANDLE.get()
+                APPHANDLE
+                    .get()
                     .expect("APPHANDLE is available")
                     .emit("POST-/get-balance", json_data)
                     .expect("failed to emit event POST /get-balance");
 
                 let (tx, rx) = std::sync::mpsc::channel();
 
-                let response = APPHANDLE.get()
-                    .expect("APPHANDLE is available")
-                    .listen_any("res-POST-/get-balance", move |event| {
+                let response = APPHANDLE.get().expect("APPHANDLE is available").listen_any(
+                    "res-POST-/get-balance",
+                    move |event| {
                         let payload = event.payload().to_string();
                         println!("!!!----> res POST /get-balance");
                         println!("{}", payload);
@@ -493,16 +540,23 @@ pub fn main() -> std::io::Result<()> {
                                 println!("Error sending message: {:?}", err);
                             }
                         }
-                    });
+                    },
+                );
 
                 match rx.recv() {
                     Ok(received) => {
-                        APPHANDLE.get().expect("APPHANDLE is available").unlisten(response);
+                        APPHANDLE
+                            .get()
+                            .expect("APPHANDLE is available")
+                            .unlisten(response);
                         return HttpResponse::Ok().json(received);
                     }
                     Err(err) => {
                         println!("Error receiving message: {:?}", err);
-                        APPHANDLE.get().expect("APPHANDLE is available").unlisten(response);
+                        APPHANDLE
+                            .get()
+                            .expect("APPHANDLE is available")
+                            .unlisten(response);
                         return HttpResponse::InternalServerError().finish();
                     }
                 }
@@ -513,31 +567,29 @@ pub fn main() -> std::io::Result<()> {
 
                 if request_param.transfers.len() > 1 && request_param.chain != "solar" {
                     println!("Invalid batch transfer {}", request_param.chain);
-                    return HttpResponse::BadRequest().body(
-                        format!(
-                            "Batch transfer is not enabled for now on {} chain",
-                            request_param.chain
-                        )
-                    );
+                    return HttpResponse::BadRequest().body(format!(
+                        "Batch transfer is not enabled for now on {} chain",
+                        request_param.chain
+                    ));
                 }
 
                 show_transaction_window(APPHANDLE.get().unwrap().clone()).await;
 
-                let json_data = serde_json
-                    ::to_string(&request_param)
-                    .expect("Failed to serialize JSON data");
+                let json_data =
+                    serde_json::to_string(&request_param).expect("Failed to serialize JSON data");
                 println!("{}", json_data);
 
-                APPHANDLE.get()
+                APPHANDLE
+                    .get()
                     .expect("APPHANDLE is available")
                     .emit("POST-/send-transaction", json_data)
                     .expect("failed to emit event POST /send-transaction");
 
                 let (tx, rx) = std::sync::mpsc::channel();
 
-                let response = APPHANDLE.get()
-                    .expect("APPHANDLE is available")
-                    .listen_any("res-POST-/send-transaction", move |event| {
+                let response = APPHANDLE.get().expect("APPHANDLE is available").listen_any(
+                    "res-POST-/send-transaction",
+                    move |event| {
                         let payload = event.payload().to_string();
                         println!("!!!----> res POST /send-transaction");
                         println!("{}", payload);
@@ -549,17 +601,24 @@ pub fn main() -> std::io::Result<()> {
                                 println!("Error sending message: {:?}", err);
                             }
                         }
-                    });
+                    },
+                );
 
                 match rx.recv() {
                     Ok(received) => {
                         // println!("Received: {}", received);
-                        APPHANDLE.get().expect("APPHANDLE is available").unlisten(response);
+                        APPHANDLE
+                            .get()
+                            .expect("APPHANDLE is available")
+                            .unlisten(response);
                         return HttpResponse::Ok().body(received);
                     }
                     Err(err) => {
                         println!("Error receiving message: {:?}", err);
-                        APPHANDLE.get().expect("APPHANDLE is available").unlisten(response);
+                        APPHANDLE
+                            .get()
+                            .expect("APPHANDLE is available")
+                            .unlisten(response);
                         return HttpResponse::InternalServerError().finish();
                     }
                 }
@@ -567,13 +626,20 @@ pub fn main() -> std::io::Result<()> {
 
             async fn request_new_order(
                 request: HttpRequest,
-                request_param: web::Json<SendTransactionReqType>
+                request_param: web::Json<SendTransactionReqType>,
             ) -> HttpResponse {
                 println!("-------> POST /request-new-order");
 
                 let is_valid_token = validate_token(
-                    request.headers().get("x-token").unwrap().to_str().unwrap().to_string()
-                ).await;
+                    request
+                        .headers()
+                        .get("x-token")
+                        .unwrap()
+                        .to_str()
+                        .unwrap()
+                        .to_string(),
+                )
+                .await;
                 if !is_valid_token {
                     return HttpResponse::InternalServerError().body("Invalid token");
                 }
@@ -585,12 +651,10 @@ pub fn main() -> std::io::Result<()> {
 
                 if request_param.transfers.len() > 1 && request_param.chain != "solar" {
                     println!("Invalid batch transfer {}", request_param.chain);
-                    return HttpResponse::BadRequest().body(
-                        format!(
-                            "Batch transfer is not enabled for now on {} chain",
-                            request_param.chain
-                        )
-                    );
+                    return HttpResponse::BadRequest().body(format!(
+                        "Batch transfer is not enabled for now on {} chain",
+                        request_param.chain
+                    ));
                 }
 
                 let mut param = request_param.into_inner();
@@ -599,31 +663,35 @@ pub fn main() -> std::io::Result<()> {
 
                 let client = Client::new();
 
-                match
-                    client
-                        .post("https://dev.tymt.com/api/orders/request-new-order")
-                        .header(header::CONTENT_TYPE, "application/json")
-                        .header(
-                            "x-token",
-                            request.headers().get("x-token").unwrap().to_str().unwrap().to_string()
-                        )
-                        .body(serde_json::to_string(&param).unwrap())
-                        .send().await
+                match client
+                    .post("https://dev.tymt.com/api/orders/request-new-order")
+                    .header(header::CONTENT_TYPE, "application/json")
+                    .header(
+                        "x-token",
+                        request
+                            .headers()
+                            .get("x-token")
+                            .unwrap()
+                            .to_str()
+                            .unwrap()
+                            .to_string(),
+                    )
+                    .body(serde_json::to_string(&param).unwrap())
+                    .send()
+                    .await
                 {
-                    Ok(response) =>
-                        match response.text().await {
-                            Ok(json) => {
-                                println!("!!!----> POST /request-new-order");
-                                println!("{}", json);
-                                HttpResponse::Ok().body(json)
-                            }
-                            Err(err) => {
-                                eprintln!("Failed to parse response as JSON: {:?}", err);
-                                HttpResponse::InternalServerError().body(
-                                    "Failed to parse response as JSON"
-                                )
-                            }
+                    Ok(response) => match response.text().await {
+                        Ok(json) => {
+                            println!("!!!----> POST /request-new-order");
+                            println!("{}", json);
+                            HttpResponse::Ok().body(json)
                         }
+                        Err(err) => {
+                            eprintln!("Failed to parse response as JSON: {:?}", err);
+                            HttpResponse::InternalServerError()
+                                .body("Failed to parse response as JSON")
+                        }
+                    },
                     Err(err) => {
                         eprintln!("Failed to send request: {:?}", err);
                         HttpResponse::InternalServerError().body("Failed to send request")
@@ -637,48 +705,62 @@ pub fn main() -> std::io::Result<()> {
             }
             async fn execute_order(
                 request: HttpRequest,
-                request_param: web::Json<ExecuteOrderReqType>
+                request_param: web::Json<ExecuteOrderReqType>,
             ) -> HttpResponse {
                 println!("-------> POST /execute-order");
 
                 let is_valid_token = validate_token(
-                    request.headers().get("x-token").unwrap().to_str().unwrap().to_string()
-                ).await;
+                    request
+                        .headers()
+                        .get("x-token")
+                        .unwrap()
+                        .to_str()
+                        .unwrap()
+                        .to_string(),
+                )
+                .await;
                 if !is_valid_token {
                     return HttpResponse::InternalServerError().body("Invalid token");
                 }
 
                 let client = Client::new();
 
-                println!("-------> https://dev.tymt.com/api/orders/orders/{}", request_param.id);
-                match
-                    client
-                        .get(format!("https://dev.tymt.com/api/orders/orders/{}", request_param.id))
-                        .header(
-                            "x-token",
-                            request.headers().get("x-token").unwrap().to_str().unwrap().to_string()
-                        )
-                        .send().await
+                println!(
+                    "-------> https://dev.tymt.com/api/orders/orders/{}",
+                    request_param.id
+                );
+                match client
+                    .get(format!(
+                        "https://dev.tymt.com/api/orders/orders/{}",
+                        request_param.id
+                    ))
+                    .header(
+                        "x-token",
+                        request
+                            .headers()
+                            .get("x-token")
+                            .unwrap()
+                            .to_str()
+                            .unwrap()
+                            .to_string(),
+                    )
+                    .send()
+                    .await
                 {
-                    Ok(response) =>
-                        match response.text().await {
-                            Ok(json) => {
-                                println!("{}", json);
-                                let parsed_struct: GetOrderResType = serde_json
-                                    ::from_str(&json)
-                                    .unwrap();
-                                let json_struct: web::Json<GetOrderResType> = web::Json(
-                                    parsed_struct
-                                );
-                                send_transaction(json_struct.result.data.clone()).await
-                            }
-                            Err(err) => {
-                                eprintln!("Failed to parse response as JSON: {:?}", err);
-                                HttpResponse::InternalServerError().body(
-                                    "Failed to parse response as JSON"
-                                )
-                            }
+                    Ok(response) => match response.text().await {
+                        Ok(json) => {
+                            println!("{}", json);
+                            let parsed_struct: GetOrderResType =
+                                serde_json::from_str(&json).unwrap();
+                            let json_struct: web::Json<GetOrderResType> = web::Json(parsed_struct);
+                            send_transaction(json_struct.result.data.clone()).await
                         }
+                        Err(err) => {
+                            eprintln!("Failed to parse response as JSON: {:?}", err);
+                            HttpResponse::InternalServerError()
+                                .body("Failed to parse response as JSON")
+                        }
+                    },
                     Err(err) => {
                         eprintln!("Failed to send request: {:?}", err);
                         HttpResponse::InternalServerError().body("Failed to send request")
@@ -693,13 +775,20 @@ pub fn main() -> std::io::Result<()> {
             }
             async fn sign_message(
                 request: HttpRequest,
-                request_param: web::Json<SignMessageReqType>
+                request_param: web::Json<SignMessageReqType>,
             ) -> HttpResponse {
                 println!("-------> POST /sign-message");
 
                 let is_valid_token = validate_token(
-                    request.headers().get("x-token").unwrap().to_str().unwrap().to_string()
-                ).await;
+                    request
+                        .headers()
+                        .get("x-token")
+                        .unwrap()
+                        .to_str()
+                        .unwrap()
+                        .to_string(),
+                )
+                .await;
                 if !is_valid_token {
                     return HttpResponse::InternalServerError().body("Invalid token");
                 }
@@ -709,21 +798,21 @@ pub fn main() -> std::io::Result<()> {
                     return HttpResponse::InternalServerError().body("Invalid chain");
                 }
 
-                let json_data = serde_json
-                    ::to_string(&request_param)
-                    .expect("Failed to serialize JSON data");
+                let json_data =
+                    serde_json::to_string(&request_param).expect("Failed to serialize JSON data");
                 println!("{}", json_data);
 
-                APPHANDLE.get()
+                APPHANDLE
+                    .get()
                     .expect("APPHANDLE is available")
                     .emit("POST-/sign-message", json_data)
                     .expect("failed to emit event POST /sign-message");
 
                 let (tx, rx) = std::sync::mpsc::channel();
 
-                let response = APPHANDLE.get()
-                    .expect("APPHANDLE is available")
-                    .listen_any("res-POST-/sign-message", move |event| {
+                let response = APPHANDLE.get().expect("APPHANDLE is available").listen_any(
+                    "res-POST-/sign-message",
+                    move |event| {
                         let payload = event.payload().to_string();
                         println!("!!!----> res POST /sign-message");
                         println!("{}", payload);
@@ -735,12 +824,16 @@ pub fn main() -> std::io::Result<()> {
                                 println!("Error sending message: {:?}", err);
                             }
                         }
-                    });
+                    },
+                );
 
                 match rx.recv() {
                     Ok(received) => {
                         // println!("Received: {}", received);
-                        APPHANDLE.get().expect("APPHANDLE is available").unlisten(response);
+                        APPHANDLE
+                            .get()
+                            .expect("APPHANDLE is available")
+                            .unlisten(response);
                         if received == "" {
                             return HttpResponse::InternalServerError().finish();
                         } else {
@@ -749,7 +842,10 @@ pub fn main() -> std::io::Result<()> {
                     }
                     Err(err) => {
                         println!("Error receiving message: {:?}", err);
-                        APPHANDLE.get().expect("APPHANDLE is available").unlisten(response);
+                        APPHANDLE
+                            .get()
+                            .expect("APPHANDLE is available")
+                            .unlisten(response);
                         return HttpResponse::InternalServerError().finish();
                     }
                 }
@@ -763,32 +859,39 @@ pub fn main() -> std::io::Result<()> {
             }
             async fn verify_message(
                 request: HttpRequest,
-                request_param: web::Json<VerifyMessageReqType>
+                request_param: web::Json<VerifyMessageReqType>,
             ) -> HttpResponse {
                 println!("-------> POST /verify-message");
 
                 let is_valid_token = validate_token(
-                    request.headers().get("x-token").unwrap().to_str().unwrap().to_string()
-                ).await;
+                    request
+                        .headers()
+                        .get("x-token")
+                        .unwrap()
+                        .to_str()
+                        .unwrap()
+                        .to_string(),
+                )
+                .await;
                 if !is_valid_token {
                     return HttpResponse::InternalServerError().body("Invalid token");
                 }
 
-                let json_data = serde_json
-                    ::to_string(&request_param)
-                    .expect("Failed to serialize JSON data");
+                let json_data =
+                    serde_json::to_string(&request_param).expect("Failed to serialize JSON data");
                 println!("{}", json_data);
 
-                APPHANDLE.get()
+                APPHANDLE
+                    .get()
                     .expect("APPHANDLE is available")
                     .emit("POST-/verify-message", json_data)
                     .expect("failed to emit event POST /verify-message");
 
                 let (tx, rx) = std::sync::mpsc::channel();
 
-                let response = APPHANDLE.get()
-                    .expect("APPHANDLE is available")
-                    .listen_any("res-POST-/verify-message", move |event| {
+                let response = APPHANDLE.get().expect("APPHANDLE is available").listen_any(
+                    "res-POST-/verify-message",
+                    move |event| {
                         let payload = event.payload().to_string();
                         println!("!!!----> res POST /verify-message");
                         println!("{}", payload);
@@ -800,17 +903,24 @@ pub fn main() -> std::io::Result<()> {
                                 println!("Error sending message: {:?}", err);
                             }
                         }
-                    });
+                    },
+                );
 
                 match rx.recv() {
                     Ok(received) => {
                         // println!("Received: {}", received);
-                        APPHANDLE.get().expect("APPHANDLE is available").unlisten(response);
+                        APPHANDLE
+                            .get()
+                            .expect("APPHANDLE is available")
+                            .unlisten(response);
                         return HttpResponse::Ok().body(received);
                     }
                     Err(err) => {
                         println!("Error receiving message: {:?}", err);
-                        APPHANDLE.get().expect("APPHANDLE is available").unlisten(response);
+                        APPHANDLE
+                            .get()
+                            .expect("APPHANDLE is available")
+                            .unlisten(response);
                         return HttpResponse::InternalServerError().finish();
                     }
                 }
@@ -857,32 +967,39 @@ pub fn main() -> std::io::Result<()> {
 
             async fn send_contract(
                 request: HttpRequest,
-                request_param: web::Json<SendContractReqType>
+                request_param: web::Json<SendContractReqType>,
             ) -> HttpResponse {
                 println!("-------> POST /send-contract");
 
                 let is_valid_token = validate_token(
-                    request.headers().get("x-token").unwrap().to_str().unwrap().to_string()
-                ).await;
+                    request
+                        .headers()
+                        .get("x-token")
+                        .unwrap()
+                        .to_str()
+                        .unwrap()
+                        .to_string(),
+                )
+                .await;
                 if !is_valid_token {
                     return HttpResponse::InternalServerError().body("Invalid token");
                 }
 
-                let json_data = serde_json
-                    ::to_string(&request_param)
-                    .expect("Failed to serialize JSON data");
+                let json_data =
+                    serde_json::to_string(&request_param).expect("Failed to serialize JSON data");
                 println!("{}", json_data);
 
-                APPHANDLE.get()
+                APPHANDLE
+                    .get()
                     .expect("APPHANDLE is available")
                     .emit("POST-/send-contract", json_data)
                     .expect("failed to emit event POST /send-contract");
 
                 let (tx, rx) = std::sync::mpsc::channel();
 
-                let response = APPHANDLE.get()
-                    .expect("APPHANDLE is available")
-                    .listen_any("res-POST-/send-contract", move |event| {
+                let response = APPHANDLE.get().expect("APPHANDLE is available").listen_any(
+                    "res-POST-/send-contract",
+                    move |event| {
                         let payload = event.payload().to_string();
                         println!("!!!----> res POST /send-contract");
                         println!("{}", payload);
@@ -894,17 +1011,24 @@ pub fn main() -> std::io::Result<()> {
                                 println!("Error sending message: {:?}", err);
                             }
                         }
-                    });
+                    },
+                );
 
                 match rx.recv() {
                     Ok(received) => {
                         // println!("Received: {}", received);
-                        APPHANDLE.get().expect("APPHANDLE is available").unlisten(response);
+                        APPHANDLE
+                            .get()
+                            .expect("APPHANDLE is available")
+                            .unlisten(response);
                         return HttpResponse::Ok().body(received);
                     }
                     Err(err) => {
                         println!("Error receiving message: {:?}", err);
-                        APPHANDLE.get().expect("APPHANDLE is available").unlisten(response);
+                        APPHANDLE
+                            .get()
+                            .expect("APPHANDLE is available")
+                            .unlisten(response);
                         return HttpResponse::InternalServerError().finish();
                     }
                 }
@@ -923,7 +1047,10 @@ pub fn main() -> std::io::Result<()> {
                 HttpServer::new(move || {
                     App::new()
                         .wrap(
-                            Cors::default().allow_any_origin().allow_any_method().allow_any_header()
+                            Cors::default()
+                                .allow_any_origin()
+                                .allow_any_method()
+                                .allow_any_header(),
                         )
                         .route("/get-account", web::post().to(get_account))
                         .route("/get-balance", web::post().to(get_balance))
@@ -935,24 +1062,22 @@ pub fn main() -> std::io::Result<()> {
                         .route("/verify-message", web::post().to(verify_message))
                         .route("/send-contract", web::post().to(send_contract))
                 })
-                    .bind(("127.0.0.1", 3331))
-                    .expect("Failed to bind address")
-                    .run()
+                .bind(("127.0.0.1", 3331))
+                .expect("Failed to bind address")
+                .run(),
             );
 
             Ok(())
         })
-        .on_window_event(|window, event| {
-            match event {
-                tauri::WindowEvent::CloseRequested { api, .. } => {
-                    window.hide().unwrap();
-                    api.prevent_close();
-                }
-                _ => {}
+        .on_window_event(|window, event| match event {
+            tauri::WindowEvent::CloseRequested { api, .. } => {
+                window.hide().unwrap();
+                api.prevent_close();
             }
+            _ => {}
         })
         .run(tauri::generate_context!())
-        .unwrap();//.expect("error while running tymtLauncher");
+        .unwrap(); //.expect("error while running tymtLauncher");
 
     Ok(())
 }
@@ -964,7 +1089,11 @@ fn run_url_args(url: String, args: Vec<String>) {
         println!("{}", arg);
     }
 
-    let path = if url == "open" { Path::new(&args[1]) } else { Path::new(&url) };
+    let path = if url == "open" {
+        Path::new(&args[1])
+    } else {
+        Path::new(&url)
+    };
     let working_directory = match path.parent() {
         Some(dir) => dir,
         None => {
@@ -1017,7 +1146,9 @@ fn open_directory(path: &str) {
 fn get_machine_id() -> Result<String, String> {
     let mut builder = IdBuilder::new(Encryption::SHA256);
     builder.add_component(HWIDComponent::SystemID);
-    let hwid = builder.build("tymtLauncher").map_err(|err| err.to_string())?;
+    let hwid = builder
+        .build("tymtLauncher")
+        .map_err(|err| err.to_string())?;
 
     Ok(hwid)
 }
@@ -1037,7 +1168,7 @@ async fn show_transaction_window(app_handle: tauri::AppHandle) {
         eprintln!("Window 'tymt_d53_transaction' not found");
     }
 
-    if let Some(window_to_hide) = app_handle.get_webview_window("tymtLauncher") {
+    if let Some(window_to_hide) = app_handle.get_webview_window("tymtLauncherDebug") {
         if let Err(e) = window_to_hide.hide() {
             eprintln!("Failed to hide window 'tymtLauncher': {}", e);
         }
@@ -1053,7 +1184,7 @@ async fn show_transaction_window(app_handle: tauri::AppHandle) {
         "about".to_string(),
         "signout".to_string(),
         "quit".to_string(),
-        "disable_notifications".to_string()
+        "disable_notifications".to_string(),
     ];
     let enabled = false;
     set_tray_items_enabled(app_handle, item_ids, enabled).await
@@ -1069,7 +1200,7 @@ async fn hide_transaction_window(app_handle: tauri::AppHandle) {
         eprintln!("Window 'tymt_d53_transaction' not found");
     }
 
-    if let Some(window_to_hide) = app_handle.get_webview_window("tymtLauncher") {
+    if let Some(window_to_hide) = app_handle.get_webview_window("tymtLauncherDebug") {
         if let Err(e) = window_to_hide.show() {
             eprintln!("Failed to show window 'tymtLauncher': {}", e);
         }
@@ -1085,7 +1216,7 @@ async fn hide_transaction_window(app_handle: tauri::AppHandle) {
         "about".to_string(),
         "signout".to_string(),
         "quit".to_string(),
-        "disable_notifications".to_string()
+        "disable_notifications".to_string(),
     ];
     let enabled = true;
     set_tray_items_enabled(app_handle, item_ids, enabled).await
@@ -1095,10 +1226,13 @@ async fn hide_transaction_window(app_handle: tauri::AppHandle) {
 async fn set_tray_items_enabled(
     app_handle: tauri::AppHandle,
     item_ids: Vec<String>,
-    enabled: bool
+    enabled: bool,
 ) {
     for item_id in item_ids {
-        let _ = app_handle.tray_by_id(&item_id).unwrap().set_visible(enabled);
+        let _ = app_handle
+            .tray_by_id(&item_id)
+            .unwrap()
+            .set_visible(enabled);
     }
 }
 
@@ -1119,7 +1253,7 @@ struct DownloadProgress {
 async fn download_to_app_dir(
     app_handle: tauri::AppHandle,
     url: String,
-    file_location: String
+    file_location: String,
 ) -> Result<(), String> {
     let path = Path::new(&file_location);
 
@@ -1138,15 +1272,15 @@ async fn download_to_app_dir(
     let res = client
         .get(&url)
         .header(ACCEPT, "application/octet-stream")
-        .send().await
+        .send()
+        .await
         .or(Err(format!("Failed to GET from '{}'", &url)))?;
     let total_size = res
         .content_length()
         .ok_or(format!("Failed to get content length from '{}'", &url))?;
 
-    let mut file = File::create(&path).or(
-        Err(format!("Failed to create file '{}'", file_location))
-    )?;
+    let mut file =
+        File::create(&path).or(Err(format!("Failed to create file '{}'", file_location)))?;
     let mut downloaded: u64 = 0;
     let mut stream = res.bytes_stream();
 
@@ -1154,7 +1288,8 @@ async fn download_to_app_dir(
 
     while let Some(item) = stream.next().await {
         let chunk = item.or(Err(format!("Error while downloading file")))?;
-        file.write_all(&chunk).or(Err(format!("Error while writing to file")))?;
+        file.write_all(&chunk)
+            .or(Err(format!("Error while writing to file")))?;
         downloaded = min(downloaded + (chunk.len() as u64), total_size);
         let duration = start_time.elapsed().as_secs_f64();
         let speed = if duration > 0.0 {
@@ -1189,13 +1324,12 @@ async fn download_to_app_dir(
 async fn unzip_windows(
     app_handle: tauri::AppHandle,
     file_location: String,
-    install_dir: String
+    install_dir: String,
 ) -> Result<(), String> {
     let zip_path = PathBuf::from(file_location);
     let extract_path = PathBuf::from(install_dir);
 
-    let _ = zip_extensions::read
-        ::zip_extract(&zip_path, &extract_path)
+    let _ = zip_extensions::read::zip_extract(&zip_path, &extract_path)
         .map_err(|e| format!("Failed to unzip file: {}", e))?;
 
     Ok(())
@@ -1205,13 +1339,12 @@ async fn unzip_windows(
 async fn unzip_linux(
     app_handle: tauri::AppHandle,
     file_location: String,
-    install_dir: String
+    install_dir: String,
 ) -> Result<(), String> {
     let zip_path = PathBuf::from(file_location);
     let extract_path = PathBuf::from(install_dir);
 
-    let _ = zip_extensions::read
-        ::zip_extract(&zip_path, &extract_path)
+    let _ = zip_extensions::read::zip_extract(&zip_path, &extract_path)
         .map_err(|e| format!("Failed to unzip file: {}", e))?;
 
     Ok(())
@@ -1221,11 +1354,13 @@ async fn unzip_linux(
 async fn move_appimage_linux(
     app_handle: tauri::AppHandle,
     file_location: String,
-    install_dir: String
+    install_dir: String,
 ) -> Result<(), String> {
     let source_path = PathBuf::from(&file_location);
     let destination_path = PathBuf::from(&install_dir).join(
-        source_path.file_name().ok_or_else(|| "Invalid file name".to_string())?
+        source_path
+            .file_name()
+            .ok_or_else(|| "Invalid file name".to_string())?,
     );
 
     // Ensure the parent directory exists
@@ -1236,7 +1371,8 @@ async fn move_appimage_linux(
     }
 
     // Move the file
-    fs::rename(&source_path, &destination_path).map_err(|e| format!("Failed to move file: {}", e))?;
+    fs::rename(&source_path, &destination_path)
+        .map_err(|e| format!("Failed to move file: {}", e))?;
 
     Ok(())
 }
@@ -1245,7 +1381,7 @@ async fn move_appimage_linux(
 async fn unzip_macos(
     app_handle: tauri::AppHandle,
     file_location: String,
-    install_dir: String
+    install_dir: String,
 ) -> Result<(), String> {
     let status = Command::new("ditto")
         .arg("-x")
@@ -1258,7 +1394,10 @@ async fn unzip_macos(
     if status.success() {
         Ok(())
     } else {
-        Err(format!("Failed to unzip: exit code {}", status.code().unwrap_or(-1)))
+        Err(format!(
+            "Failed to unzip: exit code {}",
+            status.code().unwrap_or(-1)
+        ))
     }
 }
 
@@ -1266,14 +1405,13 @@ async fn unzip_macos(
 async fn untarbz2_macos(
     app_handle: tauri::AppHandle,
     file_location: String,
-    install_dir: String
+    install_dir: String,
 ) -> Result<(), String> {
     let install_path = PathBuf::from(&install_dir);
 
     // Create the directory if it doesn't exist
     if !install_path.exists() {
-        fs
-            ::create_dir_all(&install_path)
+        fs::create_dir_all(&install_path)
             .map_err(|e| format!("Failed to create directory: {}", e))?;
     }
 
@@ -1285,7 +1423,10 @@ async fn untarbz2_macos(
     if status.status.success() {
         Ok(())
     } else {
-        Err(format!("Failed to unzip: exit code {}", status.status.code().unwrap_or(-1)))
+        Err(format!(
+            "Failed to unzip: exit code {}",
+            status.status.code().unwrap_or(-1)
+        ))
     }
 }
 
@@ -1293,7 +1434,7 @@ async fn untarbz2_macos(
 #[tauri::command]
 async fn set_permission(
     app_handle: tauri::AppHandle,
-    executable_path: String
+    executable_path: String,
 ) -> Result<(), String> {
     let path = PathBuf::from(&executable_path);
 
@@ -1303,15 +1444,13 @@ async fn set_permission(
     }
 
     // Set the executable permission
-    let mut permissions = fs
-        ::metadata(&path)
+    let mut permissions = fs::metadata(&path)
         .map_err(|e| format!("Failed to get metadata: {}", e))?
         .permissions();
 
     permissions.set_mode(0o755); // Set permissions to rwxr-xr-x
 
-    fs
-        ::set_permissions(&path, permissions)
+    fs::set_permissions(&path, permissions)
         .map_err(|e| format!("Failed to set permissions: {}", e))?;
 
     Ok(())

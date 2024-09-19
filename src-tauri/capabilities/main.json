@@ -3,7 +3,9 @@
   "identifier": "main-capability",
   "description": "Capability for the main window",
   "windows": [
-    "main"
+    "tymtLauncherDebug",
+    "tymt_d53_transaction",
+    "game_window"
   ],
   "permissions": [
     "core:default",
@@ -36,21 +38,51 @@
     {
       "identifier": "fs:scope",
       "allow": [
-        { "path": "$APPDATA" },
-        { "path": "$APPDATA/**" },
-        { "path": "$HOME/**" },
-        { "path": "$HOME/.config/**" },
-        { "path": "**" },
-        { "path": "/home/*/.local/share/tymtLauncher/*/games/*" },
-        { "path": "/home/*/.local/share/tymtLauncherDebug/*/games/*" },
-        { "path": "/home/*/.cache/tymtLauncherDebug/*/*/*/*/*/*/*/*" },
-        { "path": "/home/*/.cache/tymtLauncherDebug/*/*/*/*/*/*/*" },
-        { "path": "/home/*/.cache/tymtLauncherDebug/*/*/*/*/*/*" },
-        { "path": "/home/*/.cache/tymtLauncherDebug/*/*/*/*/*" },
-        { "path": "/home/*/.cache/tymtLauncherDebug/*/*/*/*" },
-        { "path": "/home/*/.cache/tymtLauncherDebug/*/*/*" },
-        { "path": "/home/*/.cache/tymtLauncherDebug/*/*" },
-        { "path": "/home/*/.cache/tymtLauncherDebug/*" },
+        {
+          "path": "$APPDATA"
+        },
+        {
+          "path": "$APPDATA/**"
+        },
+        {
+          "path": "$HOME/**"
+        },
+        {
+          "path": "$HOME/.config/**"
+        },
+        {
+          "path": "**"
+        },
+        {
+          "path": "/home/*/.local/share/tymtLauncher/*/games/*"
+        },
+        {
+          "path": "/home/*/.local/share/tymtLauncherDebug/*/games/*"
+        },
+        {
+          "path": "/home/*/.cache/tymtLauncherDebug/*/*/*/*/*/*/*/*"
+        },
+        {
+          "path": "/home/*/.cache/tymtLauncherDebug/*/*/*/*/*/*/*"
+        },
+        {
+          "path": "/home/*/.cache/tymtLauncherDebug/*/*/*/*/*/*"
+        },
+        {
+          "path": "/home/*/.cache/tymtLauncherDebug/*/*/*/*/*"
+        },
+        {
+          "path": "/home/*/.cache/tymtLauncherDebug/*/*/*/*"
+        },
+        {
+          "path": "/home/*/.cache/tymtLauncherDebug/*/*/*"
+        },
+        {
+          "path": "/home/*/.cache/tymtLauncherDebug/*/*"
+        },
+        {
+          "path": "/home/*/.cache/tymtLauncherDebug/*"
+        },
         "**",
         "/home/*/.local/share/tymtLauncher/*/games/*",
         "/home/*/.local/share/tymtLauncher/*/games/*/*",
@@ -79,6 +111,7 @@
     },
     "core:event:allow-emit",
     "core:event:allow-listen",
-    "core:event:allow-unlisten"
+    "core:event:allow-unlisten",
+    "fs:default"
   ]
 }

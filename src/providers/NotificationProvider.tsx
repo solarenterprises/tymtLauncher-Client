@@ -212,7 +212,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
       console.log("unlisten_fs_remove_dir", game);
       dispatch(addRemoveStatus(game));
       try {
-        const dirPath = (await appDataDir()) + `v${tymt_version}/games/${game?.project_name}`;
+        const dirPath = (await appDataDir()) + `/v${tymt_version}/games/${game?.project_name}`;
         await remove(dirPath, {
           recursive: true,
         });

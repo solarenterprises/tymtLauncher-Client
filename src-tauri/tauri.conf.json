@@ -37,7 +37,7 @@
     "withGlobalTauri": true,
     "windows": [
       {
-        "label": "tymtLauncher",
+        "label": "tymtLauncherDebug",
         "title": "tymtLauncherDebug 2.2.2",
         "resizable": true,
         "width": 1440,
@@ -45,7 +45,6 @@
         "minWidth": 1200,
         "minHeight": 800,
         "center": true,
-        "additionalBrowserArgs": "--disable-web-security",
         "dragDropEnabled": false
       },
       {
@@ -59,7 +58,6 @@
         "width": 440,
         "x": 5,
         "y": 5,
-        "additionalBrowserArgs": "--disable-web-security",
         "alwaysOnTop": true,
         "focus": true
       },
@@ -68,8 +66,7 @@
         "title": "Game Window",
         "url": "",
         "decorations": true,
-        "visible": false,
-        "additionalBrowserArgs": "--disable-web-security"
+        "visible": false
       }
     ],
     "trayIcon": {
