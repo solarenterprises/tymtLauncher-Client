@@ -42,3 +42,4 @@ export const getKeccak256Hash = (plain: string) => {
     console.log("Failed to getKeccak256Hash: ", err);
   }
 };
+

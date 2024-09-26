@@ -39,8 +39,10 @@ import { IMyInfo, IRsa } from "../types/chatTypes";
 import { ICurrentChain, IWallet } from "../types/walletTypes";
 import { IAccount, ILogin } from "../types/accountTypes";
 import FirstFundModal from "../components/modals/FirstFundModal";
+import { useSocket } from "./SocketProvider";
 
 const AlertProvider = () => {
+  const { socket } = useSocket();
   const dispatch = useDispatch<AppDispatch>();
 
   const rsaStore: IRsa = useSelector(getRsa);
@@ -85,7 +87,7 @@ const AlertProvider = () => {
       // ~ Wallet
 
       // SDK
-      dispatch(fetchAllGameListAsync());
+      dispatch(fetchAllGameListAsync({ socket, userId: myInfoStore?._id }));
       // dispatch(fetchAllComingGameListAsync());
       // ~ SDK
 

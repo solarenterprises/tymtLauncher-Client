@@ -72,7 +72,7 @@ export interface IGame {
   rank: number;
   releaseMeta: {
     name: string;
-    meta_url: string;
+    meta_uri: string;
     platforms: {
       windows_amd64?: IGameReleaseNative;
       windows_arm64?: IGameReleaseNative;
