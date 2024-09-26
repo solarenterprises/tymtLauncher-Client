@@ -87,7 +87,6 @@ export const fetchAllGameList = async ({ socket, userId }: IParamfetchAllGameLis
 
     // Filter out null values if needed
     const validResponsesData = responsesData.filter((data): data is IStoreSecret => data !== null);
-    console.log("responsesData", validResponsesData);
 
     const res2 = await Promise.all(
       res.map(async (game) => {
@@ -100,8 +99,7 @@ export const fetchAllGameList = async ({ socket, userId }: IParamfetchAllGameLis
         return game; // Return the original game if the condition is not met
       })
     );
-    console.log("res2", res2);
-    
+
     return { games: res2 };
   } catch (err) {
     console.log("Failed to fetchAllGameList: ", err);
