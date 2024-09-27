@@ -84,7 +84,7 @@ export const RedEclipse: IGame = {
   rank: 0,
   releaseMeta: {
     name: "March 15, 2011",
-    meta_url: "",
+    meta_uri: "",
     platforms: {
       windows_amd64: {
         name: "redeclipse_2.0.0_win.zip",

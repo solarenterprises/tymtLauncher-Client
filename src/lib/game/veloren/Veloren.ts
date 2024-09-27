@@ -83,7 +83,7 @@ export const Veloren: IGame = {
   rank: 0,
   releaseMeta: {
     name: "July 1, 2023",
-    meta_url: "",
+    meta_uri: "",
     platforms: {
       windows_amd64: {
         name: "veloren.zip",

@@ -102,7 +102,7 @@ export const District53: IGame = {
   rank: 0,
   releaseMeta: {
     name: "October 28, 2022",
-    meta_url: "",
+    meta_uri: "",
     platforms: {
       windows_amd64: {
         name: "District53_5.9.0.2_win_x64.zip",

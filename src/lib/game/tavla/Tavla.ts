@@ -55,7 +55,7 @@ export const Tavla: IGame = {
   rank: 0,
   releaseMeta: {
     name: "",
-    meta_url: "",
+    meta_uri: "",
     platforms: {
       web: {
         name: "",
