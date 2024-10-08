@@ -2,11 +2,7 @@
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "main-capability",
   "description": "Capability for the main window",
-  "windows": [
-    "tymtLauncherDebug",
-    "tymt_d53_transaction",
-    "game_window"
-  ],
+  "windows": ["tymtLauncherDebug", "tymt_d53_transaction", "game_window"],
   "permissions": [
     "core:default",
     "core:path:default",
@@ -112,6 +108,12 @@
     "core:event:allow-emit",
     "core:event:allow-listen",
     "core:event:allow-unlisten",
-    "fs:default"
+    "fs:default",
+    "core:window:allow-set-fullscreen",
+    "core:window:allow-set-focus",
+    "updater:allow-check",
+    "updater:default",
+    "http:allow-fetch",
+    "http:default"
   ]
 }

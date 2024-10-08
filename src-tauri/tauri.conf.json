@@ -10,13 +10,7 @@
     "targets": "all",
     "longDescription": "tymt is a multi-chain game launcher and an environment for creating and publishing games. \n tymt is a gaming environment and platform, built using the Solar Core blockchain solutions, enabling a new world of game economy - empowering Developers and Publishers!",
     "publisher": "hello@solarenterprises.com",
-    "icon": [
-      "icons/32x32.png",
-      "icons/128x128.png",
-      "icons/128x128@2x.png",
-      "icons/icon.icns",
-      "icons/icon.ico"
-    ],
+    "icon": ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.icns", "icons/icon.ico"],
     "category": "Game",
     "shortDescription": "A multi-chain game launcher and an environment for creating and publishing games",
     "createUpdaterArtifacts": "v1Compatible"
@@ -28,9 +22,7 @@
   "plugins": {
     "updater": {
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDcyQTZBNzQwRUQzRjcxMDkKUldRSmNUL3RRS2VtY25Lb3puaUZsb0JOc0J1b21hbnA0VmlUaWcwQVJYWkV2cDEreHFCdkc4MjEK",
-      "endpoints": [
-        "https://dev.tymt.com/public/upload/latest.json"
-      ]
+      "endpoints": ["https://dev.tymt.com/public/upload/latest.json"]
     }
   },
   "app": {
@@ -69,12 +61,9 @@
         "visible": false
       }
     ],
-    "trayIcon": {
-      "iconPath": "icons/128x128@2x.png",
-      "iconAsTemplate": true
-    },
     "security": {
-      "csp": null
+      "csp": null,
+      "capabilities": ["main-capability"]
     },
     "macOSPrivateApi": true
   }

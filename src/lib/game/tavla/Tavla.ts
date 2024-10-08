@@ -15,7 +15,7 @@ export const Tavla: IGame = {
     tags: ["Board Game"],
     type: "browser",
     image: tavlaThumbnail,
-    gallery: [
+    gallery: [ 
       {
         src: tavlaThumbnail,
         name: "tavla1",
