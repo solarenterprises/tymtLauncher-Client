@@ -62,9 +62,9 @@ class Solana implements IWallet {
       const response: any = await tauriFetch(apiURL, {
         method: "POST",
         connectTimeout: 30,
-        body: JSON.parse(body)
+        body: JSON.parse(body),
       });
-      const sols = await response.json().data?.result?.value / 1e9;
+      const sols = (await response.json()?.result?.value) / 1e9;
       return sols;
     } catch (err) {
       console.log("Failed to SOLANA getBalance: ", err);
@@ -87,9 +87,12 @@ class Solana implements IWallet {
       const response1: any = await tauriFetch(apiURL, {
         method: "POST",
         connectTimeout: 30,
-        body: JSON.parse(body1)
+        body: JSON.parse(body1),
       });
-      const signatures: string[] = await response1.json().data?.result.slice(-15).map((signature: any) => signature?.signature);
+      const signatures: string[] = await response1
+        .json()
+        ?.result.slice(-15)
+        .map((signature: any) => signature?.signature);
       // get transactions
       let bodyContent2 = [];
       for (let i = 0; i < signatures?.length; i++) {
@@ -104,9 +107,9 @@ class Solana implements IWallet {
       const response2: any = await tauriFetch(apiURL, {
         method: "POST",
         connectTimeout: 30,
-        body: JSON.parse(body2)
+        body: JSON.parse(body2),
       });
-      return Array.isArray(await response2.json().data) ? await response2.json().data : [];
+      return Array.isArray(await response2.json()) ? await response2.json() : [];
     } catch (err) {
       console.error("Failed to SOLANA getTransactions: ", err);
       return [];
@@ -144,10 +147,10 @@ class Solana implements IWallet {
         const response1: any = await tauriFetch(apiURL, {
           method: "POST",
           connectTimeout: 30,
-          body: JSON.parse(body1)
+          body: JSON.parse(body1),
         });
         console.log(await response1.json());
-        const recentBlockhash = await response1.json().data?.result?.value?.blockhash;
+        const recentBlockhash = await response1.json()?.result?.value?.blockhash;
 
         console.log("recentBlockhash: ", recentBlockhash);
         trx.recentBlockhash = recentBlockhash;
@@ -166,7 +169,7 @@ class Solana implements IWallet {
         const response2: any = await tauriFetch(apiURL, {
           method: "POST",
           connectTimeout: 30,
-          body: JSON.parse(body2)
+          body: JSON.parse(body2),
         });
         console.log(await response2.json());
 
@@ -220,10 +223,10 @@ class Solana implements IWallet {
         const response1: any = await tauriFetch(apiURL, {
           method: "POST",
           connectTimeout: 30,
-          body: JSON.parse(body1)
+          body: JSON.parse(body1),
         });
         console.log(await response1.json());
-        const recentBlockhash = await response1.json().data?.result?.value?.blockhash;
+        const recentBlockhash = await response1.json()?.result?.value?.blockhash;
 
         console.log("recentBlockhash: ", recentBlockhash);
         trx.recentBlockhash = recentBlockhash;
@@ -242,7 +245,7 @@ class Solana implements IWallet {
         const response2: any = await tauriFetch(apiURL, {
           method: "POST",
           connectTimeout: 30,
-          body: JSON.parse(body2)
+          body: JSON.parse(body2),
         });
         console.log(await response2.json());
 
@@ -250,7 +253,7 @@ class Solana implements IWallet {
           status: "success",
           title: "Send SOL",
           message: "Transaction confirmed.",
-          transactionId: await response2.json().data?.result,
+          transactionId: await response2.json()?.result,
         };
         return noti;
       } catch (err) {

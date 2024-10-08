@@ -311,7 +311,7 @@ class Bitcoin implements IWallet_2 {
         method: "GET",
         connectTimeout: 30
       });
-      const data = await response.json().data?.result;
+      const data = await response.json()?.result;
       console.log(data);
       return data?.map((utxo: any) => ({
         txid: utxo.txId,

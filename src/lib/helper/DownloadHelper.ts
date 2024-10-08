@@ -640,7 +640,7 @@ export const fetchMetaUri = async (game) => {
       method: "GET",
       connectTimeout: 30
     });
-    const res = await res1.json().data;
+    const res = await res1.json();
     return res;
   } catch (err) {
     console.log("Failed to fetchMetaUri: ", err);

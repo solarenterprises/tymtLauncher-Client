@@ -49,7 +49,7 @@ const D53Modal = ({ open, setOpen }: props) => {
       setNotificationOpen(true);
       setNotificationLink(null);
     } else {
-      const selectedServer = serverList?.find((server) => server.ip === serverIp);
+      const selectedServer = serverList?.find((server) => server?.ip === serverIp);
       if (!selectedServer) {
         // await runGame("district53", serverIp, autoMode);
       } else {
@@ -86,12 +86,12 @@ const D53Modal = ({ open, setOpen }: props) => {
         const apiURL = production_version === "prod" ? `https://serverlist.district53.io/` : `http://dev.game.district53.io:5000/`;
         const res: any = await tauriFetch(apiURL, {
           method: "GET",
-          connectTimeout: 30
+          connectTimeout: 30,
         });
-        setServerList(await res.json().data);
-        setServerIp(await res.json().data[0].ip);
+        const data = await res?.json();
+        setServerList(data);
+        setServerIp(data[0]?.ip);
       };
-
       init();
       intervalId = setInterval(init, 30 * 1e3);
     }
@@ -128,29 +128,29 @@ const D53Modal = ({ open, setOpen }: props) => {
                 {"Invalid IP address format"}
               </Box>
             )}
-            {serverList.map((server) =>
-              server.visible ? (
+            {serverList?.map((server) =>
+              server?.visible ? (
                 <Button
                   fullWidth
-                  onClick={() => setServerIp(server.ip)}
+                  onClick={() => setServerIp(server?.ip)}
                   sx={{
                     textTransform: "none",
                     border: "1px solid #FFFFFF33",
                     borderRadius: "0px",
                     marginTop: "-1px",
-                    filter: server.status !== "online" ? "grayscale(100%)" : null,
+                    filter: server?.status !== "online" ? "grayscale(100%)" : null,
                   }}
-                  disabled={server.status !== "online"}
+                  disabled={server?.status !== "online"}
                 >
                   <Stack direction={"row"} width={"100%"} gap={"4px"} alignItems={"center"}>
-                    <Box className={server.clients < server.clients_max ? "fs-16-regular white" : "fs-16-regular red"}>{`${server.display_name}`}</Box>
+                    <Box className={server?.clients < server?.clients_max ? "fs-16-regular white" : "fs-16-regular red"}>{`${server?.display_name}`}</Box>
                     <Stack direction={"row"} alignItems={"center"} gap={"4px"}>
-                      <Box className={"fs-12-regular"} color={server.clients < server.clients_max ? "#52E1F2" : "#EF4444"}>{`(${server.clients ?? "0"}/${
-                        server.clients_max ?? "0"
+                      <Box className={"fs-12-regular"} color={server?.clients < server?.clients_max ? "#52E1F2" : "#EF4444"}>{`(${server?.clients ?? "0"}/${
+                        server?.clients_max ?? "0"
                       }`}</Box>
                       <Stack direction={"row"} alignItems={"center"}>
-                        <Box className={"fs-10-light"} color={server.clients < server.clients_max ? "#52E1F2" : "#EF4444"}>{`Joined`}</Box>
-                        <Box className={"fs-12-regular"} color={server.clients < server.clients_max ? "#52E1F2" : "#EF4444"}>{`)`}</Box>
+                        <Box className={"fs-10-light"} color={server?.clients < server?.clients_max ? "#52E1F2" : "#EF4444"}>{`Joined`}</Box>
+                        <Box className={"fs-12-regular"} color={server?.clients < server?.clients_max ? "#52E1F2" : "#EF4444"}>{`)`}</Box>
                       </Stack>
                     </Stack>
                   </Stack>

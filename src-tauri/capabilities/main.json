@@ -114,6 +114,11 @@
     "updater:allow-check",
     "updater:default",
     "http:allow-fetch",
-    "http:default"
+    {
+      "identifier": "http:default",
+      "allow": [{ "url": "http://dev.game.district53.io:5000/" }],
+      "deny": [{ "url": "https://private.tauri.app" }]
+    },
+    "notification:default"
   ]
 }
