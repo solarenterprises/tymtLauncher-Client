@@ -40,6 +40,7 @@ tauri-plugin-updater = "2.0.0-rc.3"
 tauri-plugin-os = "2.0.0-rc"
 tauri-plugin-single-instance = "2.0.0-rc"
 tauri-plugin-notification = "2.0.0-rc"
+tauri-plugin-shell = "2.0.0-rc"
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem
