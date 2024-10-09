@@ -6,6 +6,7 @@ import { IFeedback } from "../../types/ReviewAPITypes";
 import { formatDateAsMMDDYYYY } from "../../lib/helper";
 import ReviewRating from "./ReviewRating";
 import UserAvatar from "./UserAvatar";
+import { t } from "i18next";
 
 export interface IPropsFeedbackCard {
   feedback: IFeedback;
@@ -25,7 +26,7 @@ const FeedbackCard = ({ feedback }: IPropsFeedbackCard) => {
         <Stack direction={"row"} justifyContent={"space-between"} alignItems={"center"}>
           <Stack direction={"row"} gap={"10px"} alignItems={"center"}>
             <UserAvatar userId={feedback?.author?._id} size={40} />
-            <Box className={"fs-h4 white"}>{feedback?.author?.nickName}</Box>
+            <Box className={"fs-h4 white"}>{feedback?.author?.nickName ?? t("ga-34_anonymous")}</Box>
           </Stack>
           <Stack direction={"row"} gap={"8px"} alignItems={"center"}>
             <Box component={"img"} src={TimerIcon} width={"12px"} height={"12px"} />

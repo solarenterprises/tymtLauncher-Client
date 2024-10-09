@@ -78,6 +78,7 @@ const ReviewModal = ({ open, setOpen, game }: IPropsReviewModal) => {
           feedback: formik.values.review,
           star: starRef.current,
           isDeleted: false,
+          isAnonymous: anonymousRef.current,
         };
         await ReviewAPI.addReviews(body);
         setLoading(false);

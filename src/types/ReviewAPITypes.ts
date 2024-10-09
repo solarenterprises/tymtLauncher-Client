@@ -27,4 +27,5 @@ export interface IReqAddReviews {
   feedback: string;
   star: number;
   isDeleted: boolean;
+  isAnonymous: boolean;
 }
