@@ -40,6 +40,7 @@ import { ICurrentChain, IWallet } from "../types/walletTypes";
 import { IAccount, ILogin } from "../types/accountTypes";
 import FirstFundModal from "../components/modals/FirstFundModal";
 import { useSocket } from "./SocketProvider";
+import StakingModal from "../components/modals/StakingModal";
 
 const AlertProvider = () => {
   const { socket } = useSocket();
@@ -141,6 +142,7 @@ const AlertProvider = () => {
       <GuestCompleteSnackbar />
       <MoneyReceivedSnackbar />
       <FirstFundModal />
+      <StakingModal />
     </>
   );
 };
